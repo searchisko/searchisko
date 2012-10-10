@@ -1,0 +1,88 @@
+/*
+ * JBoss, Home of Professional Open Source
+ * Copyright 2012 Red Hat Inc. and/or its affiliates and other contributors
+ * as indicated by the @authors tag. All rights reserved.
+ */
+package org.jboss.dcp.api.service;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
+import java.util.logging.Logger;
+
+import javax.annotation.PostConstruct;
+import javax.ejb.Singleton;
+import javax.ejb.Startup;
+import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.inject.Produces;
+import javax.inject.Inject;
+import javax.inject.Named;
+
+import org.jboss.dcp.api.util.SearchUtils;
+
+/**
+ * Service for persistence backend.<br/>
+ * Now persistence storage is implemented as embedded elasticsearch node
+ * 
+ * @author Libor Krzyzanek
+ * 
+ */
+@Named
+@Singleton
+@ApplicationScoped
+@Startup
+public class PersistanceBackendService extends ElasticsearchClientService {
+
+	@Inject
+	private Logger log;
+
+	@Inject
+	private AppConfigurationService appConfigurationService;
+
+	// Everything is stored in one index
+	private final String indexName = "data";
+
+	@PostConstruct
+	public void init() throws Exception {
+		Properties settings = SearchUtils.loadProperties("/persistance_settings.properties");
+
+		node = createEmbeddedNode("persistance", settings);
+		client = node.client();
+	}
+
+	@Produces
+	@Named("providerServiceBackend")
+	public ElasticsearchEntityService produceProviderService() {
+		ElasticsearchEntityService serv = new ElasticsearchEntityService(client, indexName, "provider", false);
+
+		if (appConfigurationService.getAppConfiguration().isProviderCreateInitData()) {
+
+			if (!client.admin().indices().prepareExists(indexName).execute().actionGet().exists()) {
+				log.info("Provider entity doesn't exists. Creating initial entity for first authentication.");
+
+				client.admin().indices().prepareCreate(indexName).execute().actionGet();
+				Map<String, Object> jbossorgEntity = new HashMap<String, Object>();
+				jbossorgEntity.put(ProviderService.NAME, "jbossorg");
+				jbossorgEntity.put(ProviderService.PASSWORD_HASH, "0228a71fe1a4cf2f8a177cad2f165f5a4e021af6");
+				jbossorgEntity.put(ProviderService.SUPER_PROVIDER, true);
+
+				serv.create("jbossorg", jbossorgEntity);
+			}
+		}
+
+		return serv;
+	}
+
+	@Produces
+	@Named("projectService")
+	public EntityService produceProjectService() {
+		return new ElasticsearchEntityService(client, indexName, "project", false);
+	}
+
+	@Produces
+	@Named("contributorServiceBackend")
+	public EntityService produceContributorService() {
+		return new ElasticsearchEntityService(client, indexName, "contributor", false);
+	}
+
+}
