@@ -1,0 +1,97 @@
+HOST: http://dcp.jboss.org/v1
+
+--- Distributed Contribution Platform API v1 ---
+---
+# Overview
+
+**Distributed Contribution Platform** provides **Rest API** for data manipulation and search.
+
+# DCP Content object
+
+This is main content object which can be pushed/retrieved or searched.
+ 
+DCP Content object is JSON document with free structure. There is no restriction how many key value pairs must be defined or in which structure.
+However this document is during push to DCP and reindex normalized and internal DCP data are added. Those data are prefixed by dcp_.
+ 
+DCP Content described by example:
+
+    {
+        Free JSON Structure repsesenting content. Can be one key value pair or something more structured.
+        It's defined only by source provider.
+
+        "tags": ["Content tag1", "tag2", "tag2"],
+
+        "dcp_content_id": "Any value from content provider",
+        "dcp_content_typev: "Source provider type like 'issue'"
+        "dcp_content_provider": "Name of content provider like JIRA River"
+
+
+        "dcp_id": "internal_id"
+        "dcp_title": "Content Title"
+        "dcp_url_view": "URL representing content view"
+        "dcp_description": "Short description used by search GUI"
+        "dcp_type": "Normalized internal type of content"
+        "dcp_updated": "Timestamp of last update"
+        "dcp_project": "Normalized internal project"
+        "dcp_contributors": ["Firstname Lastname <e-mail>", "Firstname Lastname <e-mail>"]
+        "dcp_activity_dates": [Timestamp1, Timestamp2]
+        "dcp_tags": ["Tags constructed from 'tags' tag and user tags from persistance storage"]
+    }
+
+All DCP Internal data are set during push and reindex except these which can be defined during data push:
+
+* `dcp_title`
+* `dcp_url_view`
+* `dcp_description`
+
+---
+
+--
+Authentication
+Distinct operations needs to be authenticated. Content provider provides credintials by URL parameters provider and password or via standard HTTP Basic authentication.
+If authentication is not successfull then standard forbidden http code is returned.
+--
+
+--
+Content
+--
+Return Document JSON data
+GET /rest/content/{type}/{id}
+< 200
+< Content-Type: application/json
+{ "foo": "bar" }
+
+All content for specified type.
+GET /rest/content/{type}
+< 200
+< Content-Type: application/json
+{
+    "total": "count of returned values",
+    "hits": [
+        {
+           "id": "internal dcp id of document"
+           "data": "document content"
+         }
+    ]
+}
+
+JSON document in http body which is pushed to DCP.
+
+Http body empty
+POST /rest/content/{type}/{id}
+< 200
+< Content-Type: application/json
+{ "foo": "bar" }
+
+Document deleted
+DELETE /rest/content/{type}/{id}
+< 200
+
+
+--
+Search
+--
+GET /rest/search?TODO
+< 200
+
+
