@@ -37,19 +37,19 @@ import org.jboss.dcp.api.service.StatsClientService;
 public class RestServiceBase {
 
 	@Inject
-	private SearchClientService searchClientService;
+	protected SearchClientService searchClientService;
 
 	@Inject
-	private StatsClientService statsClientService;
+	protected StatsClientService statsClientService;
 
 	@Inject
-	private TimeoutConfiguration timeout;
+	protected TimeoutConfiguration timeout;
 
 	@Inject
-	private Logger log;
+	protected Logger log;
 
 	@Context
-	private SecurityContext securityContext;
+	protected SecurityContext securityContext;
 
 	/**
 	 * Get provider name based on security user principal
