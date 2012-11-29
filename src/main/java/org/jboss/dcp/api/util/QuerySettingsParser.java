@@ -97,7 +97,7 @@ public class QuerySettingsParser {
 
 		if (params.containsKey(QuerySettings.Filters.COUNT_KEY)) {
 			try {
-				filters.setStart(new Integer(params.getFirst(QuerySettings.Filters.COUNT_KEY)));
+				filters.setCount(new Integer(params.getFirst(QuerySettings.Filters.COUNT_KEY)));
 			} catch (NumberFormatException e) {
 				throw new IllegalArgumentException("Parameter " + QuerySettings.Filters.COUNT_KEY + " has bad value");
 			}
