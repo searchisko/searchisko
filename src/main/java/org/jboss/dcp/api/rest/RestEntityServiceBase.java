@@ -35,7 +35,7 @@ public class RestEntityServiceBase {
 	protected EntityService entityService;
 
 	@Inject
-	private Logger log;
+	protected Logger log;
 
 	public void setEntityService(EntityService entityService) {
 		this.entityService = entityService;
