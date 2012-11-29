@@ -41,6 +41,7 @@ import javax.servlet.http.HttpServletResponseWrapper;
  * 
  * @author balunasj
  * @author Libor Krzyzanek
+ * @author Vlastimil Elias (velias at redhat dot com)
  * 
  */
 @WebFilter("/*")
@@ -78,8 +79,7 @@ public class JSONPRequestFilter implements Filter {
 		} else {
 			// Need to check if the callback method is safe
 			if (!SAFE_PRN.matcher(callback).matches()) {
-				throw new ServletException("JSONP Callback method '" + CALLBACK_METHOD
-						+ "' parameter not valid function");
+				throw new ServletException("JSONP Callback method '" + CALLBACK_METHOD + "' parameter not valid function");
 			}
 
 			// Will stream updated response
@@ -87,6 +87,7 @@ public class JSONPRequestFilter implements Filter {
 
 			// Create a custom response wrapper to adding in the padding
 			HttpServletResponseWrapper responseWrapper = new HttpServletResponseWrapper(httpResponse) {
+				PrintWriter pw = null;
 
 				@Override
 				public ServletOutputStream getOutputStream() throws IOException {
@@ -100,12 +101,23 @@ public class JSONPRequestFilter implements Filter {
 
 				@Override
 				public PrintWriter getWriter() throws IOException {
-					return new PrintWriter(byteStream);
+					if (pw == null)
+						pw = new PrintWriter(byteStream);
+					return pw;
+				}
+
+				@Override
+				public void flushBuffer() throws IOException {
+					if (pw != null)
+						pw.flush();
 				}
 			};
 
 			// Process the rest of the filter chain, including the JAX-RS request
 			chain.doFilter(request, responseWrapper);
+
+			// Handle flush of PrintWriter buffer used in wrapper
+			responseWrapper.flushBuffer();
 
 			// Override response content and encoding
 			response.setContentType(CONTENT_TYPE);
@@ -118,11 +130,11 @@ public class JSONPRequestFilter implements Filter {
 		}
 	}
 
-	private String getCallbackMethod(HttpServletRequest httpRequest) {
+	protected String getCallbackMethod(HttpServletRequest httpRequest) {
 		return httpRequest.getParameter(CALLBACK_METHOD);
 	}
 
-	private boolean isJSONPRequest(String callbackMethod) {
+	protected boolean isJSONPRequest(String callbackMethod) {
 		// A simple check to see if the query parameter has been set.
 		return (callbackMethod != null && callbackMethod.length() > 0);
 	}

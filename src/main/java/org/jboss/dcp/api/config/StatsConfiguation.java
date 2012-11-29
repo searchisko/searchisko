@@ -28,16 +28,16 @@ import org.jboss.dcp.api.util.SearchUtils;
 @Startup
 public class StatsConfiguation {
 
-	private boolean enabled;
+  private boolean enabled;
 
-	public boolean enabled() {
-		return this.enabled;
-	}
+  public boolean enabled() {
+    return this.enabled;
+  }
 
-	@PostConstruct
-	public void init() throws IOException {
-		Properties prop = SearchUtils.loadProperties("/stats_clinet_configuration.properties");
-		enabled = Boolean.parseBoolean(prop.getProperty("stats.enabled", "true"));
-	}
+  @PostConstruct
+  public void init() throws IOException {
+    Properties prop = SearchUtils.loadProperties("/stats_clinet_configuration.properties");
+    enabled = Boolean.parseBoolean(prop.getProperty("stats.enabled", "true"));
+  }
 
 }
