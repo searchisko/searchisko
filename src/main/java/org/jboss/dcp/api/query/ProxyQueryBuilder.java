@@ -134,7 +134,7 @@ public class ProxyQueryBuilder {
         b.query(qb_wth_fields);
 
         if (settings.getFilters() != null && settings.getFilters().getStart() != null ) {
-            int from = Integer.parseInt(settings.getFilters().getStart());
+            int from = settings.getFilters().getStart();
             if (from > 0) { b.from(from); }
         } else {
             b.from(0);
@@ -144,6 +144,7 @@ public class ProxyQueryBuilder {
         b.fields("date","document_url","author","mail_list","message_id","message_snippet","subject","subject_original","to","in_reply_to","references");
 
         // Sorting
+        /*
         String sort = settings.getSortBy();
         if (sort != null) {
             if ("new".equalsIgnoreCase(sort)) {
@@ -153,7 +154,7 @@ public class ProxyQueryBuilder {
             } else {
                 b.sort(SortBuilders.scoreSort());
             }
-        }/* else {
+        } else {
             b.sort(SortBuilders.scoreSort());
         }*/
 

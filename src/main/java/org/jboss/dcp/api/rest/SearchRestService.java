@@ -5,25 +5,30 @@
  */
 package org.jboss.dcp.api.rest;
 
+import java.util.Map;
+
 import javax.enterprise.context.RequestScoped;
+import javax.inject.Inject;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.UriInfo;
 
 import org.elasticsearch.ElasticSearchException;
-import org.elasticsearch.action.search.SearchRequest;
+import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
-import org.elasticsearch.action.search.SearchType;
-import org.elasticsearch.client.Requests;
 import org.elasticsearch.common.unit.TimeValue;
-import org.elasticsearch.search.builder.SearchSourceBuilder;
+import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.search.sort.SortOrder;
 import org.jboss.dcp.api.annotations.security.GuestAllowed;
 import org.jboss.dcp.api.model.QuerySettings;
-import org.jboss.dcp.api.query.ProxyQueryBuilder;
+import org.jboss.dcp.api.model.QuerySettings.SortByValue;
+import org.jboss.dcp.api.service.ProviderService;
 import org.jboss.dcp.api.service.StatsRecordType;
+import org.jboss.dcp.api.util.QuerySettingsParser;
 
 /**
  * Search REST API
@@ -36,6 +41,9 @@ import org.jboss.dcp.api.service.StatsRecordType;
 @Produces(MediaType.APPLICATION_JSON)
 public class SearchRestService extends RestServiceBase {
 
+	@Inject
+	private ProviderService providerService;
+
 	@GET
 	@Path("/")
 	@Produces(MediaType.APPLICATION_JSON)
@@ -44,30 +52,50 @@ public class SearchRestService extends RestServiceBase {
 
 		QuerySettings settings = null;
 		try {
-			// TODO: Rewrite parsing settings from request to Jax-RS facilities
-			// MultivaluedMap<String, String> params = uriInfo.getQueryParameters();
-			// settings = QuerySettingsParser.parseSettings();
-			settings = new QuerySettings();
+			MultivaluedMap<String, String> params = uriInfo.getQueryParameters();
+			settings = QuerySettingsParser.parseUriParams(params);
 		} catch (Exception e) {
 			return createErrorResponse(e);
 		}
 
 		try {
-			SearchSourceBuilder sb = null;
-			sb = ProxyQueryBuilder.buildSearchQuery(settings);
-			sb.timeout(TimeValue.timeValueSeconds(getTimeout().search()));
+			SearchRequestBuilder srb = new SearchRequestBuilder(getSearchClientService().getClient());
+			if (settings.getContentType() != null) {
+				Map<String, Object> typeDef = providerService.findContentType(settings.getContentType());
+				if (typeDef == null) {
+					return createBadFieldDataResponse("type");
+				}
 
-			// TODO send request only to selected projects instead to _all
-			SearchRequest sr = Requests.searchRequest("_all");
+				String indexName = ProviderService.getIndexName(typeDef);
+				String indexType = ProviderService.getIndexType(typeDef);
 
-			if (settings.getCount()) {
-				sr.searchType(SearchType.COUNT);
+				srb.setIndices(indexName);
+				srb.setTypes(indexType);
 			} else {
-				sr.searchType(SearchType.DFS_QUERY_THEN_FETCH);
+				srb.setIndices("_all");
 			}
-			sr.source(sb);
 
-			SearchResponse searchResponse = getSearchClientService().getClient().search(sr).actionGet();
+			srb.setTimeout(TimeValue.timeValueSeconds(getTimeout().search()));
+
+			srb.setQuery(QueryBuilders.matchAllQuery());
+
+			if (settings.getFilters().getStart() != null) {
+				srb.setFrom(settings.getFilters().getStart());
+			}
+
+			if (settings.getFilters().getCount() != null) {
+				srb.setSize(settings.getFilters().getCount());
+			}
+
+			if (settings.getSortBy() != null) {
+				if (settings.getSortBy().compareTo(SortByValue.NEW) == 0) {
+					srb.addSort("dcp_updated", SortOrder.ASC);
+				} else if (settings.getSortBy().compareTo(SortByValue.OLD) == 0) {
+					srb.addSort("dcp_updated", SortOrder.DESC);
+				}
+			}
+
+			final SearchResponse searchResponse = srb.execute().actionGet();
 
 			return createResponse(searchResponse);
 		} catch (ElasticSearchException e) {
