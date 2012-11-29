@@ -9,6 +9,7 @@ package org.jboss.dcp.api.model;
  * Query settings sent by ajax client to servlet proxy.
  * 
  * @author lvlcek@redhat.com
+ * @author Libor Krzyzanek
  */
 public class QuerySettings {
 
@@ -19,7 +20,21 @@ public class QuerySettings {
 		private String[] mailList = null;
 		private String from = null;
 		private String to = null;
-		private String start = null;
+
+		/**
+		 * Paging - start
+		 */
+		private Integer start = null;
+
+		public static final String START_KEY = "filters[start]";
+
+		/**
+		 * Paging - count
+		 */
+		private Integer count = null;
+
+		public static final String COUNT_KEY = "filters[count]";
+
 		private String past = null;
 
 		public void setProject(String[] project) {
@@ -42,7 +57,7 @@ public class QuerySettings {
 			this.to = to;
 		}
 
-		public void setStart(String start) {
+		public void setStart(Integer start) {
 			this.start = start;
 		}
 
@@ -70,12 +85,20 @@ public class QuerySettings {
 			return to;
 		}
 
-		public String getStart() {
+		public Integer getStart() {
 			return start;
 		}
 
 		public String getPast() {
 			return past;
+		}
+
+		public Integer getCount() {
+			return count;
+		}
+
+		public void setCount(Integer count) {
+			this.count = count;
 		}
 
 	}
@@ -84,7 +107,36 @@ public class QuerySettings {
 	private Filters filters;
 	private String query;
 	private String interval;
-	private String sortBy;
+
+	private SortByValue sortBy;
+
+	public static final String SORT_BY_KEY = "sortBy";
+	
+	public enum SortByValue {
+		/**
+		 * Newest first
+		 */
+		NEW {
+			@Override
+			public String toString() {
+				return "new";
+			}
+		},
+		/**
+		 * Oldest first
+		 */
+		OLD {
+			@Override
+			public String toString() {
+				return "old";
+			}
+		}
+	}
+
+	/**
+	 * DCP content Type
+	 */
+	private String contentType;
 
 	public void setCount(boolean value) {
 		this.count = value;
@@ -102,7 +154,7 @@ public class QuerySettings {
 		this.interval = interval;
 	}
 
-	public void setSortBy(String sortBy) {
+	public void setSortBy(SortByValue sortBy) {
 		this.sortBy = sortBy;
 	}
 
@@ -122,8 +174,16 @@ public class QuerySettings {
 		return interval;
 	}
 
-	public String getSortBy() {
+	public SortByValue getSortBy() {
 		return sortBy;
+	}
+
+	public String getContentType() {
+		return contentType;
+	}
+
+	public void setContentType(String contentType) {
+		this.contentType = contentType;
 	}
 
 }

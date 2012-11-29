@@ -10,8 +10,17 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.jboss.dcp.api.model.QuerySettings;
+import javax.ws.rs.core.MultivaluedMap;
 
+import org.jboss.dcp.api.model.QuerySettings;
+import org.jboss.dcp.api.model.QuerySettings.SortByValue;
+
+/**
+ * Query settings parser
+ * 
+ * @author Libor Krzyzanek
+ * @author Lukas Vlcek
+ */
 public class QuerySettingsParser {
 
 	public static enum MonthIntervalNames {
@@ -63,6 +72,54 @@ public class QuerySettingsParser {
 	}
 
 	/**
+	 * Parse REST parameters to standardized query settings
+	 * 
+	 * @param params
+	 * @return
+	 * @throws Exception
+	 */
+	public static QuerySettings parseUriParams(MultivaluedMap<String, String> params) throws IllegalArgumentException {
+		QuerySettings settings = new QuerySettings();
+		if (params == null) {
+			return settings;
+		}
+
+		settings.setContentType(params.getFirst("type"));
+		QuerySettings.Filters filters = new QuerySettings.Filters();
+
+		if (params.containsKey(QuerySettings.Filters.START_KEY)) {
+			try {
+				filters.setStart(new Integer(params.getFirst(QuerySettings.Filters.START_KEY)));
+			} catch (NumberFormatException e) {
+				throw new IllegalArgumentException("Parameter " + QuerySettings.Filters.START_KEY + " has bad value");
+			}
+		}
+
+		if (params.containsKey(QuerySettings.Filters.COUNT_KEY)) {
+			try {
+				filters.setStart(new Integer(params.getFirst(QuerySettings.Filters.COUNT_KEY)));
+			} catch (NumberFormatException e) {
+				throw new IllegalArgumentException("Parameter " + QuerySettings.Filters.COUNT_KEY + " has bad value");
+			}
+		}
+
+		if (params.containsKey(QuerySettings.SORT_BY_KEY)) {
+			String sortByString = params.getFirst(QuerySettings.SORT_BY_KEY);
+			if (QuerySettings.SortByValue.NEW.name().equalsIgnoreCase(sortByString)) {
+				settings.setSortBy(SortByValue.NEW);
+			} else if (QuerySettings.SortByValue.OLD.name().equalsIgnoreCase(sortByString)) {
+				settings.setSortBy(SortByValue.OLD);
+			} else {
+				throw new IllegalArgumentException("Parameter " + QuerySettings.SORT_BY_KEY + " has bad value");
+			}
+		}
+
+		settings.setFilters(filters);
+
+		return settings;
+	}
+
+	/**
 	 * Parse HTTP request URL parameters into query settings
 	 * 
 	 * @param parameterMap
@@ -74,6 +131,8 @@ public class QuerySettingsParser {
 		if (parameterMap == null) {
 			throw new Exception("no parameters found!");
 		}
+
+		// TODO: Rewrite implementation of parseSettings to new REST based parseUriParams method
 
 		QuerySettings settings = new QuerySettings();
 		Set<String> keys = parameterMap.keySet();
@@ -116,13 +175,14 @@ public class QuerySettingsParser {
 		}
 		settings.setQuery(q);
 
-		if (keys.contains("filters[start]")) {
-			ensureFilters(settings).setStart(parameterMap.get("filters[start]")[0]);
-		}
+		// if (keys.contains("filters[start]")) {
+		// ensureFilters(settings).setStart(new Integer(parameterMap.get("filters[start]")[0]));
+		// }
 
-		if (keys.contains("sortBy")) {
-			settings.setSortBy(parameterMap.get("sortBy")[0]);
-		}
+		// if (keys.contains("sortBy")) {
+		// ensureFilters(settings).setSortBy(new Integer(parameterMap.get("filters[start]")[0]));
+		// settings.setSortBy(SortByValue.valueOf(params.getFirst(QuerySettings.SORT_BY_KEY)));
+		// }
 
 		if (keys.contains("filters[author][]")) {
 			ensureFilters(settings).setAuthor(parameterMap.get("filters[author][]"));

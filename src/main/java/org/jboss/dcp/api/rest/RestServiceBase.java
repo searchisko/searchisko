@@ -107,6 +107,9 @@ public class RestServiceBase {
 					new Object[] { ex.getClass().getName(), ex.getMessage() });
 			log.log(Level.INFO, "Exception trace.", ex);
 		}
+		if (ex instanceof IllegalArgumentException) {
+			return Response.serverError().entity(ex.getMessage()).build();
+		}
 		return Response.serverError().entity("Error [" + ex.getClass().getName() + "]: " + ex.getMessage()).build();
 	}
 
