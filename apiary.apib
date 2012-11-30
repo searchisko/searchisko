@@ -98,7 +98,7 @@ GET /rest/search?TODO
 
 
 --
-Search Suggestions
+Suggestions
 --
 Get suggestions for user query.
 
@@ -109,11 +109,32 @@ Returned JSON contains two parts:
 
 #### view
 
-tbd
+The `view` represents the visual part of query suggestions.
+
+It *always* contains section `search` which will *always* have only one option matching incoming user query.
+
+It can then contain one or more additional sections (like `suggestions`, `filters`, `mails`, ... etc.). 
 
 #### model
 
-tbd
+The `model` represents possible "actions" that are relevant to individual `option`s in the `view` part.
+This means both `view` and `model` parts have the same highlevel structure and each `option`
+in the `view` part have corresponding "action" in the `model` part.
+
+Individual actions are described using symbolic commands. Interpretation of these commands is up to the client
+the following is just a recommendation about how client can interpret the commands:
+
+##### Commands:
+
+`search` - execute search for `query` value.
+
+`suggestion` - replace text in the search field with the `value`'s value.
+
+`filter` - replace current filters with provided filters.
+
+`filter_add` - enable provided filters (on top of currently active filters).
+
+... more TDB.
 
 GET /rest/suggestions/query_string?q={user_query_string}
 < 200
@@ -126,44 +147,46 @@ GET /rest/suggestions/query_string?q={user_query_string}
         "suggestions": {
             "caption": "Query Completions",
             "options": [
-                "<strong>Hiberna</strong>te",
-                "<strong>Hiberna</strong>te query",
-                "<strong>Hiberna</strong>te session"
+                "option #1",
+                "option #2",
+                "..."
             ]
         },
         "filters": {
             "caption": "Filters",
             "options": [
-                "<strong>Add</strong> project filter for <strong>Hibernate</strong>",
-                "<strong>Add</strong> project filter for <strong>Infinispan</strong>",
-                "<strong>Search</strong> project <strong>Hibernate</strong> only"
+                "option #1",
+                "option #2",
+                "..."
             ]
         },
         "mails": {
             "caption": "Mails",
             "options": [
-                "<strong>Add</strong> some Mails filter",
-                "Do some other fancy thing here",
-                "Or do something else"
+                "option #1",
+                "option #2",
+                "..."
             ]
         }
     },
     "model" : {
-        "search": { "search": { "query": "${query_string}" } },
+        "search": { 
+            "search": { "query": "${query_string}" }
+        },
         "suggestions" : [
-            { "suggestion": { "value": "Hibernate" },         "search": { "query": "Hibernate" } },
-            { "suggestion": { "value": "Hibernate query" },   "search": { "query": "Hibernate query" } },
-            { "suggestion": { "value": "Hibernate session" }, "search": { "query": "Hibernate session" } }
+            { "action #1" },
+            { "action #2" },
+            { "..." }
         ],
         "filters": [
-            { "filter_add": [ "Hibernate" ] },
-            { "filter_add": [ "Infinispan" ] },
-            { "filter": [ "Hibernate" ] }
+            { "action #1" },
+            { "action #2" },
+            { "..." }
         ],
         "mails": [
-            {},
-            {},
-            {}
+            { "action #1" },
+            { "action #2" },
+            { "..." }
         ]
     }
 }
@@ -216,7 +239,7 @@ GET /rest/suggestions/query_string?q=Hiberna
             { "filter": [ "Hibernate" ] }
         ],
         "mails": [
-            {},
+            { "filter_add": [ "foo" ] },
             {},
             {}
         ]
