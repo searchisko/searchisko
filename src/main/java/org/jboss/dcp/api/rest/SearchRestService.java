@@ -5,7 +5,10 @@
  */
 package org.jboss.dcp.api.rest;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
 
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
@@ -21,7 +24,12 @@ import org.elasticsearch.ElasticSearchException;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.common.unit.TimeValue;
+import org.elasticsearch.index.query.AndFilterBuilder;
+import org.elasticsearch.index.query.FilterBuilder;
+import org.elasticsearch.index.query.FilteredQueryBuilder;
+import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.index.query.TermsFilterBuilder;
 import org.elasticsearch.search.sort.SortOrder;
 import org.jboss.dcp.api.annotations.security.GuestAllowed;
 import org.jboss.dcp.api.model.QuerySettings;
@@ -75,22 +83,39 @@ public class SearchRestService extends RestServiceBase {
 				srb.setIndices("_all");
 			}
 
-			srb.setTimeout(TimeValue.timeValueSeconds(getTimeout().search()));
-
+			// Fulltext query
+			QueryBuilder qb = null;
 			if (settings.getQuery() != null) {
-				srb.setQuery(QueryBuilders.queryString(settings.getQuery()));
+				qb = QueryBuilders.queryString(settings.getQuery());
 			} else {
-				srb.setQuery(QueryBuilders.matchAllQuery());
+				qb = QueryBuilders.matchAllQuery();
 			}
 
-			if (settings.getFilters().getStart() != null) {
-				srb.setFrom(settings.getFilters().getStart());
+			// Create filters
+			QuerySettings.Filters filters = settings.getFilters();
+			if (filters.getStart() != null) {
+				srb.setFrom(filters.getStart());
 			}
 
-			if (settings.getFilters().getCount() != null) {
-				srb.setSize(settings.getFilters().getCount());
+			if (filters.getCount() != null) {
+				srb.setSize(filters.getCount());
 			}
 
+			List<FilterBuilder> searchFilters = new ArrayList<FilterBuilder>();
+			// Tags
+			if (filters.getTags() != null) {
+				searchFilters.add(new TermsFilterBuilder("dcp_tags", filters.getTags()));
+			}
+
+			if (!searchFilters.isEmpty()) {
+				AndFilterBuilder f = new AndFilterBuilder(
+						searchFilters.toArray(new FilterBuilder[searchFilters.size()]));
+				qb = new FilteredQueryBuilder(qb, f);
+			}
+
+			srb.setQuery(qb);
+
+			// Sort
 			if (settings.getSortBy() != null) {
 				if (settings.getSortBy().compareTo(SortByValue.NEW) == 0) {
 					srb.addSort("dcp_updated", SortOrder.ASC);
@@ -98,6 +123,10 @@ public class SearchRestService extends RestServiceBase {
 					srb.addSort("dcp_updated", SortOrder.DESC);
 				}
 			}
+
+			srb.setTimeout(TimeValue.timeValueSeconds(getTimeout().search()));
+
+			log.log(Level.INFO, "Search query: {0}", srb);
 
 			final SearchResponse searchResponse = srb.execute().actionGet();
 
@@ -111,4 +140,5 @@ public class SearchRestService extends RestServiceBase {
 		}
 
 	}
+
 }

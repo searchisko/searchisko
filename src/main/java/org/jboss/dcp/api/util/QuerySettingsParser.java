@@ -124,6 +124,10 @@ public class QuerySettingsParser {
 			}
 		}
 
+		if (params.containsKey(QuerySettings.Filters.TAGS_KEY)) {
+			filters.setTags(params.get(QuerySettings.Filters.TAGS_KEY));
+		}
+
 		if (params.containsKey(QuerySettings.SORT_BY_KEY)) {
 			String sortByString = params.getFirst(QuerySettings.SORT_BY_KEY);
 			if (QuerySettings.SortByValue.NEW.name().equalsIgnoreCase(sortByString)) {

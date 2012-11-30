@@ -5,6 +5,8 @@
  */
 package org.jboss.dcp.api.model;
 
+import java.util.List;
+
 import org.jboss.dcp.api.util.QuerySettingsParser;
 
 /**
@@ -20,6 +22,14 @@ public class QuerySettings {
 		private String[] project = null;
 		private String[] author = null;
 		private String[] mailList = null;
+
+		/**
+		 * Filtering based on tags
+		 */
+		private List<String> tags = null;
+
+		public static final String TAGS_KEY = "filters[tag]";
+
 		private String from = null;
 		private String to = null;
 
@@ -101,6 +111,14 @@ public class QuerySettings {
 
 		public void setCount(Integer count) {
 			this.count = count;
+		}
+
+		public List<String> getTags() {
+			return tags;
+		}
+
+		public void setTags(List<String> tags) {
+			this.tags = tags;
 		}
 
 	}
