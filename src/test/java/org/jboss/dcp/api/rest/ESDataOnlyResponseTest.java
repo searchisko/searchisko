@@ -11,6 +11,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.StreamingOutput;
 
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.search.SearchHit;
@@ -31,28 +32,34 @@ public class ESDataOnlyResponseTest {
 
 		{
 			ESDataOnlyResponse tested = new ESDataOnlyResponse(mockSearchResponse(null, null, null, null));
-			ByteArrayOutputStream output = new ByteArrayOutputStream();
-			tested.write(output);
-			Assert.assertEquals("{\"total\":0,\"hits\":[]}", output.toString());
+			assetStreamingOutputContent("{\"total\":0,\"hits\":[]}", tested);
 		}
 
 		{
 			ESDataOnlyResponse tested = new ESDataOnlyResponse(mockSearchResponse("1", "name1", null, null));
-			ByteArrayOutputStream output = new ByteArrayOutputStream();
-			tested.write(output);
-			Assert.assertEquals("{\"total\":1,\"hits\":[{\"id\":\"1\",\"data\":{\"dcp_id\":\"1\",\"dcp_name\":\"name1\"}}]}",
-					output.toString());
+			assetStreamingOutputContent(
+					"{\"total\":1,\"hits\":[{\"id\":\"1\",\"data\":{\"dcp_id\":\"1\",\"dcp_name\":\"name1\"}}]}", tested);
 		}
 
 		{
 			ESDataOnlyResponse tested = new ESDataOnlyResponse(mockSearchResponse("1", "name1", "35", "myname"));
-			ByteArrayOutputStream output = new ByteArrayOutputStream();
-			tested.write(output);
-			Assert
-					.assertEquals(
-							"{\"total\":2,\"hits\":[{\"id\":\"1\",\"data\":{\"dcp_id\":\"1\",\"dcp_name\":\"name1\"}},{\"id\":\"35\",\"data\":{\"dcp_id\":\"35\",\"dcp_name\":\"myname\"}}]}",
-							output.toString());
+			assetStreamingOutputContent(
+					"{\"total\":2,\"hits\":[{\"id\":\"1\",\"data\":{\"dcp_id\":\"1\",\"dcp_name\":\"name1\"}},{\"id\":\"35\",\"data\":{\"dcp_id\":\"35\",\"dcp_name\":\"myname\"}}]}",
+					tested);
 		}
+	}
+
+	/**
+	 * Assert string value equals one written by the StreamingOutput
+	 * 
+	 * @param expected value
+	 * @param actual value
+	 * @throws IOException
+	 */
+	public static void assetStreamingOutputContent(String expected, StreamingOutput actual) throws IOException {
+		ByteArrayOutputStream output = new ByteArrayOutputStream();
+		actual.write(output);
+		Assert.assertEquals(expected, output.toString());
 	}
 
 	/**

@@ -31,7 +31,7 @@ import org.jboss.dcp.api.service.ContributorService;
 public class ContributorRestService extends RestEntityServiceBase {
 
 	@Inject
-	private ContributorService contributorService;
+	protected ContributorService contributorService;
 
 	@PostConstruct
 	public void init() {
