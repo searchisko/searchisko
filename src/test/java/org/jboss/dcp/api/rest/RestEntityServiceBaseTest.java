@@ -29,9 +29,13 @@ public class RestEntityServiceBaseTest {
 	 */
 	protected RestEntityServiceBase getTested() {
 		RestEntityServiceBase tested = new RestEntityServiceBase();
-		tested.log = Logger.getLogger(RestEntityServiceBase.class.getName());
+		mockLogger(tested);
 		tested.setEntityService(Mockito.mock(EntityService.class));
 		return tested;
+	}
+
+	public static void mockLogger(RestEntityServiceBase tested) {
+		tested.log = Logger.getLogger("testlogger");
 	}
 
 	@Test
