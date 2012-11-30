@@ -37,13 +37,13 @@ import org.jboss.dcp.api.service.SecurityService;
 public class ProviderRestService extends RestEntityServiceBase {
 
 	@Inject
-	private ProviderService providerService;
+	protected ProviderService providerService;
 
 	@Inject
-	private SecurityService securityService;
+	protected SecurityService securityService;
 
 	@Context
-	private SecurityContext securityContext;
+	protected SecurityContext securityContext;
 
 	@PostConstruct
 	public void init() {
@@ -61,12 +61,14 @@ public class ProviderRestService extends RestEntityServiceBase {
 		try {
 			Map<String, Object> entity = entityService.get(id);
 
+			if (entity == null)
+				return Response.status(Status.NOT_FOUND).build();
+
 			if (!provider.equals(entity.get(ProviderService.NAME))) {
 				if (!providerService.isSuperProvider(provider)) {
 					return Response.status(Status.FORBIDDEN).build();
 				}
 			}
-
 			return entity;
 		} catch (Exception e) {
 			return createErrorResponse(e);
@@ -78,6 +80,9 @@ public class ProviderRestService extends RestEntityServiceBase {
 	@ProviderAllowed
 	public Object changePassword(@PathParam("id") String id, String pwd) {
 		Map<String, Object> entity = entityService.get(id);
+
+		if (entity == null)
+			return Response.status(Status.NOT_FOUND).build();
 
 		String username = entity.get(ProviderService.NAME).toString();
 		entity.put(ProviderService.PASSWORD_HASH, securityService.createPwdHash(username, pwd));
