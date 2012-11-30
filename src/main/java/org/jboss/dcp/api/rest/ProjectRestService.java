@@ -33,11 +33,11 @@ public class ProjectRestService extends RestEntityServiceBase {
 
 	@Inject
 	@Named("projectService")
-	private EntityService entityService;
+	protected EntityService projectService;
 
 	@PostConstruct
 	public void init() {
-		setEntityService(entityService);
+		setEntityService(projectService);
 	}
 
 	@GET
