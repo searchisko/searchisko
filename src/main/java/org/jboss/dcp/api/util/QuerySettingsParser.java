@@ -71,6 +71,22 @@ public class QuerySettingsParser {
 		}
 	}
 
+	public static String normalizeQueryString(String query) {
+		if (query == null) {
+			return null;
+		}
+		String q = query.trim();
+		if (q.length() == 0) {
+			return null;
+		}
+		q = q.replaceAll("\\*\\?", "*");
+		q = q.replaceAll("\\?\\*", "*");
+		q = q.replaceAll("\\*+", "*");
+		q = q.replaceAll("\\?+", "?");
+
+		return q;
+	}
+
 	/**
 	 * Parse REST parameters to standardized query settings
 	 * 
@@ -86,6 +102,11 @@ public class QuerySettingsParser {
 
 		settings.setContentType(params.getFirst("type"));
 		QuerySettings.Filters filters = new QuerySettings.Filters();
+
+		if (params.containsKey(QuerySettings.QUERY_KEY)) {
+			String query = params.getFirst(QuerySettings.QUERY_KEY);
+			settings.setQuery(normalizeQueryString(query));
+		}
 
 		if (params.containsKey(QuerySettings.Filters.START_KEY)) {
 			try {

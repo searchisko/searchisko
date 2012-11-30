@@ -77,7 +77,11 @@ public class SearchRestService extends RestServiceBase {
 
 			srb.setTimeout(TimeValue.timeValueSeconds(getTimeout().search()));
 
-			srb.setQuery(QueryBuilders.matchAllQuery());
+			if (settings.getQuery() != null) {
+				srb.setQuery(QueryBuilders.queryString(settings.getQuery()));
+			} else {
+				srb.setQuery(QueryBuilders.matchAllQuery());
+			}
 
 			if (settings.getFilters().getStart() != null) {
 				srb.setFrom(settings.getFilters().getStart());

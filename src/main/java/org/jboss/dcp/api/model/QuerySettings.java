@@ -5,6 +5,8 @@
  */
 package org.jboss.dcp.api.model;
 
+import org.jboss.dcp.api.util.QuerySettingsParser;
+
 /**
  * Query settings sent by ajax client to servlet proxy.
  * 
@@ -105,13 +107,20 @@ public class QuerySettings {
 
 	private boolean count = false;
 	private Filters filters;
+
+	/**
+	 * Fulltext query
+	 */
 	private String query;
+
+	public static final String QUERY_KEY = "query";
+
 	private String interval;
 
 	private SortByValue sortBy;
 
 	public static final String SORT_BY_KEY = "sortBy";
-	
+
 	public enum SortByValue {
 		/**
 		 * Newest first
@@ -166,6 +175,12 @@ public class QuerySettings {
 		return filters;
 	}
 
+	/**
+	 * Get serach query
+	 * 
+	 * @return normalized query or null
+	 * @see QuerySettingsParser#normalizeQueryString(String)
+	 */
 	public String getQuery() {
 		return query;
 	}
