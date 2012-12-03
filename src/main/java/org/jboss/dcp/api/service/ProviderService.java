@@ -19,6 +19,8 @@ import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.index.query.FilterBuilders;
 import org.elasticsearch.index.query.QueryBuilders;
+import org.jboss.elasticsearch.tools.content.StructuredContentPreprocessor;
+import org.jboss.elasticsearch.tools.content.StructuredContentPreprocessorFactory;
 
 /**
  * Service related to Content Provider
@@ -51,6 +53,9 @@ public class ProviderService {
 
 	@Inject
 	private SecurityService securityService;
+
+	@Inject
+	protected SearchClientService searchClientService;
 
 	public boolean authenticate(String provider, String password) {
 		if (provider == null || password == null) {
@@ -122,7 +127,11 @@ public class ProviderService {
 	}
 
 	public void runPreprocessors(List<Map<String, Object>> preprocessorsDef, Map<String, Object> content) {
-		// TODO: Implement running preprocessors
+		List<StructuredContentPreprocessor> preprocessors = StructuredContentPreprocessorFactory.createPreprocessors(
+				preprocessorsDef, searchClientService.getClient());
+		for (StructuredContentPreprocessor preprocessor : preprocessors) {
+			content = preprocessor.preprocessData(content);
+		}
 	}
 
 	public String generateDcpId(String type, String contentId) {

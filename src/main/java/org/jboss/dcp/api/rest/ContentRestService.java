@@ -150,13 +150,16 @@ public class ContentRestService extends RestServiceBase {
 			return createBadFieldDataResponse("type");
 		}
 
-		// normalize content
+		// Run preprocessors
+		providerService.runPreprocessors(ProviderService.getPreprocessors(typeDef), content);
+
+		// Copy distinct data from content to normalized fields
+		content.put("dcp_tags", content.get("tags"));
+
+		// normalize content - should be last step to avoid changing normalized content via preprocessors
 		content.put("dcp_id", providerService.generateDcpId(type, contentId));
 		content.put("dcp_type", ProviderService.getDcpType(typeDef));
 		content.put("dcp_updated", new Date());
-
-		// Run preprocessors
-		providerService.runPreprocessors(ProviderService.getPreprocessors(typeDef), content);
 
 		// Push to search
 		String index = ProviderService.getIndexName(typeDef);
