@@ -121,25 +121,20 @@ It can then contain one or more additional sections (like `suggestions`, `filter
 ##### Example
 
 ```
-{
-  "view" : {
-    "search": {
-      "caption" : "Search",
-      "options" : ["${query_string}"]
-    },
-    "suggestions" : {
-      "caption" : " ... ",
-      "options" : [ ... ]
-    },
-    "filters" : {
-      "caption" : " ... ",
-      "options" : [ ... ]
-    },
-    ...
+"view" : {
+  "search": {
+    "caption" : "Search",
+    "options" : ["${query_string}"]
   },
-  "model" : {
-    ...
-  }
+  "suggestions" : {
+    "caption" : " ... ",
+    "options" : [ ... ]
+  },
+  "filters" : {
+    "caption" : " ... ",
+    "options" : [ ... ]
+  },
+  ...
 }
 ```
 
@@ -152,18 +147,13 @@ in the `view` part have corresponding "action" in the `model` part.
 ##### Example
 
 ```
-{
-  "view" : {
-    ...
+"model" : {
+  "search": { 
+    "search": { "query": "${query_string}" }
   },
-  "model" : {
-    "search": { 
-      "search": { "query": "${query_string}" }
-    },
-    "suggestions" : [ ... ],
-    "filters" : [ ... ],
-    ...
-  }
+  "suggestions" : [ ... ],
+  "filters" : [ ... ],
+  ...
 }
 ```
 
