@@ -136,15 +136,10 @@ the following is just a recommendation about how client can interpret the comman
 
 ... more TDB.
 
-To allow CORS we need to response to `OPTIONS` requests (for more see: <http://www.w3.org/TR/cors/#cross-origin-request-with-preflight-0>). We allow `GET` requests only.
-OPTIONS /rest/suggestions/query_string
-< 200
-< Access-Control-Allow-Origin: *
-< Access-Control-Allow-Methods: GET
-
 
 GET /rest/suggestions/query_string?q={user_query_string}
 < 200
+< Access-Control-Allow-Origin: *
 {
     "view": {
         "search": {
@@ -202,6 +197,7 @@ GET /rest/suggestions/query_string?q={user_query_string}
 Example for user query 'Hiberna'.
 GET /rest/suggestions/query_string?q=Hiberna
 < 200
+< Access-Control-Allow-Origin: *
 {
     "view": {
         "search": {
