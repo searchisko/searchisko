@@ -47,10 +47,10 @@ import org.jboss.resteasy.util.HttpResponseCodes;
 public class SecurityPreProcessInterceptor implements PreProcessInterceptor, AcceptedByMethod {
 
 	@Inject
-	private Logger log;
+	protected Logger log;
 
 	@Inject
-	private ProviderService providerService;
+	protected ProviderService providerService;
 
 	@SuppressWarnings("rawtypes")
 	@Override
@@ -86,7 +86,7 @@ public class SecurityPreProcessInterceptor implements PreProcessInterceptor, Acc
 	 * @return
 	 */
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	private ProviderAllowed getProviderAlowedAnnotation(Class declaring, Method method) {
+	protected ProviderAllowed getProviderAlowedAnnotation(Class declaring, Method method) {
 		if (method.isAnnotationPresent(ProviderAllowed.class)) {
 			return method.getAnnotation(ProviderAllowed.class);
 		} else {
@@ -102,8 +102,7 @@ public class SecurityPreProcessInterceptor implements PreProcessInterceptor, Acc
 	}
 
 	@Override
-	public ServerResponse preProcess(HttpRequest request, ResourceMethod method) throws Failure,
-			WebApplicationException {
+	public ServerResponse preProcess(HttpRequest request, ResourceMethod method) throws Failure, WebApplicationException {
 
 		boolean authenticated = false;
 		String authenticationScheme = null;
@@ -142,11 +141,13 @@ public class SecurityPreProcessInterceptor implements PreProcessInterceptor, Acc
 		if (!authenticated) {
 			// Check username and password as query parameters
 			MultivaluedMap<String, String> queryParams = request.getUri().getQueryParameters();
-			username = queryParams.getFirst("provider");
-			password = queryParams.getFirst("pwd");
+			if (queryParams != null) {
+				username = queryParams.getFirst("provider");
+				password = queryParams.getFirst("pwd");
 
-			authenticated = providerService.authenticate(username, password);
-			authenticationScheme = "CUSTOM";
+				authenticated = providerService.authenticate(username, password);
+				authenticationScheme = "CUSTOM";
+			}
 		}
 
 		if (!authenticated) {
