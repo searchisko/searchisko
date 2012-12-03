@@ -98,16 +98,15 @@ GET /rest/search?TODO
 
 
 --
-Suggestions
---
-Get suggestions for user query.
+Query Suggestions
+It can return suggestions for given user query such as *query completion*, *did you mean*, ... etc.
 
 Returned JSON contains two parts:
 
 - `view`
 - `model`
 
-#### view
+#### View
 
 The `view` represents the visual part of query suggestions.
 
@@ -115,7 +114,7 @@ It *always* contains section `search` which will *always* have only one option m
 
 It can then contain one or more additional sections (like `suggestions`, `filters`, `mails`, ... etc.). 
 
-#### model
+#### Model
 
 The `model` represents possible "actions" that are relevant to individual `option`s in the `view` part.
 This means both `view` and `model` parts have the same highlevel structure and each `option`
@@ -135,7 +134,7 @@ the following is just a recommendation about how client can interpret the comman
 `filter_add` - enable provided filters (on top of currently active filters).
 
 ... more TDB.
-
+--
 
 GET /rest/suggestions/query_string?q={user_query_string}
 < 200
