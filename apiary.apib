@@ -101,18 +101,47 @@ GET /rest/search?TODO
 Query Suggestions
 It can return suggestions for given user query such as *query completion*, *did you mean*, ... etc.
 
-Returned JSON contains two parts:
+Returned JSON contains two highlevel objects:
 
-- `view`
-- `model`
+```
+{
+  "view" : { ... },
+  "model" : { ... }
+}
+```
 
 #### View
 
-The `view` represents the visual part of query suggestions.
+The `view` represents the visual part of query suggestions response.
 
 It *always* contains section `search` which will *always* have only one option matching incoming user query.
 
 It can then contain one or more additional sections (like `suggestions`, `filters`, `mails`, ... etc.). 
+
+##### Example
+
+```
+{
+  "view" : {
+    "search": {
+      "caption" : "Search",
+      "options" : ["${query_string}"]
+    },
+    "suggestions" : {
+      "caption" : " ... ",
+      "options" : [ ... ]
+    },
+    "filters" : {
+      "caption" : " ... ",
+      "options" : [ ... ]
+    },
+    ...
+  },
+  "model" : {
+    ...
+  }
+}
+```
 
 #### Model
 
@@ -120,10 +149,28 @@ The `model` represents possible "actions" that are relevant to individual `optio
 This means both `view` and `model` parts have the same highlevel structure and each `option`
 in the `view` part have corresponding "action" in the `model` part.
 
+##### Example
+
+```
+{
+  "view" : {
+    ...
+  },
+  "model" : {
+    "search": { 
+      "search": { "query": "${query_string}" }
+    },
+    "suggestions" : [ ... ],
+    "filters" : [ ... ],
+    ...
+  }
+}
+```
+
 Individual actions are described using symbolic commands. Interpretation of these commands is up to the client
 the following is just a recommendation about how client can interpret the commands:
 
-##### Commands:
+##### Commands
 
 `search` - execute search for `query` value.
 
