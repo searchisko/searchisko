@@ -74,7 +74,7 @@ public class PersistanceBackendService extends ElasticsearchClientService {
 	}
 
 	@Produces
-	@Named("projectService")
+	@Named("projectServiceBackend")
 	public EntityService produceProjectService() {
 		return new ElasticsearchEntityService(client, indexName, "project", false);
 	}
