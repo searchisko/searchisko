@@ -13,6 +13,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
 import org.jboss.dcp.api.service.EntityService;
+import org.jboss.dcp.api.testtools.TestUtils;
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -58,8 +59,7 @@ public class RestEntityServiceBaseTest {
 		// case - error
 		Mockito.reset(tested.entityService);
 		Mockito.when(tested.entityService.getAll(10, 12)).thenThrow(new RuntimeException("my exception"));
-		Response r = (Response) tested.getAll(10, 12);
-		Assert.assertEquals(Status.INTERNAL_SERVER_ERROR.getStatusCode(), r.getStatus());
+		TestUtils.assertResponseStatus(tested.getAll(10, 12), Status.INTERNAL_SERVER_ERROR);
 		Mockito.verify(tested.entityService).getAll(10, 12);
 		Mockito.verifyNoMoreInteractions(tested.entityService);
 	}
@@ -85,8 +85,7 @@ public class RestEntityServiceBaseTest {
 		// case - exception from service
 		Mockito.reset(tested.entityService);
 		Mockito.when(tested.entityService.get("10")).thenThrow(new RuntimeException("my exception"));
-		Response r = (Response) tested.get("10");
-		Assert.assertEquals(Status.INTERNAL_SERVER_ERROR.getStatusCode(), r.getStatus());
+		TestUtils.assertResponseStatus(tested.get("10"), Status.INTERNAL_SERVER_ERROR);
 		Mockito.verify(tested.entityService).get("10");
 		Mockito.verifyNoMoreInteractions(tested.entityService);
 	}
@@ -107,8 +106,7 @@ public class RestEntityServiceBaseTest {
 		// case - error
 		Mockito.reset(tested.entityService);
 		Mockito.when(tested.entityService.create(m)).thenThrow(new RuntimeException("my exception"));
-		Response r = (Response) tested.create(m);
-		Assert.assertEquals(Status.INTERNAL_SERVER_ERROR.getStatusCode(), r.getStatus());
+		TestUtils.assertResponseStatus(tested.create(m), Status.INTERNAL_SERVER_ERROR);
 		Mockito.verify(tested.entityService).create(m);
 		Mockito.verifyNoMoreInteractions(tested.entityService);
 	}
@@ -128,8 +126,7 @@ public class RestEntityServiceBaseTest {
 		// case - error
 		Mockito.reset(tested.entityService);
 		Mockito.doThrow(new RuntimeException("my exception")).when(tested.entityService).create("12", m);
-		Response r = (Response) tested.create("12", m);
-		Assert.assertEquals(Status.INTERNAL_SERVER_ERROR.getStatusCode(), r.getStatus());
+		TestUtils.assertResponseStatus(tested.create("12", m), Status.INTERNAL_SERVER_ERROR);
 		Mockito.verify(tested.entityService).create("12", m);
 		Mockito.verifyNoMoreInteractions(tested.entityService);
 	}
@@ -150,8 +147,7 @@ public class RestEntityServiceBaseTest {
 		{
 			Mockito.reset(tested.entityService);
 			Mockito.doThrow(new RuntimeException("my exception")).when(tested.entityService).delete("12");
-			Response r = (Response) tested.delete("12");
-			Assert.assertEquals(Status.INTERNAL_SERVER_ERROR.getStatusCode(), r.getStatus());
+			TestUtils.assertResponseStatus(tested.delete("12"), Status.INTERNAL_SERVER_ERROR);
 			Mockito.verify(tested.entityService).delete("12");
 			Mockito.verifyNoMoreInteractions(tested.entityService);
 		}
@@ -160,8 +156,8 @@ public class RestEntityServiceBaseTest {
 	@Test
 	public void createErrorResponse() {
 		RestEntityServiceBase tested = getTested();
-		Response r = tested.createErrorResponse(new Exception("my exception"));
-		Assert.assertEquals(Status.INTERNAL_SERVER_ERROR.getStatusCode(), r.getStatus());
+		Response r = TestUtils.assertResponseStatus(tested.createErrorResponse(new Exception("my exception")),
+				Status.INTERNAL_SERVER_ERROR);
 		Assert.assertEquals("Error [java.lang.Exception]: my exception", r.getEntity());
 	}
 

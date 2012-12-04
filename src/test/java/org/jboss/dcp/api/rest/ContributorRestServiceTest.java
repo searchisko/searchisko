@@ -5,7 +5,6 @@
  */
 package org.jboss.dcp.api.rest;
 
-import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.StreamingOutput;
 
@@ -13,6 +12,7 @@ import junit.framework.Assert;
 
 import org.elasticsearch.action.search.SearchResponse;
 import org.jboss.dcp.api.service.ContributorService;
+import org.jboss.dcp.api.testtools.TestUtils;
 import org.junit.Test;
 import org.mockito.Mockito;
 
@@ -61,8 +61,7 @@ public class ContributorRestServiceTest {
 		{
 			Mockito.reset(tested.contributorService);
 			Mockito.when(tested.contributorService.search("email@em")).thenThrow(new RuntimeException("test exception"));
-			Response r = (Response) tested.search("email@em");
-			Assert.assertEquals(Status.INTERNAL_SERVER_ERROR.getStatusCode(), r.getStatus());
+			TestUtils.assertResponseStatus(tested.search("email@em"), Status.INTERNAL_SERVER_ERROR);
 		}
 	}
 

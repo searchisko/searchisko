@@ -8,12 +8,12 @@ package org.jboss.dcp.api.rest;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
 import junit.framework.Assert;
 
 import org.jboss.dcp.api.service.EntityService;
+import org.jboss.dcp.api.testtools.TestUtils;
 import org.junit.Test;
 import org.mockito.Mockito;
 
@@ -45,8 +45,7 @@ public class ProjectRestServiceTest {
 		// case - error
 		Mockito.reset(tested.entityService);
 		Mockito.when(tested.entityService.getAll(10, 12)).thenThrow(new RuntimeException("my exception"));
-		Response r = (Response) tested.getAll(10, 12);
-		Assert.assertEquals(Status.INTERNAL_SERVER_ERROR.getStatusCode(), r.getStatus());
+		TestUtils.assertResponseStatus(tested.getAll(10, 12), Status.INTERNAL_SERVER_ERROR);
 	}
 
 	@Test
@@ -61,8 +60,7 @@ public class ProjectRestServiceTest {
 		// case - error
 		Mockito.reset(tested.entityService);
 		Mockito.when(tested.entityService.get("10")).thenThrow(new RuntimeException("my exception"));
-		Response r = (Response) tested.get("10");
-		Assert.assertEquals(Status.INTERNAL_SERVER_ERROR.getStatusCode(), r.getStatus());
+		TestUtils.assertResponseStatus(tested.get("10"), Status.INTERNAL_SERVER_ERROR);
 	}
 
 	protected ProjectRestService getTested() {

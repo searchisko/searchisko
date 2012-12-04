@@ -9,7 +9,6 @@ import java.security.Principal;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.SecurityContext;
 
@@ -18,6 +17,7 @@ import junit.framework.Assert;
 import org.jboss.dcp.api.service.EntityService;
 import org.jboss.dcp.api.service.ProviderService;
 import org.jboss.dcp.api.service.SecurityService;
+import org.jboss.dcp.api.testtools.TestUtils;
 import org.junit.Test;
 import org.mockito.Mockito;
 
@@ -48,8 +48,7 @@ public class ProviderRestServiceTest {
 		// case entity not found
 		{
 			Mockito.when(tested.entityService.get("ahoj")).thenReturn(null);
-			Response r = (Response) tested.get("ahoj");
-			Assert.assertEquals(Status.NOT_FOUND.getStatusCode(), r.getStatus());
+			TestUtils.assertResponseStatus(tested.get("ahoj"), Status.NOT_FOUND);
 		}
 
 		// case - entity found but authenticated provider has different name and is not superprovider
@@ -59,8 +58,7 @@ public class ProviderRestServiceTest {
 			m.put(ProviderService.NAME, "ahoj");
 			Mockito.when(tested.entityService.get("ahoj")).thenReturn(m);
 			Mockito.when(tested.providerService.isSuperProvider("aa")).thenReturn(false);
-			Response r = (Response) tested.get("ahoj");
-			Assert.assertEquals(Status.FORBIDDEN.getStatusCode(), r.getStatus());
+			TestUtils.assertResponseStatus(tested.get("ahoj"), Status.FORBIDDEN);
 		}
 
 		// case - entity found, authenticated provider has different name but is superprovider
@@ -93,8 +91,7 @@ public class ProviderRestServiceTest {
 		// case entity not found
 		{
 			Mockito.when(tested.entityService.get("ahoj")).thenReturn(null);
-			Response r = (Response) tested.changePassword("ahoj", "pwd");
-			Assert.assertEquals(Status.NOT_FOUND.getStatusCode(), r.getStatus());
+			TestUtils.assertResponseStatus(tested.changePassword("ahoj", "pwd"), Status.NOT_FOUND);
 		}
 
 		// case - entity found
@@ -104,8 +101,7 @@ public class ProviderRestServiceTest {
 			m.put(ProviderService.NAME, "aa");
 			Mockito.when(tested.entityService.get("aa")).thenReturn(m);
 			Mockito.when(tested.securityService.createPwdHash("aa", "pwd")).thenReturn("pwdhash");
-			Response r = (Response) tested.changePassword("aa", "pwd");
-			Assert.assertEquals(Status.OK.getStatusCode(), r.getStatus());
+			TestUtils.assertResponseStatus(tested.changePassword("aa", "pwd"), Status.OK);
 			Mockito.verify(tested.entityService).update("aa", m);
 			Assert.assertEquals("pwdhash", m.get(ProviderService.PASSWORD_HASH));
 		}

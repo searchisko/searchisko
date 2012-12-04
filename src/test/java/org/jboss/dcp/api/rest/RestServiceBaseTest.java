@@ -21,6 +21,7 @@ import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.common.xcontent.ToXContent;
 import org.elasticsearch.common.xcontent.XContentBuilder;
+import org.jboss.dcp.api.testtools.TestUtils;
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -91,24 +92,22 @@ public class RestServiceBaseTest {
 	@Test
 	public void createRequiredFieldResponse() {
 		RestServiceBase tested = getTested();
-		Response r = tested.createRequiredFieldResponse("myfield");
-		Assert.assertEquals(Status.BAD_REQUEST.getStatusCode(), r.getStatus());
+		Response r = TestUtils.assertResponseStatus(tested.createRequiredFieldResponse("myfield"), Status.BAD_REQUEST);
 		Assert.assertEquals("Required parameter 'myfield' not set", r.getEntity());
 	}
 
 	@Test
 	public void createBadFieldDataResponse() {
 		RestServiceBase tested = getTested();
-		Response r = tested.createBadFieldDataResponse("myfield");
-		Assert.assertEquals(Status.BAD_REQUEST.getStatusCode(), r.getStatus());
+		Response r = TestUtils.assertResponseStatus(tested.createBadFieldDataResponse("myfield"), Status.BAD_REQUEST);
 		Assert.assertEquals("Parameter 'myfield' has bad value", r.getEntity());
 	}
 
 	@Test
 	public void createErrorResponse() {
 		RestServiceBase tested = getTested();
-		Response r = tested.createErrorResponse(new Exception("my exception"));
-		Assert.assertEquals(Status.INTERNAL_SERVER_ERROR.getStatusCode(), r.getStatus());
+		Response r = TestUtils.assertResponseStatus(tested.createErrorResponse(new Exception("my exception")),
+				Status.INTERNAL_SERVER_ERROR);
 		Assert.assertEquals("Error [java.lang.Exception]: my exception", r.getEntity());
 	}
 }
