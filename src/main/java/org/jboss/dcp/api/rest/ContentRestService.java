@@ -21,7 +21,6 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-import org.elasticsearch.ElasticSearchException;
 import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
@@ -55,7 +54,7 @@ public class ContentRestService extends RestServiceBase {
 	@GuestAllowed
 	public Object getAllContent(@PathParam("type") String type, @QueryParam("from") Integer from,
 			@QueryParam("size") Integer size, @QueryParam("sort") String sort) {
-		if (type == null) {
+		if (type == null || type.length() == 0) {
 			return createRequiredFieldResponse("type");
 		}
 		try {
@@ -91,8 +90,8 @@ public class ContentRestService extends RestServiceBase {
 			final SearchResponse response = srb.execute().actionGet();
 
 			return new ESDataOnlyResponse(response);
-		} catch (ElasticSearchException e) {
-			return createErrorResponse(e);
+		} catch (IndexMissingException e) {
+			return Response.status(Response.Status.NOT_FOUND).build();
 		} catch (Exception e) {
 			return createErrorResponse(e);
 		}

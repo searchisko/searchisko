@@ -56,9 +56,12 @@ public class ESDataOnlyResponseTest {
 	 * @param actual value
 	 * @throws IOException
 	 */
-	public static void assetStreamingOutputContent(String expected, StreamingOutput actual) throws IOException {
+	public static void assetStreamingOutputContent(String expected, Object actual) throws IOException {
+		if (!(actual instanceof StreamingOutput)) {
+			Assert.fail("Result must be StreamingOutput but is " + actual);
+		}
 		ByteArrayOutputStream output = new ByteArrayOutputStream();
-		actual.write(output);
+		((StreamingOutput) actual).write(output);
 		Assert.assertEquals(expected, output.toString());
 	}
 

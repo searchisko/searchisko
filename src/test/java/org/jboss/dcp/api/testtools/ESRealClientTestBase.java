@@ -11,6 +11,7 @@ import java.io.IOException;
 import org.apache.commons.io.FileUtils;
 import org.elasticsearch.action.admin.indices.create.CreateIndexRequest;
 import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest;
+import org.elasticsearch.action.admin.indices.flush.FlushRequest;
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.common.settings.Settings;
@@ -170,4 +171,7 @@ public abstract class ESRealClientTestBase {
 		client.index((new IndexRequest(indexName, documentType, id)).source(source)).actionGet();
 	}
 
+	public void indexFlush(String indexName) {
+		client.admin().indices().flush(new FlushRequest(indexName)).actionGet();
+	}
 }

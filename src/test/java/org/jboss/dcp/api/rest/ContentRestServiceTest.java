@@ -5,12 +5,14 @@
  */
 package org.jboss.dcp.api.rest;
 
+import java.io.IOException;
 import java.security.Principal;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
 
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.SecurityContext;
 
 import junit.framework.Assert;
@@ -31,6 +33,63 @@ public class ContentRestServiceTest extends ESRealClientTestBase {
 
 	private static final String INDEX_TYPE = "index_type";
 	private static final String INDEX_NAME = "index_name";
+
+	@Test
+	public void getAllContent() throws IOException, InterruptedException {
+
+		ContentRestService tested = getTested(false);
+
+		// case - invalid input parameters
+		TestUtils.assertResponseStatus(tested.getAllContent(null, null, null, null), Response.Status.BAD_REQUEST);
+		TestUtils.assertResponseStatus(tested.getAllContent("", null, null, null), Response.Status.BAD_REQUEST);
+
+		// case - type is unknown
+		TestUtils.assertResponseStatus(tested.getAllContent("unknown", null, null, null), Response.Status.BAD_REQUEST);
+
+		// case - type configuration is invalid (do not contains index name and type)
+		TestUtils.assertResponseStatus(tested.getAllContent("invalid", null, null, null),
+				Response.Status.INTERNAL_SERVER_ERROR);
+
+		try {
+			tested = getTested(true);
+
+			// case - type is valid, but nothing is found because index is missing
+			indexDelete(INDEX_NAME);
+			TestUtils.assertResponseStatus(tested.getAllContent("known", null, null, null), Response.Status.NOT_FOUND);
+
+			// case - nothing found because index is empty
+			indexCreate(INDEX_NAME);
+			Thread.sleep(100);
+			ESDataOnlyResponseTest.assetStreamingOutputContent("{\"total\":0,\"hits\":[]}",
+					tested.getAllContent("known", null, null, null));
+
+			// case - something found, no from and size param used
+			indexInsertDocument(INDEX_NAME, INDEX_TYPE, "1", "{\"name\":\"test1\"}");
+			indexInsertDocument(INDEX_NAME, INDEX_TYPE, "2", "{\"name\":\"test2\"}");
+			indexInsertDocument(INDEX_NAME, INDEX_TYPE, "3", "{\"name\":\"test3\"}");
+			indexInsertDocument(INDEX_NAME, INDEX_TYPE, "4", "{\"name\":\"test4\"}");
+			indexFlush(INDEX_NAME);
+			ESDataOnlyResponseTest
+					.assetStreamingOutputContent(
+							"{\"total\":4,\"hits\":[{\"id\":\"4\",\"data\":{\"name\":\"test4\"}},{\"id\":\"1\",\"data\":{\"name\":\"test1\"}},{\"id\":\"2\",\"data\":{\"name\":\"test2\"}},{\"id\":\"3\",\"data\":{\"name\":\"test3\"}}]}",
+							tested.getAllContent("known", null, null, null));
+
+			// case - something found, from and size param used
+			ESDataOnlyResponseTest
+					.assetStreamingOutputContent(
+							"{\"total\":4,\"hits\":[{\"id\":\"1\",\"data\":{\"name\":\"test1\"}},{\"id\":\"2\",\"data\":{\"name\":\"test2\"}}]}",
+							tested.getAllContent("known", 1, 2, null));
+
+			// case - sort param used - we test it over error due missinf field in index and over error message only
+			Response r = TestUtils.assertResponseStatus(tested.getAllContent("known", null, null, "asc"),
+					Status.INTERNAL_SERVER_ERROR);
+			Assert.assertTrue(((String) r.getEntity()).contains("dcp_updated"));
+
+		} finally {
+			indexDelete(INDEX_NAME);
+			finalizeESClientForUnitTest();
+		}
+	}
 
 	@SuppressWarnings("unchecked")
 	@Test
