@@ -16,7 +16,7 @@ import java.lang.annotation.Target;
  * @author Libor Krzyzanek
  * 
  */
-@Target({ ElementType.TYPE, ElementType.METHOD })
+@Target({ ElementType.METHOD })
 @Retention(RetentionPolicy.RUNTIME)
 public @interface GuestAllowed {
 

@@ -175,8 +175,6 @@ public class SecurityPreProcessInterceptorTest {
 				MethodAnnotationsMock.class.getMethod("methodNotAnnotated")));
 		Assert.assertNull(tested.getProviderAlowedAnnotation(MethodAnnotationsMock.class,
 				MethodAnnotationsMock.class.getMethod("methodGuestAllowed")));
-		Assert.assertNull(tested.getProviderAlowedAnnotation(ClassGuestAllowedMock.class,
-				ClassGuestAllowedMock.class.getMethod("methodNotAnnotated")));
 
 		Assert.assertNotNull(tested.getProviderAlowedAnnotation(MethodAnnotationsMock.class,
 				MethodAnnotationsMock.class.getMethod("methodProviderAllowed")));
@@ -194,8 +192,6 @@ public class SecurityPreProcessInterceptorTest {
 				MethodAnnotationsMock.class.getMethod("methodNotAnnotated")));
 		Assert.assertFalse(tested.accept(MethodAnnotationsMock.class,
 				MethodAnnotationsMock.class.getMethod("methodGuestAllowed")));
-		Assert.assertFalse(tested.accept(ClassGuestAllowedMock.class,
-				ClassGuestAllowedMock.class.getMethod("methodNotAnnotated")));
 
 		Assert.assertTrue(tested.accept(MethodAnnotationsMock.class,
 				MethodAnnotationsMock.class.getMethod("methodProviderAllowed")));
@@ -243,14 +239,6 @@ public class SecurityPreProcessInterceptorTest {
 
 	public static class SubclassProviderAllowedMock extends ClassProviderAllowedMock {
 
-	}
-
-	@GuestAllowed
-	public static class ClassGuestAllowedMock {
-
-		public void methodNotAnnotated() {
-
-		}
 	}
 
 }
