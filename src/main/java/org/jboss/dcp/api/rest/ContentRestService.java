@@ -25,12 +25,13 @@ import org.elasticsearch.ElasticSearchException;
 import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
+import org.elasticsearch.common.settings.SettingsException;
 import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.indices.IndexMissingException;
 import org.elasticsearch.search.sort.SortOrder;
 import org.jboss.dcp.api.annotations.security.GuestAllowed;
 import org.jboss.dcp.api.annotations.security.ProviderAllowed;
 import org.jboss.dcp.api.service.ProviderService;
-import org.jboss.dcp.api.service.StatsRecordType;
 
 /**
  * REST API for Content
@@ -46,7 +47,7 @@ import org.jboss.dcp.api.service.StatsRecordType;
 public class ContentRestService extends RestServiceBase {
 
 	@Inject
-	private ProviderService providerService;
+	protected ProviderService providerService;
 
 	@GET
 	@Path("/")
@@ -65,6 +66,7 @@ public class ContentRestService extends RestServiceBase {
 
 			String indexName = ProviderService.getIndexName(typeDef);
 			String indexType = ProviderService.getIndexType(typeDef);
+			checkSearchIndexSettings(type, indexName, indexType);
 
 			SearchRequestBuilder srb = new SearchRequestBuilder(getSearchClientService().getClient());
 			srb.setIndices(indexName);
@@ -103,10 +105,10 @@ public class ContentRestService extends RestServiceBase {
 	public Object getContent(@PathParam("type") String type, @PathParam("contentId") String contentId) {
 
 		// validation
-		if (contentId == null) {
+		if (contentId == null || contentId.length() == 0) {
 			return createRequiredFieldResponse("contentId");
 		}
-		if (type == null) {
+		if (type == null || type.length() == 0) {
 			return createRequiredFieldResponse("type");
 		}
 		try {
@@ -117,17 +119,35 @@ public class ContentRestService extends RestServiceBase {
 
 			String indexName = ProviderService.getIndexName(typeDef);
 			String indexType = ProviderService.getIndexType(typeDef);
+			checkSearchIndexSettings(type, indexName, indexType);
 
 			GetResponse getResponse = getSearchClientService().getClient().prepareGet(indexName, indexType, contentId)
 					.execute().actionGet();
 
+			if (!getResponse.exists()) {
+				return Response.status(Response.Status.NOT_FOUND).build();
+			}
+
 			return createResponse(getResponse);
-		} catch (ElasticSearchException e) {
-			getStatsClientService().writeStatistics(StatsRecordType.DOCUMENT_DETAIL, e, System.currentTimeMillis(),
-					contentId, null);
-			return createErrorResponse(e);
+		} catch (IndexMissingException e) {
+			return Response.status(Response.Status.NOT_FOUND).build();
 		} catch (Exception e) {
 			return createErrorResponse(e);
+		}
+	}
+
+	/**
+	 * Check if search index settings are correct.
+	 * 
+	 * @param type we check settings for (used for error message)
+	 * @param indexName index name defined for given type
+	 * @param indexType index type for given type
+	 * @throws SettingsException if index name or type is null or empty
+	 */
+	protected static void checkSearchIndexSettings(String type, String indexName, String indexType) {
+		if (indexName == null || indexName.trim().isEmpty() || indexType == null || indexType.trim().isEmpty()) {
+			throw new SettingsException("Search index or type is not defined correctly for dcp_provider_type=" + type
+					+ ". Contact administrators please.");
 		}
 	}
 
@@ -162,13 +182,14 @@ public class ContentRestService extends RestServiceBase {
 		content.put("dcp_updated", new Date());
 
 		// Push to search
-		String index = ProviderService.getIndexName(typeDef);
+		String indexName = ProviderService.getIndexName(typeDef);
 		String indexType = ProviderService.getIndexType(typeDef);
+		checkSearchIndexSettings(type, indexName, indexType);
 
 		// TODO: Store to Persistance
 
 		try {
-			getSearchClientService().getClient().prepareIndex(index, indexType, contentId).setSource(content).execute()
+			getSearchClientService().getClient().prepareIndex(indexName, indexType, contentId).setSource(content).execute()
 					.actionGet();
 		} catch (Exception e) {
 			return createErrorResponse(e);
@@ -192,9 +213,11 @@ public class ContentRestService extends RestServiceBase {
 
 		// TODO: Remove from persistance if exists
 
-		String index = ProviderService.getIndexName(typeDef);
+		String indexName = ProviderService.getIndexName(typeDef);
 		String indexType = ProviderService.getIndexType(typeDef);
-		getSearchClientService().getClient().prepareDelete(index, indexType, contentId).execute().actionGet();
+		checkSearchIndexSettings(type, indexName, indexType);
+
+		getSearchClientService().getClient().prepareDelete(indexName, indexType, contentId).execute().actionGet();
 
 		return Response.ok().build();
 	}

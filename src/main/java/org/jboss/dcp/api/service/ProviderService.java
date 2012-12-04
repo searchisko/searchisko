@@ -157,12 +157,18 @@ public class ProviderService {
 
 	@SuppressWarnings("unchecked")
 	public static String getIndexName(Map<String, Object> typeDef) {
-		return ((Map<String, Object>) typeDef.get("index")).get("name").toString();
+		if (typeDef.get("index") != null)
+			return ((Map<String, Object>) typeDef.get("index")).get("name").toString();
+		else
+			return null;
 	}
 
 	@SuppressWarnings("unchecked")
 	public static String getIndexType(Map<String, Object> typeDef) {
-		return ((Map<String, Object>) typeDef.get("index")).get("type").toString();
+		if (typeDef.get("index") != null)
+			return ((Map<String, Object>) typeDef.get("index")).get("type").toString();
+		else
+			return null;
 	}
 
 	public static String getDcpType(Map<String, Object> typeDef) {

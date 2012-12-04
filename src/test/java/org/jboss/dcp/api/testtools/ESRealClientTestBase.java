@@ -9,6 +9,9 @@ import java.io.File;
 import java.io.IOException;
 
 import org.apache.commons.io.FileUtils;
+import org.elasticsearch.action.admin.indices.create.CreateIndexRequest;
+import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest;
+import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.node.Node;
@@ -54,6 +57,12 @@ public abstract class ESRealClientTestBase {
 
 	private File tempFolder;
 
+	/**
+	 * Prepare SearchClientService against inmemory EC cluster for unit test. Do not forgot to call
+	 * {@link #finalizeESClientForUnitTest()} at the end of test!
+	 * 
+	 * @return
+	 */
 	public final SearchClientService prepareSearchClientServiceMock() {
 		SearchClientService ret = Mockito.mock(SearchClientService.class);
 		if (client == null)
@@ -70,6 +79,8 @@ public abstract class ESRealClientTestBase {
 	 * @throws Exception
 	 */
 	public final Client prepareESClientForUnitTest() {
+		if (client != null)
+			return client;
 		try {
 			// For unit tests it is recommended to use local node.
 			// This is to ensure that your node will never join existing cluster on the network.
@@ -104,6 +115,9 @@ public abstract class ESRealClientTestBase {
 		}
 	}
 
+	/**
+	 * Close ES client, call in finally block !!!
+	 */
 	public final void finalizeESClientForUnitTest() {
 		if (client != null)
 			client.close();
@@ -120,6 +134,40 @@ public abstract class ESRealClientTestBase {
 			}
 		}
 		tempFolder = null;
+	}
+
+	/**
+	 * Delete index from inmemory client.
+	 * 
+	 * @param indexName
+	 */
+	public void indexDelete(String indexName) {
+		try {
+			client.admin().indices().delete(new DeleteIndexRequest(indexName)).actionGet();
+		} catch (Exception e) {
+			// ignore
+		}
+	}
+
+	/**
+	 * Create index in inmemory client.
+	 * 
+	 * @param indexName
+	 */
+	public void indexCreate(String indexName) {
+		client.admin().indices().create(new CreateIndexRequest(indexName)).actionGet();
+	}
+
+	/**
+	 * Insert document into inmemory client.
+	 * 
+	 * @param indexName
+	 * @param documentType
+	 * @param id
+	 * @param source
+	 */
+	public void indexInsertDocument(String indexName, String documentType, String id, String source) {
+		client.index((new IndexRequest(indexName, documentType, id)).source(source)).actionGet();
 	}
 
 }
