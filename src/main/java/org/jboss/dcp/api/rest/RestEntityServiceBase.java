@@ -57,7 +57,11 @@ public class RestEntityServiceBase {
 	@Produces(MediaType.APPLICATION_JSON)
 	public Object get(@PathParam("id") String id) {
 		try {
-			return entityService.get(id);
+			Map<String, Object> ret = entityService.get(id);
+			if (ret == null) {
+				return Response.status(Response.Status.NOT_FOUND).build();
+			}
+			return ret;
 		} catch (Exception e) {
 			return createErrorResponse(e);
 		}
