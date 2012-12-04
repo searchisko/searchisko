@@ -179,7 +179,9 @@ public class ContentRestService extends RestServiceBase {
 		// normalize content - should be last step to avoid changing normalized content via preprocessors
 		content.put("dcp_id", providerService.generateDcpId(type, contentId));
 		content.put("dcp_type", ProviderService.getDcpType(typeDef));
-		content.put("dcp_updated", new Date());
+		if (content.get("dcp_updated") == null) {
+			content.put("dcp_updated", new Date());
+		}
 
 		// Push to search
 		String indexName = ProviderService.getIndexName(typeDef);
