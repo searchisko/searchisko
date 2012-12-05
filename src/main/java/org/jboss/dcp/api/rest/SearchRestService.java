@@ -118,9 +118,9 @@ public class SearchRestService extends RestServiceBase {
 			// Sort
 			if (settings.getSortBy() != null) {
 				if (settings.getSortBy().compareTo(SortByValue.NEW) == 0) {
-					srb.addSort("dcp_updated", SortOrder.ASC);
-				} else if (settings.getSortBy().compareTo(SortByValue.OLD) == 0) {
 					srb.addSort("dcp_updated", SortOrder.DESC);
+				} else if (settings.getSortBy().compareTo(SortByValue.OLD) == 0) {
+					srb.addSort("dcp_updated", SortOrder.ASC);
 				}
 			}
 
