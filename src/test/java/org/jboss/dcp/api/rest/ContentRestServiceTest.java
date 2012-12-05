@@ -12,7 +12,6 @@ import java.util.Map;
 import java.util.logging.Logger;
 
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.SecurityContext;
 
 import junit.framework.Assert;
@@ -80,10 +79,17 @@ public class ContentRestServiceTest extends ESRealClientTestBase {
 							"{\"total\":4,\"hits\":[{\"id\":\"1\",\"data\":{\"name\":\"test1\"}},{\"id\":\"2\",\"data\":{\"name\":\"test2\"}}]}",
 							tested.getAllContent("known", 1, 2, null));
 
-			// case - sort param used - we test it over error due missinf field in index and over error message only
-			Response r = TestUtils.assertResponseStatus(tested.getAllContent("known", null, null, "asc"),
-					Status.INTERNAL_SERVER_ERROR);
-			Assert.assertTrue(((String) r.getEntity()).contains("dcp_updated"));
+			// case - sort param used
+			indexInsertDocument(INDEX_NAME, INDEX_TYPE, "5", "{\"name\":\"test5\", \"dcp_updated\" : 1}");
+			indexFlush(INDEX_NAME);
+			// on ASC our record with id 5 is last, so we set from=4
+			ESDataOnlyResponseTest.assetStreamingOutputContent(
+					"{\"total\":5,\"hits\":[{\"id\":\"5\",\"data\":{\"name\":\"test5\",\"dcp_updated\":1}}]}",
+					tested.getAllContent("known", 4, 1, "asc"));
+			// on DESC our record with id 5 is first, so we set from=0
+			ESDataOnlyResponseTest.assetStreamingOutputContent(
+					"{\"total\":5,\"hits\":[{\"id\":\"5\",\"data\":{\"name\":\"test5\",\"dcp_updated\":1}}]}",
+					tested.getAllContent("known", 0, 1, "DESC"));
 
 		} finally {
 			indexDelete(INDEX_NAME);
