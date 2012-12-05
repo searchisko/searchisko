@@ -44,7 +44,7 @@ public class ContributorRestServiceTest {
 			SearchResponse sr = ESDataOnlyResponseTest.mockSearchResponse("ve", "email@em", null, null);
 			Mockito.when(tested.contributorService.search("email@em")).thenReturn(sr);
 			StreamingOutput ret = (StreamingOutput) tested.search("email@em");
-			ESDataOnlyResponseTest.assetStreamingOutputContent(
+			TestUtils.assetStreamingOutputContent(
 					"{\"total\":1,\"hits\":[{\"id\":\"ve\",\"data\":{\"dcp_id\":\"ve\",\"dcp_name\":\"email@em\"}}]}", ret);
 		}
 
@@ -54,7 +54,7 @@ public class ContributorRestServiceTest {
 			SearchResponse sr = ESDataOnlyResponseTest.mockSearchResponse(null, null, null, null);
 			Mockito.when(tested.contributorService.search("email@em")).thenReturn(sr);
 			StreamingOutput ret = (StreamingOutput) tested.search("email@em");
-			ESDataOnlyResponseTest.assetStreamingOutputContent("{\"total\":0,\"hits\":[]}", ret);
+			TestUtils.assetStreamingOutputContent("{\"total\":0,\"hits\":[]}", ret);
 		}
 
 		// case - Exception from service

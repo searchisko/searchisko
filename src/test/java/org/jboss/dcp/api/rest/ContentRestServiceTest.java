@@ -59,7 +59,7 @@ public class ContentRestServiceTest extends ESRealClientTestBase {
 			// case - nothing found because index is empty
 			indexCreate(INDEX_NAME);
 			Thread.sleep(100);
-			ESDataOnlyResponseTest.assetStreamingOutputContent("{\"total\":0,\"hits\":[]}",
+			TestUtils.assetStreamingOutputContent("{\"total\":0,\"hits\":[]}",
 					tested.getAllContent("known", null, null, null));
 
 			// case - something found, no from and size param used
@@ -68,13 +68,13 @@ public class ContentRestServiceTest extends ESRealClientTestBase {
 			indexInsertDocument(INDEX_NAME, INDEX_TYPE, "3", "{\"name\":\"test3\"}");
 			indexInsertDocument(INDEX_NAME, INDEX_TYPE, "4", "{\"name\":\"test4\"}");
 			indexFlush(INDEX_NAME);
-			ESDataOnlyResponseTest
+			TestUtils
 					.assetStreamingOutputContent(
 							"{\"total\":4,\"hits\":[{\"id\":\"4\",\"data\":{\"name\":\"test4\"}},{\"id\":\"1\",\"data\":{\"name\":\"test1\"}},{\"id\":\"2\",\"data\":{\"name\":\"test2\"}},{\"id\":\"3\",\"data\":{\"name\":\"test3\"}}]}",
 							tested.getAllContent("known", null, null, null));
 
 			// case - something found, from and size param used
-			ESDataOnlyResponseTest
+			TestUtils
 					.assetStreamingOutputContent(
 							"{\"total\":4,\"hits\":[{\"id\":\"1\",\"data\":{\"name\":\"test1\"}},{\"id\":\"2\",\"data\":{\"name\":\"test2\"}}]}",
 							tested.getAllContent("known", 1, 2, null));
@@ -83,11 +83,11 @@ public class ContentRestServiceTest extends ESRealClientTestBase {
 			indexInsertDocument(INDEX_NAME, INDEX_TYPE, "5", "{\"name\":\"test5\", \"dcp_updated\" : 1}");
 			indexFlush(INDEX_NAME);
 			// on ASC our record with id 5 is last, so we set from=4
-			ESDataOnlyResponseTest.assetStreamingOutputContent(
+			TestUtils.assetStreamingOutputContent(
 					"{\"total\":5,\"hits\":[{\"id\":\"5\",\"data\":{\"name\":\"test5\",\"dcp_updated\":1}}]}",
 					tested.getAllContent("known", 4, 1, "asc"));
 			// on DESC our record with id 5 is first, so we set from=0
-			ESDataOnlyResponseTest.assetStreamingOutputContent(
+			TestUtils.assetStreamingOutputContent(
 					"{\"total\":5,\"hits\":[{\"id\":\"5\",\"data\":{\"name\":\"test5\",\"dcp_updated\":1}}]}",
 					tested.getAllContent("known", 0, 1, "DESC"));
 

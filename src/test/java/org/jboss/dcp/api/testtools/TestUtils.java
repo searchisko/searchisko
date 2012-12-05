@@ -5,11 +5,13 @@
  */
 package org.jboss.dcp.api.testtools;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.util.Map;
 
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.StreamingOutput;
 
 import org.apache.commons.io.IOUtils;
 import org.elasticsearch.common.settings.SettingsException;
@@ -41,6 +43,22 @@ public abstract class TestUtils {
 		Response r = (Response) actual;
 		Assert.assertEquals(status.getStatusCode(), r.getStatus());
 		return r;
+	}
+
+	/**
+	 * Assert string value equals one written by the StreamingOutput.
+	 * 
+	 * @param expected value
+	 * @param actual value
+	 * @throws IOException
+	 */
+	public static void assetStreamingOutputContent(String expected, Object actual) throws IOException {
+		if (!(actual instanceof StreamingOutput)) {
+			Assert.fail("Result must be StreamingOutput but is " + actual);
+		}
+		ByteArrayOutputStream output = new ByteArrayOutputStream();
+		((StreamingOutput) actual).write(output);
+		Assert.assertEquals(expected, output.toString());
 	}
 
 	/**

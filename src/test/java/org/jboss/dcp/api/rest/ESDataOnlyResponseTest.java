@@ -5,18 +5,16 @@
  */
 package org.jboss.dcp.api.rest;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
 import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.StreamingOutput;
 
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
-import org.junit.Assert;
+import org.jboss.dcp.api.testtools.TestUtils;
 import org.junit.Test;
 import org.mockito.Mockito;
 
@@ -32,37 +30,22 @@ public class ESDataOnlyResponseTest {
 
 		{
 			ESDataOnlyResponse tested = new ESDataOnlyResponse(mockSearchResponse(null, null, null, null));
-			assetStreamingOutputContent("{\"total\":0,\"hits\":[]}", tested);
+			TestUtils.assetStreamingOutputContent("{\"total\":0,\"hits\":[]}", tested);
 		}
 
 		{
 			ESDataOnlyResponse tested = new ESDataOnlyResponse(mockSearchResponse("1", "name1", null, null));
-			assetStreamingOutputContent(
+			TestUtils.assetStreamingOutputContent(
 					"{\"total\":1,\"hits\":[{\"id\":\"1\",\"data\":{\"dcp_id\":\"1\",\"dcp_name\":\"name1\"}}]}", tested);
 		}
 
 		{
 			ESDataOnlyResponse tested = new ESDataOnlyResponse(mockSearchResponse("1", "name1", "35", "myname"));
-			assetStreamingOutputContent(
-					"{\"total\":2,\"hits\":[{\"id\":\"1\",\"data\":{\"dcp_id\":\"1\",\"dcp_name\":\"name1\"}},{\"id\":\"35\",\"data\":{\"dcp_id\":\"35\",\"dcp_name\":\"myname\"}}]}",
-					tested);
+			TestUtils
+					.assetStreamingOutputContent(
+							"{\"total\":2,\"hits\":[{\"id\":\"1\",\"data\":{\"dcp_id\":\"1\",\"dcp_name\":\"name1\"}},{\"id\":\"35\",\"data\":{\"dcp_id\":\"35\",\"dcp_name\":\"myname\"}}]}",
+							tested);
 		}
-	}
-
-	/**
-	 * Assert string value equals one written by the StreamingOutput
-	 * 
-	 * @param expected value
-	 * @param actual value
-	 * @throws IOException
-	 */
-	public static void assetStreamingOutputContent(String expected, Object actual) throws IOException {
-		if (!(actual instanceof StreamingOutput)) {
-			Assert.fail("Result must be StreamingOutput but is " + actual);
-		}
-		ByteArrayOutputStream output = new ByteArrayOutputStream();
-		((StreamingOutput) actual).write(output);
-		Assert.assertEquals(expected, output.toString());
 	}
 
 	/**
