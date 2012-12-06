@@ -24,6 +24,7 @@ import javax.ws.rs.core.Response.Status;
 
 import org.elasticsearch.action.delete.DeleteResponse;
 import org.elasticsearch.action.get.GetResponse;
+import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.common.settings.SettingsException;
@@ -220,14 +221,16 @@ public class ContentRestService extends RestServiceBase {
 			// TODO PERSISTENCE - Store to Persistence
 
 			// Push to search subsystem
-			getSearchClientService().getClient().prepareIndex(indexName, indexType, dcpContentId).setSource(content)
-					.execute().actionGet();
-
-			return Response.ok("Content was successfully pushed").build();
+			IndexResponse ir = getSearchClientService().getClient().prepareIndex(indexName, indexType, dcpContentId)
+					.setSource(content).execute().actionGet();
+			if (ir.version() > 1) {
+				return Response.ok("Content was updated successfully.").build();
+			} else {
+				return Response.ok("Content was inserted successfully.").build();
+			}
 		} catch (Exception e) {
 			return createErrorResponse(e);
 		}
-
 	}
 
 	@DELETE
@@ -259,12 +262,11 @@ public class ContentRestService extends RestServiceBase {
 
 			DeleteResponse dr = getSearchClientService().getClient().prepareDelete(indexName, indexType, dcpContentId)
 					.execute().actionGet();
-			String ret = "Content deleted successfully.";
 			if (dr.isNotFound()) {
-				ret = "Content not found to be deleted.";
+				return Response.status(Status.NOT_FOUND).entity("Content not found to be deleted.").build();
+			} else {
+				return Response.ok("Content deleted successfully.").build();
 			}
-
-			return Response.ok(ret).build();
 		} catch (Exception e) {
 			return createErrorResponse(e);
 		}

@@ -75,7 +75,8 @@ public class ContentRestServiceTest extends ESRealClientTestBase {
 				content.put("test", "testvalue");
 				Date d = new Date();
 				content.put(ContentRestService.DCP_UPDATED, d);
-				TestUtils.assertResponseStatus(tested.pushContent("known", "1", content), Response.Status.OK);
+				Response r = TestUtils.assertResponseStatus(tested.pushContent("known", "1", content), Response.Status.OK);
+				Assert.assertEquals("Content was inserted successfully.", r.getEntity());
 				Mockito.verify(tested.providerService).runPreprocessors(PREPROCESSORS, content);
 				indexFlush(INDEX_NAME);
 				Map<String, Object> doc = indexGetDocument(INDEX_NAME, INDEX_TYPE, "known-1");
@@ -102,7 +103,8 @@ public class ContentRestServiceTest extends ESRealClientTestBase {
 				content.remove(ContentRestService.DCP_UPDATED);
 				String[] tags = new String[] { "tag_value" };
 				content.put("tags", tags);
-				TestUtils.assertResponseStatus(tested.pushContent("known", "2", content), Response.Status.OK);
+				Response r = TestUtils.assertResponseStatus(tested.pushContent("known", "2", content), Response.Status.OK);
+				Assert.assertEquals("Content was inserted successfully.", r.getEntity());
 				Mockito.verify(tested.providerService).runPreprocessors(PREPROCESSORS, content);
 				indexFlush(INDEX_NAME);
 				Map<String, Object> doc = indexGetDocument(INDEX_NAME, INDEX_TYPE, "known-2");
@@ -119,28 +121,32 @@ public class ContentRestServiceTest extends ESRealClientTestBase {
 			}
 
 			// case - rewrite document in index
-			Mockito.reset(tested.providerService);
-			setupProviderServiceMock(tested);
-			content.clear();
-			content.put("test3", "testvalue3");
-			Date d = new Date();
-			content.put(ContentRestService.DCP_UPDATED, d);
-			TestUtils.assertResponseStatus(tested.pushContent("known", "1", content), Response.Status.OK);
-			Mockito.verify(tested.providerService).runPreprocessors(PREPROCESSORS, content);
-			indexFlush(INDEX_NAME);
-			Map<String, Object> doc = indexGetDocument(INDEX_NAME, INDEX_TYPE, "known-1");
-			Assert.assertNotNull(doc);
-			Assert.assertEquals(null, doc.get("test"));
-			Assert.assertEquals("testvalue3", doc.get("test3"));
-			Assert.assertEquals("jbossorg", doc.get(ContentRestService.DCP_CONTENT_PROVIDER));
-			Assert.assertEquals("1", doc.get(ContentRestService.DCP_CONTENT_ID));
-			Assert.assertEquals("known", doc.get(ContentRestService.DCP_CONTENT_TYPE));
-			Assert.assertEquals("my_dcp_type", doc.get(ContentRestService.DCP_TYPE));
-			Assert.assertEquals("known-1", doc.get(ContentRestService.DCP_ID));
-			Assert.assertEquals(d,
-					ISODateTimeFormat.dateTimeParser().parseDateTime((String) doc.get(ContentRestService.DCP_UPDATED)).toDate());
-			Assert.assertEquals(null, doc.get(ContentRestService.DCP_TAGS));
-
+			{
+				Mockito.reset(tested.providerService);
+				setupProviderServiceMock(tested);
+				content.clear();
+				content.put("test3", "testvalue3");
+				Date d = new Date();
+				content.put(ContentRestService.DCP_UPDATED, d);
+				Response r = TestUtils.assertResponseStatus(tested.pushContent("known", "1", content), Response.Status.OK);
+				Assert.assertEquals("Content was updated successfully.", r.getEntity());
+				Mockito.verify(tested.providerService).runPreprocessors(PREPROCESSORS, content);
+				indexFlush(INDEX_NAME);
+				Map<String, Object> doc = indexGetDocument(INDEX_NAME, INDEX_TYPE, "known-1");
+				Assert.assertNotNull(doc);
+				Assert.assertEquals(null, doc.get("test"));
+				Assert.assertEquals("testvalue3", doc.get("test3"));
+				Assert.assertEquals("jbossorg", doc.get(ContentRestService.DCP_CONTENT_PROVIDER));
+				Assert.assertEquals("1", doc.get(ContentRestService.DCP_CONTENT_ID));
+				Assert.assertEquals("known", doc.get(ContentRestService.DCP_CONTENT_TYPE));
+				Assert.assertEquals("my_dcp_type", doc.get(ContentRestService.DCP_TYPE));
+				Assert.assertEquals("known-1", doc.get(ContentRestService.DCP_ID));
+				Assert
+						.assertEquals(d,
+								ISODateTimeFormat.dateTimeParser().parseDateTime((String) doc.get(ContentRestService.DCP_UPDATED))
+										.toDate());
+				Assert.assertEquals(null, doc.get(ContentRestService.DCP_TAGS));
+			}
 		} finally {
 			indexDelete(INDEX_NAME);
 			finalizeESClientForUnitTest();
@@ -168,7 +174,7 @@ public class ContentRestServiceTest extends ESRealClientTestBase {
 			// case - delete when index is not found
 			{
 				indexDelete(INDEX_NAME);
-				TestUtils.assertResponseStatus(tested.deleteContent("known", "1"), Response.Status.OK);
+				TestUtils.assertResponseStatus(tested.deleteContent("known", "1"), Response.Status.NOT_FOUND);
 			}
 
 			// case - delete when document doesn't exist in index
@@ -178,7 +184,7 @@ public class ContentRestServiceTest extends ESRealClientTestBase {
 				Thread.sleep(100);
 				indexInsertDocument(INDEX_NAME, INDEX_TYPE, "known-2", "{\"test2\":\"test2\"}");
 				indexFlush(INDEX_NAME);
-				TestUtils.assertResponseStatus(tested.deleteContent("known", "1"), Response.Status.OK);
+				TestUtils.assertResponseStatus(tested.deleteContent("known", "1"), Response.Status.NOT_FOUND);
 				Assert.assertNotNull(indexGetDocument(INDEX_NAME, INDEX_TYPE, "known-2"));
 			}
 
@@ -190,7 +196,7 @@ public class ContentRestServiceTest extends ESRealClientTestBase {
 				Assert.assertNull(indexGetDocument(INDEX_NAME, INDEX_TYPE, "known-1"));
 				Assert.assertNotNull(indexGetDocument(INDEX_NAME, INDEX_TYPE, "known-2"));
 				// another subsequent deletes
-				TestUtils.assertResponseStatus(tested.deleteContent("known", "1"), Response.Status.OK);
+				TestUtils.assertResponseStatus(tested.deleteContent("known", "1"), Response.Status.NOT_FOUND);
 				TestUtils.assertResponseStatus(tested.deleteContent("known", "2"), Response.Status.OK);
 				Assert.assertNull(indexGetDocument(INDEX_NAME, INDEX_TYPE, "known-1"));
 				Assert.assertNull(indexGetDocument(INDEX_NAME, INDEX_TYPE, "known-2"));
