@@ -158,23 +158,23 @@ public class ContentRestServiceTest extends ESRealClientTestBase {
 		ContentRestService tested = getTested(false);
 
 		// case - invalid input parameters
-		TestUtils.assertResponseStatus(tested.deleteContent(null, "1"), Response.Status.BAD_REQUEST);
-		TestUtils.assertResponseStatus(tested.deleteContent("", "1"), Response.Status.BAD_REQUEST);
-		TestUtils.assertResponseStatus(tested.deleteContent("known", null), Response.Status.BAD_REQUEST);
-		TestUtils.assertResponseStatus(tested.deleteContent("known", ""), Response.Status.BAD_REQUEST);
+		TestUtils.assertResponseStatus(tested.deleteContent(null, "1", null), Response.Status.BAD_REQUEST);
+		TestUtils.assertResponseStatus(tested.deleteContent("", "1", null), Response.Status.BAD_REQUEST);
+		TestUtils.assertResponseStatus(tested.deleteContent("known", null, null), Response.Status.BAD_REQUEST);
+		TestUtils.assertResponseStatus(tested.deleteContent("known", "", null), Response.Status.BAD_REQUEST);
 
 		// case - type is unknown
-		TestUtils.assertResponseStatus(tested.deleteContent("unknown", "1"), Response.Status.BAD_REQUEST);
+		TestUtils.assertResponseStatus(tested.deleteContent("unknown", "1", null), Response.Status.BAD_REQUEST);
 
 		// case - type configuration is invalid - do not contains index name and/or index type
-		TestUtils.assertResponseStatus(tested.deleteContent("invalid", "1"), Response.Status.INTERNAL_SERVER_ERROR);
+		TestUtils.assertResponseStatus(tested.deleteContent("invalid", "1", null), Response.Status.INTERNAL_SERVER_ERROR);
 		try {
 			tested = getTested(true);
 
 			// case - delete when index is not found
 			{
 				indexDelete(INDEX_NAME);
-				TestUtils.assertResponseStatus(tested.deleteContent("known", "1"), Response.Status.NOT_FOUND);
+				TestUtils.assertResponseStatus(tested.deleteContent("known", "1", null), Response.Status.NOT_FOUND);
 			}
 
 			// case - delete when document doesn't exist in index
@@ -184,7 +184,7 @@ public class ContentRestServiceTest extends ESRealClientTestBase {
 				Thread.sleep(100);
 				indexInsertDocument(INDEX_NAME, INDEX_TYPE, "known-2", "{\"test2\":\"test2\"}");
 				indexFlush(INDEX_NAME);
-				TestUtils.assertResponseStatus(tested.deleteContent("known", "1"), Response.Status.NOT_FOUND);
+				TestUtils.assertResponseStatus(tested.deleteContent("known", "1", null), Response.Status.NOT_FOUND);
 				Assert.assertNotNull(indexGetDocument(INDEX_NAME, INDEX_TYPE, "known-2"));
 			}
 
@@ -192,14 +192,19 @@ public class ContentRestServiceTest extends ESRealClientTestBase {
 			{
 				indexInsertDocument(INDEX_NAME, INDEX_TYPE, "known-1", "{\"test1\":\"test1\"}");
 				indexFlush(INDEX_NAME);
-				TestUtils.assertResponseStatus(tested.deleteContent("known", "1"), Response.Status.OK);
+				TestUtils.assertResponseStatus(tested.deleteContent("known", "1", null), Response.Status.OK);
 				Assert.assertNull(indexGetDocument(INDEX_NAME, INDEX_TYPE, "known-1"));
 				Assert.assertNotNull(indexGetDocument(INDEX_NAME, INDEX_TYPE, "known-2"));
 				// another subsequent deletes
-				TestUtils.assertResponseStatus(tested.deleteContent("known", "1"), Response.Status.NOT_FOUND);
-				TestUtils.assertResponseStatus(tested.deleteContent("known", "2"), Response.Status.OK);
+				TestUtils.assertResponseStatus(tested.deleteContent("known", "1", null), Response.Status.NOT_FOUND);
+				TestUtils.assertResponseStatus(tested.deleteContent("known", "2", null), Response.Status.OK);
 				Assert.assertNull(indexGetDocument(INDEX_NAME, INDEX_TYPE, "known-1"));
 				Assert.assertNull(indexGetDocument(INDEX_NAME, INDEX_TYPE, "known-2"));
+
+				// test ignore_missing parameter
+				TestUtils.assertResponseStatus(tested.deleteContent("known", "1", null), Response.Status.NOT_FOUND);
+				TestUtils.assertResponseStatus(tested.deleteContent("known", "1", "false"), Response.Status.NOT_FOUND);
+				TestUtils.assertResponseStatus(tested.deleteContent("known", "1", "true"), Response.Status.OK);
 			}
 
 		} finally {

@@ -39,6 +39,7 @@ import org.jboss.dcp.api.service.ProviderService;
  * REST API for Content
  * 
  * @author Libor Krzyzanek
+ * @author Vlastimil Elias (velias at redhat dot com)
  * 
  */
 @RequestScoped
@@ -236,7 +237,8 @@ public class ContentRestService extends RestServiceBase {
 	@DELETE
 	@Path("/{contentId}")
 	@ProviderAllowed
-	public Object deleteContent(@PathParam("type") String type, @PathParam("contentId") String contentId) {
+	public Object deleteContent(@PathParam("type") String type, @PathParam("contentId") String contentId,
+			@QueryParam("ignore_missing") String ignoreMissing) {
 
 		// validation
 		if (contentId == null || contentId.isEmpty()) {
@@ -262,7 +264,8 @@ public class ContentRestService extends RestServiceBase {
 
 			DeleteResponse dr = getSearchClientService().getClient().prepareDelete(indexName, indexType, dcpContentId)
 					.execute().actionGet();
-			if (dr.isNotFound()) {
+
+			if (dr.isNotFound() && !Boolean.parseBoolean(ignoreMissing)) {
 				return Response.status(Status.NOT_FOUND).entity("Content not found to be deleted.").build();
 			} else {
 				return Response.ok("Content deleted successfully.").build();
