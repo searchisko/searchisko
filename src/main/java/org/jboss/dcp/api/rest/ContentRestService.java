@@ -22,6 +22,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
+import org.elasticsearch.action.delete.DeleteResponse;
 import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
@@ -70,7 +71,7 @@ public class ContentRestService extends RestServiceBase {
 	@GuestAllowed
 	public Object getAllContent(@PathParam("type") String type, @QueryParam("from") Integer from,
 			@QueryParam("size") Integer size, @QueryParam("sort") String sort) {
-		if (type == null || type.length() == 0) {
+		if (type == null || type.isEmpty()) {
 			return createRequiredFieldResponse("type");
 		}
 		try {
@@ -120,10 +121,10 @@ public class ContentRestService extends RestServiceBase {
 	public Object getContent(@PathParam("type") String type, @PathParam("contentId") String contentId) {
 
 		// validation
-		if (contentId == null || contentId.length() == 0) {
+		if (contentId == null || contentId.isEmpty()) {
 			return createRequiredFieldResponse("contentId");
 		}
-		if (type == null || type.length() == 0) {
+		if (type == null || type.isEmpty()) {
 			return createRequiredFieldResponse("type");
 		}
 		try {
@@ -132,11 +133,13 @@ public class ContentRestService extends RestServiceBase {
 				return createBadFieldDataResponse("type");
 			}
 
+			String dcpContentId = providerService.generateDcpId(type, contentId);
+
 			String indexName = ProviderService.getIndexName(typeDef);
 			String indexType = ProviderService.getIndexType(typeDef);
 			checkSearchIndexSettings(type, indexName, indexType);
 
-			GetResponse getResponse = getSearchClientService().getClient().prepareGet(indexName, indexType, contentId)
+			GetResponse getResponse = getSearchClientService().getClient().prepareGet(indexName, indexType, dcpContentId)
 					.execute().actionGet();
 
 			if (!getResponse.exists()) {
@@ -190,6 +193,8 @@ public class ContentRestService extends RestServiceBase {
 				return createBadFieldDataResponse("type");
 			}
 
+			String dcpContentId = providerService.generateDcpId(type, contentId);
+
 			// check search subsystem configuration
 			String indexName = ProviderService.getIndexName(typeDef);
 			String indexType = ProviderService.getIndexType(typeDef);
@@ -206,17 +211,17 @@ public class ContentRestService extends RestServiceBase {
 			content.put(DCP_CONTENT_PROVIDER, getProvider());
 			content.put(DCP_CONTENT_ID, contentId);
 			content.put(DCP_CONTENT_TYPE, type);
-			content.put(DCP_ID, providerService.generateDcpId(type, contentId));
+			content.put(DCP_ID, dcpContentId);
 			content.put(DCP_TYPE, ProviderService.getDcpType(typeDef, type));
 			if (content.get(DCP_UPDATED) == null) {
 				content.put(DCP_UPDATED, new Date());
 			}
 
-			// TODO PERSISTENCE - Store to Persistance
+			// TODO PERSISTENCE - Store to Persistence
 
 			// Push to search subsystem
-			getSearchClientService().getClient().prepareIndex(indexName, indexType, contentId).setSource(content).execute()
-					.actionGet();
+			getSearchClientService().getClient().prepareIndex(indexName, indexType, dcpContentId).setSource(content)
+					.execute().actionGet();
 
 			return Response.ok("Content was successfully pushed").build();
 		} catch (Exception e) {
@@ -231,10 +236,10 @@ public class ContentRestService extends RestServiceBase {
 	public Object deleteContent(@PathParam("type") String type, @PathParam("contentId") String contentId) {
 
 		// validation
-		if (contentId == null) {
+		if (contentId == null || contentId.isEmpty()) {
 			return createRequiredFieldResponse("contentId");
 		}
-		if (type == null) {
+		if (type == null || type.isEmpty()) {
 			return createRequiredFieldResponse("type");
 		}
 		try {
@@ -244,15 +249,22 @@ public class ContentRestService extends RestServiceBase {
 				return createBadFieldDataResponse("type");
 			}
 
-			// TODO PERSISTENCE - Remove from persistance if exists
+			String dcpContentId = providerService.generateDcpId(type, contentId);
+
+			// TODO PERSISTENCE - Remove from persistence if exists
 
 			String indexName = ProviderService.getIndexName(typeDef);
 			String indexType = ProviderService.getIndexType(typeDef);
 			checkSearchIndexSettings(type, indexName, indexType);
 
-			getSearchClientService().getClient().prepareDelete(indexName, indexType, contentId).execute().actionGet();
+			DeleteResponse dr = getSearchClientService().getClient().prepareDelete(indexName, indexType, dcpContentId)
+					.execute().actionGet();
+			String ret = "Content deleted successfully.";
+			if (dr.isNotFound()) {
+				ret = "Content not found to be deleted.";
+			}
 
-			return Response.ok().build();
+			return Response.ok(ret).build();
 		} catch (Exception e) {
 			return createErrorResponse(e);
 		}

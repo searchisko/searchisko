@@ -78,7 +78,7 @@ public class ContentRestServiceTest extends ESRealClientTestBase {
 				TestUtils.assertResponseStatus(tested.pushContent("known", "1", content), Response.Status.OK);
 				Mockito.verify(tested.providerService).runPreprocessors(PREPROCESSORS, content);
 				indexFlush(INDEX_NAME);
-				Map<String, Object> doc = indexGetDocument(INDEX_NAME, INDEX_TYPE, "1");
+				Map<String, Object> doc = indexGetDocument(INDEX_NAME, INDEX_TYPE, "known-1");
 				Assert.assertNotNull(doc);
 				Assert.assertEquals("testvalue", doc.get("test"));
 				Assert.assertEquals("jbossorg", doc.get(ContentRestService.DCP_CONTENT_PROVIDER));
@@ -105,7 +105,7 @@ public class ContentRestServiceTest extends ESRealClientTestBase {
 				TestUtils.assertResponseStatus(tested.pushContent("known", "2", content), Response.Status.OK);
 				Mockito.verify(tested.providerService).runPreprocessors(PREPROCESSORS, content);
 				indexFlush(INDEX_NAME);
-				Map<String, Object> doc = indexGetDocument(INDEX_NAME, INDEX_TYPE, "2");
+				Map<String, Object> doc = indexGetDocument(INDEX_NAME, INDEX_TYPE, "known-2");
 				Assert.assertNotNull(doc);
 				Assert.assertEquals("testvalue", doc.get("test"));
 				Assert.assertEquals("testvalue2", doc.get("test2"));
@@ -128,7 +128,7 @@ public class ContentRestServiceTest extends ESRealClientTestBase {
 			TestUtils.assertResponseStatus(tested.pushContent("known", "1", content), Response.Status.OK);
 			Mockito.verify(tested.providerService).runPreprocessors(PREPROCESSORS, content);
 			indexFlush(INDEX_NAME);
-			Map<String, Object> doc = indexGetDocument(INDEX_NAME, INDEX_TYPE, "1");
+			Map<String, Object> doc = indexGetDocument(INDEX_NAME, INDEX_TYPE, "known-1");
 			Assert.assertNotNull(doc);
 			Assert.assertEquals(null, doc.get("test"));
 			Assert.assertEquals("testvalue3", doc.get("test3"));
@@ -148,8 +148,58 @@ public class ContentRestServiceTest extends ESRealClientTestBase {
 	}
 
 	@Test
-	public void deleteContent() {
-		// TODO Unit tests
+	public void deleteContent() throws Exception {
+		ContentRestService tested = getTested(false);
+
+		// case - invalid input parameters
+		TestUtils.assertResponseStatus(tested.deleteContent(null, "1"), Response.Status.BAD_REQUEST);
+		TestUtils.assertResponseStatus(tested.deleteContent("", "1"), Response.Status.BAD_REQUEST);
+		TestUtils.assertResponseStatus(tested.deleteContent("known", null), Response.Status.BAD_REQUEST);
+		TestUtils.assertResponseStatus(tested.deleteContent("known", ""), Response.Status.BAD_REQUEST);
+
+		// case - type is unknown
+		TestUtils.assertResponseStatus(tested.deleteContent("unknown", "1"), Response.Status.BAD_REQUEST);
+
+		// case - type configuration is invalid - do not contains index name and/or index type
+		TestUtils.assertResponseStatus(tested.deleteContent("invalid", "1"), Response.Status.INTERNAL_SERVER_ERROR);
+		try {
+			tested = getTested(true);
+
+			// case - delete when index is not found
+			{
+				indexDelete(INDEX_NAME);
+				TestUtils.assertResponseStatus(tested.deleteContent("known", "1"), Response.Status.OK);
+			}
+
+			// case - delete when document doesn't exist in index
+			{
+				indexDelete(INDEX_NAME);
+				indexCreate(INDEX_NAME);
+				Thread.sleep(100);
+				indexInsertDocument(INDEX_NAME, INDEX_TYPE, "known-2", "{\"test2\":\"test2\"}");
+				indexFlush(INDEX_NAME);
+				TestUtils.assertResponseStatus(tested.deleteContent("known", "1"), Response.Status.OK);
+				Assert.assertNotNull(indexGetDocument(INDEX_NAME, INDEX_TYPE, "known-2"));
+			}
+
+			// case - delete when document exist in index
+			{
+				indexInsertDocument(INDEX_NAME, INDEX_TYPE, "known-1", "{\"test1\":\"test1\"}");
+				indexFlush(INDEX_NAME);
+				TestUtils.assertResponseStatus(tested.deleteContent("known", "1"), Response.Status.OK);
+				Assert.assertNull(indexGetDocument(INDEX_NAME, INDEX_TYPE, "known-1"));
+				Assert.assertNotNull(indexGetDocument(INDEX_NAME, INDEX_TYPE, "known-2"));
+				// another subsequent deletes
+				TestUtils.assertResponseStatus(tested.deleteContent("known", "1"), Response.Status.OK);
+				TestUtils.assertResponseStatus(tested.deleteContent("known", "2"), Response.Status.OK);
+				Assert.assertNull(indexGetDocument(INDEX_NAME, INDEX_TYPE, "known-1"));
+				Assert.assertNull(indexGetDocument(INDEX_NAME, INDEX_TYPE, "known-2"));
+			}
+
+		} finally {
+			indexDelete(INDEX_NAME);
+			finalizeESClientForUnitTest();
+		}
 	}
 
 	@Test
@@ -182,32 +232,32 @@ public class ContentRestServiceTest extends ESRealClientTestBase {
 					tested.getAllContent("known", null, null, null));
 
 			// case - something found, no from and size param used
-			indexInsertDocument(INDEX_NAME, INDEX_TYPE, "1", "{\"name\":\"test1\"}");
-			indexInsertDocument(INDEX_NAME, INDEX_TYPE, "2", "{\"name\":\"test2\"}");
-			indexInsertDocument(INDEX_NAME, INDEX_TYPE, "3", "{\"name\":\"test3\"}");
-			indexInsertDocument(INDEX_NAME, INDEX_TYPE, "4", "{\"name\":\"test4\"}");
+			indexInsertDocument(INDEX_NAME, INDEX_TYPE, "known-1", "{\"name\":\"test1\"}");
+			indexInsertDocument(INDEX_NAME, INDEX_TYPE, "known-2", "{\"name\":\"test2\"}");
+			indexInsertDocument(INDEX_NAME, INDEX_TYPE, "known-3", "{\"name\":\"test3\"}");
+			indexInsertDocument(INDEX_NAME, INDEX_TYPE, "known-4", "{\"name\":\"test4\"}");
 			indexFlush(INDEX_NAME);
 			TestUtils
 					.assetStreamingOutputContent(
-							"{\"total\":4,\"hits\":[{\"id\":\"4\",\"data\":{\"name\":\"test4\"}},{\"id\":\"1\",\"data\":{\"name\":\"test1\"}},{\"id\":\"2\",\"data\":{\"name\":\"test2\"}},{\"id\":\"3\",\"data\":{\"name\":\"test3\"}}]}",
+							"{\"total\":4,\"hits\":[{\"id\":\"known-1\",\"data\":{\"name\":\"test1\"}},{\"id\":\"known-2\",\"data\":{\"name\":\"test2\"}},{\"id\":\"known-3\",\"data\":{\"name\":\"test3\"}},{\"id\":\"known-4\",\"data\":{\"name\":\"test4\"}}]}",
 							tested.getAllContent("known", null, null, null));
 
 			// case - something found, from and size param used
 			TestUtils
 					.assetStreamingOutputContent(
-							"{\"total\":4,\"hits\":[{\"id\":\"1\",\"data\":{\"name\":\"test1\"}},{\"id\":\"2\",\"data\":{\"name\":\"test2\"}}]}",
+							"{\"total\":4,\"hits\":[{\"id\":\"known-2\",\"data\":{\"name\":\"test2\"}},{\"id\":\"known-3\",\"data\":{\"name\":\"test3\"}}]}",
 							tested.getAllContent("known", 1, 2, null));
 
 			// case - sort param used
-			indexInsertDocument(INDEX_NAME, INDEX_TYPE, "5", "{\"name\":\"test5\", \"dcp_updated\" : 1}");
+			indexInsertDocument(INDEX_NAME, INDEX_TYPE, "known-5", "{\"name\":\"test5\", \"dcp_updated\" : 1}");
 			indexFlush(INDEX_NAME);
 			// on ASC our record with id 5 is last, so we set from=4
 			TestUtils.assetStreamingOutputContent(
-					"{\"total\":5,\"hits\":[{\"id\":\"5\",\"data\":{\"name\":\"test5\",\"dcp_updated\":1}}]}",
+					"{\"total\":5,\"hits\":[{\"id\":\"known-5\",\"data\":{\"name\":\"test5\",\"dcp_updated\":1}}]}",
 					tested.getAllContent("known", 4, 1, "asc"));
 			// on DESC our record with id 5 is first, so we set from=0
 			TestUtils.assetStreamingOutputContent(
-					"{\"total\":5,\"hits\":[{\"id\":\"5\",\"data\":{\"name\":\"test5\",\"dcp_updated\":1}}]}",
+					"{\"total\":5,\"hits\":[{\"id\":\"known-5\",\"data\":{\"name\":\"test5\",\"dcp_updated\":1}}]}",
 					tested.getAllContent("known", 0, 1, "DESC"));
 
 		} finally {
@@ -242,7 +292,7 @@ public class ContentRestServiceTest extends ESRealClientTestBase {
 
 			// case - index is present bud document is not found
 			indexCreate(INDEX_NAME);
-			indexInsertDocument(INDEX_NAME, INDEX_TYPE, "1", "{\"name\":\"test\"}");
+			indexInsertDocument(INDEX_NAME, INDEX_TYPE, "known-1", "{\"name\":\"test\"}");
 			TestUtils.assertResponseStatus(tested.getContent("known", "2"), Response.Status.NOT_FOUND);
 
 			// case - document found
