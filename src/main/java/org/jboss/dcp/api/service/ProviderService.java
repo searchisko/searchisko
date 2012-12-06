@@ -17,6 +17,7 @@ import javax.inject.Named;
 
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
+import org.elasticsearch.common.settings.SettingsException;
 import org.elasticsearch.index.query.FilterBuilders;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.jboss.elasticsearch.tools.content.StructuredContentPreprocessor;
@@ -43,6 +44,10 @@ public class ProviderService {
 
 	/** Key for content type **/
 	public static final String TYPE = "type";
+	/** Key for index settings **/
+	public static final String INDEX = "index";
+	/** Key for dcp_type setting **/
+	public static final String DCP_TYPE = "dcp_type";
 
 	@Inject
 	private Logger log;
@@ -157,22 +162,26 @@ public class ProviderService {
 
 	@SuppressWarnings("unchecked")
 	public static String getIndexName(Map<String, Object> typeDef) {
-		if (typeDef.get("index") != null)
-			return ((Map<String, Object>) typeDef.get("index")).get("name").toString();
+		if (typeDef.get(INDEX) != null)
+			return ((Map<String, Object>) typeDef.get(INDEX)).get("name").toString();
 		else
 			return null;
 	}
 
 	@SuppressWarnings("unchecked")
 	public static String getIndexType(Map<String, Object> typeDef) {
-		if (typeDef.get("index") != null)
-			return ((Map<String, Object>) typeDef.get("index")).get("type").toString();
+		if (typeDef.get(INDEX) != null)
+			return ((Map<String, Object>) typeDef.get(INDEX)).get("type").toString();
 		else
 			return null;
 	}
 
-	public static String getDcpType(Map<String, Object> typeDef) {
-		return typeDef.get("dcp_type").toString();
+	public static String getDcpType(Map<String, Object> typeDef, String type) {
+		if (typeDef.get(DCP_TYPE) != null)
+			return typeDef.get(DCP_TYPE).toString();
+		else
+			throw new SettingsException("dcp_type is not defined correctly for dcp_provider_type=" + type
+					+ ". Contact administrators please.");
 	}
 
 	public EntityService getEntityService() {

@@ -20,6 +20,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
 
 import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.search.SearchRequestBuilder;
@@ -44,6 +45,21 @@ import org.jboss.dcp.api.service.ProviderService;
 @Consumes(MediaType.APPLICATION_JSON)
 @ProviderAllowed
 public class ContentRestService extends RestServiceBase {
+
+	/** DCP normalized document field constant */
+	public static final String DCP_UPDATED = "dcp_updated";
+	/** DCP normalized document field constant */
+	public static final String DCP_TYPE = "dcp_type";
+	/** DCP normalized document field constant */
+	public static final String DCP_ID = "dcp_id";
+	/** DCP normalized document field constant */
+	public static final String DCP_CONTENT_ID = "dcp_content_id";
+	/** DCP normalized document field constant */
+	public static final String DCP_CONTENT_TYPE = "dcp_content_type";
+	/** DCP normalized document field constant */
+	public static final String DCP_CONTENT_PROVIDER = "dcp_content_provider";
+	/** DCP normalized document field constant */
+	public static final String DCP_TAGS = "dcp_tags";
 
 	@Inject
 	protected ProviderService providerService;
@@ -81,9 +97,9 @@ public class ContentRestService extends RestServiceBase {
 			}
 			if (sort != null) {
 				if (sort.equalsIgnoreCase(SortOrder.ASC.name())) {
-					srb.addSort("dcp_updated", SortOrder.ASC);
+					srb.addSort(DCP_UPDATED, SortOrder.ASC);
 				} else if (sort.equalsIgnoreCase(SortOrder.DESC.name())) {
-					srb.addSort("dcp_updated", SortOrder.DESC);
+					srb.addSort(DCP_UPDATED, SortOrder.DESC);
 				}
 			}
 
@@ -153,8 +169,66 @@ public class ContentRestService extends RestServiceBase {
 	@POST
 	@Path("/{contentId}")
 	@Consumes(MediaType.APPLICATION_JSON)
+	@ProviderAllowed
 	public Object pushContent(@PathParam("type") String type, @PathParam("contentId") String contentId,
 			Map<String, Object> content) {
+
+		// validation
+		if (contentId == null || contentId.isEmpty()) {
+			return createRequiredFieldResponse("contentId");
+		}
+		if (type == null || type.isEmpty()) {
+			return createRequiredFieldResponse("type");
+		}
+		if (content == null || content.isEmpty()) {
+			return Response.status(Status.BAD_REQUEST).entity("Some content for pushing must be defined").build();
+		}
+		try {
+			Map<String, Object> provider = providerService.findProvider(getProvider());
+			Map<String, Object> typeDef = ProviderService.getContentType(provider, type);
+			if (typeDef == null) {
+				return createBadFieldDataResponse("type");
+			}
+
+			// check search subsystem configuration
+			String indexName = ProviderService.getIndexName(typeDef);
+			String indexType = ProviderService.getIndexType(typeDef);
+			checkSearchIndexSettings(type, indexName, indexType);
+
+			// Run preprocessors
+			providerService.runPreprocessors(ProviderService.getPreprocessors(typeDef), content);
+
+			// Copy distinct data from content to normalized fields
+			content.put(DCP_TAGS, content.get("tags"));
+			// TODO EXTERNAL_TAGS - add external tags for this document into dcp_tags field
+
+			// fill some normalized fields - should be last step to avoid changing them via preprocessors
+			content.put(DCP_CONTENT_PROVIDER, getProvider());
+			content.put(DCP_CONTENT_ID, contentId);
+			content.put(DCP_CONTENT_TYPE, type);
+			content.put(DCP_ID, providerService.generateDcpId(type, contentId));
+			content.put(DCP_TYPE, ProviderService.getDcpType(typeDef, type));
+			if (content.get(DCP_UPDATED) == null) {
+				content.put(DCP_UPDATED, new Date());
+			}
+
+			// TODO PERSISTENCE - Store to Persistance
+
+			// Push to search subsystem
+			getSearchClientService().getClient().prepareIndex(indexName, indexType, contentId).setSource(content).execute()
+					.actionGet();
+
+			return Response.ok("Content was successfully pushed").build();
+		} catch (Exception e) {
+			return createErrorResponse(e);
+		}
+
+	}
+
+	@DELETE
+	@Path("/{contentId}")
+	@ProviderAllowed
+	public Object deleteContent(@PathParam("type") String type, @PathParam("contentId") String contentId) {
 
 		// validation
 		if (contentId == null) {
@@ -163,63 +237,24 @@ public class ContentRestService extends RestServiceBase {
 		if (type == null) {
 			return createRequiredFieldResponse("type");
 		}
-		Map<String, Object> provider = providerService.findProvider(getProvider());
-		Map<String, Object> typeDef = ProviderService.getContentType(provider, type);
-		if (typeDef == null) {
-			return createBadFieldDataResponse("type");
-		}
-
-		// Run preprocessors
-		providerService.runPreprocessors(ProviderService.getPreprocessors(typeDef), content);
-
-		// Copy distinct data from content to normalized fields
-		content.put("dcp_tags", content.get("tags"));
-
-		// normalize content - should be last step to avoid changing normalized content via preprocessors
-		content.put("dcp_id", providerService.generateDcpId(type, contentId));
-		content.put("dcp_type", ProviderService.getDcpType(typeDef));
-		if (content.get("dcp_updated") == null) {
-			content.put("dcp_updated", new Date());
-		}
-
-		// Push to search
-		String indexName = ProviderService.getIndexName(typeDef);
-		String indexType = ProviderService.getIndexType(typeDef);
-		checkSearchIndexSettings(type, indexName, indexType);
-
-		// TODO: Store to Persistance
-
 		try {
-			getSearchClientService().getClient().prepareIndex(indexName, indexType, contentId).setSource(content).execute()
-					.actionGet();
+			Map<String, Object> provider = providerService.findProvider(getProvider());
+			Map<String, Object> typeDef = ProviderService.getContentType(provider, type);
+			if (typeDef == null) {
+				return createBadFieldDataResponse("type");
+			}
+
+			// TODO PERSISTENCE - Remove from persistance if exists
+
+			String indexName = ProviderService.getIndexName(typeDef);
+			String indexType = ProviderService.getIndexType(typeDef);
+			checkSearchIndexSettings(type, indexName, indexType);
+
+			getSearchClientService().getClient().prepareDelete(indexName, indexType, contentId).execute().actionGet();
+
+			return Response.ok().build();
 		} catch (Exception e) {
 			return createErrorResponse(e);
 		}
-
-		return Response.ok("Content was successfully pushed").build();
-	}
-
-	@DELETE
-	@Path("/{contentId}")
-	@ProviderAllowed
-	public Object deleteContent(@PathParam("type") String type, @PathParam("contentId") String contentId) {
-		if (type == null) {
-			return createRequiredFieldResponse("type");
-		}
-		Map<String, Object> provider = providerService.findProvider(getProvider());
-		Map<String, Object> typeDef = ProviderService.getContentType(provider, type);
-		if (typeDef == null) {
-			return createBadFieldDataResponse("type");
-		}
-
-		// TODO: Remove from persistance if exists
-
-		String indexName = ProviderService.getIndexName(typeDef);
-		String indexType = ProviderService.getIndexType(typeDef);
-		checkSearchIndexSettings(type, indexName, indexType);
-
-		getSearchClientService().getClient().prepareDelete(indexName, indexType, contentId).execute().actionGet();
-
-		return Response.ok().build();
 	}
 }

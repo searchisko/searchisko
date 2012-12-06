@@ -7,11 +7,14 @@ package org.jboss.dcp.api.testtools;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
 import org.elasticsearch.action.admin.indices.create.CreateIndexRequest;
 import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest;
 import org.elasticsearch.action.admin.indices.flush.FlushRequest;
+import org.elasticsearch.action.get.GetRequest;
+import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.common.settings.Settings;
@@ -171,6 +174,30 @@ public abstract class ESRealClientTestBase {
 		client.index((new IndexRequest(indexName, documentType, id)).source(source)).actionGet();
 	}
 
+	/**
+	 * Get document from inmemory client.
+	 * 
+	 * @param indexName
+	 * @param documentType
+	 * @param id
+	 * @return null if document doesn't exist, Map of Maps structure if exists.
+	 * 
+	 */
+	public Map<String, Object> indexGetDocument(String indexName, String documentType, String id) {
+		GetResponse r = client.get((new GetRequest(indexName, documentType, id))).actionGet();
+		if (r != null && r.exists()) {
+			return r.sourceAsMap();
+		}
+		return null;
+
+	}
+
+	/**
+	 * Flush search index - use it after you insert new documents and before you try to search/get them to be sure they
+	 * are in index.
+	 * 
+	 * @param indexName
+	 */
 	public void indexFlush(String indexName) {
 		client.admin().indices().flush(new FlushRequest(indexName)).actionGet();
 	}
