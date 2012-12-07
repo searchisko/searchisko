@@ -26,7 +26,8 @@ Some system data fields are defined by DCP, some of them are added into content 
 * `dcp_title` - content title - used to present document in basic search GUI - can be directly set by content provider during push
 * `dcp_url_view` - URL where document can be viewed in original system in human readable form - used to open document from basic search GUI - can be directly set by content provider during push
 * `dcp_description` - short text representing content - used to show content in basic search GUI for queries which do not produce highlights - can be directly set by content provider during push
- 
+
+
 DCP Content described by example:
 
     {
@@ -59,43 +60,65 @@ If authentication is not successful, then standard Forbidden HTTP code is return
 --
 
 --
-Content
+Content Push API
+This part of API is used by content providers to manipulate content in DCP. 
 --
-Return Document JSON data
-GET /rest/content/{type}/{id}
+Get defined content from DCP.
+GET /rest/content/{dcp_content_type}/{dcp_content_id}
 < 200
 < Content-Type: application/json
 { "foo": "bar" }
+< 404
 
-All content for specified type.
-GET /rest/content/{type}
+Get all content of specified provider type.
+GET /rest/content/{dcp_content_type}{?from,size,sort}
 < 200
 < Content-Type: application/json
 {
-    "total": "count of returned values",
+    "total": "1",
     "hits": [
         {
-           "id": "internal dcp id of document"
-           "data": "document content"
-         }
+          "id": "AS7-1254",
+          "data": {
+            "tags": ["Content_tag1", "tag2", "tag3"],
+			      "dcp_content_provider": "jbossorg",
+        	  "dcp_content_type: "jbossorg_jira_issue",
+        	  "dcp_content_id": "AS7-1254",
+            "dcp_id": "jbossorg_jira_issue-AS7-1254",
+            "dcp_type": "issue",
+            "dcp_title": "AS7-1254 - Set the port_range on JGroups stacks to 1",
+            "dcp_url_view": "https://issues.jboss.org/browse/AS7-1254",
+            "dcp_description": "Set the port_range on JGroups stacks to 1 to lock down the ports.",
+            "dcp_updated": "2012-12-06T06:34:55.000Z",
+            "dcp_project": "as7",
+            "dcp_contributors": ["John Doe <john@doe.org>", "Pat Mat <pat@mat.org>"],
+            "dcp_activity_dates": ["2012-12-06T06:34:55.000Z", "2012-12-05T01:48:05.000Z"],
+            "dcp_tags": ["Content_tag1", "tag2", "tag3", "user_defined_additional_tag"]
+          }
+        }
     ]
 }
 
 JSON document in http body which is pushed to DCP.
 
 Http body empty
-POST /rest/content/{type}/{id}
+POST /rest/content/{dcp_content_type}/{dcp_content_id}
+> Accept: application/json
 < 200
 < Content-Type: application/json
-{ "foo": "bar" }
+{
+  "status":"insert",
+  "message":"Content was inserted successfully."
+}
 
-Document deleted
-DELETE /rest/content/{type}/{id}
+Delete defined content from DCP.
+DELETE /rest/content/{dcp_content_type}/{dcp_content_id}{?ignore_missing}
 < 200
-
+< 404
 
 --
-Search
+Search API
+This part of API is used by all systems who can use content stored in DCP. 
 --
 Search contributions.
 GET /rest/search?TODO
