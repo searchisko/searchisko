@@ -6,6 +6,7 @@
 package org.jboss.dcp.api.rest;
 
 import java.util.Date;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import javax.enterprise.context.RequestScoped;
@@ -224,11 +225,15 @@ public class ContentRestService extends RestServiceBase {
 			// Push to search subsystem
 			IndexResponse ir = getSearchClientService().getClient().prepareIndex(indexName, indexType, dcpContentId)
 					.setSource(content).execute().actionGet();
+			Map<String, String> retJson = new LinkedHashMap<String, String>();
 			if (ir.version() > 1) {
-				return Response.ok("Content was updated successfully.").build();
+				retJson.put("status", "update");
+				retJson.put("message", "Content was updated successfully.");
 			} else {
-				return Response.ok("Content was inserted successfully.").build();
+				retJson.put("status", "insert");
+				retJson.put("message", "Content was inserted successfully.");
 			}
+			return Response.ok(retJson).build();
 		} catch (Exception e) {
 			return createErrorResponse(e);
 		}
