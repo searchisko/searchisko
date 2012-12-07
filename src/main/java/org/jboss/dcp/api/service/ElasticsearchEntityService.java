@@ -7,6 +7,7 @@ package org.jboss.dcp.api.service;
 
 import java.util.Map;
 
+import org.elasticsearch.action.admin.indices.flush.FlushRequest;
 import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
@@ -65,7 +66,7 @@ public class ElasticsearchEntityService implements EntityService {
 	}
 
 	@Override
-	public Object getAll(Integer from, Integer size) {
+	public Object getAll(Integer from, Integer size, String[] fieldsToRemove) {
 		SearchRequestBuilder srb = new SearchRequestBuilder(client);
 		srb.setIndices(indexName);
 		srb.setTypes(indexType);
@@ -79,7 +80,7 @@ public class ElasticsearchEntityService implements EntityService {
 
 		final SearchResponse response = srb.execute().actionGet();
 
-		return new ESDataOnlyResponse(response);
+		return new ESDataOnlyResponse(response, fieldsToRemove);
 	}
 
 	@Override
@@ -92,6 +93,7 @@ public class ElasticsearchEntityService implements EntityService {
 	public String create(Map<String, Object> entity) {
 		IndexResponse response = client.prepareIndex(indexName, indexType).setOperationThreaded(operationThreaded)
 				.setSource(entity).execute().actionGet();
+		client.admin().indices().flush(new FlushRequest(indexName));
 		return response.getId();
 	}
 
@@ -104,10 +106,12 @@ public class ElasticsearchEntityService implements EntityService {
 	public void update(String id, Map<String, Object> entity) {
 		client.prepareIndex(indexName, indexType, id).setOperationThreaded(operationThreaded).setSource(entity)
 				.execute().actionGet();
+		client.admin().indices().flush(new FlushRequest(indexName));
 	}
 
 	@Override
 	public void delete(String id) {
 		client.prepareDelete(indexName, indexType, id).setOperationThreaded(operationThreaded).execute().actionGet();
+		client.admin().indices().flush(new FlushRequest(indexName));
 	}
 }
