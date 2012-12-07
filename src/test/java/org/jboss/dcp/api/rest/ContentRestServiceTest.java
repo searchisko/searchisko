@@ -76,7 +76,7 @@ public class ContentRestServiceTest extends ESRealClientTestBase {
 				Date d = new Date();
 				content.put(ContentRestService.DCP_UPDATED, d);
 				Response r = TestUtils.assertResponseStatus(tested.pushContent("known", "1", content), Response.Status.OK);
-				Assert.assertEquals("Content was inserted successfully.", r.getEntity());
+				Assert.assertEquals("insert", ((Map<String, String>) r.getEntity()).get("status"));
 				Mockito.verify(tested.providerService).runPreprocessors(PREPROCESSORS, content);
 				indexFlush(INDEX_NAME);
 				Map<String, Object> doc = indexGetDocument(INDEX_NAME, INDEX_TYPE, "known-1");
@@ -104,7 +104,7 @@ public class ContentRestServiceTest extends ESRealClientTestBase {
 				String[] tags = new String[] { "tag_value" };
 				content.put("tags", tags);
 				Response r = TestUtils.assertResponseStatus(tested.pushContent("known", "2", content), Response.Status.OK);
-				Assert.assertEquals("Content was inserted successfully.", r.getEntity());
+				Assert.assertEquals("insert", ((Map<String, String>) r.getEntity()).get("status"));
 				Mockito.verify(tested.providerService).runPreprocessors(PREPROCESSORS, content);
 				indexFlush(INDEX_NAME);
 				Map<String, Object> doc = indexGetDocument(INDEX_NAME, INDEX_TYPE, "known-2");
@@ -129,7 +129,7 @@ public class ContentRestServiceTest extends ESRealClientTestBase {
 				Date d = new Date();
 				content.put(ContentRestService.DCP_UPDATED, d);
 				Response r = TestUtils.assertResponseStatus(tested.pushContent("known", "1", content), Response.Status.OK);
-				Assert.assertEquals("Content was updated successfully.", r.getEntity());
+				Assert.assertEquals("update", ((Map<String, String>) r.getEntity()).get("status"));
 				Mockito.verify(tested.providerService).runPreprocessors(PREPROCESSORS, content);
 				indexFlush(INDEX_NAME);
 				Map<String, Object> doc = indexGetDocument(INDEX_NAME, INDEX_TYPE, "known-1");
