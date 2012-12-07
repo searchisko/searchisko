@@ -4,52 +4,58 @@ HOST: http://dcp.jboss.org/v1
 ---
 # Overview
 
-**Distributed Contribution Platform** provides **Rest API** for data manipulation and search.
+**Distributed Contribution Platform** provides **REST API** for data manipulation and search.
 
 # DCP Content object
 
 This is main content object which can be pushed/retrieved or searched.
  
 DCP Content object is JSON document with free structure. There is no restriction how many key value pairs must be defined or in which structure.
-However this document is during push to DCP and reindex normalized and internal DCP data are added. Those data are prefixed by dcp_.
+Some system data fields are defined by DCP, some of them are added into content inside DCP. Those data fields are prefixed by `dcp_`:
+
+* `dcp_type` - DCP wide content type - eg. mailing-list email, issue, blogpost, IRC post - system field, always necessary
+* `dcp_id` - content id unique in whole DCP platform - system field, always necessary. Is constructed in 'Content Push API' from `dcp_content_type` and `dcp_content_id`.
+* `dcp_content_provider` - identification of provider who stored given data into platform - system field, always necessary - eg. 'jbossorg', 'seam_project' etc.
+* `dcp_content_type` - identifier of provider defined content type for 'Content Push API'. Unique in whole DCP so starts with `dcp_content_provider`, eg. 'jbossorg_jira_issue', 'jbossorg_blog' etc. 
+* `dcp_content_id` -  content identifier passed in by provider, must be unique for given `dcp_content_type`
+* `dcp_updated` - date of last content update in DCP - system field, always necessary
+* `dcp_project` - normalized DCP wide identifier of project - system field - in Search API used for project facet and filter
+* `dcp_contributors` - array of contributing persons, no duplicities in array, persons identifiers normalized during push into DCP - each person represented as String "Name Surname <primaryemail@email.com>" - in Search API used for persons facet and filter
+* `dcp_activity_dates` - array of timestamps representing some activity on this content - in Search API used for time facet and filter
+* `dcp_tags` - array of tags (Strings) - in Search API used for facet (tagcloud) and filter - do not directly pushed by content provider because we plan mechanism for user defined additional tags, so we need to rewrite this field internally. Content provider should use `tags` field instead.
+* `dcp_title` - content title - used to present document in basic search GUI - can be directly set by content provider during push
+* `dcp_url_view` - URL where document can be viewed in original system in human readable form - used to open document from basic search GUI - can be directly set by content provider during push
+* `dcp_description` - short text representing content - used to show content in basic search GUI for queries which do not produce highlights - can be directly set by content provider during push
  
 DCP Content described by example:
 
     {
-        Free JSON Structure repsesenting content. Can be one key value pair or something more structured.
-        It's defined only by source provider.
+        Free JSON Structure representing content. Can be one key value pair or something more structured.
+        It's defined only by content provider.
 
-        "tags": ["Content tag1", "tag2", "tag2"],
+        "tags": ["Content_tag1", "tag2", "tag3"],
 
-        "dcp_content_id": "Any value from content provider",
-        "dcp_content_typev: "Source provider type like 'issue'"
-        "dcp_content_provider": "Name of content provider like JIRA River"
-
-
-        "dcp_id": "internal_id"
-        "dcp_title": "Content Title"
-        "dcp_url_view": "URL representing content view"
-        "dcp_description": "Short description used by search GUI"
-        "dcp_type": "Normalized internal type of content"
-        "dcp_updated": "Timestamp of last update"
-        "dcp_project": "Normalized internal project"
-        "dcp_contributors": ["Firstname Lastname <e-mail>", "Firstname Lastname <e-mail>"]
-        "dcp_activity_dates": [Timestamp1, Timestamp2]
-        "dcp_tags": ["Tags constructed from 'tags' tag and user tags from persistance storage"]
+        "dcp_content_provider": "jbossorg",
+        "dcp_content_type: "jbossorg_jira_issue",
+        "dcp_content_id": "AS7-1254",
+        "dcp_id": "jbossorg_jira_issue-AS7-1254",
+        "dcp_type": "issue",
+        "dcp_title": "AS7-1254 - Set the port_range on JGroups stacks to 1",
+        "dcp_url_view": "https://issues.jboss.org/browse/AS7-1254",
+        "dcp_description": "Set the port_range on JGroups stacks to 1 to lock down the ports.",
+        "dcp_updated": "2012-12-06T06:34:55.000Z",
+        "dcp_project": "as7",
+        "dcp_contributors": ["John Doe <john@doe.org>", "Pat Mat <pat@mat.org>"],
+        "dcp_activity_dates": ["2012-12-06T06:34:55.000Z", "2012-12-05T01:48:05.000Z"],
+        "dcp_tags": ["Content_tag1", "tag2", "tag3", "user_defined_additional_tag"]
     }
-
-All DCP Internal data are set during push and reindex except these which can be defined during data push:
-
-* `dcp_title`
-* `dcp_url_view`
-* `dcp_description`
 
 ---
 
 --
 Authentication
-Distinct operations needs to be authenticated. Content provider provides credintials by URL parameters provider and password or via standard HTTP Basic authentication.
-If authentication is not successfull then standard forbidden http code is returned.
+Some operation calls on REST API need to be authenticated by provider. Caller provides credentials by HTTP URL parameters `provider` and `pwd`, or via standard HTTP Basic authentication.
+If authentication is not successful, then standard Forbidden HTTP code is returned.
 --
 
 --
