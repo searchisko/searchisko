@@ -7,6 +7,7 @@ package org.jboss.dcp.api.rest;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.Map;
 
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.StreamingOutput;
@@ -36,10 +37,30 @@ import org.elasticsearch.search.SearchHit;
  */
 public class ESDataOnlyResponse implements StreamingOutput {
 
+	/**
+	 * Elastic search response
+	 */
 	private SearchResponse response;
+
+	/**
+	 * Field names that should be removed from the output
+	 */
+	private String[] fieldsToRemove;
 
 	public ESDataOnlyResponse(SearchResponse response) {
 		this.response = response;
+	}
+
+	/**
+	 * Create new response
+	 * 
+	 * @param response
+	 * @param fieldsToRemove
+	 *            field names from document source that should be removed
+	 */
+	public ESDataOnlyResponse(SearchResponse response, String[] fieldsToRemove) {
+		this.response = response;
+		this.fieldsToRemove = fieldsToRemove;
 	}
 
 	@Override
@@ -53,11 +74,27 @@ public class ESDataOnlyResponse implements StreamingOutput {
 		for (int i = 0; i < hits.length; i++) {
 			builder.startObject();
 			builder.field("id", hits[i].getId());
-			builder.field("data", hits[i].sourceAsMap());
+			builder.field("data", removeFields(hits[i].sourceAsMap()));
 			builder.endObject();
 		}
 		builder.endArray();
 		builder.endObject();
 		builder.close();
+	}
+
+	protected Map<String, Object> removeFields(Map<String, Object> data) {
+		if (data == null) {
+			return null;
+		}
+
+		if (fieldsToRemove == null) {
+			return data;
+		}
+
+		for (String fieldName : fieldsToRemove) {
+			data.remove(fieldName);
+		}
+
+		return data;
 	}
 }

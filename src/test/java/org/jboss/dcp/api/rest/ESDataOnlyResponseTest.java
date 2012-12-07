@@ -46,6 +46,15 @@ public class ESDataOnlyResponseTest {
 							"{\"total\":2,\"hits\":[{\"id\":\"1\",\"data\":{\"dcp_id\":\"1\",\"dcp_name\":\"name1\"}},{\"id\":\"35\",\"data\":{\"dcp_id\":\"35\",\"dcp_name\":\"myname\"}}]}",
 							tested);
 		}
+		// case - testing source filtering
+		{
+			ESDataOnlyResponse tested = new ESDataOnlyResponse(mockSearchResponse("1", "name1", "35", "myname"),
+					new String[] { "dcp_name" });
+			TestUtils
+					.assetStreamingOutputContent(
+							"{\"total\":2,\"hits\":[{\"id\":\"1\",\"data\":{\"dcp_id\":\"1\"}},{\"id\":\"35\",\"data\":{\"dcp_id\":\"35\"}}]}",
+							tested);
+		}
 	}
 
 	/**
