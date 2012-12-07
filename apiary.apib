@@ -27,7 +27,6 @@ Some system data fields are defined by DCP, some of them are added into content 
 * `dcp_url_view` - URL where document can be viewed in original system in human readable form - used to open document from basic search GUI - can be directly set by content provider during push
 * `dcp_description` - short text representing content - used to show content in basic search GUI for queries which do not produce highlights - can be directly set by content provider during push
 
-
 DCP Content described by example:
 
     {
@@ -68,6 +67,7 @@ GET /rest/content/{dcp_content_type}/{dcp_content_id}
 < 200
 < Content-Type: application/json
 { "foo": "bar" }
+
 < 404
 
 Get all content of specified provider type.
@@ -81,9 +81,9 @@ GET /rest/content/{dcp_content_type}{?from,size,sort}
           "id": "AS7-1254",
           "data": {
             "tags": ["Content_tag1", "tag2", "tag3"],
-			      "dcp_content_provider": "jbossorg",
-        	  "dcp_content_type: "jbossorg_jira_issue",
-        	  "dcp_content_id": "AS7-1254",
+	          "dcp_content_provider": "jbossorg",
+            "dcp_content_type: "jbossorg_jira_issue",
+            "dcp_content_id": "AS7-1254",
             "dcp_id": "jbossorg_jira_issue-AS7-1254",
             "dcp_type": "issue",
             "dcp_title": "AS7-1254 - Set the port_range on JGroups stacks to 1",
@@ -114,7 +114,9 @@ POST /rest/content/{dcp_content_type}/{dcp_content_id}
 Delete defined content from DCP.
 DELETE /rest/content/{dcp_content_type}/{dcp_content_id}{?ignore_missing}
 < 200
+
 < 404
+
 
 --
 Search API
