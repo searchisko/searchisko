@@ -44,23 +44,23 @@ public class RestEntityServiceBaseTest {
 		RestEntityServiceBase tested = getTested();
 
 		// case - OK
-		Mockito.when(tested.entityService.getAll(10, 12)).thenReturn("OK");
+		Mockito.when(tested.entityService.getAll(10, 12, null)).thenReturn("OK");
 		Assert.assertEquals("OK", tested.getAll(10, 12));
-		Mockito.verify(tested.entityService).getAll(10, 12);
+		Mockito.verify(tested.entityService).getAll(10, 12, null);
 		Mockito.verifyNoMoreInteractions(tested.entityService);
 
 		// case - OK, null returned
 		Mockito.reset(tested.entityService);
-		Mockito.when(tested.entityService.getAll(10, 12)).thenReturn(null);
+		Mockito.when(tested.entityService.getAll(10, 12, null)).thenReturn(null);
 		Assert.assertEquals(null, tested.getAll(10, 12));
-		Mockito.verify(tested.entityService).getAll(10, 12);
+		Mockito.verify(tested.entityService).getAll(10, 12, null);
 		Mockito.verifyNoMoreInteractions(tested.entityService);
 
 		// case - error
 		Mockito.reset(tested.entityService);
-		Mockito.when(tested.entityService.getAll(10, 12)).thenThrow(new RuntimeException("my exception"));
+		Mockito.when(tested.entityService.getAll(10, 12, null)).thenThrow(new RuntimeException("my exception"));
 		TestUtils.assertResponseStatus(tested.getAll(10, 12), Status.INTERNAL_SERVER_ERROR);
-		Mockito.verify(tested.entityService).getAll(10, 12);
+		Mockito.verify(tested.entityService).getAll(10, 12, null);
 		Mockito.verifyNoMoreInteractions(tested.entityService);
 	}
 

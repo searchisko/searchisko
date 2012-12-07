@@ -74,7 +74,7 @@ public class ESDataOnlyResponse implements StreamingOutput {
 		for (int i = 0; i < hits.length; i++) {
 			builder.startObject();
 			builder.field("id", hits[i].getId());
-			builder.field("data", removeFields(hits[i].sourceAsMap()));
+			builder.field("data", ESDataOnlyResponse.removeFields(hits[i].sourceAsMap(), fieldsToRemove));
 			builder.endObject();
 		}
 		builder.endArray();
@@ -82,7 +82,7 @@ public class ESDataOnlyResponse implements StreamingOutput {
 		builder.close();
 	}
 
-	protected Map<String, Object> removeFields(Map<String, Object> data) {
+	public static Map<String, Object> removeFields(Map<String, Object> data, String[] fieldsToRemove) {
 		if (data == null) {
 			return null;
 		}

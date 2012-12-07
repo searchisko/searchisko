@@ -31,8 +31,8 @@ public class ProjectService implements EntityService {
 	private EntityService entityService;
 
 	@Override
-	public Object getAll(Integer from, Integer size) {
-		return entityService.getAll(from, size);
+	public Object getAll(Integer from, Integer size, String[] fieldsToRemove) {
+		return entityService.getAll(from, size, fieldsToRemove);
 	}
 
 	@Override

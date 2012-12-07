@@ -46,7 +46,7 @@ public class RestEntityServiceBase {
 	@Produces(MediaType.APPLICATION_JSON)
 	public Object getAll(@QueryParam("from") Integer from, @QueryParam("size") Integer size) {
 		try {
-			return entityService.getAll(from, size);
+			return entityService.getAll(from, size, null);
 		} catch (Exception e) {
 			return createErrorResponse(e);
 		}
@@ -62,6 +62,19 @@ public class RestEntityServiceBase {
 				return Response.status(Response.Status.NOT_FOUND).build();
 			}
 			return ret;
+		} catch (Exception e) {
+			return createErrorResponse(e);
+		}
+	}
+
+	public Object getFiltered(String id, String[] fieldsToRemove) {
+		try {
+			Map<String, Object> ret = entityService.get(id);
+			if (ret == null) {
+				return Response.status(Response.Status.NOT_FOUND).build();
+			} else {
+				return ESDataOnlyResponse.removeFields(ret, fieldsToRemove);
+			}
 		} catch (Exception e) {
 			return createErrorResponse(e);
 		}

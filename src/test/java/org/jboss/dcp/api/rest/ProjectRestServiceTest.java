@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import javax.ws.rs.core.Response.Status;
+import javax.ws.rs.core.SecurityContext;
 
 import junit.framework.Assert;
 
@@ -36,21 +37,22 @@ public class ProjectRestServiceTest {
 
 	@Test
 	public void getAll() {
-		RestEntityServiceBase tested = getTested();
+		ProjectRestService tested = getTested();
 
 		// case - OK
-		Mockito.when(tested.entityService.getAll(10, 12)).thenReturn("OK");
+		Mockito.when(tested.entityService.getAll(10, 12, tested.fieldsToRemove)).thenReturn("OK");
 		Assert.assertEquals("OK", tested.getAll(10, 12));
 
 		// case - error
 		Mockito.reset(tested.entityService);
-		Mockito.when(tested.entityService.getAll(10, 12)).thenThrow(new RuntimeException("my exception"));
+		Mockito.when(tested.entityService.getAll(10, 12, tested.fieldsToRemove)).thenThrow(
+				new RuntimeException("my exception"));
 		TestUtils.assertResponseStatus(tested.getAll(10, 12), Status.INTERNAL_SERVER_ERROR);
 	}
 
 	@Test
 	public void get() {
-		RestEntityServiceBase tested = getTested();
+		ProjectRestService tested = getTested();
 
 		// case - OK
 		Map<String, Object> m = new HashMap<String, Object>();
@@ -67,6 +69,7 @@ public class ProjectRestServiceTest {
 		ProjectRestService tested = new ProjectRestService();
 		RestEntityServiceBaseTest.mockLogger(tested);
 		tested.setEntityService(Mockito.mock(EntityService.class));
+		tested.securityContext = Mockito.mock(SecurityContext.class);
 		return tested;
 	}
 

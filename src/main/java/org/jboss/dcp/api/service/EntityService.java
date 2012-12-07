@@ -22,9 +22,11 @@ public interface EntityService {
 	 *            from index. Can be null
 	 * @param size
 	 *            size to return. If null then default length is returned
+	 * @param fieldsToRemove
+	 *            array of fields that should be removed
 	 * @return
 	 */
-	public Object getAll(Integer from, Integer size);
+	public Object getAll(Integer from, Integer size, String[] fieldsToRemove);
 
 	/**
 	 * Get entity with specified id
