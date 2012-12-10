@@ -26,7 +26,10 @@ import org.elasticsearch.search.SearchHit;
  * "total" : 1,
  * "hits"  : [
  *     {
- *       JSON content of entity
+ *       "id" : "12",
+ *       "data" : { 
+ *         JSON content of entity - source field from ES index
+ *       }
  *     }
  *   ]
  * }
@@ -43,23 +46,59 @@ public class ESDataOnlyResponse implements StreamingOutput {
 	private SearchResponse response;
 
 	/**
+	 * Name of field in document source which is returned as id in results. If null then ElasticSearch document id is
+	 * returned as id.
+	 */
+	private String idField;
+
+	/**
 	 * Field names that should be removed from the output
 	 */
 	private String[] fieldsToRemove;
 
+	/**
+	 * Create new response object.
+	 * 
+	 * @param response
+	 */
 	public ESDataOnlyResponse(SearchResponse response) {
 		this.response = response;
+	}
+
+	/**
+	 * Create new response object.
+	 * 
+	 * @param response
+	 * @param idField - name of field in document source which is returned as id in results.
+	 */
+	public ESDataOnlyResponse(SearchResponse response, String idField) {
+		super();
+		this.response = response;
+		this.idField = idField;
 	}
 
 	/**
 	 * Create new response
 	 * 
 	 * @param response
-	 * @param fieldsToRemove
-	 *            field names from document source that should be removed
+	 * @param fieldsToRemove - field names from document source that should be removed
 	 */
 	public ESDataOnlyResponse(SearchResponse response, String[] fieldsToRemove) {
 		this.response = response;
+		this.fieldsToRemove = fieldsToRemove;
+	}
+
+	/**
+	 * Create new response
+	 * 
+	 * @param response
+	 * @param idField - name of field in document source which is returned as id in results.
+	 * @param fieldsToRemove - field names from document source that should be removed
+	 */
+	public ESDataOnlyResponse(SearchResponse response, String idField, String[] fieldsToRemove) {
+		super();
+		this.response = response;
+		this.idField = idField;
 		this.fieldsToRemove = fieldsToRemove;
 	}
 
@@ -73,8 +112,13 @@ public class ESDataOnlyResponse implements StreamingOutput {
 		SearchHit[] hits = response.getHits().getHits();
 		for (int i = 0; i < hits.length; i++) {
 			builder.startObject();
-			builder.field("id", hits[i].getId());
-			builder.field("data", ESDataOnlyResponse.removeFields(hits[i].sourceAsMap(), fieldsToRemove));
+			Map<String, Object> src = hits[i].sourceAsMap();
+			if (idField == null) {
+				builder.field("id", hits[i].getId());
+			} else {
+				builder.field("id", src.get(idField));
+			}
+			builder.field("data", ESDataOnlyResponse.removeFields(src, fieldsToRemove));
 			builder.endObject();
 		}
 		builder.endArray();
@@ -82,7 +126,7 @@ public class ESDataOnlyResponse implements StreamingOutput {
 		builder.close();
 	}
 
-	public static Map<String, Object> removeFields(Map<String, Object> data, String[] fieldsToRemove) {
+	protected static Map<String, Object> removeFields(Map<String, Object> data, String[] fieldsToRemove) {
 		if (data == null) {
 			return null;
 		}

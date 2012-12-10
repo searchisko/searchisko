@@ -243,33 +243,36 @@ public class ContentRestServiceTest extends ESRealClientTestBase {
 					tested.getAllContent("known", null, null, null));
 
 			// case - something found, no from and size param used
-			indexInsertDocument(INDEX_NAME, INDEX_TYPE, "known-1", "{\"name\":\"test1\"}");
-			indexInsertDocument(INDEX_NAME, INDEX_TYPE, "known-2", "{\"name\":\"test2\"}");
-			indexInsertDocument(INDEX_NAME, INDEX_TYPE, "known-3", "{\"name\":\"test3\"}");
-			indexInsertDocument(INDEX_NAME, INDEX_TYPE, "known-4", "{\"name\":\"test4\"}");
+			indexInsertDocument(INDEX_NAME, INDEX_TYPE, "known-1", "{\"name\":\"test1\",\"dcp_content_id\":\"1\"}");
+			indexInsertDocument(INDEX_NAME, INDEX_TYPE, "known-2", "{\"name\":\"test2\",\"dcp_content_id\":\"2\"}");
+			indexInsertDocument(INDEX_NAME, INDEX_TYPE, "known-3", "{\"name\":\"test3\",\"dcp_content_id\":\"3\"}");
+			indexInsertDocument(INDEX_NAME, INDEX_TYPE, "known-4", "{\"name\":\"test4\",\"dcp_content_id\":\"4\"}");
 			indexFlush(INDEX_NAME);
 			TestUtils
 					.assetStreamingOutputContent(
-							"{\"total\":4,\"hits\":[{\"id\":\"known-1\",\"data\":{\"name\":\"test1\"}},{\"id\":\"known-2\",\"data\":{\"name\":\"test2\"}},{\"id\":\"known-3\",\"data\":{\"name\":\"test3\"}},{\"id\":\"known-4\",\"data\":{\"name\":\"test4\"}}]}",
+							"{\"total\":4,\"hits\":[{\"id\":\"1\",\"data\":{\"name\":\"test1\",\"dcp_content_id\":\"1\"}},{\"id\":\"2\",\"data\":{\"name\":\"test2\",\"dcp_content_id\":\"2\"}},{\"id\":\"3\",\"data\":{\"name\":\"test3\",\"dcp_content_id\":\"3\"}},{\"id\":\"4\",\"data\":{\"name\":\"test4\",\"dcp_content_id\":\"4\"}}]}",
 							tested.getAllContent("known", null, null, null));
 
 			// case - something found, from and size param used
 			TestUtils
 					.assetStreamingOutputContent(
-							"{\"total\":4,\"hits\":[{\"id\":\"known-2\",\"data\":{\"name\":\"test2\"}},{\"id\":\"known-3\",\"data\":{\"name\":\"test3\"}}]}",
+							"{\"total\":4,\"hits\":[{\"id\":\"2\",\"data\":{\"name\":\"test2\",\"dcp_content_id\":\"2\"}},{\"id\":\"3\",\"data\":{\"name\":\"test3\",\"dcp_content_id\":\"3\"}}]}",
 							tested.getAllContent("known", 1, 2, null));
 
 			// case - sort param used
-			indexInsertDocument(INDEX_NAME, INDEX_TYPE, "known-5", "{\"name\":\"test5\", \"dcp_updated\" : 1}");
+			indexInsertDocument(INDEX_NAME, INDEX_TYPE, "known-5",
+					"{\"name\":\"test5\", \"dcp_updated\" : 1,\"dcp_content_id\":\"5\"}");
 			indexFlush(INDEX_NAME);
 			// on ASC our record with id 5 is last, so we set from=4
-			TestUtils.assetStreamingOutputContent(
-					"{\"total\":5,\"hits\":[{\"id\":\"known-5\",\"data\":{\"name\":\"test5\",\"dcp_updated\":1}}]}",
-					tested.getAllContent("known", 4, 1, "asc"));
+			TestUtils
+					.assetStreamingOutputContent(
+							"{\"total\":5,\"hits\":[{\"id\":\"5\",\"data\":{\"name\":\"test5\",\"dcp_content_id\":\"5\",\"dcp_updated\":1}}]}",
+							tested.getAllContent("known", 4, 1, "asc"));
 			// on DESC our record with id 5 is first, so we set from=0
-			TestUtils.assetStreamingOutputContent(
-					"{\"total\":5,\"hits\":[{\"id\":\"known-5\",\"data\":{\"name\":\"test5\",\"dcp_updated\":1}}]}",
-					tested.getAllContent("known", 0, 1, "DESC"));
+			TestUtils
+					.assetStreamingOutputContent(
+							"{\"total\":5,\"hits\":[{\"id\":\"5\",\"data\":{\"name\":\"test5\",\"dcp_content_id\":\"5\",\"dcp_updated\":1}}]}",
+							tested.getAllContent("known", 0, 1, "DESC"));
 
 		} finally {
 			indexDelete(INDEX_NAME);

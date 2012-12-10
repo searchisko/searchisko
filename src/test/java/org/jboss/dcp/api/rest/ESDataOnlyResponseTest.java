@@ -26,7 +26,7 @@ import org.mockito.Mockito;
 public class ESDataOnlyResponseTest {
 
 	@Test
-	public void write() throws WebApplicationException, IOException {
+	public void write_basic() throws WebApplicationException, IOException {
 
 		{
 			ESDataOnlyResponse tested = new ESDataOnlyResponse(mockSearchResponse(null, null, null, null));
@@ -46,6 +46,11 @@ public class ESDataOnlyResponseTest {
 							"{\"total\":2,\"hits\":[{\"id\":\"1\",\"data\":{\"dcp_id\":\"1\",\"dcp_name\":\"name1\"}},{\"id\":\"35\",\"data\":{\"dcp_id\":\"35\",\"dcp_name\":\"myname\"}}]}",
 							tested);
 		}
+	}
+
+	@Test
+	public void write_filtering() throws WebApplicationException, IOException {
+
 		// case - testing source filtering
 		{
 			ESDataOnlyResponse tested = new ESDataOnlyResponse(mockSearchResponse("1", "name1", "35", "myname"),
@@ -53,6 +58,33 @@ public class ESDataOnlyResponseTest {
 			TestUtils
 					.assetStreamingOutputContent(
 							"{\"total\":2,\"hits\":[{\"id\":\"1\",\"data\":{\"dcp_id\":\"1\"}},{\"id\":\"35\",\"data\":{\"dcp_id\":\"35\"}}]}",
+							tested);
+		}
+	}
+
+	@Test
+	public void write_idfield() throws WebApplicationException, IOException {
+
+		// case - testing source filtering
+		{
+			ESDataOnlyResponse tested = new ESDataOnlyResponse(mockSearchResponse("1", "name1", "35", "myname"), "dcp_name");
+			TestUtils
+					.assetStreamingOutputContent(
+							"{\"total\":2,\"hits\":[{\"id\":\"name1\",\"data\":{\"dcp_id\":\"1\",\"dcp_name\":\"name1\"}},{\"id\":\"myname\",\"data\":{\"dcp_id\":\"35\",\"dcp_name\":\"myname\"}}]}",
+							tested);
+		}
+	}
+
+	@Test
+	public void write_filtering_idfield() throws WebApplicationException, IOException {
+
+		// case - testing source filtering
+		{
+			ESDataOnlyResponse tested = new ESDataOnlyResponse(mockSearchResponse("1", "name1", "35", "myname"), "dcp_name",
+					new String[] { "dcp_name" });
+			TestUtils
+					.assetStreamingOutputContent(
+							"{\"total\":2,\"hits\":[{\"id\":\"name1\",\"data\":{\"dcp_id\":\"1\"}},{\"id\":\"myname\",\"data\":{\"dcp_id\":\"35\"}}]}",
 							tested);
 		}
 	}

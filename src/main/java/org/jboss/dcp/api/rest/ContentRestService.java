@@ -109,7 +109,7 @@ public class ContentRestService extends RestServiceBase {
 
 			final SearchResponse response = srb.execute().actionGet();
 
-			return new ESDataOnlyResponse(response);
+			return new ESDataOnlyResponse(response, DCP_CONTENT_ID);
 		} catch (IndexMissingException e) {
 			return Response.status(Response.Status.NOT_FOUND).build();
 		} catch (Exception e) {
