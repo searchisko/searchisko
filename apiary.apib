@@ -68,7 +68,11 @@ GET /rest/content/{dcp_content_type}/{dcp_content_id}
 < Content-Type: application/json
 { "foo": "bar" }
 
+Missing document.
+GET /rest/content/{dcp_content_type}/{dcp_content_id}
 < 404
+< Content-Type: text/plain
+Missing document
 
 Get all content of specified provider type.
 GET /rest/content/{dcp_content_type}{?from,size,sort}
@@ -81,7 +85,7 @@ GET /rest/content/{dcp_content_type}{?from,size,sort}
           "id": "AS7-1254",
           "data": {
             "tags": ["Content_tag1", "tag2", "tag3"],
-	          "dcp_content_provider": "jbossorg",
+              "dcp_content_provider": "jbossorg",
             "dcp_content_type: "jbossorg_jira_issue",
             "dcp_content_id": "AS7-1254",
             "dcp_id": "jbossorg_jira_issue-AS7-1254",
