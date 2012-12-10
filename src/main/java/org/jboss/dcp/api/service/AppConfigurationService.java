@@ -25,6 +25,7 @@ import org.jboss.dcp.api.model.AppConfiguration.ClientType;
  * Application configuration service
  * 
  * @author Libor Krzyzanek
+ * @author Vlastimil Elias (velias at redhat dot com)
  */
 @Named
 @ApplicationScoped
@@ -33,9 +34,9 @@ import org.jboss.dcp.api.model.AppConfiguration.ClientType;
 public class AppConfigurationService {
 
 	@Inject
-	private Logger log;
+	protected Logger log;
 
-	private AppConfiguration appConfiguration;
+	protected AppConfiguration appConfiguration;
 
 	public AppConfiguration getAppConfiguration() {
 		return appConfiguration;
@@ -43,14 +44,23 @@ public class AppConfigurationService {
 
 	@PostConstruct
 	public void loadConfig() throws IOException {
+		loadConfig("/app.properties");
+	}
+
+	protected void loadConfig(String filename) throws IOException {
 		Properties prop = new Properties();
-		InputStream inStream = AppConfigurationService.class.getResourceAsStream("/app.properties");
+		InputStream inStream = AppConfigurationService.class.getResourceAsStream(filename);
+		if (inStream == null) {
+			log.log(Level.WARNING, "Cannot load app.properties because not found");
+			throw new IOException("Cannot load app.properties because not found");
+		}
 		try {
 			prop.load(inStream);
-			inStream.close();
 		} catch (IOException e) {
-			log.log(Level.INFO, "Cannot load app.properties", e);
+			log.log(Level.WARNING, "Cannot load app.properties", e);
 			throw e;
+		} finally {
+			inStream.close();
 		}
 
 		appConfiguration = new AppConfiguration();
@@ -65,8 +75,8 @@ public class AppConfigurationService {
 		log.info("Data path: " + prop.getProperty("es.client.embedded.data.path"));
 
 		appConfiguration.setAppDataPath(prop.getProperty("es.client.embedded.data.path"));
-		appConfiguration.setProviderCreateInitData(Boolean.parseBoolean(prop.getProperty("provider.createInitData",
-				"false")));
+		appConfiguration.setProviderCreateInitData(Boolean.parseBoolean(prop
+				.getProperty("provider.createInitData", "false")));
 
 	}
 }
