@@ -56,13 +56,13 @@ DCP Content described by example:
 
 Some operation calls on REST API need to be authenticated by provider. Caller provides credentials by HTTP URL parameters `provider` and `pwd`, or via standard HTTP Basic authentication.
 
-# Description of usual server responses
+# Description of usual server HTTP response codes
 
-* __200 ("OK")__ - the request was successful (some API calls may return 201 instead).
+* __200 ("OK")__ - the request was successful.
 * __400 ("Bad Request")__ - the request could not be understood or was missing required parameters. Body of HTTP response contains description of problem.
-* __401 ("Unauthorized")__ - authentication required for requested operation and credentials not provided, or authentication failed
+* __401 ("Unauthorized")__ - authentication required for requested operation and credentials not provided, or authentication failed.
 * __403 ("Forbidden")__ - user doesn't have permissions for requested operation.
-* __404 ("Not Found")__ - resource was not found
+* __404 ("Not Found")__ - resource was not found.
 * __500 ("Internal error")__ - internal application error or misconfiguration, should be reported to administrators. Body of HTTP response contains description of problem.
 ---
 
@@ -142,6 +142,10 @@ Push content object into DCP. Content is updated in DCP if exists here, or inser
 Data normalizations are performed during this request processing and content object is extended by DCP system data fields - performed normalization tasks depend on configuration for given `dcp_content_type`.
 
 *Provider authentication required.*
+
+##### Response content
+Response contains JSON structure with `status` field containing 'insert' or 'update' string.
+
 POST /rest/content/{dcp_content_type}/{dcp_content_id}
 > Accept: application/json
 < 200
@@ -157,10 +161,12 @@ Delete defined content object from DCP.
 
 ##### Request parameters
 
-* `ignore_missing` if set to true then __200 (OK)__ is returned instead of __404 (Not Found)__ if content doesn't exist  
+* `ignore_missing` if set to 'true' then __200 (OK)__ is returned instead of __404 (Not Found)__ if deleted content object doesn't exists in DCP.  
  
 DELETE /rest/content/{dcp_content_type}/{dcp_content_id}{?ignore_missing}
 < 200
+< Content-Type: plain/text
+Content deleted successfully.
 
 
 --
