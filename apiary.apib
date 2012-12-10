@@ -8,12 +8,12 @@ HOST: http://dcp.jboss.org/v1
 
 # DCP Content object
 
-This is main content object which can be pushed/retrieved or searched.
+This chapter describes main content object which can be pushed to and retrieved or searched from DCP.
  
 DCP Content object is JSON document with free structure. There is no restriction how many key value pairs must be defined or in which structure.
 Some system data fields are defined by DCP, some of them are added into content inside DCP. Those data fields are prefixed by `dcp_`:
 
-* `dcp_type` - DCP wide content type - eg. mailing-list email, issue, blogpost, IRC post - system field, always necessary
+* `dcp_type` - DCP wide normalized content type - eg. mailing-list email, issue, blogpost, IRC post, commit, discussion thread - system field, always necessary
 * `dcp_id` - content id unique in whole DCP platform - system field, always necessary. Is constructed in 'Content Push API' from `dcp_content_type` and `dcp_content_id`.
 * `dcp_content_provider` - identification of provider who stored given data into platform - system field, always necessary - eg. 'jbossorg', 'seam_project' etc.
 * `dcp_content_type` - identifier of provider defined content type for 'Content Push API'. Unique in whole DCP so starts with `dcp_content_provider`, eg. 'jbossorg_jira_issue', 'jbossorg_blog' etc. 
@@ -26,6 +26,7 @@ Some system data fields are defined by DCP, some of them are added into content 
 * `dcp_title` - content title - used to present document in basic search GUI - can be directly set by content provider during push
 * `dcp_url_view` - URL where document can be viewed in original system in human readable form - used to open document from basic search GUI - can be directly set by content provider during push
 * `dcp_description` - short text representing content - used to show content in basic search GUI for queries which do not produce highlights - can be directly set by content provider during push
+
 
 DCP Content described by example:
 
@@ -50,62 +51,96 @@ DCP Content described by example:
         "dcp_tags": ["Content_tag1", "tag2", "tag3", "user_defined_additional_tag"]
     }
 
+
+# Authentication
+
+Some operation calls on REST API need to be authenticated by provider. Caller provides credentials by HTTP URL parameters `provider` and `pwd`, or via standard HTTP Basic authentication.
+
+# Description of usual server responses
+
+* __200 ("OK")__ - the request was successful (some API calls may return 201 instead).
+* __400 ("Bad Request")__ - the request could not be understood or was missing required parameters. Body of HTTP response contains description of problem.
+* __401 ("Unauthorized")__ - authentication required for requested operation and credentials not provided, or authentication failed
+* __403 ("Forbidden")__ - user doesn't have permissions for requested operation.
+* __404 ("Not Found")__ - resource was not found
+* __500 ("Internal error")__ - internal application error or misconfiguration, should be reported to administrators. Body of HTTP response contains description of problem.
 ---
 
 --
-Authentication
-Some operation calls on REST API need to be authenticated by provider. Caller provides credentials by HTTP URL parameters `provider` and `pwd`, or via standard HTTP Basic authentication.
-If authentication is not successful, then standard Forbidden HTTP code is returned.
+Content Push API
+This part of API is primarily used by *content providers* to manipulate content in DCP. 
+
+Each provider has set of 'provider types' defined in DCP, which are passed on this API as `{dcp_content_type}` URL path part.
+'Provider type' is one type of content object stored into DCP by given provider (eg. issue from provider's issue tracking system, blog post from provider's blogging system etc).
+To manipulate content objects over this API provider must use identifiers unique for given 'provider type'. These identifiers are referred as `{dcp_content_id}` url path part in API documentation.      
 --
 
---
-Content Push API
-This part of API is used by content providers to manipulate content in DCP. 
---
-Get defined content from DCP.
+Get one content object of specified 'provider type' and 'provider id' from DCP.
 GET /rest/content/{dcp_content_type}/{dcp_content_id}
 < 200
 < Content-Type: application/json
-{ "foo": "bar" }
+{
+  "tags": ["Content_tag1", "tag2", "tag3"],
+  "dcp_content_provider": "jbossorg",
+  "dcp_content_type: "jbossorg_jira_issue",
+  "dcp_content_id": "AS7-1254",
+  "dcp_id": "jbossorg_jira_issue-AS7-1254",
+  "dcp_type": "issue",
+  "dcp_title": "AS7-1254 - Set the port_range on JGroups stacks to 1",
+  "dcp_url_view": "https://issues.jboss.org/browse/AS7-1254",
+  "dcp_description": "Set the port_range on JGroups stacks to 1 to lock down the ports.",
+  "dcp_updated": "2012-12-06T06:34:55.000Z",
+  "dcp_project": "as7",
+  "dcp_contributors": ["John Doe <john@doe.org>", "Pat Mat <pat@mat.org>"],
+  "dcp_activity_dates": ["2012-12-06T06:34:55.000Z", "2012-12-05T01:48:05.000Z"],
+  "dcp_tags": ["Content_tag1", "tag2", "tag3", "user_defined_additional_tag"]
+}
 
-Missing document.
-GET /rest/content/{dcp_content_type}/{dcp_content_id}
-< 404
-< Content-Type: text/plain
-Missing document
 
-Get all content of specified provider type.
+Get all content objects of specified 'provider type'.
+
+##### Request parameters
+
+* `from` index of first content object returned in result list. Default is 0 to start from begin of list.
+* `size` of returned result array. Default is 10.
+* `sort` you can use `asc` or `desc` value to sort results by date of last update of content object in DCP (`dcp_updated` field).   
+
+##### Response content
+Response contains JSON structure with overall number of content objects of specified 'provider type' in `total` field, 
+and array of content objects records in `hits` field. Array records depends on `from` and `size` request parameters.
+Each record in array contains `id` field with 'provider id' of content object, and then `data` field with full content object. 
+
 GET /rest/content/{dcp_content_type}{?from,size,sort}
 < 200
 < Content-Type: application/json
 {
-    "total": "1",
-    "hits": [
-        {
-          "id": "AS7-1254",
-          "data": {
-            "tags": ["Content_tag1", "tag2", "tag3"],
-              "dcp_content_provider": "jbossorg",
-            "dcp_content_type: "jbossorg_jira_issue",
-            "dcp_content_id": "AS7-1254",
-            "dcp_id": "jbossorg_jira_issue-AS7-1254",
-            "dcp_type": "issue",
-            "dcp_title": "AS7-1254 - Set the port_range on JGroups stacks to 1",
-            "dcp_url_view": "https://issues.jboss.org/browse/AS7-1254",
-            "dcp_description": "Set the port_range on JGroups stacks to 1 to lock down the ports.",
-            "dcp_updated": "2012-12-06T06:34:55.000Z",
-            "dcp_project": "as7",
-            "dcp_contributors": ["John Doe <john@doe.org>", "Pat Mat <pat@mat.org>"],
-            "dcp_activity_dates": ["2012-12-06T06:34:55.000Z", "2012-12-05T01:48:05.000Z"],
-            "dcp_tags": ["Content_tag1", "tag2", "tag3", "user_defined_additional_tag"]
-          }
-        }
-    ]
+  "total": "1",
+  "hits": [
+    {
+      "id": "AS7-1254",
+      "data": {
+        "tags": ["Content_tag1", "tag2", "tag3"],
+        "dcp_content_provider": "jbossorg",
+        "dcp_content_type: "jbossorg_jira_issue",
+        "dcp_content_id": "AS7-1254",
+        "dcp_id": "jbossorg_jira_issue-AS7-1254",
+        "dcp_type": "issue",
+        "dcp_title": "AS7-1254 - Set the port_range on JGroups stacks to 1",
+        "dcp_url_view": "https://issues.jboss.org/browse/AS7-1254",
+        "dcp_description": "Set the port_range on JGroups stacks to 1 to lock down the ports.",
+        "dcp_updated": "2012-12-06T06:34:55.000Z",
+        "dcp_project": "as7",
+        "dcp_contributors": ["John Doe <john@doe.org>", "Pat Mat <pat@mat.org>"],
+        "dcp_activity_dates": ["2012-12-06T06:34:55.000Z", "2012-12-05T01:48:05.000Z"],
+        "dcp_tags": ["Content_tag1", "tag2", "tag3", "user_defined_additional_tag"]
+      }
+    }
+  ]
 }
 
-JSON document in http body which is pushed to DCP.
-
-Http body empty
+Push content object into DCP. Content is updated in DCP if exists here, or inserted. 
+Data normalizations are performed during this request processing and content object is extended by DCP system data fields - performed normalization tasks depend on configuration for given `dcp_content_type`.
+*Provider authentication required.*
 POST /rest/content/{dcp_content_type}/{dcp_content_id}
 > Accept: application/json
 < 200
@@ -115,11 +150,15 @@ POST /rest/content/{dcp_content_type}/{dcp_content_id}
   "message":"Content was inserted successfully."
 }
 
-Delete defined content from DCP.
+Delete defined content object from DCP.
+*Provider authentication required.* 
+
+##### Request parameters
+
+* `ignore_missing` if set to true then __200 (OK)__ is returned instead of __404 (Not Found)__ if content doesn't exist  
+ 
 DELETE /rest/content/{dcp_content_type}/{dcp_content_id}{?ignore_missing}
 < 200
-
-< 404
 
 
 --
