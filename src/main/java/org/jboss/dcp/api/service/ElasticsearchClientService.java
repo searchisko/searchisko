@@ -31,12 +31,13 @@ import org.elasticsearch.node.NodeBuilder;
  * to care of it.
  * 
  * @author Libor Krzyzanek
+ * @author Vlastimil Elias (velias at redhat dot com)
  * 
  */
 public class ElasticsearchClientService {
 
 	@Inject
-	private Logger log;
+	protected Logger log;
 
 	/**
 	 * Node used only in embedded mode
@@ -83,8 +84,8 @@ public class ElasticsearchClientService {
 					.put("path.data", pathFolderName).build();
 
 			node = NodeBuilder.nodeBuilder().settings(s).local(true).node();
-			log.log(Level.INFO, "New Embedded Node instance created, {0}, location: {1}", new Object[] { node,
-					pathFolderName });
+			log.log(Level.INFO, "New Embedded Node instance created, {0}, location: {1}",
+					new Object[] { node, pathFolderName });
 			return node;
 		} catch (Exception e) {
 			if (node != null) {
@@ -94,7 +95,7 @@ public class ElasticsearchClientService {
 		}
 	}
 
-	protected Client createTransportClient(Properties transportAddresses, Properties settings) {
+	protected TransportClient createTransportClient(Properties transportAddresses, Properties settings) {
 		final TransportClient transportClient = new TransportClient(settingsBuilder().put(settings)
 				.put("client.transport.sniff", true).build());
 		log.log(Level.INFO, "New TransportClient instance created, {0}", client);
@@ -113,20 +114,25 @@ public class ElasticsearchClientService {
 
 	@PreDestroy
 	public void destroy() {
-		if (node != null) {
-			node.close();
-			log.info("ElasticSearch Search Node is closed");
+		try {
+			if (client != null) {
+				client.close();
+				log.info("ElasticSearch Search Client is closed");
+			}
+		} finally {
+			if (node != null) {
+				node.close();
+				log.info("ElasticSearch Search Node is closed");
+			}
 		}
-		client.close();
-		log.info("ElasticSearch Search Client is closed");
 	}
 
 	public void checkHealthOfCluster(Client client) {
 		try {
 			if (log.isLoggable(Level.FINE)) {
 
-				ClusterHealthResponse healthResponse = client.admin().cluster()
-						.health(Requests.clusterHealthRequest("_all")).actionGet(TimeValue.timeValueSeconds(10));
+				ClusterHealthResponse healthResponse = client.admin().cluster().health(Requests.clusterHealthRequest("_all"))
+						.actionGet(TimeValue.timeValueSeconds(10));
 				log.fine("== Cluster health response ==");
 				log.log(Level.FINE, "number of nodes: {0}", healthResponse.getNumberOfNodes());
 				log.log(Level.FINE, "number of data nodes: {0}", healthResponse.getNumberOfDataNodes());
