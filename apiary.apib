@@ -37,7 +37,7 @@ DCP Content described by example:
         "tags": ["Content_tag1", "tag2", "tag3"],
 
         "dcp_content_provider": "jbossorg",
-        "dcp_content_type: "jbossorg_jira_issue",
+        "dcp_content_type": "jbossorg_jira_issue",
         "dcp_content_id": "AS7-1254",
         "dcp_id": "jbossorg_jira_issue-AS7-1254",
         "dcp_type": "issue",
@@ -82,7 +82,7 @@ GET /rest/content/{dcp_content_type}/{dcp_content_id}
 {
   "tags": ["Content_tag1", "tag2", "tag3"],
   "dcp_content_provider": "jbossorg",
-  "dcp_content_type: "jbossorg_jira_issue",
+  "dcp_content_type": "jbossorg_jira_issue",
   "dcp_content_id": "AS7-1254",
   "dcp_id": "jbossorg_jira_issue-AS7-1254",
   "dcp_type": "issue",
@@ -121,7 +121,7 @@ GET /rest/content/{dcp_content_type}{?from,size,sort}
       "data": {
         "tags": ["Content_tag1", "tag2", "tag3"],
         "dcp_content_provider": "jbossorg",
-        "dcp_content_type: "jbossorg_jira_issue",
+        "dcp_content_type": "jbossorg_jira_issue",
         "dcp_content_id": "AS7-1254",
         "dcp_id": "jbossorg_jira_issue-AS7-1254",
         "dcp_type": "issue",
@@ -140,6 +140,7 @@ GET /rest/content/{dcp_content_type}{?from,size,sort}
 
 Push content object into DCP. Content is updated in DCP if exists here, or inserted. 
 Data normalizations are performed during this request processing and content object is extended by DCP system data fields - performed normalization tasks depend on configuration for given `dcp_content_type`.
+
 *Provider authentication required.*
 POST /rest/content/{dcp_content_type}/{dcp_content_id}
 > Accept: application/json
@@ -151,6 +152,7 @@ POST /rest/content/{dcp_content_type}/{dcp_content_id}
 }
 
 Delete defined content object from DCP.
+
 *Provider authentication required.* 
 
 ##### Request parameters
