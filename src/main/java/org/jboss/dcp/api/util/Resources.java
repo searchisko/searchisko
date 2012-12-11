@@ -5,6 +5,9 @@
  */
 package org.jboss.dcp.api.util;
 
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.StringWriter;
 import java.util.logging.Logger;
 
 import javax.ejb.Singleton;
@@ -46,6 +49,28 @@ public class Resources {
 			throw new ContextNotActiveException("FacesContext is not active");
 		}
 		return ctx;
+	}
+
+	/**
+	 * Read file from classpath into String. UTF-8 encoding expected.
+	 * 
+	 * @param filePath in classpath to read data from.
+	 * @return file content.
+	 * @throws IOException
+	 */
+	public static String readStringFromClasspathFile(String filePath) throws IOException {
+		StringWriter stringWriter = new StringWriter();
+		InputStreamReader input = new InputStreamReader(Resources.class.getResourceAsStream(filePath), "UTF-8");
+		try {
+			char[] buffer = new char[1024 * 4];
+			int n = 0;
+			while (-1 != (n = input.read(buffer))) {
+				stringWriter.write(buffer, 0, n);
+			}
+			return stringWriter.toString();
+		} finally {
+			input.close();
+		}
 	}
 
 }

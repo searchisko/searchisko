@@ -36,6 +36,7 @@ import org.elasticsearch.search.SearchHit;
  * </pre>
  * 
  * @author Libor Krzyzanek
+ * @author Vlastimil Elias (velias at redhat dot com)
  * 
  */
 public class ESDataOnlyResponse implements StreamingOutput {

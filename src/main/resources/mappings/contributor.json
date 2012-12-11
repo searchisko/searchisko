@@ -1,0 +1,8 @@
+{
+    "contributor" : {
+        "_timestamp"  : { "enabled" : true },
+        "properties" : {
+            "email" : {"type" : "string", "analyzer" : "keyword"}
+        }
+    }
+}

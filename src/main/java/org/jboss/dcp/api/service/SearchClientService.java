@@ -37,8 +37,7 @@ public class SearchClientService extends ElasticsearchClientService {
 			node = createEmbeddedNode("search", settings);
 			client = node.client();
 
-			if (!client.admin().indices().prepareExists(ContributorService.SEARCH_INDEX_NAME).execute().actionGet()
-					.exists()) {
+			if (!client.admin().indices().prepareExists(ContributorService.SEARCH_INDEX_NAME).execute().actionGet().exists()) {
 				client.admin().indices().prepareCreate(ContributorService.SEARCH_INDEX_NAME).execute().actionGet();
 				// TODO: Set proper mapping for Contributor index
 				// client.admin().indices().preparePutMapping(ContributorService.SEARCH_INDEX_NAME)

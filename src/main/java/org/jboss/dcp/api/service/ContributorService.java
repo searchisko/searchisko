@@ -6,37 +6,65 @@
 package org.jboss.dcp.api.service;
 
 import java.util.Map;
+import java.util.logging.Logger;
 
+import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.ws.rs.core.StreamingOutput;
 
+import org.elasticsearch.action.admin.indices.flush.FlushRequest;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
+import org.elasticsearch.client.Client;
 import org.elasticsearch.index.query.FilterBuilders;
 import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.indices.IndexMissingException;
+import org.jboss.dcp.api.util.Resources;
 
 /**
  * Service related to Contributor
  * 
  * @author Libor Krzyzanek
+ * @author Vlastimil Elias (velias at redhat dot com)
  * 
  */
 @Named
 @ApplicationScoped
 public class ContributorService implements EntityService {
 
+	@Inject
+	protected Logger log;
+
 	public static final String SEARCH_INDEX_NAME = "dcp_contributors";
 
 	public static final String SEARCH_INDEX_TYPE = "contributor";
 
 	@Inject
-	private SearchClientService searchClientService;
+	protected SearchClientService searchClientService;
 
 	@Inject
 	@Named("contributorServiceBackend")
-	private EntityService entityService;
+	protected EntityService entityService;
+
+	@PostConstruct
+	public void init() {
+		try {
+			Client client = searchClientService.getClient();
+			if (!client.admin().indices().prepareExists(SEARCH_INDEX_NAME).execute().actionGet().exists()) {
+				log.info("Contributor search index called '" + SEARCH_INDEX_NAME
+						+ "' doesn't exists. Creating it together with mapping for type '" + SEARCH_INDEX_TYPE + "'");
+				client.admin().indices().prepareCreate(SEARCH_INDEX_NAME).execute().actionGet();
+				client.admin().indices().preparePutMapping(SEARCH_INDEX_NAME).setType(SEARCH_INDEX_TYPE)
+						.setSource(Resources.readStringFromClasspathFile("/mappings/contributor.json")).execute().actionGet();
+			} else {
+				log.info("Contributor search index called '" + SEARCH_INDEX_NAME + "' exists already.");
+			}
+		} catch (Exception e) {
+			throw new RuntimeException(e.getMessage(), e);
+		}
+	}
 
 	@Override
 	public StreamingOutput getAll(Integer from, Integer size, String[] fieldsToRemove) {
@@ -57,6 +85,7 @@ public class ContributorService implements EntityService {
 	private void updateSearchIndex(String id, Map<String, Object> entity) {
 		searchClientService.getClient().prepareIndex(SEARCH_INDEX_NAME, SEARCH_INDEX_TYPE, id).setSource(entity).execute()
 				.actionGet();
+		searchClientService.getClient().admin().indices().flush(new FlushRequest(SEARCH_INDEX_NAME));
 	}
 
 	@Override
@@ -91,12 +120,15 @@ public class ContributorService implements EntityService {
 			SearchRequestBuilder searchBuilder = searchClientService.getClient().prepareSearch(SEARCH_INDEX_NAME)
 					.setTypes(SEARCH_INDEX_TYPE);
 
-			searchBuilder.setFilter(FilterBuilders.queryFilter(QueryBuilders.textQuery("email", email)));
+			searchBuilder.setFilter(FilterBuilders.queryFilter(QueryBuilders.matchQuery("email", email)));
 			searchBuilder.setQuery(QueryBuilders.matchAllQuery());
 
-			final SearchResponse response = searchBuilder.execute().actionGet();
-
-			return response;
+			try {
+				final SearchResponse response = searchBuilder.execute().actionGet();
+				return response;
+			} catch (IndexMissingException e) {
+				return null;
+			}
 		} catch (Exception e) {
 			throw e;
 		}
