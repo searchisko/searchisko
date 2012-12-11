@@ -101,14 +101,28 @@ Get all content objects of specified 'provider type'.
 
 ##### Request parameters
 
-* `from` index of first content object returned in result list. Default is 0 to start from begin of list.
-* `size` of returned result array. Default is 10.
+* `from` index of first content object returned in results array. Default is 0 to start from begin of list.
+* `size` of returned results array. Default is 10.
 * `sort` you can use 'asc' or 'desc' value to sort results by date of last update of content object in DCP (`dcp_updated` field).   
 
 ##### Response content
 Response contains JSON structure with overall number of content objects of specified 'provider type' in `total` field, 
-and array of content objects records in `hits` field. Array records depends on `from` and `size` request parameters.
-Each record in array contains `id` field with 'provider id' of content object, and then `data` field with full content object. 
+and array of content objects in `hits` field. Content of array depends on `from` and `size` request parameters.
+Each record in array contains `id` field with 'provider id' of content object, and then `data` field with full content object structure:
+
+```
+{
+  "total": "1",
+  "hits": [
+    {
+      "id": "AS7-1254",
+      "data": {
+        //data object
+      }
+    }
+  ]
+}
+```
 
 GET /rest/content/{dcp_content_type}{?from,size,sort}
 < 200
@@ -138,13 +152,20 @@ GET /rest/content/{dcp_content_type}{?from,size,sort}
   ]
 }
 
-Push content object into DCP. Content is updated in DCP if exists here, or inserted. 
+Push content object into DCP. Content is updated in DCP if exists here, or inserted if not. 
 Data normalizations are performed during this request processing and content object is extended by DCP system data fields - performed normalization tasks depend on configuration for given `dcp_content_type`.
 
 *Provider authentication required.*
 
 ##### Response content
-Response contains JSON structure with `status` field containing 'insert' or 'update' string.
+Response contains JSON structure with `status` field containing 'insert' or 'update' string and `message` field with human readable description of status.
+
+```
+{
+  "status":"insert",
+  "message":"Content was inserted successfully."
+}
+```
 
 POST /rest/content/{dcp_content_type}/{dcp_content_id}
 > Accept: application/json
