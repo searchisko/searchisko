@@ -7,6 +7,8 @@ package org.jboss.dcp.api.service;
 
 import java.util.Map;
 
+import javax.ws.rs.core.StreamingOutput;
+
 /**
  * Base interface for entity service
  * 
@@ -18,15 +20,12 @@ public interface EntityService {
 	/**
 	 * Get All entities
 	 * 
-	 * @param from
-	 *            from index. Can be null
-	 * @param size
-	 *            size to return. If null then default length is returned
-	 * @param fieldsToRemove
-	 *            array of fields that should be removed
+	 * @param from from index. Can be null
+	 * @param size size to return. If null then default length is returned
+	 * @param fieldsToRemove array of fields that should be removed
 	 * @return
 	 */
-	public Object getAll(Integer from, Integer size, String[] fieldsToRemove);
+	public StreamingOutput getAll(Integer from, Integer size, String[] fieldsToRemove);
 
 	/**
 	 * Get entity with specified id

@@ -40,8 +40,9 @@ public class ProjectRestServiceTest {
 		ProjectRestService tested = getTested();
 
 		// case - OK
-		Mockito.when(tested.entityService.getAll(10, 12, tested.fieldsToRemove)).thenReturn("OK");
-		Assert.assertEquals("OK", tested.getAll(10, 12));
+		ESDataOnlyResponse res = new ESDataOnlyResponse(null);
+		Mockito.when(tested.entityService.getAll(10, 12, tested.fieldsToRemove)).thenReturn(res);
+		Assert.assertEquals(res, tested.getAll(10, 12));
 
 		// case - error
 		Mockito.reset(tested.entityService);

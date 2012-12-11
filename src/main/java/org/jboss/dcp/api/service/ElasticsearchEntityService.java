@@ -7,11 +7,14 @@ package org.jboss.dcp.api.service;
 
 import java.util.Map;
 
+import javax.ws.rs.core.StreamingOutput;
+
 import org.elasticsearch.action.admin.indices.flush.FlushRequest;
 import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.Client;
+import org.elasticsearch.indices.IndexMissingException;
 import org.jboss.dcp.api.rest.ESDataOnlyResponse;
 
 /**
@@ -23,17 +26,17 @@ import org.jboss.dcp.api.rest.ESDataOnlyResponse;
  */
 public class ElasticsearchEntityService implements EntityService {
 
-	private Client client;
+	protected Client client;
 
-	private String indexName;
+	protected String indexName;
 
 	/**
 	 * Same as entity name
 	 */
-	private String indexType;
+	protected String indexType;
 
 	// TODO: Remove OperationThreaded and use refresh if it will be needed.
-	private boolean operationThreaded;
+	protected boolean operationThreaded;
 
 	public ElasticsearchEntityService(Client client, String indexName, String entityName, boolean operationThreaded) {
 		this.client = client;
@@ -66,7 +69,7 @@ public class ElasticsearchEntityService implements EntityService {
 	}
 
 	@Override
-	public Object getAll(Integer from, Integer size, String[] fieldsToRemove) {
+	public StreamingOutput getAll(Integer from, Integer size, String[] fieldsToRemove) {
 		SearchRequestBuilder srb = new SearchRequestBuilder(client);
 		srb.setIndices(indexName);
 		srb.setTypes(indexType);
@@ -78,15 +81,23 @@ public class ElasticsearchEntityService implements EntityService {
 			srb.setSize(size);
 		}
 
-		final SearchResponse response = srb.execute().actionGet();
+		try {
+			final SearchResponse response = srb.execute().actionGet();
+			return new ESDataOnlyResponse(response, fieldsToRemove);
+		} catch (IndexMissingException e) {
+			return new ESDataOnlyResponse(null);
+		}
 
-		return new ESDataOnlyResponse(response, fieldsToRemove);
 	}
 
 	@Override
 	public Map<String, Object> get(String id) {
-		return client.prepareGet(indexName, indexType, id).setOperationThreaded(operationThreaded).execute()
-				.actionGet().getSource();
+		try {
+			return client.prepareGet(indexName, indexType, id).setOperationThreaded(operationThreaded).execute().actionGet()
+					.getSource();
+		} catch (IndexMissingException e) {
+			return null;
+		}
 	}
 
 	@Override
@@ -104,8 +115,8 @@ public class ElasticsearchEntityService implements EntityService {
 
 	@Override
 	public void update(String id, Map<String, Object> entity) {
-		client.prepareIndex(indexName, indexType, id).setOperationThreaded(operationThreaded).setSource(entity)
-				.execute().actionGet();
+		client.prepareIndex(indexName, indexType, id).setOperationThreaded(operationThreaded).setSource(entity).execute()
+				.actionGet();
 		client.admin().indices().flush(new FlushRequest(indexName));
 	}
 

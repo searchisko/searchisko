@@ -8,6 +8,7 @@ import java.util.Map;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.ws.rs.core.StreamingOutput;
 
 /**
  * Service related to project
@@ -31,7 +32,7 @@ public class ProjectService implements EntityService {
 	private EntityService entityService;
 
 	@Override
-	public Object getAll(Integer from, Integer size, String[] fieldsToRemove) {
+	public StreamingOutput getAll(Integer from, Integer size, String[] fieldsToRemove) {
 		return entityService.getAll(from, size, fieldsToRemove);
 	}
 
@@ -47,8 +48,8 @@ public class ProjectService implements EntityService {
 	 * @param entity
 	 */
 	private void updateSearchIndex(String id, Map<String, Object> entity) {
-		searchClientService.getClient().prepareIndex(SEARCH_INDEX_NAME, SEARCH_INDEX_TYPE, id).setSource(entity)
-				.execute().actionGet();
+		searchClientService.getClient().prepareIndex(SEARCH_INDEX_NAME, SEARCH_INDEX_TYPE, id).setSource(entity).execute()
+				.actionGet();
 	}
 
 	@Override

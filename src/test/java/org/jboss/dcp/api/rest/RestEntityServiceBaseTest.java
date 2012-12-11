@@ -44,8 +44,9 @@ public class RestEntityServiceBaseTest {
 		RestEntityServiceBase tested = getTested();
 
 		// case - OK
-		Mockito.when(tested.entityService.getAll(10, 12, null)).thenReturn("OK");
-		Assert.assertEquals("OK", tested.getAll(10, 12));
+		ESDataOnlyResponse res = new ESDataOnlyResponse(null);
+		Mockito.when(tested.entityService.getAll(10, 12, null)).thenReturn(res);
+		Assert.assertEquals(res, tested.getAll(10, 12));
 		Mockito.verify(tested.entityService).getAll(10, 12, null);
 		Mockito.verifyNoMoreInteractions(tested.entityService);
 

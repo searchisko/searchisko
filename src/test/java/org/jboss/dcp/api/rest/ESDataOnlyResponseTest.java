@@ -29,6 +29,11 @@ public class ESDataOnlyResponseTest {
 	public void write_basic() throws WebApplicationException, IOException {
 
 		{
+			ESDataOnlyResponse tested = new ESDataOnlyResponse(null);
+			TestUtils.assetStreamingOutputContent("{\"total\":0,\"hits\":[]}", tested);
+		}
+
+		{
 			ESDataOnlyResponse tested = new ESDataOnlyResponse(mockSearchResponse(null, null, null, null));
 			TestUtils.assetStreamingOutputContent("{\"total\":0,\"hits\":[]}", tested);
 		}

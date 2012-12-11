@@ -107,19 +107,24 @@ public class ESDataOnlyResponse implements StreamingOutput {
 		XContentBuilder builder = XContentFactory.jsonBuilder(output);
 		// shows only hits
 		builder.startObject();
-		builder.field("total", response.getHits().getTotalHits());
-		builder.startArray("hits");
-		SearchHit[] hits = response.getHits().getHits();
-		for (int i = 0; i < hits.length; i++) {
-			builder.startObject();
-			Map<String, Object> src = hits[i].sourceAsMap();
-			if (idField == null) {
-				builder.field("id", hits[i].getId());
-			} else {
-				builder.field("id", src.get(idField));
+		if (response != null) {
+			builder.field("total", response.getHits().getTotalHits());
+			builder.startArray("hits");
+			SearchHit[] hits = response.getHits().getHits();
+			for (int i = 0; i < hits.length; i++) {
+				builder.startObject();
+				Map<String, Object> src = hits[i].sourceAsMap();
+				if (idField == null) {
+					builder.field("id", hits[i].getId());
+				} else {
+					builder.field("id", src.get(idField));
+				}
+				builder.field("data", ESDataOnlyResponse.removeFields(src, fieldsToRemove));
+				builder.endObject();
 			}
-			builder.field("data", ESDataOnlyResponse.removeFields(src, fieldsToRemove));
-			builder.endObject();
+		} else {
+			builder.field("total", 0);
+			builder.startArray("hits");
 		}
 		builder.endArray();
 		builder.endObject();
