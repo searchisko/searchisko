@@ -287,6 +287,10 @@
 						<filtering>true</filtering>
 						<directory>src/main/profiles/localhost</directory>
 					</resource>
+          <resource>
+            <filtering>false</filtering>
+            <directory>src/main/resources</directory>
+          </resource>
 				</resources>
 			</build>
 		</profile>
@@ -297,6 +301,10 @@
 					<resource>
 						<directory>src/main/profiles/development</directory>
 					</resource>
+          <resource>
+            <filtering>false</filtering>
+            <directory>src/main/resources</directory>
+          </resource>
 				</resources>
 			</build>
 		</profile>
@@ -307,6 +315,10 @@
 					<resource>
 						<directory>src/main/profiles/staging</directory>
 					</resource>
+          <resource>
+            <filtering>false</filtering>
+            <directory>src/main/resources</directory>
+          </resource>
 				</resources>
 			</build>
 		</profile>
@@ -317,6 +329,10 @@
 					<resource>
 						<directory>src/main/profiles/production</directory>
 					</resource>
+          <resource>
+            <filtering>false</filtering>
+            <directory>src/main/resources</directory>
+          </resource>
 				</resources>
 			</build>
 		</profile>
