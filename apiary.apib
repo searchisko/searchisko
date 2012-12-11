@@ -10,28 +10,28 @@ HOST: http://dcp.jboss.org/v1
 
 This chapter describes main content object which can be pushed to and retrieved or searched from DCP.
  
-DCP Content object is JSON document with free structure. There is no restriction how many key value pairs must be defined or in which structure.
-Some system data fields are defined by DCP, some of them are added into content inside DCP. Those data fields are prefixed by `dcp_`:
+DCP Content object is a JSON document with a free structure. There is no restriction how many key value pairs must be defined or in what structure.
+Some system data fields are defined by DCP, some  are added into the content inside DCP. Those data fields are prefixed by `dcp_`:
 
 * `dcp_type` - DCP wide normalized content type - eg. mailing-list email, issue, blogpost, IRC post, commit, discussion thread - system field, always necessary
-* `dcp_id` - content id unique in whole DCP platform - system field, always necessary. Is constructed in 'Content Push API' from `dcp_content_type` and `dcp_content_id`.
-* `dcp_content_provider` - identification of provider who stored given data into platform - system field, always necessary - eg. 'jbossorg', 'seam_project' etc.
-* `dcp_content_type` - identifier of provider defined content type for 'Content Push API'. Unique in whole DCP so starts with `dcp_content_provider`, eg. 'jbossorg_jira_issue', 'jbossorg_blog' etc. 
-* `dcp_content_id` -  content identifier passed in by provider, must be unique for given `dcp_content_type`
+* `dcp_id` - content id unique in the whole DCP platform - system field, always necessary. It is constructed during the 'Content Push API' operation from `dcp_content_type` and `dcp_content_id`.
+* `dcp_content_provider` - identification of the provider that stored the given data into the platform - system field, always necessary - eg. 'jbossorg', 'seam_project' etc.
+* `dcp_content_type` - identifier of the provider defined content type for 'Content Push API'. It is unique in the whole DCP so it starts with `dcp_content_provider`, eg. 'jbossorg_jira_issue', 'jbossorg_blog' etc. 
+* `dcp_content_id` -  content identifier is passed in by the provider, it must be unique for the given `dcp_content_type`
 * `dcp_updated` - date of last content update in DCP - system field, always necessary
-* `dcp_project` - normalized DCP wide identifier of project - system field - in Search API used for project facet and filter
+* `dcp_project` - normalized DCP wide identifier of the project - system field - it is used for the project facet and filter in the Search API
 * `dcp_contributors` - array of contributing persons, no duplicities in array, persons identifiers normalized during push into DCP - each person represented as String "Name Surname <primaryemail@email.com>" - in Search API used for persons facet and filter
-* `dcp_activity_dates` - array of timestamps representing some activity on this content - in Search API used for time facet and filter
-* `dcp_tags` - array of tags (Strings) - in Search API used for facet (tagcloud) and filter - do not directly pushed by content provider because we plan mechanism for user defined additional tags, so we need to rewrite this field internally. Content provider should use `tags` field instead.
-* `dcp_title` - content title - used to present document in basic search GUI - can be directly set by content provider during push
-* `dcp_url_view` - URL where document can be viewed in original system in human readable form - used to open document from basic search GUI - can be directly set by content provider during push
-* `dcp_description` - short text representing content - used to show content in basic search GUI for queries which do not produce highlights - can be directly set by content provider during push
+* `dcp_activity_dates` - array of timestamps representing some activity on the content - in the Search API used for the time facet and filter
+* `dcp_tags` - array of tags (Strings) - in the Search API used for facet (tagcloud) and filter - it is not directly pushed by the content provider because we plan a mechanism for additional user defined tags, so we need to rewrite this field internally. The content provider should use `tags` field instead.
+* `dcp_title` - content title - used to present the document in the basic search GUI - it can be directly set by the content provider during the push operation.
+* `dcp_url_view` - URL where the document can be viewed in its original system in human readable form - used to open the document from the basic search GUI - can be directly set by the content provider during the push
+* `dcp_description` - short text representing the content - used to show the content in the basic search GUI for queries that do not produce highlights - it can be directly set by the content provider during the push
 
 
 DCP Content described by example:
 
     {
-        Free JSON Structure representing content. Can be one key value pair or something more structured.
+        Free JSON Structure representing content. It can be one key - value pair or something more structured.
         It's defined only by content provider.
 
         "tags": ["Content_tag1", "tag2", "tag3"],
@@ -54,16 +54,16 @@ DCP Content described by example:
 
 # Authentication
 
-Some operation calls on REST API need to be authenticated by provider. Caller provides credentials by HTTP URL parameters `provider` and `pwd`, or via standard HTTP Basic authentication.
+Some operation calls on REST API need to be authenticated by the provider. The caller provides credentials by HTTP URL parameters `provider` and `pwd`, or via standard HTTP Basic authentication.
 
 # Description of usual server HTTP response codes
 
 * __200 ("OK")__ - the request was successful.
-* __400 ("Bad Request")__ - the request could not be understood or was missing required parameters. Body of HTTP response contains description of problem.
-* __401 ("Unauthorized")__ - authentication required for requested operation and credentials not provided, or authentication failed.
-* __403 ("Forbidden")__ - user doesn't have permissions for requested operation.
+* __400 ("Bad Request")__ - the request could not be understood or did not have some required parameters. The body of the HTTP response contains the description of the problem.
+* __401 ("Unauthorized")__ - authentication was required for the operation, but the credentials were not provided, or authentication failed.
+* __403 ("Forbidden")__ - user doesn't have permissions for the requested operation.
 * __404 ("Not Found")__ - resource was not found.
-* __500 ("Internal error")__ - internal application error or misconfiguration, should be reported to administrators. Body of HTTP response contains description of problem.
+* __500 ("Internal error")__ - internal application error or misconfiguration, it should be reported to administrators. The body of the HTTP response contains the description of problem.
 ---
 
 --
@@ -97,18 +97,17 @@ GET /rest/content/{dcp_content_type}/{dcp_content_id}
 }
 
 
-Get all content objects of specified 'provider type'.
+Get all content objects of the specified 'provider type'.
 
 ##### Request parameters
 
-* `from` index of first content object returned in results array. Default is 0 to start from begin of list.
+* `from` index of the first content object returned in the results array. The default value is 0 (start from begin of list).
 * `size` of returned results array. Default is 10.
 * `sort` you can use 'asc' or 'desc' value to sort results by date of last update of content object in DCP (`dcp_updated` field).   
 
 ##### Response content
-Response contains JSON structure with overall number of content objects of specified 'provider type' in `total` field, 
-and array of content objects in `hits` field. Content of array depends on `from` and `size` request parameters.
-Each record in array contains `id` field with 'provider id' of content object, and then `data` field with full content object structure:
+The response contains a JSON structure with overall number of the content objects of specified 'provider type' in `total` field, and an array of the content objects in `hits` field. The content of the array depends on `from` and `size` request parameters.
+Each record in the array contains `id` field with 'provider id' of the content object, and then `data` field with full content object structure:
 
 ```
 {
@@ -152,13 +151,13 @@ GET /rest/content/{dcp_content_type}{?from,size,sort}
   ]
 }
 
-Push content object into DCP. Content is updated in DCP if exists here, or inserted if not. 
-Data normalizations are performed during this request processing and content object is extended by DCP system data fields - performed normalization tasks depend on configuration for given `dcp_content_type`.
+Push the content object into DCP. The content is updated in DCP if exists  or is inserted if does not. 
+The data normalizations are performed during this request processing and the content object is extended by the DCP system data fields - the performed normalization tasks depend on the configuration for the given `dcp_content_type`.
 
 *Provider authentication required.*
 
 ##### Response content
-Response contains JSON structure with `status` field containing 'insert' or 'update' string and `message` field with human readable description of status.
+The response contains a JSON structure with a `status` field containing 'insert' or 'update' string and `message` field with a human readable description of the status.
 
 ```
 {
@@ -192,7 +191,7 @@ Content deleted successfully.
 
 --
 Search API
-This part of API is used by all systems who can use content stored in DCP. 
+This part of the API is used by all systems that can use content stored in DCP.
 --
 Search contributions.
 GET /rest/search?TODO
@@ -215,9 +214,9 @@ Returned JSON contains two highlevel objects:
 
 #### View
 
-The `view` represents the visual part of query suggestions response.
+The `view` represents the visual part of the query suggestions response.
 
-It *always* contains section `search` which will *always* have only one option matching incoming user query (`${query_string}`).
+It *always* contains the section `search` that will *always* have only one option matching the incoming user query (`${query_string}`).
 
 It can then contain one or more additional sections (like `suggestions`, `filters`, `mails`, ... etc.). 
 
@@ -243,9 +242,9 @@ It can then contain one or more additional sections (like `suggestions`, `filter
 
 #### Model
 
-The `model` represents possible "actions" that are relevant to individual `option`s in the `view` part.
+The `model` represents possible "actions" that are relevant to the individual `option`s in the `view` part.
 This means both `view` and `model` parts have the same highlevel structure and each `option`
-in the `view` part have corresponding "action" in the `model` part.
+in the `view` part has the corresponding "action" in the `model` part.
 
 ##### Example
 
@@ -260,16 +259,15 @@ in the `view` part have corresponding "action" in the `model` part.
 }
 ```
 
-Individual actions are described using symbolic commands. Interpretation of these commands is up to the client
-the following is just a recommendation about how client can interpret the commands:
+The individual actions are described using symbolic commands. An interpretation of these commands is up to the client. The following is just a recommendation about how client can interpret the commands:
 
 ##### Commands
 
-`search` - execute search for `query` value.
+`search` - execute a search for `query` value.
 
-`suggestion` - replace text in the search field with the `value`'s value.
+`suggestion` - replace the text in the search field with the `value`'s value.
 
-`filter` - replace current filters with provided filters.
+`filter` - replace the current filters with provided filters.
 
 `filter_add` - enable provided filters (on top of currently active filters).
 
