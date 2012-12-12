@@ -4,6 +4,7 @@
 package org.jboss.dcp.api.service;
 
 import java.util.Map;
+import java.util.logging.Logger;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
@@ -25,11 +26,14 @@ public class ProjectService implements EntityService {
 	public static final String SEARCH_INDEX_TYPE = "project";
 
 	@Inject
-	private SearchClientService searchClientService;
+	protected Logger log;
+
+	@Inject
+	protected SearchClientService searchClientService;
 
 	@Inject
 	@Named("projectServiceBackend")
-	private EntityService entityService;
+	protected EntityService entityService;
 
 	@Override
 	public StreamingOutput getAll(Integer from, Integer size, String[] fieldsToRemove) {
