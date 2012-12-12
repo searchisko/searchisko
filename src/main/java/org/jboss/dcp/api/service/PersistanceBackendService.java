@@ -34,13 +34,13 @@ import org.jboss.dcp.api.util.SearchUtils;
 public class PersistanceBackendService extends ElasticsearchClientService {
 
 	@Inject
-	private Logger log;
+	protected Logger log;
 
 	@Inject
-	private AppConfigurationService appConfigurationService;
+	protected AppConfigurationService appConfigurationService;
 
 	// Everything is stored in one index
-	private final String indexName = "data";
+	protected final String INDEX_NAME = "data";
 
 	@PostConstruct
 	public void init() throws Exception {
@@ -52,15 +52,15 @@ public class PersistanceBackendService extends ElasticsearchClientService {
 
 	@Produces
 	@Named("providerServiceBackend")
-	public ElasticsearchEntityService produceProviderService() {
-		ElasticsearchEntityService serv = new ElasticsearchEntityService(client, indexName, "provider", false);
+	public EntityService produceProviderService() {
+		ElasticsearchEntityService serv = new ElasticsearchEntityService(client, INDEX_NAME, "provider", false);
 
 		if (appConfigurationService.getAppConfiguration().isProviderCreateInitData()) {
 
-			if (!client.admin().indices().prepareExists(indexName).execute().actionGet().exists()) {
+			if (!client.admin().indices().prepareExists(INDEX_NAME).execute().actionGet().exists()) {
 				log.info("Provider entity doesn't exists. Creating initial entity for first authentication.");
 
-				client.admin().indices().prepareCreate(indexName).execute().actionGet();
+				client.admin().indices().prepareCreate(INDEX_NAME).execute().actionGet();
 				Map<String, Object> jbossorgEntity = new HashMap<String, Object>();
 				jbossorgEntity.put(ProviderService.NAME, "jbossorg");
 				jbossorgEntity.put(ProviderService.PASSWORD_HASH, "0228a71fe1a4cf2f8a177cad2f165f5a4e021af6");
@@ -76,13 +76,13 @@ public class PersistanceBackendService extends ElasticsearchClientService {
 	@Produces
 	@Named("projectServiceBackend")
 	public EntityService produceProjectService() {
-		return new ElasticsearchEntityService(client, indexName, "project", false);
+		return new ElasticsearchEntityService(client, INDEX_NAME, "project", false);
 	}
 
 	@Produces
 	@Named("contributorServiceBackend")
 	public EntityService produceContributorService() {
-		return new ElasticsearchEntityService(client, indexName, "contributor", false);
+		return new ElasticsearchEntityService(client, INDEX_NAME, "contributor", false);
 	}
 
 }
