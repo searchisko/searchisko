@@ -56,7 +56,12 @@ public class ProviderRestService extends RestEntityServiceBase {
 	@ProviderAllowed
 	@Override
 	public Object get(@PathParam("id") String id) {
-		// check Provider name. Only provider with same name has access.
+
+		if (id == null || id.isEmpty()) {
+			return createRequiredFieldResponse("id");
+		}
+
+		// check Provider name. Only provider with same name or superprovider has access.
 		String provider = securityContext.getUserPrincipal().getName();
 		try {
 			Map<String, Object> entity = entityService.get(id);
@@ -79,12 +84,29 @@ public class ProviderRestService extends RestEntityServiceBase {
 	@Path("/{id}/password")
 	@ProviderAllowed
 	public Object changePassword(@PathParam("id") String id, String pwd) {
+
+		if (id == null || id.isEmpty()) {
+			return createRequiredFieldResponse("id");
+		}
+
+		if (pwd == null || pwd.isEmpty()) {
+			return createRequiredFieldResponse("pwd");
+		}
+
+		// check Provider name. Only provider with same name or superprovider has access.
+		String provider = securityContext.getUserPrincipal().getName();
+
 		Map<String, Object> entity = entityService.get(id);
 
 		if (entity == null)
 			return Response.status(Status.NOT_FOUND).build();
 
 		String username = entity.get(ProviderService.NAME).toString();
+		if (!provider.equals(username)) {
+			if (!providerService.isSuperProvider(provider)) {
+				return Response.status(Status.FORBIDDEN).build();
+			}
+		}
 		entity.put(ProviderService.PASSWORD_HASH, securityService.createPwdHash(username, pwd));
 		entityService.update(id, entity);
 
