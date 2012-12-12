@@ -98,7 +98,7 @@ public class AuthenticationInterceptor implements PreProcessInterceptor {
 			Principal principal = new SimplePrincipal(username);
 			ResteasyProviderFactory.pushContext(SecurityContext.class, new CustomSecurityContext(principal,
 					providerService.isSuperProvider(username), true, authenticationScheme));
-			log.log(Level.INFO, "Request authenticated. Username: {0}", username);
+			log.log(Level.FINE, "Request authenticated. Username: {0}", username);
 		}
 
 		return null;
