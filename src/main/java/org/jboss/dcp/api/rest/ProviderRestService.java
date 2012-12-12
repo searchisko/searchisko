@@ -29,6 +29,7 @@ import org.jboss.dcp.api.service.SecurityService;
  * Provider REST API
  * 
  * @author Libor Krzyzanek
+ * @author Vlastimil Elias (velias at redhat dot com)
  * 
  */
 @RequestScoped
