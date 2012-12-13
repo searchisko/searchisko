@@ -81,7 +81,6 @@ public class ElasticsearchEntityServiceTest extends ESRealClientTestBase {
 			}
 
 			indexCreate(INDEX_NAME);
-			Thread.sleep(100);
 			// case - index exists empty
 			{
 				StreamingOutput out = tested.getAll(null, null, null);
@@ -149,7 +148,6 @@ public class ElasticsearchEntityServiceTest extends ESRealClientTestBase {
 			}
 
 			indexCreate(INDEX_NAME);
-			Thread.sleep(100);
 			// case - index exists empty
 			{
 				Map<String, Object> out = tested.get("10");
@@ -309,7 +307,6 @@ public class ElasticsearchEntityServiceTest extends ESRealClientTestBase {
 
 			indexDelete(INDEX_NAME);
 			indexCreate(INDEX_NAME);
-			Thread.sleep(100);
 			// case - index exists but record not in it
 			{
 				tested.delete("1");

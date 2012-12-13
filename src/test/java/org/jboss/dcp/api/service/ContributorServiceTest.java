@@ -268,7 +268,6 @@ public class ContributorServiceTest extends ESRealClientTestBase {
 
 			indexDelete(ContributorService.SEARCH_INDEX_NAME);
 			indexCreate(ContributorService.SEARCH_INDEX_NAME);
-			Thread.sleep(100);
 			// case - index exists but record not in it
 			{
 				Mockito.reset(tested.entityService);
