@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
+import org.elasticsearch.action.admin.cluster.health.ClusterHealthRequest;
 import org.elasticsearch.action.admin.indices.create.CreateIndexRequest;
 import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest;
 import org.elasticsearch.action.admin.indices.flush.FlushRequest;
@@ -110,7 +111,7 @@ public abstract class ESRealClientTestBase {
 
 			client = node.client();
 
-			Thread.sleep(100);
+			client.admin().cluster().health((new ClusterHealthRequest()).waitForYellowStatus()).actionGet();
 
 			return client;
 		} catch (Exception e) {
@@ -160,6 +161,7 @@ public abstract class ESRealClientTestBase {
 	 */
 	public void indexCreate(String indexName) {
 		client.admin().indices().create(new CreateIndexRequest(indexName)).actionGet();
+		client.admin().cluster().health((new ClusterHealthRequest(indexName)).waitForYellowStatus()).actionGet();
 	}
 
 	/**

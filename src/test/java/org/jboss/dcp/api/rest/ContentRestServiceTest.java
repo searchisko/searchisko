@@ -181,7 +181,6 @@ public class ContentRestServiceTest extends ESRealClientTestBase {
 			{
 				indexDelete(INDEX_NAME);
 				indexCreate(INDEX_NAME);
-				Thread.sleep(100);
 				indexInsertDocument(INDEX_NAME, INDEX_TYPE, "known-2", "{\"test2\":\"test2\"}");
 				indexFlush(INDEX_NAME);
 				TestUtils.assertResponseStatus(tested.deleteContent("known", "1", null), Response.Status.NOT_FOUND);
@@ -238,7 +237,6 @@ public class ContentRestServiceTest extends ESRealClientTestBase {
 
 			// case - nothing found because index is empty
 			indexCreate(INDEX_NAME);
-			Thread.sleep(100);
 			TestUtils.assetStreamingOutputContent("{\"total\":0,\"hits\":[]}",
 					tested.getAllContent("known", null, null, null));
 
