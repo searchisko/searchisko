@@ -7,9 +7,12 @@ package org.jboss.dcp.api.service;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
+import org.elasticsearch.client.Client;
 import org.elasticsearch.common.settings.SettingsException;
+import org.jboss.dcp.api.testtools.TestUtils;
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -263,9 +266,63 @@ public class ProviderServiceTest {
 		Assert.assertEquals(typeDef.get(ProviderService.DCP_TYPE), ProviderService.getDcpType(typeDef, "mytype"));
 	}
 
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@Test
 	public void runPreprocessors() {
-		// TODO UNITTEST
+		ProviderService tested = new ProviderService();
+		tested.searchClientService = Mockito.mock(SearchClientService.class);
+		Client client = Mockito.mock(Client.class);
+		Mockito.when(tested.searchClientService.getClient()).thenReturn(client);
+
+		// case - no NPE on empty both preprocessors defs and data
+		tested.runPreprocessors("mytype", null, null);
+		tested.runPreprocessors("mytype", new ArrayList<Map<String, Object>>(), null);
+		tested.runPreprocessors("mytype", null, new HashMap<String, Object>());
+
+		// case - exception on bad preprocessor configuration element
+		{
+			List preprocessorsDef = new ArrayList<String>();
+			preprocessorsDef.add("aa");
+			try {
+				tested.runPreprocessors("mytype", preprocessorsDef, new HashMap<String, Object>());
+				Assert.fail("SettingsException expected");
+			} catch (SettingsException e) {
+				// OK
+			}
+		}
+
+		// case - exception on bad preprocessor configuration structure
+		{
+			List<Map<String, Object>> preprocessorsDef = new ArrayList<Map<String, Object>>();
+			preprocessorsDef.add(new HashMap<String, Object>());
+			try {
+				tested.runPreprocessors("mytype", preprocessorsDef, new HashMap<String, Object>());
+				Assert.fail("SettingsException expected");
+			} catch (SettingsException e) {
+				// OK
+			}
+		}
+
+		// case - preprocessors run OK
+		{
+			List<Map<String, Object>> preprocessorsDef = ProviderService.getPreprocessors(
+					(Map<String, Object>) ((Map<String, Object>) TestUtils.loadJSONFromClasspathFile("/provider/provider_1.json")
+							.get("type")).get("provider1_mailing"), "provider1_mailing");
+			Map<String, Object> data = new HashMap<String, Object>();
+			tested.runPreprocessors("mytype", preprocessorsDef, data);
+			Assert.assertEquals("value1", data.get("name1"));
+			Assert.assertEquals("value2", data.get("name2"));
+		}
+
+		// case - preprocessors run OK when data is null
+		{
+			List<Map<String, Object>> preprocessorsDef = ProviderService.getPreprocessors(
+					(Map<String, Object>) ((Map<String, Object>) TestUtils.loadJSONFromClasspathFile("/provider/provider_1.json")
+							.get("type")).get("provider1_mailing"), "provider1_mailing");
+			Map<String, Object> data = null;
+			tested.runPreprocessors("mytype", preprocessorsDef, data);
+		}
+
 	}
 
 	@Test

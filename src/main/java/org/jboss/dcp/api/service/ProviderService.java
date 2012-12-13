@@ -168,6 +168,9 @@ public class ProviderService {
 		} catch (IllegalArgumentException e) {
 			throw new SettingsException("Bad configuration of some 'input_preprocessors' for dcp_content_type=" + typeName
 					+ ". Contact administrators please. Cause: " + e.getMessage(), e);
+		} catch (ClassCastException e) {
+			throw new SettingsException("Bad configuration structure of some 'input_preprocessors' for dcp_content_type="
+					+ typeName + ". Contact administrators please. Cause: " + e.getMessage(), e);
 		}
 	}
 
