@@ -7,10 +7,7 @@ package org.jboss.dcp.api.rest;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
-import javax.inject.Inject;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -30,12 +27,9 @@ import org.jboss.dcp.api.service.EntityService;
  * @author Libor Krzyzanek
  * 
  */
-public class RestEntityServiceBase {
+public class RestEntityServiceBase extends RestServiceBase {
 
 	protected EntityService entityService;
-
-	@Inject
-	protected Logger log;
 
 	public void setEntityService(EntityService entityService) {
 		this.entityService = entityService;
@@ -121,14 +115,6 @@ public class RestEntityServiceBase {
 		} catch (Exception e) {
 			return createErrorResponse(e);
 		}
-	}
-
-	public Response createErrorResponse(Exception ex) {
-		if (log.isLoggable(Level.WARNING)) {
-			log.log(Level.WARNING, "Exception {0} occured. Message: {1}",
-					new Object[] { ex.getClass().getName(), ex.getMessage() });
-		}
-		return Response.serverError().entity("Error [" + ex.getClass().getName() + "]: " + ex.getMessage()).build();
 	}
 
 }
