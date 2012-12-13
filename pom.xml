@@ -214,18 +214,24 @@
 			<version>1.9.5</version>
 			<scope>test</scope>
 		</dependency>
-    <dependency>
-      <groupId>commons-io</groupId>
-      <artifactId>commons-io</artifactId>
-      <version>2.1</version>
-      <scope>test</scope>
-    </dependency>
+		<dependency>
+			<groupId>commons-io</groupId>
+			<artifactId>commons-io</artifactId>
+			<version>2.1</version>
+			<scope>test</scope>
+		</dependency>
 
 	</dependencies>
 
 	<build>
 
 		<finalName>dcp-frontend</finalName>
+		<resources>
+			<resource>
+				<filtering>false</filtering>
+				<directory>src/main/resources</directory>
+			</resource>
+		</resources>
 
 		<testSourceDirectory>src/test/java</testSourceDirectory>
 		<testResources>
@@ -287,10 +293,6 @@
 						<filtering>true</filtering>
 						<directory>src/main/profiles/localhost</directory>
 					</resource>
-          <resource>
-            <filtering>false</filtering>
-            <directory>src/main/resources</directory>
-          </resource>
 				</resources>
 			</build>
 		</profile>
@@ -301,10 +303,6 @@
 					<resource>
 						<directory>src/main/profiles/development</directory>
 					</resource>
-          <resource>
-            <filtering>false</filtering>
-            <directory>src/main/resources</directory>
-          </resource>
 				</resources>
 			</build>
 		</profile>
@@ -315,10 +313,6 @@
 					<resource>
 						<directory>src/main/profiles/staging</directory>
 					</resource>
-          <resource>
-            <filtering>false</filtering>
-            <directory>src/main/resources</directory>
-          </resource>
 				</resources>
 			</build>
 		</profile>
@@ -329,10 +323,6 @@
 					<resource>
 						<directory>src/main/profiles/production</directory>
 					</resource>
-          <resource>
-            <filtering>false</filtering>
-            <directory>src/main/resources</directory>
-          </resource>
 				</resources>
 			</build>
 		</profile>
