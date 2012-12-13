@@ -5,6 +5,7 @@
  */
 package org.jboss.dcp.api.service;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -75,22 +76,191 @@ public class ProviderServiceTest {
 
 	@Test
 	public void getPreprocessors() {
-		// TODO UNITTEST
+		Map<String, Object> typeDef = new HashMap<String, Object>();
+
+		// case - preprocessors field not defined
+		Assert.assertNull(ProviderService.getPreprocessors(typeDef, "mytype"));
+
+		// case - preprocessors field OK
+		typeDef.put("input_preprocessors", new ArrayList<Map<String, Object>>());
+		Assert.assertEquals(typeDef.get("input_preprocessors"), ProviderService.getPreprocessors(typeDef, "mytype"));
+
+		// case - preprocessors field with bad element type
+		try {
+			typeDef.put("input_preprocessors", "badstructureelement");
+			ProviderService.getPreprocessors(typeDef, "mytype");
+			Assert.fail("SettingsException expected");
+		} catch (SettingsException e) {
+			// OK
+		}
+		try {
+			typeDef.put("input_preprocessors", new HashMap<String, Object>());
+			ProviderService.getPreprocessors(typeDef, "mytype");
+			Assert.fail("SettingsException expected");
+		} catch (SettingsException e) {
+			// OK
+		}
 	}
 
 	@Test
 	public void getIndexName() {
-		// TODO UNITTEST
+		Map<String, Object> typeDef = new HashMap<String, Object>();
+
+		// case - index field not defined
+		try {
+			ProviderService.getIndexName(typeDef, "mytype");
+			Assert.fail("SettingsException expected");
+		} catch (SettingsException e) {
+			// OK
+		}
+
+		Map<String, Object> indexElement = new HashMap<String, Object>();
+		typeDef.put(ProviderService.INDEX, indexElement);
+		// case - index field defined but name field is empty
+		try {
+			ProviderService.getIndexName(typeDef, "mytype");
+			Assert.fail("SettingsException expected");
+		} catch (SettingsException e) {
+			// OK
+		}
+
+		indexElement.put(ProviderService.NAME, "myindex");
+		// case - index name found correct found
+		Assert.assertEquals(indexElement.get(ProviderService.NAME), ProviderService.getIndexName(typeDef, "mytype"));
+
+		// case - empty value for name element
+		indexElement.put(ProviderService.NAME, "");
+		try {
+			ProviderService.getIndexName(typeDef, "mytype");
+			Assert.fail("SettingsException expected");
+		} catch (SettingsException e) {
+			// OK
+		}
+
+		// case - empty value for name element
+		indexElement.put(ProviderService.NAME, "   ");
+		try {
+			ProviderService.getIndexName(typeDef, "mytype");
+			Assert.fail("SettingsException expected");
+		} catch (SettingsException e) {
+			// OK
+		}
+
+		// case - bad type of value for name element
+		indexElement.put(ProviderService.NAME, new Integer(10));
+		try {
+			ProviderService.getIndexName(typeDef, "mytype");
+			Assert.fail("SettingsException expected");
+		} catch (SettingsException e) {
+			// OK
+		}
+
+		// case - bad type of value for index element
+		typeDef.put(ProviderService.INDEX, "baaad");
+		try {
+			ProviderService.getIndexName(typeDef, "mytype");
+			Assert.fail("SettingsException expected");
+		} catch (SettingsException e) {
+			// OK
+		}
 	}
 
 	@Test
 	public void getIndexType() {
-		// TODO UNITTEST
+		Map<String, Object> typeDef = new HashMap<String, Object>();
+
+		// case - index field not defined
+		try {
+			ProviderService.getIndexType(typeDef, "mytype");
+			Assert.fail("SettingsException expected");
+		} catch (SettingsException e) {
+			// OK
+		}
+
+		Map<String, Object> indexElement = new HashMap<String, Object>();
+		typeDef.put(ProviderService.INDEX, indexElement);
+		// case - index field defined but type field is empty
+		try {
+			ProviderService.getIndexType(typeDef, "mytype");
+			Assert.fail("SettingsException expected");
+		} catch (SettingsException e) {
+			// OK
+		}
+
+		// case - index type found correct found
+		indexElement.put(ProviderService.TYPE, "myidxtype");
+		Assert.assertEquals(indexElement.get(ProviderService.TYPE), ProviderService.getIndexType(typeDef, "mytype"));
+
+		// case - empty value for type element
+		indexElement.put(ProviderService.TYPE, "");
+		try {
+			ProviderService.getIndexType(typeDef, "mytype");
+			Assert.fail("SettingsException expected");
+		} catch (SettingsException e) {
+			// OK
+		}
+
+		// case - empty value for type element
+		indexElement.put(ProviderService.TYPE, "  ");
+		try {
+			ProviderService.getIndexType(typeDef, "mytype");
+			Assert.fail("SettingsException expected");
+		} catch (SettingsException e) {
+			// OK
+		}
+
+		// case - bad type of value for type element
+		indexElement.put(ProviderService.TYPE, new Integer(10));
+		try {
+			ProviderService.getIndexType(typeDef, "mytype");
+			Assert.fail("SettingsException expected");
+		} catch (SettingsException e) {
+			// OK
+		}
+
+		// case - bad type of value for index element
+		typeDef.put(ProviderService.INDEX, "baaad");
+		try {
+			ProviderService.getIndexType(typeDef, "mytype");
+			Assert.fail("SettingsException expected");
+		} catch (SettingsException e) {
+			// OK
+		}
 	}
 
 	@Test
 	public void getDcpType() {
-		// TODO UNITTEST
+		Map<String, Object> typeDef = new HashMap<String, Object>();
+
+		// case - dcp_type field not defined
+		try {
+			ProviderService.getDcpType(typeDef, "mytype");
+			Assert.fail("SettingsException expected");
+		} catch (SettingsException e) {
+			// OK
+		}
+
+		// case - dcp_type field defined but empty
+		typeDef.put(ProviderService.DCP_TYPE, "");
+		try {
+			ProviderService.getDcpType(typeDef, "mytype");
+			Assert.fail("SettingsException expected");
+		} catch (SettingsException e) {
+			// OK
+		}
+
+		// case - dcp_type field defined but empty
+		typeDef.put(ProviderService.DCP_TYPE, "  ");
+		try {
+			ProviderService.getDcpType(typeDef, "mytype");
+			Assert.fail("SettingsException expected");
+		} catch (SettingsException e) {
+			// OK
+		}
+
+		// case - index type found correct found
+		typeDef.put(ProviderService.DCP_TYPE, "mydcptype");
+		Assert.assertEquals(typeDef.get(ProviderService.DCP_TYPE), ProviderService.getDcpType(typeDef, "mytype"));
 	}
 
 	@Test

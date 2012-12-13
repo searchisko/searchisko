@@ -28,7 +28,6 @@ import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
-import org.elasticsearch.common.settings.SettingsException;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.indices.IndexMissingException;
 import org.elasticsearch.search.sort.SortOrder;
@@ -83,9 +82,8 @@ public class ContentRestService extends RestServiceBase {
 				return createBadFieldDataResponse("type");
 			}
 
-			String indexName = ProviderService.getIndexName(typeDef);
-			String indexType = ProviderService.getIndexType(typeDef);
-			checkSearchIndexSettings(type, indexName, indexType);
+			String indexName = ProviderService.getIndexName(typeDef, type);
+			String indexType = ProviderService.getIndexType(typeDef, type);
 
 			SearchRequestBuilder srb = new SearchRequestBuilder(getSearchClientService().getClient());
 			srb.setIndices(indexName);
@@ -138,9 +136,8 @@ public class ContentRestService extends RestServiceBase {
 
 			String dcpContentId = providerService.generateDcpId(type, contentId);
 
-			String indexName = ProviderService.getIndexName(typeDef);
-			String indexType = ProviderService.getIndexType(typeDef);
-			checkSearchIndexSettings(type, indexName, indexType);
+			String indexName = ProviderService.getIndexName(typeDef, type);
+			String indexType = ProviderService.getIndexType(typeDef, type);
 
 			GetResponse getResponse = getSearchClientService().getClient().prepareGet(indexName, indexType, dcpContentId)
 					.execute().actionGet();
@@ -154,21 +151,6 @@ public class ContentRestService extends RestServiceBase {
 			return Response.status(Response.Status.NOT_FOUND).build();
 		} catch (Exception e) {
 			return createErrorResponse(e);
-		}
-	}
-
-	/**
-	 * Check if search index settings are correct.
-	 * 
-	 * @param type we check settings for (used for error message)
-	 * @param indexName index name defined for given type
-	 * @param indexType index type for given type
-	 * @throws SettingsException if index name or type is null or empty
-	 */
-	protected static void checkSearchIndexSettings(String type, String indexName, String indexType) {
-		if (indexName == null || indexName.trim().isEmpty() || indexType == null || indexType.trim().isEmpty()) {
-			throw new SettingsException("Search index or type is not defined correctly for dcp_provider_type=" + type
-					+ ". Contact administrators please.");
 		}
 	}
 
@@ -199,9 +181,8 @@ public class ContentRestService extends RestServiceBase {
 			String dcpContentId = providerService.generateDcpId(type, contentId);
 
 			// check search subsystem configuration
-			String indexName = ProviderService.getIndexName(typeDef);
-			String indexType = ProviderService.getIndexType(typeDef);
-			checkSearchIndexSettings(type, indexName, indexType);
+			String indexName = ProviderService.getIndexName(typeDef, type);
+			String indexType = ProviderService.getIndexType(typeDef, type);
 
 			// Run preprocessors
 			providerService.runPreprocessors(type, ProviderService.getPreprocessors(typeDef, type), content);
@@ -263,9 +244,8 @@ public class ContentRestService extends RestServiceBase {
 
 			// TODO PERSISTENCE - Remove from persistence if exists
 
-			String indexName = ProviderService.getIndexName(typeDef);
-			String indexType = ProviderService.getIndexType(typeDef);
-			checkSearchIndexSettings(type, indexName, indexType);
+			String indexName = ProviderService.getIndexName(typeDef, type);
+			String indexType = ProviderService.getIndexType(typeDef, type);
 
 			DeleteResponse dr = getSearchClientService().getClient().prepareDelete(indexName, indexType, dcpContentId)
 					.execute().actionGet();

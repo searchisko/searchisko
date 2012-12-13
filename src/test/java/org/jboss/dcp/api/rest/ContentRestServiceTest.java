@@ -18,7 +18,6 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
 
 import org.elasticsearch.common.joda.time.format.ISODateTimeFormat;
-import org.elasticsearch.common.settings.SettingsException;
 import org.jboss.dcp.api.service.ProviderService;
 import org.jboss.dcp.api.testtools.ESRealClientTestBase;
 import org.jboss.dcp.api.testtools.TestUtils;
@@ -315,36 +314,6 @@ public class ContentRestServiceTest extends ESRealClientTestBase {
 			indexDelete(INDEX_NAME);
 			finalizeESClientForUnitTest();
 		}
-	}
-
-	@Test
-	public void checkSearchIndexSettings() {
-
-		try {
-			ContentRestService.checkSearchIndexSettings("type", null, "doctype");
-			Assert.fail("SettingsException expected");
-		} catch (SettingsException e) {
-			// OK
-		}
-		try {
-			ContentRestService.checkSearchIndexSettings("type", "  ", "doctype");
-			Assert.fail("SettingsException expected");
-		} catch (SettingsException e) {
-			// OK
-		}
-		try {
-			ContentRestService.checkSearchIndexSettings("type", "index", null);
-			Assert.fail("SettingsException expected");
-		} catch (SettingsException e) {
-			// OK
-		}
-		try {
-			ContentRestService.checkSearchIndexSettings("type", "index", "   ");
-			Assert.fail("SettingsException expected");
-		} catch (SettingsException e) {
-			// OK
-		}
-		ContentRestService.checkSearchIndexSettings("type", "index", "doctype");
 	}
 
 	/**

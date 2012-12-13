@@ -113,7 +113,7 @@ public class ProviderService {
 	 */
 	public Map<String, Object> findProvider(String providerName) {
 		SearchRequestBuilder searchBuilder = entityService.createSearchRequestBuilder();
-		searchBuilder.setFilter(FilterBuilders.queryFilter(QueryBuilders.matchQuery("name", providerName)));
+		searchBuilder.setFilter(FilterBuilders.queryFilter(QueryBuilders.matchQuery(NAME, providerName)));
 		searchBuilder.setQuery(QueryBuilders.matchAllQuery());
 
 		SearchResponse response = entityService.search(searchBuilder);
@@ -136,13 +136,13 @@ public class ProviderService {
 	 */
 	public Map<String, Object> findContentType(String typeId) {
 		SearchRequestBuilder searchBuilder = entityService.createSearchRequestBuilder();
-		searchBuilder.setFilter(FilterBuilders.existsFilter("type." + typeId + ".dcp_type"));
+		searchBuilder.setFilter(FilterBuilders.existsFilter(TYPE + "." + typeId + "." + DCP_TYPE));
 		searchBuilder.setQuery(QueryBuilders.matchAllQuery());
-		searchBuilder.addField("type." + typeId);
+		searchBuilder.addField(TYPE + "." + typeId);
 
 		SearchResponse response = entityService.search(searchBuilder);
 		if (response.getHits().getTotalHits() == 1) {
-			return response.getHits().getHits()[0].getFields().get("type." + typeId).getValue();
+			return response.getHits().getHits()[0].getFields().get(TYPE + "." + typeId).getValue();
 		} else if (response.getHits().getTotalHits() == 0) {
 			return null;
 		} else {
@@ -187,23 +187,23 @@ public class ProviderService {
 	 * Get configuration for one <code>dcp_content_type</code> from provider configuration.
 	 * 
 	 * @param providerDef provider configuration structure
-	 * @param type name of <code>dcp_content_type</code> to get configuration for
+	 * @param typeName name of <code>dcp_content_type</code> to get configuration for
 	 * @return type configuration or null if doesn't exist
 	 * @throws SettingsException for incorrect configuration structure
 	 */
 	@SuppressWarnings("unchecked")
-	public static Map<String, Object> getContentType(Map<String, Object> providerDef, String type) {
+	public static Map<String, Object> getContentType(Map<String, Object> providerDef, String typeName) {
 		try {
 			Map<String, Object> types = (Map<String, Object>) providerDef.get(TYPE);
 			if (types != null) {
-				if (types.containsKey(type)) {
-					return (Map<String, Object>) types.get(type);
+				if (types.containsKey(typeName)) {
+					return (Map<String, Object>) types.get(typeName);
 				}
 			}
 			return null;
 		} catch (ClassCastException e) {
 			throw new SettingsException("Incorrect configuration for provider '" + providerDef.get(NAME)
-					+ "' when trying to find dcp_provider_type=" + type + ". Contact administrators please.");
+					+ "' when trying to find dcp_provider_type=" + typeName + ". Contact administrators please.");
 		}
 	}
 
@@ -228,18 +228,24 @@ public class ProviderService {
 	 * Get search subsystem index name from one <code>dcp_content_type</code> configuration structure.
 	 * 
 	 * @param typeDef <code>dcp_content_type</code> configuration structure
+	 * @param typeName <code>dcp_content_type</code> name to be used for error messages
 	 * @return search index name
 	 */
 	@SuppressWarnings("unchecked")
-	public static String getIndexName(Map<String, Object> typeDef) {
+	public static String getIndexName(Map<String, Object> typeDef, String typeName) {
 		try {
+			String ret = null;
 			if (typeDef.get(INDEX) != null)
-				return ((Map<String, Object>) typeDef.get(INDEX)).get("name").toString();
-			else
-				return null;
+				ret = (String) ((Map<String, Object>) typeDef.get(INDEX)).get(NAME);
+
+			if (ret == null || ret.trim().isEmpty())
+				throw new SettingsException("Incorrect configuration of 'index.name' for dcp_provider_type='" + typeName
+						+ "'. Search index name is not defined. Contact administrators please.");
+			return ret;
+
 		} catch (ClassCastException e) {
-			throw new SettingsException(
-					"Incorrect configuration of 'index' for dcp_provider_type. Contact administrators please.");
+			throw new SettingsException("Incorrect structure of 'index' configuration for dcp_provider_type='" + typeName
+					+ "'. Contact administrators please.");
 		}
 	}
 
@@ -247,18 +253,24 @@ public class ProviderService {
 	 * Get search subsystem type name from one <code>dcp_content_type</code> configuration structure.
 	 * 
 	 * @param typeDef <code>dcp_content_type</code> configuration structure
+	 * @param typeName <code>dcp_content_type</code> name to be used for error messages
 	 * @return search type name
 	 */
 	@SuppressWarnings("unchecked")
-	public static String getIndexType(Map<String, Object> typeDef) {
+	public static String getIndexType(Map<String, Object> typeDef, String typeName) {
 		try {
+			String ret = null;
 			if (typeDef.get(INDEX) != null)
-				return ((Map<String, Object>) typeDef.get(INDEX)).get("type").toString();
-			else
-				return null;
+				ret = (String) ((Map<String, Object>) typeDef.get(INDEX)).get(TYPE);
+
+			if (ret == null || ret.trim().isEmpty())
+				throw new SettingsException("Incorrect configuration of 'index.type' for dcp_provider_type='" + typeName
+						+ "'. Search index type is not defined. Contact administrators please.");
+			return ret;
+
 		} catch (ClassCastException e) {
-			throw new SettingsException(
-					"Incorrect configuration of 'index' for dcp_provider_type. Contact administrators please.");
+			throw new SettingsException("Incorrect structure of 'index' configuration for dcp_provider_type='" + typeName
+					+ "'. Contact administrators please.");
 		}
 	}
 
@@ -266,16 +278,17 @@ public class ProviderService {
 	 * Get <code>dcp_type</code> value from one <code>dcp_content_type</code> configuration structure.
 	 * 
 	 * @param typeDef <code>dcp_content_type</code> configuration structure
+	 * @param typeName <code>dcp_content_type</code> name to be used for error messages
 	 * @return <code>dcp_type</code> value
 	 * @throws SettingsException if value is not present in configuration or is invalid
 	 */
-	public static String getDcpType(Map<String, Object> typeDef, String type) {
+	public static String getDcpType(Map<String, Object> typeDef, String typeName) {
 		String ret = null;
 		if (typeDef.get(DCP_TYPE) != null)
 			ret = typeDef.get(DCP_TYPE).toString();
 
 		if (ret == null || ret.trim().isEmpty())
-			throw new SettingsException("dcp_type is not defined correctly for dcp_provider_type=" + type
+			throw new SettingsException("dcp_type is not defined correctly for dcp_provider_type=" + typeName
 					+ ". Contact administrators please.");
 
 		return ret;

@@ -69,13 +69,14 @@ public class SearchRestService extends RestServiceBase {
 		try {
 			SearchRequestBuilder srb = new SearchRequestBuilder(getSearchClientService().getClient());
 			if (settings.getContentType() != null) {
-				Map<String, Object> typeDef = providerService.findContentType(settings.getContentType());
+				String type = settings.getContentType();
+				Map<String, Object> typeDef = providerService.findContentType(type);
 				if (typeDef == null) {
 					return createBadFieldDataResponse("type");
 				}
 
-				String indexName = ProviderService.getIndexName(typeDef);
-				String indexType = ProviderService.getIndexType(typeDef);
+				String indexName = ProviderService.getIndexName(typeDef, type);
+				String indexType = ProviderService.getIndexType(typeDef, type);
 
 				srb.setIndices(indexName);
 				srb.setTypes(indexType);
@@ -108,8 +109,7 @@ public class SearchRestService extends RestServiceBase {
 			}
 
 			if (!searchFilters.isEmpty()) {
-				AndFilterBuilder f = new AndFilterBuilder(
-						searchFilters.toArray(new FilterBuilder[searchFilters.size()]));
+				AndFilterBuilder f = new AndFilterBuilder(searchFilters.toArray(new FilterBuilder[searchFilters.size()]));
 				qb = new FilteredQueryBuilder(qb, f);
 			}
 
