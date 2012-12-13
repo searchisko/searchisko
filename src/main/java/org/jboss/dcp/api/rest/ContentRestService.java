@@ -204,7 +204,7 @@ public class ContentRestService extends RestServiceBase {
 			checkSearchIndexSettings(type, indexName, indexType);
 
 			// Run preprocessors
-			providerService.runPreprocessors(ProviderService.getPreprocessors(typeDef), content);
+			providerService.runPreprocessors(type, ProviderService.getPreprocessors(typeDef, type), content);
 
 			// Copy distinct data from content to normalized fields
 			content.put(DCP_TAGS, content.get("tags"));

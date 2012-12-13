@@ -154,14 +154,20 @@ public class ProviderService {
 	/**
 	 * Run defined content preprocessors on passed in content.
 	 * 
+	 * @param typeName <code>dcp_content_type</code> name we run preprocessors for to be used for error messages
 	 * @param preprocessorsDef definition of preprocessors - see {@link #getPreprocessors(Map)}
 	 * @param content to run preprocessors on
 	 */
-	public void runPreprocessors(List<Map<String, Object>> preprocessorsDef, Map<String, Object> content) {
-		List<StructuredContentPreprocessor> preprocessors = StructuredContentPreprocessorFactory.createPreprocessors(
-				preprocessorsDef, searchClientService.getClient());
-		for (StructuredContentPreprocessor preprocessor : preprocessors) {
-			content = preprocessor.preprocessData(content);
+	public void runPreprocessors(String typeName, List<Map<String, Object>> preprocessorsDef, Map<String, Object> content) {
+		try {
+			List<StructuredContentPreprocessor> preprocessors = StructuredContentPreprocessorFactory.createPreprocessors(
+					preprocessorsDef, searchClientService.getClient());
+			for (StructuredContentPreprocessor preprocessor : preprocessors) {
+				content = preprocessor.preprocessData(content);
+			}
+		} catch (IllegalArgumentException e) {
+			throw new SettingsException("Bad configuration of some 'input_preprocessors' for dcp_content_type=" + typeName
+					+ ". Contact administrators please. Cause: " + e.getMessage(), e);
 		}
 	}
 
@@ -197,7 +203,7 @@ public class ProviderService {
 			return null;
 		} catch (ClassCastException e) {
 			throw new SettingsException("Incorrect configuration for provider '" + providerDef.get(NAME)
-					+ "' when trying to find type '" + type + "'. Contact administrators please.");
+					+ "' when trying to find dcp_provider_type=" + type + ". Contact administrators please.");
 		}
 	}
 
@@ -205,11 +211,17 @@ public class ProviderService {
 	 * Get preprocessors configuration from one <code>dcp_content_type</code> configuration structure.
 	 * 
 	 * @param typeDef <code>dcp_content_type</code> configuration structure
+	 * @param typeName <code>dcp_content_type</code> name to be used for error messages
 	 * @return list of preprocessor configurations
 	 */
 	@SuppressWarnings("unchecked")
-	public static List<Map<String, Object>> getPreprocessors(Map<String, Object> typeDef) {
-		return (List<Map<String, Object>>) typeDef.get("input_preprocessors");
+	public static List<Map<String, Object>> getPreprocessors(Map<String, Object> typeDef, String typeName) {
+		try {
+			return (List<Map<String, Object>>) typeDef.get("input_preprocessors");
+		} catch (ClassCastException e) {
+			throw new SettingsException("Incorrect configuration of 'input_preprocessors' for dcp_provider_type=" + typeName
+					+ ". Contact administrators please.");
+		}
 	}
 
 	/**
@@ -220,10 +232,15 @@ public class ProviderService {
 	 */
 	@SuppressWarnings("unchecked")
 	public static String getIndexName(Map<String, Object> typeDef) {
-		if (typeDef.get(INDEX) != null)
-			return ((Map<String, Object>) typeDef.get(INDEX)).get("name").toString();
-		else
-			return null;
+		try {
+			if (typeDef.get(INDEX) != null)
+				return ((Map<String, Object>) typeDef.get(INDEX)).get("name").toString();
+			else
+				return null;
+		} catch (ClassCastException e) {
+			throw new SettingsException(
+					"Incorrect configuration of 'index' for dcp_provider_type. Contact administrators please.");
+		}
 	}
 
 	/**
@@ -234,10 +251,15 @@ public class ProviderService {
 	 */
 	@SuppressWarnings("unchecked")
 	public static String getIndexType(Map<String, Object> typeDef) {
-		if (typeDef.get(INDEX) != null)
-			return ((Map<String, Object>) typeDef.get(INDEX)).get("type").toString();
-		else
-			return null;
+		try {
+			if (typeDef.get(INDEX) != null)
+				return ((Map<String, Object>) typeDef.get(INDEX)).get("type").toString();
+			else
+				return null;
+		} catch (ClassCastException e) {
+			throw new SettingsException(
+					"Incorrect configuration of 'index' for dcp_provider_type. Contact administrators please.");
+		}
 	}
 
 	/**
