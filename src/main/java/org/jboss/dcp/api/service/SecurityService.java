@@ -14,6 +14,7 @@ import org.apache.commons.codec.digest.DigestUtils;
  * Security service for authentication providers
  * 
  * @author Libor Krzyzanek
+ * @author Vlastimil Elias (velias at redhat dot com)
  * 
  */
 @Named

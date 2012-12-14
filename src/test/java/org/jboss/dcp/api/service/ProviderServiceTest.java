@@ -5,13 +5,16 @@
  */
 package org.jboss.dcp.api.service;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
 
 import org.elasticsearch.client.Client;
 import org.elasticsearch.common.settings.SettingsException;
+import org.jboss.dcp.api.testtools.ESRealClientTestBase;
 import org.jboss.dcp.api.testtools.TestUtils;
 import org.junit.Assert;
 import org.junit.Test;
@@ -22,7 +25,10 @@ import org.mockito.Mockito;
  * 
  * @author Vlastimil Elias (velias at redhat dot com)
  */
-public class ProviderServiceTest {
+public class ProviderServiceTest extends ESRealClientTestBase {
+
+	private static final String INDEX_TYPE = "index_type";
+	private static final String INDEX_NAME = "index_name";
 
 	@Test
 	public void getEntityService() {
@@ -326,22 +332,207 @@ public class ProviderServiceTest {
 	}
 
 	@Test
-	public void findContentType() {
-		// TODO UNITTEST
+	public void findContentType() throws IOException {
+		ProviderService tested = getTestedWithEmbeddedClient();
+		try {
+
+			// case - missing index
+			Assert.assertNull(tested.findContentType("unknown"));
+
+			indexCreate(INDEX_NAME);
+			// case - empty index
+			Assert.assertNull(tested.findContentType("unknown"));
+
+			indexInsertDocument(INDEX_NAME, INDEX_TYPE, "provider_1",
+					TestUtils.readStringFromClasspathFile("/provider/provider_1.json"));
+			indexInsertDocument(INDEX_NAME, INDEX_TYPE, "provider_2",
+					TestUtils.readStringFromClasspathFile("/provider/provider_2.json"));
+			indexFlush(INDEX_NAME);
+
+			// case - unknown type
+			Assert.assertNull(tested.findContentType("unknown"));
+
+			// case - found type
+			{
+				Map<String, Object> ret = tested.findContentType("provider1_mailing");
+				Assert.assertNotNull(ret);
+				Assert.assertEquals("mailing", ret.get(ProviderService.DCP_TYPE));
+			}
+			{
+				Map<String, Object> ret = tested.findContentType("provider1_issue");
+				Assert.assertNotNull(ret);
+				Assert.assertEquals("issue", ret.get(ProviderService.DCP_TYPE));
+			}
+			{
+				Map<String, Object> ret = tested.findContentType("provider2_mailing");
+				Assert.assertNotNull(ret);
+				Assert.assertEquals("mailing2", ret.get(ProviderService.DCP_TYPE));
+			}
+
+			// case - exception if type name is not unique
+			indexInsertDocument(INDEX_NAME, INDEX_TYPE, "provider_3",
+					TestUtils.readStringFromClasspathFile("/provider/provider_1.json"));
+			indexFlush(INDEX_NAME);
+			try {
+				tested.findContentType("provider1_mailing");
+				Assert.fail("SettingsException expected");
+			} catch (SettingsException e) {
+				// OK
+			}
+		} finally {
+			indexDelete(INDEX_NAME);
+			finalizeESClientForUnitTest();
+		}
 	}
 
 	@Test
-	public void findProvider() {
-		// TODO UNITTEST
+	public void findProvider() throws IOException {
+		ProviderService tested = getTestedWithEmbeddedClient();
+		try {
+
+			// case - missing index
+			Assert.assertNull(tested.findProvider("unknown"));
+
+			indexCreate(INDEX_NAME);
+			// case - empty index
+			Assert.assertNull(tested.findProvider("provider1"));
+
+			indexInsertDocument(INDEX_NAME, INDEX_TYPE, "provider_1",
+					TestUtils.readStringFromClasspathFile("/provider/provider_1.json"));
+			indexInsertDocument(INDEX_NAME, INDEX_TYPE, "provider_2",
+					TestUtils.readStringFromClasspathFile("/provider/provider_2.json"));
+			indexFlush(INDEX_NAME);
+
+			// case - unknown type
+			Assert.assertNull(tested.findProvider("unknown"));
+
+			// case - found type
+			{
+				Map<String, Object> ret = tested.findProvider("provider1");
+				Assert.assertNotNull(ret);
+				Assert.assertEquals("provider1", ret.get(ProviderService.NAME));
+			}
+			{
+				Map<String, Object> ret = tested.findProvider("provider2");
+				Assert.assertNotNull(ret);
+				Assert.assertEquals("provider2", ret.get(ProviderService.NAME));
+			}
+
+			// case - exception if provider name is not unique
+			indexInsertDocument(INDEX_NAME, INDEX_TYPE, "provider_3",
+					TestUtils.readStringFromClasspathFile("/provider/provider_1.json"));
+			indexFlush(INDEX_NAME);
+			try {
+				tested.findProvider("provider1");
+				Assert.fail("SettingsException expected");
+			} catch (SettingsException e) {
+				// OK
+			}
+		} finally {
+			indexDelete(INDEX_NAME);
+			finalizeESClientForUnitTest();
+		}
 	}
 
 	@Test
-	public void isSuperProvider() {
-		// TODO UNITTEST
+	public void isSuperProvider() throws IOException {
+		ProviderService tested = getTestedWithEmbeddedClient();
+		try {
+
+			// case - missing index
+			Assert.assertFalse(tested.isSuperProvider("unknown"));
+
+			indexCreate(INDEX_NAME);
+			// case - empty index
+			Assert.assertFalse(tested.isSuperProvider("provider1"));
+
+			indexInsertDocument(INDEX_NAME, INDEX_TYPE, "provider_1",
+					TestUtils.readStringFromClasspathFile("/provider/provider_1.json"));
+			indexInsertDocument(INDEX_NAME, INDEX_TYPE, "provider_2",
+					TestUtils.readStringFromClasspathFile("/provider/provider_2.json"));
+			indexFlush(INDEX_NAME);
+
+			// case - unknown type
+			Assert.assertFalse(tested.isSuperProvider("unknown"));
+
+			// case - found type
+			{
+				Assert.assertFalse(tested.isSuperProvider("provider1"));
+			}
+			{
+				Assert.assertTrue(tested.isSuperProvider("provider2"));
+			}
+
+			// case - exception if provider name is not unique
+			indexInsertDocument(INDEX_NAME, INDEX_TYPE, "provider_3",
+					TestUtils.readStringFromClasspathFile("/provider/provider_1.json"));
+			indexFlush(INDEX_NAME);
+			try {
+				tested.isSuperProvider("provider1");
+				Assert.fail("SettingsException expected");
+			} catch (SettingsException e) {
+				// OK
+			}
+		} finally {
+			indexDelete(INDEX_NAME);
+			finalizeESClientForUnitTest();
+		}
 	}
 
 	@Test
-	public void authenticate() {
-		// TODO UNITTEST
+	public void authenticate() throws IOException {
+		ProviderService tested = getTestedWithEmbeddedClient();
+		try {
+
+			// case - missing index
+			Assert.assertFalse(tested.authenticate("unknown", "pwd"));
+
+			indexCreate(INDEX_NAME);
+			// case - empty index
+			Assert.assertFalse(tested.authenticate("provider1", "pwd"));
+
+			indexInsertDocument(INDEX_NAME, INDEX_TYPE, "provider_1",
+					TestUtils.readStringFromClasspathFile("/provider/provider_1.json"));
+			indexInsertDocument(INDEX_NAME, INDEX_TYPE, "provider_2",
+					TestUtils.readStringFromClasspathFile("/provider/provider_2.json"));
+			indexFlush(INDEX_NAME);
+
+			// case - unknown type
+			Assert.assertFalse(tested.authenticate("unknown", "pwd"));
+
+			// case - found type
+			{
+				Assert.assertFalse(tested.authenticate("provider1", "badpwd"));
+			}
+			{
+				Assert.assertTrue(tested.authenticate("provider1", "pwd"));
+			}
+
+			// case - exception if provider name is not unique
+			indexInsertDocument(INDEX_NAME, INDEX_TYPE, "provider_3",
+					TestUtils.readStringFromClasspathFile("/provider/provider_1.json"));
+			indexFlush(INDEX_NAME);
+			try {
+				tested.authenticate("provider1", "pwd");
+				Assert.fail("SettingsException expected");
+			} catch (SettingsException e) {
+				// OK
+			}
+		} finally {
+			indexDelete(INDEX_NAME);
+			finalizeESClientForUnitTest();
+		}
 	}
+
+	private ProviderService getTestedWithEmbeddedClient() {
+		SearchClientService scs = new SearchClientService();
+		scs.client = prepareESClientForUnitTest();
+		ProviderService tested = new ProviderService();
+		tested.searchClientService = scs;
+		tested.securityService = new SecurityService();
+		tested.entityService = new ElasticsearchEntityService(scs.client, INDEX_NAME, INDEX_TYPE, false);
+		tested.log = Logger.getLogger("testlogger");
+		return tested;
+	}
+
 }

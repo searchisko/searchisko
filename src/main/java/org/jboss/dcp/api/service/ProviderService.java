@@ -19,6 +19,7 @@ import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.common.settings.SettingsException;
 import org.elasticsearch.index.query.FilterBuilders;
 import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.indices.IndexMissingException;
 import org.jboss.elasticsearch.tools.content.StructuredContentPreprocessor;
 import org.jboss.elasticsearch.tools.content.StructuredContentPreprocessorFactory;
 
@@ -96,13 +97,12 @@ public class ProviderService {
 	public boolean isSuperProvider(String providerName) {
 		Map<String, Object> providerData = findProvider(providerName);
 
+		if (providerData == null)
+			return false;
+
 		Object superProviderFlag = providerData.get(SUPER_PROVIDER);
 
-		if (superProviderFlag != null && ((Boolean) superProviderFlag).booleanValue()) {
-			return true;
-		} else {
-			return false;
-		}
+		return (superProviderFlag != null && Boolean.parseBoolean(superProviderFlag.toString()));
 	}
 
 	/**
@@ -116,14 +116,19 @@ public class ProviderService {
 		searchBuilder.setFilter(FilterBuilders.queryFilter(QueryBuilders.matchQuery(NAME, providerName)));
 		searchBuilder.setQuery(QueryBuilders.matchAllQuery());
 
-		SearchResponse response = entityService.search(searchBuilder);
-		if (response.getHits().getTotalHits() == 1) {
-			return response.getHits().getHits()[0].getSource();
-		} else if (response.getHits().getTotalHits() == 0) {
+		try {
+			SearchResponse response = entityService.search(searchBuilder);
+			if (response.getHits().getTotalHits() == 1) {
+				return response.getHits().getHits()[0].getSource();
+			} else if (response.getHits().getTotalHits() == 0) {
+				return null;
+			} else {
+				throw new SettingsException("More than one configurations found for content provider name '" + providerName
+						+ "'. Contact administrators please.");
+			}
+		} catch (IndexMissingException e) {
+			log.warning("Missing search index for providers configurations: " + e.getMessage());
 			return null;
-		} else {
-			throw new SettingsException("More than one configurations found for content provider name '" + providerName
-					+ "'. Contact administrators please.");
 		}
 	}
 
@@ -140,14 +145,19 @@ public class ProviderService {
 		searchBuilder.setQuery(QueryBuilders.matchAllQuery());
 		searchBuilder.addField(TYPE + "." + typeId);
 
-		SearchResponse response = entityService.search(searchBuilder);
-		if (response.getHits().getTotalHits() == 1) {
-			return response.getHits().getHits()[0].getFields().get(TYPE + "." + typeId).getValue();
-		} else if (response.getHits().getTotalHits() == 0) {
+		try {
+			SearchResponse response = entityService.search(searchBuilder);
+			if (response.getHits().getTotalHits() == 1) {
+				return response.getHits().getHits()[0].getFields().get(TYPE + "." + typeId).getValue();
+			} else if (response.getHits().getTotalHits() == 0) {
+				return null;
+			} else {
+				throw new SettingsException("More than one configurations found for dcp_content_type=" + typeId
+						+ ". Contact administrators please.");
+			}
+		} catch (IndexMissingException e) {
+			log.warning("Missing search index for providers configurations: " + e.getMessage());
 			return null;
-		} else {
-			throw new SettingsException("More than one configurations found for dcp_content_type=" + typeId
-					+ ". Contact administrators please.");
 		}
 	}
 
