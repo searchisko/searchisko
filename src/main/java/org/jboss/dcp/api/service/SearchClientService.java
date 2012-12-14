@@ -13,7 +13,6 @@ import javax.ejb.Startup;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Named;
 
-import org.elasticsearch.client.Client;
 import org.jboss.dcp.api.model.AppConfiguration.ClientType;
 import org.jboss.dcp.api.util.SearchUtils;
 
@@ -36,14 +35,6 @@ public class SearchClientService extends ElasticsearchClientService {
 		if (ClientType.EMBEDDED.equals(appConfigurationService.getAppConfiguration().getClientType())) {
 			node = createEmbeddedNode("search", settings);
 			client = node.client();
-
-			if (!client.admin().indices().prepareExists(ContributorService.SEARCH_INDEX_NAME).execute().actionGet().exists()) {
-				client.admin().indices().prepareCreate(ContributorService.SEARCH_INDEX_NAME).execute().actionGet();
-				// TODO: Set proper mapping for Contributor index
-				// client.admin().indices().preparePutMapping(ContributorService.SEARCH_INDEX_NAME)
-				// .setType(ContributorService.SEARCH_INDEX_TYPE).setSource("").execute().actionGet();
-			}
-
 			return;
 		} else {
 			Properties transportAddresses = SearchUtils.loadProperties("/search_client_connections.properties");
@@ -51,10 +42,6 @@ public class SearchClientService extends ElasticsearchClientService {
 		}
 
 		checkHealthOfCluster(client);
-	}
-
-	public Client getClient() {
-		return client;
 	}
 
 }

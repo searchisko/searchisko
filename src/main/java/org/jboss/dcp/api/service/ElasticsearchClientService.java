@@ -117,11 +117,13 @@ public class ElasticsearchClientService {
 		try {
 			if (client != null) {
 				client.close();
+				client = null;
 				log.info("ElasticSearch Search Client is closed");
 			}
 		} finally {
 			if (node != null) {
 				node.close();
+				node = null;
 				log.info("ElasticSearch Search Node is closed");
 			}
 		}
