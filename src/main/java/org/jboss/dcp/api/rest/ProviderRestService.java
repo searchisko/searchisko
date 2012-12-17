@@ -10,11 +10,13 @@ import java.util.Map;
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
+import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -51,6 +53,19 @@ public class ProviderRestService extends RestEntityServiceBase {
 		setEntityService(providerService.getEntityService());
 	}
 
+	protected static final String[] FIELDS_TO_REMOVE = new String[] { ProviderService.PASSWORD_HASH };
+
+	@GET
+	@Path("/")
+	@Produces(MediaType.APPLICATION_JSON)
+	public Object getAll(@QueryParam("from") Integer from, @QueryParam("size") Integer size) {
+		try {
+			return entityService.getAll(from, size, FIELDS_TO_REMOVE);
+		} catch (Exception e) {
+			return createErrorResponse(e);
+		}
+	}
+
 	@GET
 	@Path("/{id}")
 	@Produces(MediaType.APPLICATION_JSON)
@@ -75,7 +90,27 @@ public class ProviderRestService extends RestEntityServiceBase {
 					return Response.status(Status.FORBIDDEN).build();
 				}
 			}
-			return entity;
+			return ESDataOnlyResponse.removeFields(entity, FIELDS_TO_REMOVE);
+		} catch (Exception e) {
+			return createErrorResponse(e);
+		}
+	}
+
+	@POST
+	@Path("/{id}")
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
+	public Object create(@PathParam("id") String id, Map<String, Object> data) {
+		try {
+			// do not update password hash if entity exists already!
+			Map<String, Object> entity = entityService.get(id);
+			if (entity != null) {
+				Object pwdhash = entity.get(ProviderService.PASSWORD_HASH);
+				if (pwdhash != null)
+					data.put(ProviderService.PASSWORD_HASH, pwdhash);
+			}
+			entityService.create(id, data);
+			return createResponseWithId(id);
 		} catch (Exception e) {
 			return createErrorResponse(e);
 		}
@@ -90,7 +125,7 @@ public class ProviderRestService extends RestEntityServiceBase {
 			return createRequiredFieldResponse("id");
 		}
 
-		if (pwd == null || pwd.isEmpty()) {
+		if (pwd == null || pwd.trim().isEmpty()) {
 			return createRequiredFieldResponse("pwd");
 		}
 
@@ -108,7 +143,7 @@ public class ProviderRestService extends RestEntityServiceBase {
 				return Response.status(Status.FORBIDDEN).build();
 			}
 		}
-		entity.put(ProviderService.PASSWORD_HASH, securityService.createPwdHash(username, pwd));
+		entity.put(ProviderService.PASSWORD_HASH, securityService.createPwdHash(username, pwd.trim()));
 		entityService.update(id, entity);
 
 		return Response.ok().build();

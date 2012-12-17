@@ -132,6 +132,13 @@ public class ESDataOnlyResponse implements StreamingOutput {
 		builder.close();
 	}
 
+	/**
+	 * Remove named fields from data map.
+	 * 
+	 * @param data to remove fields from (can be null)
+	 * @param fieldsToRemove name of fields to remove (can be null)
+	 * @return data
+	 */
 	protected static Map<String, Object> removeFields(Map<String, Object> data, String[] fieldsToRemove) {
 		if (data == null) {
 			return null;

@@ -69,6 +69,12 @@ public class RestEntityServiceBaseTest {
 	public void get() {
 		RestEntityServiceBase tested = getTested();
 
+		// input parameter is bad
+		{
+			TestUtils.assertResponseStatus(tested.get(null), Status.BAD_REQUEST);
+			TestUtils.assertResponseStatus(tested.get(""), Status.BAD_REQUEST);
+		}
+
 		// case - OK, object returned
 		Map<String, Object> m = new HashMap<String, Object>();
 		Mockito.when(tested.entityService.get("10")).thenReturn(m);
@@ -117,6 +123,13 @@ public class RestEntityServiceBaseTest {
 	public void create_id() {
 		RestEntityServiceBase tested = getTested();
 
+		// input parameter is bad
+		{
+			Map<String, Object> m = new HashMap<String, Object>();
+			TestUtils.assertResponseStatus(tested.create(null, m), Status.BAD_REQUEST);
+			TestUtils.assertResponseStatus(tested.create("", m), Status.BAD_REQUEST);
+		}
+
 		// case - OK
 		Map<String, Object> m = new HashMap<String, Object>();
 		Map<String, Object> ret = (Map<String, Object>) tested.create("12", m);
@@ -135,7 +148,11 @@ public class RestEntityServiceBaseTest {
 	@Test
 	public void delete() {
 		RestEntityServiceBase tested = getTested();
-
+		// input parameter is bad
+		{
+			TestUtils.assertResponseStatus(tested.delete(null), Status.BAD_REQUEST);
+			TestUtils.assertResponseStatus(tested.delete(""), Status.BAD_REQUEST);
+		}
 		// case - OK
 		{
 			Response r = (Response) tested.delete("12");

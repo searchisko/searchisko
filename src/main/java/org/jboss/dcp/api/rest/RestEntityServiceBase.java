@@ -22,16 +22,22 @@ import javax.ws.rs.core.Response;
 import org.jboss.dcp.api.service.EntityService;
 
 /**
- * Base class for REST API for entity manipulation
+ * Base class for REST API for entity manipulation, contains basic CRUD operations.
  * 
  * @author Libor Krzyzanek
+ * @author Vlastimil Elias (velias at redhat dot com)
  * 
  */
 public class RestEntityServiceBase extends RestServiceBase {
 
 	protected EntityService entityService;
 
-	public void setEntityService(EntityService entityService) {
+	/**
+	 * Set entity service used by this REST service.
+	 * 
+	 * @param entityService
+	 */
+	protected void setEntityService(EntityService entityService) {
 		this.entityService = entityService;
 	}
 
@@ -50,6 +56,11 @@ public class RestEntityServiceBase extends RestServiceBase {
 	@Path("/{id}")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Object get(@PathParam("id") String id) {
+
+		if (id == null || id.isEmpty()) {
+			return createRequiredFieldResponse("id");
+		}
+
 		try {
 			Map<String, Object> ret = entityService.get(id);
 			if (ret == null) {
@@ -61,7 +72,7 @@ public class RestEntityServiceBase extends RestServiceBase {
 		}
 	}
 
-	public Object getFiltered(String id, String[] fieldsToRemove) {
+	protected Object getFiltered(String id, String[] fieldsToRemove) {
 		try {
 			Map<String, Object> ret = entityService.get(id);
 			if (ret == null) {
@@ -74,7 +85,13 @@ public class RestEntityServiceBase extends RestServiceBase {
 		}
 	}
 
-	public Map<String, Object> createResponseWithId(String id) {
+	/**
+	 * Create response structure with id field only.
+	 * 
+	 * @param id value for id field
+	 * @return response with id field
+	 */
+	protected Map<String, Object> createResponseWithId(String id) {
 		Map<String, Object> result = new HashMap<String, Object>();
 		result.put("id", id);
 		return result;
@@ -98,6 +115,11 @@ public class RestEntityServiceBase extends RestServiceBase {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	public Object create(@PathParam("id") String id, Map<String, Object> data) {
+
+		if (id == null || id.isEmpty()) {
+			return createRequiredFieldResponse("id");
+		}
+
 		try {
 			entityService.create(id, data);
 			return createResponseWithId(id);
@@ -109,6 +131,10 @@ public class RestEntityServiceBase extends RestServiceBase {
 	@DELETE
 	@Path("/{id}")
 	public Object delete(@PathParam("id") String id) {
+		if (id == null || id.isEmpty()) {
+			return createRequiredFieldResponse("id");
+		}
+
 		try {
 			entityService.delete(id);
 			return Response.ok().build();

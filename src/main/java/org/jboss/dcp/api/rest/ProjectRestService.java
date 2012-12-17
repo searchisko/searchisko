@@ -80,8 +80,6 @@ public class ProjectRestService extends RestEntityServiceBase {
 	@GuestAllowed
 	public Object get(@PathParam("id") String id) {
 		Principal principal = securityContext.getUserPrincipal();
-		// TODO: Security: At the moment principal is always null because it's GuestAllowed annotation
-		// It's needed to improve authentication handling and store principal always not only on distinct operations
 		if (principal == null) {
 			return super.getFiltered(id, fieldsToRemove);
 		} else {

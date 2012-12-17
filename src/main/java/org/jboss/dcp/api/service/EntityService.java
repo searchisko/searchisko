@@ -13,6 +13,7 @@ import javax.ws.rs.core.StreamingOutput;
  * Base interface for entity service
  * 
  * @author Libor Krzyzanek
+ * @author Vlastimil Elias (velias at redhat dot com)
  * 
  */
 public interface EntityService {
@@ -22,47 +23,47 @@ public interface EntityService {
 	 * 
 	 * @param from from index. Can be null
 	 * @param size size to return. If null then default length is returned
-	 * @param fieldsToRemove array of fields that should be removed
-	 * @return
+	 * @param fieldsToRemove array of fields that should be removed from entity data
+	 * @return output with entities
 	 */
 	public StreamingOutput getAll(Integer from, Integer size, String[] fieldsToRemove);
 
 	/**
 	 * Get entity with specified id
 	 * 
-	 * @param id
-	 * @return
+	 * @param id of entity
+	 * @return entity data or null if not found
 	 */
 	public Map<String, Object> get(String id);
 
 	/**
 	 * Create an entity and let generate id
 	 * 
-	 * @param entity
-	 * @return
+	 * @param entity data
+	 * @return generated id for entity
 	 */
 	public String create(Map<String, Object> entity);
 
 	/**
-	 * Create an entity with defined id
+	 * Create an entity with defined id. Update it if exists already.
 	 * 
-	 * @param id
-	 * @param entity
+	 * @param id of entity
+	 * @param entity content
 	 */
 	public void create(String id, Map<String, Object> entity);
 
 	/**
-	 * Update content of entity
+	 * Update content of entity, create it if doesn't exists.
 	 * 
-	 * @param id
-	 * @param entity
+	 * @param id of entity
+	 * @param entity content
 	 */
 	public void update(String id, Map<String, Object> entity);
 
 	/**
 	 * Delete entity
 	 * 
-	 * @param id
+	 * @param id of entity to delete
 	 */
 	public void delete(String id);
 
