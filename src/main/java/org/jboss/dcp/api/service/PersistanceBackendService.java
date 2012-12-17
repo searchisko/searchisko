@@ -8,7 +8,6 @@ package org.jboss.dcp.api.service;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
-import java.util.logging.Logger;
 
 import javax.annotation.PostConstruct;
 import javax.ejb.Singleton;
@@ -34,13 +33,11 @@ import org.jboss.dcp.api.util.SearchUtils;
 public class PersistanceBackendService extends ElasticsearchClientService {
 
 	@Inject
-	protected Logger log;
-
-	@Inject
 	protected AppConfigurationService appConfigurationService;
 
 	// Everything is stored in one index
-	protected final String INDEX_NAME = "data";
+	protected static final String INDEX_NAME = "data";
+	protected static final String INDEX_TYPE_PROVIDER = "provider";
 
 	@PostConstruct
 	public void init() throws Exception {
@@ -53,7 +50,7 @@ public class PersistanceBackendService extends ElasticsearchClientService {
 	@Produces
 	@Named("providerServiceBackend")
 	public EntityService produceProviderService() {
-		ElasticsearchEntityService serv = new ElasticsearchEntityService(client, INDEX_NAME, "provider", false);
+		ElasticsearchEntityService serv = new ElasticsearchEntityService(client, INDEX_NAME, INDEX_TYPE_PROVIDER, false);
 
 		if (appConfigurationService.getAppConfiguration().isProviderCreateInitData()) {
 

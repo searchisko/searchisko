@@ -80,7 +80,7 @@ public class StatsClientServiceTest {
 				DateTools.stringToTime("20121221121212121"), "my query", null);
 		Mockito.verifyZeroInteractions(tested.client);
 
-		// case - statistics enabled
+		// case - statistics enabled, no filter defined
 		Mockito.reset(tested.client);
 		tested.statsConfiguration = new StatsConfiguation(true);
 		TestIndexingAnswer answ = new TestIndexingAnswer(
@@ -95,6 +95,8 @@ public class StatsClientServiceTest {
 		Mockito.verify(tested.client).index(Mockito.any(IndexRequest.class), Mockito.any(ActionListener.class));
 		answ.assertError();
 		Mockito.verifyNoMoreInteractions(tested.client);
+
+		// TODO UNITTEST case - statistics enabled, filter defined
 
 		// case - exception from elasticsearch call is not thrown out of write method
 		Mockito.reset(tested.client);
@@ -159,6 +161,8 @@ public class StatsClientServiceTest {
 		Mockito.verify(tested.client).index(Mockito.any(IndexRequest.class), Mockito.any(ActionListener.class));
 		answ.assertError();
 		Mockito.verifyNoMoreInteractions(tested.client);
+
+		// TODO UNITTEST case - statistics enabled, filter defined
 
 		// case - exception from elasticsearch call is not thrown out of write method
 		Mockito.reset(tested.client);

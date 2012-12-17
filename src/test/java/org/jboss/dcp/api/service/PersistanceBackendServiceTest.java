@@ -5,12 +5,14 @@
  */
 package org.jboss.dcp.api.service;
 
+import java.util.Map;
 import java.util.logging.Logger;
 
 import junit.framework.Assert;
 
 import org.elasticsearch.client.Client;
 import org.jboss.dcp.api.model.AppConfiguration;
+import org.jboss.dcp.api.testtools.ESRealClientTestBase;
 import org.junit.Test;
 import org.mockito.Mockito;
 
@@ -19,7 +21,7 @@ import org.mockito.Mockito;
  * 
  * @author Vlastimil Elias (velias at redhat dot com)
  */
-public class PersistanceBackendServiceTest {
+public class PersistanceBackendServiceTest extends ESRealClientTestBase {
 
 	private final String EXPECTED_INDEX_NAME = "data";
 
@@ -29,14 +31,41 @@ public class PersistanceBackendServiceTest {
 	}
 
 	@Test
-	public void produceProviderService() {
+	public void produceProviderService_doNotCreateProvider() {
 		PersistanceBackendService tested = getTested();
 
-		// case - with disabled default provider creation
 		Mockito.reset(tested.appConfigurationService);
-		Mockito.when(tested.appConfigurationService.getAppConfiguration()).thenReturn(new AppConfiguration());
+		AppConfiguration ac = new AppConfiguration();
+		ac.setProviderCreateInitData(false);
+		Mockito.when(tested.appConfigurationService.getAppConfiguration()).thenReturn(ac);
 		EntityService s = tested.produceProviderService();
 		assertElasticsearchEntityService(s, tested.client, EXPECTED_INDEX_NAME, "provider");
+
+	}
+
+	@Test
+	public void produceProviderService_createProvider() {
+		PersistanceBackendService tested = getTested();
+		tested.client = prepareESClientForUnitTest();
+		try {
+			Mockito.reset(tested.appConfigurationService);
+			AppConfiguration ac = new AppConfiguration();
+			ac.setProviderCreateInitData(true);
+			Mockito.when(tested.appConfigurationService.getAppConfiguration()).thenReturn(ac);
+			EntityService s = tested.produceProviderService();
+
+			assertElasticsearchEntityService(s, tested.client, EXPECTED_INDEX_NAME, "provider");
+			indexFlush(PersistanceBackendService.INDEX_NAME);
+			Map<String, Object> jborg = indexGetDocument(PersistanceBackendService.INDEX_NAME,
+					PersistanceBackendService.INDEX_TYPE_PROVIDER, "jbossorg");
+			Assert.assertNotNull(jborg);
+			Assert.assertNotNull(jborg.get(ProviderService.PASSWORD_HASH));
+			Assert.assertEquals(true, jborg.get(ProviderService.SUPER_PROVIDER));
+			Assert.assertEquals("jbossorg", jborg.get(ProviderService.NAME));
+		} finally {
+			indexDelete(PersistanceBackendService.INDEX_NAME);
+			finalizeESClientForUnitTest();
+		}
 	}
 
 	@Test

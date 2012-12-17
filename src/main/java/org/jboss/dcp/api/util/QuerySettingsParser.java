@@ -20,6 +20,7 @@ import org.jboss.dcp.api.model.QuerySettings.SortByValue;
  * 
  * @author Libor Krzyzanek
  * @author Lukas Vlcek
+ * @author Vlastimil Elias (velias at redhat dot com)
  */
 public class QuerySettingsParser {
 
@@ -27,6 +28,9 @@ public class QuerySettingsParser {
 		DAY("day"), WEEK("1w"), // variable can not start with number, hence WEEK instead of 1W
 		MONTH("month");
 
+		/**
+		 * Value for ElasticSearch API
+		 */
 		private String value;
 
 		private MonthIntervalNames(String value) {
@@ -42,6 +46,9 @@ public class QuerySettingsParser {
 	public static enum PastIntervalNames {
 		WEEK("week"), MONTH("month"), QUARTER("quarter"), YEAR("year");
 
+		/**
+		 * Value for ElasticSearch API
+		 */
 		private String value;
 
 		private PastIntervalNames(String value) {
@@ -56,21 +63,30 @@ public class QuerySettingsParser {
 
 	private final static Logger log = Logger.getLogger(QuerySettingsParser.class.getName());
 
-	public static void sanityQuery(QuerySettings settings) throws Exception {
+	/**
+	 * Sanity query in given settings. Trim it and patch wildchard if not null, else use <code>match_all:{}</code>.
+	 * 
+	 * @param settings to sanity query in.
+	 * @throws IllegalArgumentException if settings is null
+	 */
+	public static void sanityQuery(QuerySettings settings) throws IllegalArgumentException {
 		if (settings == null) {
-			throw new Exception("No query settings provided!");
+			throw new IllegalArgumentException("No query settings provided!");
 		}
 		if (settings.getQuery() != null) {
 			settings.setQuery(settings.getQuery().trim());
-			settings.setQuery(settings.getQuery().replaceAll("\\*\\?", "*"));
-			settings.setQuery(settings.getQuery().replaceAll("\\?\\*", "*"));
-			settings.setQuery(settings.getQuery().replaceAll("\\*+", "*"));
-			settings.setQuery(settings.getQuery().replaceAll("\\?+", "?"));
+			settings.setQuery(patchhWildchars(settings.getQuery()));
 		} else {
 			settings.setQuery("match_all:{}");
 		}
 	}
 
+	/**
+	 * Normalize search query string - trim it, return null if empty, patch wildchars.
+	 * 
+	 * @param query to normalize
+	 * @return normalized query
+	 */
 	public static String normalizeQueryString(String query) {
 		if (query == null) {
 			return null;
@@ -79,11 +95,16 @@ public class QuerySettingsParser {
 		if (q.length() == 0) {
 			return null;
 		}
-		q = q.replaceAll("\\*\\?", "*");
-		q = q.replaceAll("\\?\\*", "*");
-		q = q.replaceAll("\\*+", "*");
-		q = q.replaceAll("\\?+", "?");
+		return patchhWildchars(q);
+	}
 
+	private static String patchhWildchars(String q) {
+		if (q != null) {
+			q = q.replaceAll("\\*\\?", "*");
+			q = q.replaceAll("\\?\\*", "*");
+			q = q.replaceAll("\\*+", "*");
+			q = q.replaceAll("\\?+", "?");
+		}
 		return q;
 	}
 
