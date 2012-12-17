@@ -1,5 +1,7 @@
-/**
- * 
+/*
+ * JBoss, Home of Professional Open Source
+ * Copyright 2012 Red Hat Inc. and/or its affiliates and other contributors
+ * as indicated by the @authors tag. All rights reserved.
  */
 package org.jboss.dcp.api.rest;
 
@@ -45,8 +47,7 @@ public class AuthenticationInterceptor implements PreProcessInterceptor {
 	protected ProviderService providerService;
 
 	@Override
-	public ServerResponse preProcess(HttpRequest request, ResourceMethod method) throws Failure,
-			WebApplicationException {
+	public ServerResponse preProcess(HttpRequest request, ResourceMethod method) throws Failure, WebApplicationException {
 
 		boolean authenticated = false;
 		String authenticationScheme = null;
@@ -63,7 +64,6 @@ public class AuthenticationInterceptor implements PreProcessInterceptor {
 
 				try {
 					byte[] decoded = Base64.decode(hash);
-					// TODO: CHarset ???
 					String usernamePassword = new String(decoded);
 
 					int colomn = usernamePassword.indexOf(':');
@@ -96,8 +96,8 @@ public class AuthenticationInterceptor implements PreProcessInterceptor {
 
 		if (authenticated) {
 			Principal principal = new SimplePrincipal(username);
-			ResteasyProviderFactory.pushContext(SecurityContext.class, new CustomSecurityContext(principal,
-					providerService.isSuperProvider(username), true, authenticationScheme));
+			ResteasyProviderFactory.pushContext(SecurityContext.class,
+					new CustomSecurityContext(principal, providerService.isSuperProvider(username), true, authenticationScheme));
 			log.log(Level.FINE, "Request authenticated. Username: {0}", username);
 		}
 
