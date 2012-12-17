@@ -20,6 +20,7 @@ import org.jboss.dcp.api.util.SearchUtils;
  * Configuration for statistics client
  * 
  * @author Libor Krzyzanek
+ * @author Vlastimil Elias (velias at redhat dot com)
  * 
  */
 @Named
@@ -28,16 +29,33 @@ import org.jboss.dcp.api.util.SearchUtils;
 @Startup
 public class StatsConfiguation {
 
-  private boolean enabled;
+	private boolean enabled;
 
-  public boolean enabled() {
-    return this.enabled;
-  }
+	/**
+	 * Default constructor.
+	 */
+	public StatsConfiguation() {
 
-  @PostConstruct
-  public void init() throws IOException {
-    Properties prop = SearchUtils.loadProperties("/stats_clinet_configuration.properties");
-    enabled = Boolean.parseBoolean(prop.getProperty("stats.enabled", "true"));
-  }
+	}
+
+	/**
+	 * Constructor.
+	 * 
+	 * @param enabled to set
+	 */
+	public StatsConfiguation(boolean enabled) {
+		super();
+		this.enabled = enabled;
+	}
+
+	public boolean enabled() {
+		return this.enabled;
+	}
+
+	@PostConstruct
+	public void init() throws IOException {
+		Properties prop = SearchUtils.loadProperties("/stats_clinet_configuration.properties");
+		enabled = Boolean.parseBoolean(prop.getProperty("stats.enabled", "true"));
+	}
 
 }

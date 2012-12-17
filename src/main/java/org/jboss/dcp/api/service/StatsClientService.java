@@ -9,7 +9,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import javax.annotation.PostConstruct;
 import javax.ejb.Singleton;
@@ -28,8 +27,8 @@ import org.elasticsearch.client.Requests;
 import org.elasticsearch.common.unit.TimeValue;
 import org.jboss.dcp.api.config.StatsConfiguation;
 import org.jboss.dcp.api.config.TimeoutConfiguration;
-import org.jboss.dcp.api.model.QuerySettings;
 import org.jboss.dcp.api.model.AppConfiguration.ClientType;
+import org.jboss.dcp.api.model.QuerySettings;
 import org.jboss.dcp.api.util.SearchUtils;
 
 /**
@@ -44,16 +43,16 @@ import org.jboss.dcp.api.util.SearchUtils;
 @Startup
 public class StatsClientService extends ElasticsearchClientService {
 
-	@Inject
-	private Logger log;
+	protected static final String INDEX_NAME = "stats";
+	protected static final String INDEX_TYPE = "stats";
 
 	@Inject
-	private StatsConfiguation statsConfiguration;
+	protected StatsConfiguation statsConfiguration;
 
 	@Inject
-	private TimeoutConfiguration timeout;
+	protected TimeoutConfiguration timeout;
 
-	private ActionListener<IndexResponse> statsLogListener;
+	protected ActionListener<IndexResponse> statsLogListener;
 
 	@PostConstruct
 	public void init() throws Exception {
@@ -85,7 +84,16 @@ public class StatsClientService extends ElasticsearchClientService {
 		checkHealthOfCluster(client);
 	}
 
-	public void writeStatistics(String type, ElasticSearchException ex, long dateInMillis, String query,
+	/**
+	 * Write ES search statistics record about unsuccessful search.
+	 * 
+	 * @param type of search performed - mandatory
+	 * @param ex exception from search attempt - mandatory
+	 * @param dateInMillis timestamp when search was performed
+	 * @param query search query performed
+	 * @param filters used for search - optional
+	 */
+	public void writeStatistics(StatsRecordType type, ElasticSearchException ex, long dateInMillis, String query,
 			QuerySettings.Filters filters) {
 
 		if (!statsConfiguration.enabled()) {
@@ -94,7 +102,7 @@ public class StatsClientService extends ElasticsearchClientService {
 
 		Map<String, Object> source = new HashMap<String, Object>();
 
-		source.put("type", type);
+		source.put("type", type.name().toLowerCase());
 		source.put("date", dateInMillis);
 		source.put("query_string", query);
 		source.put("exception", true);
@@ -124,16 +132,25 @@ public class StatsClientService extends ElasticsearchClientService {
 		}
 
 		try {
-			IndexRequest ir = Requests.indexRequest().index("stats").type("stats")
+			IndexRequest ir = Requests.indexRequest().index(INDEX_NAME).type(INDEX_TYPE)
 					.timeout(TimeValue.timeValueSeconds(timeout.stats())).source(source);
 			// async call, if it fails -> just log
 			client.index(ir, statsLogListener);
 		} catch (Throwable e) {
-			log.log(Level.FINEST, "Error writing into stats server", e);
+			log.log(Level.FINEST, "Error writing into stats server: " + e.getMessage(), e);
 		}
 	}
 
-	public void writeStatistics(String type, SearchResponse resp, long dateInMillis, String query,
+	/**
+	 * Write ES search statistics record about successful search.
+	 * 
+	 * @param type of search performed
+	 * @param resp response from search attempt
+	 * @param dateInMillis timestamp when search was performed
+	 * @param query search query performed
+	 * @param filters used for search
+	 */
+	public void writeStatistics(StatsRecordType type, SearchResponse resp, long dateInMillis, String query,
 			QuerySettings.Filters filters) {
 
 		if (!statsConfiguration.enabled()) {
@@ -146,14 +163,14 @@ public class StatsClientService extends ElasticsearchClientService {
 
 		Map<String, Object> source = new HashMap<String, Object>();
 
-		source.put("type", type);
+		source.put("type", type.name().toLowerCase());
 		source.put("date", dateInMillis);
 		source.put("query_string", query);
 		source.put("took", resp.tookInMillis());
 		source.put("timed_out", resp.timedOut());
 		source.put("total_hits", resp.hits().totalHits());
-		source.put("max_score", resp.getHits().maxScore());
-		source.put("shards_successful", resp.getSuccessfulShards());
+		source.put("max_score", resp.hits().maxScore());
+		source.put("shards_successful", resp.successfulShards());
 		source.put("shards_failed", resp.failedShards());
 		source.put("status", resp.status().name());
 		if (resp.failedShards() > 0) {
@@ -184,12 +201,12 @@ public class StatsClientService extends ElasticsearchClientService {
 		}
 
 		try {
-			IndexRequest ir = Requests.indexRequest().index("stats").type("stats")
+			IndexRequest ir = Requests.indexRequest().index(INDEX_NAME).type(INDEX_TYPE)
 					.timeout(TimeValue.timeValueSeconds(timeout.stats())).source(source);
 			// async call, if it fails -> just log
 			client.index(ir, statsLogListener);
 		} catch (Throwable e) {
-			log.log(Level.FINEST, "Error writing into stats server", e);
+			log.log(Level.FINEST, "Error writing into stats server: " + e.getMessage(), e);
 		}
 	}
 
