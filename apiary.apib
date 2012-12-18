@@ -6,7 +6,7 @@ HOST: http://dcp.jboss.org/v1
 
 **Distributed Contribution Platform** provides **REST API** for data manipulation and search.
 
-# DCP Content object
+# <a id="dcpcontetnobject"></a>DCP Content object
 
 This chapter describes main content object which can be pushed to and retrieved or searched from DCP.
  
@@ -30,27 +30,28 @@ Some system data fields are defined by DCP, some  are added into the content ins
 
 DCP Content described by example:
 
-    {
-        Free JSON Structure representing content. It can be one key - value pair or something more structured.
-        It's defined only by content provider.
+```
+{
+    Free JSON Structure representing content. It can be one key - value pair or something more structured.
+    It's defined only by content provider.
 
-        "tags": ["Content_tag1", "tag2", "tag3"],
+    "tags": ["Content_tag1", "tag2", "tag3"],
 
-        "dcp_content_provider": "jbossorg",
-        "dcp_content_type": "jbossorg_jira_issue",
-        "dcp_content_id": "AS7-1254",
-        "dcp_id": "jbossorg_jira_issue-AS7-1254",
-        "dcp_type": "issue",
-        "dcp_title": "AS7-1254 - Set the port_range on JGroups stacks to 1",
-        "dcp_url_view": "https://issues.jboss.org/browse/AS7-1254",
-        "dcp_description": "Set the port_range on JGroups stacks to 1 to lock down the ports.",
-        "dcp_updated": "2012-12-06T06:34:55.000Z",
-        "dcp_project": "as7",
-        "dcp_contributors": ["John Doe <john@doe.org>", "Pat Mat <pat@mat.org>"],
-        "dcp_activity_dates": ["2012-12-06T06:34:55.000Z", "2012-12-05T01:48:05.000Z"],
-        "dcp_tags": ["Content_tag1", "tag2", "tag3", "user_defined_additional_tag"]
-    }
-
+    "dcp_content_provider": "jbossorg",
+    "dcp_content_type": "jbossorg_jira_issue",
+    "dcp_content_id": "AS7-1254",
+    "dcp_id": "jbossorg_jira_issue-AS7-1254",
+    "dcp_type": "issue",
+    "dcp_title": "AS7-1254 - Set the port_range on JGroups stacks to 1",
+    "dcp_url_view": "https://issues.jboss.org/browse/AS7-1254",
+    "dcp_description": "Set the port_range on JGroups stacks to 1 to lock down the ports.",
+    "dcp_updated": "2012-12-06T06:34:55.000Z",
+    "dcp_project": "as7",
+    "dcp_contributors": ["John Doe <john@doe.org>", "Pat Mat <pat@mat.org>"],
+    "dcp_activity_dates": ["2012-12-06T06:34:55.000Z", "2012-12-05T01:48:05.000Z"],
+    "dcp_tags": ["Content_tag1", "tag2", "tag3", "user_defined_additional_tag"]
+}
+```
 
 # Authentication
 
@@ -250,7 +251,7 @@ GET /rest/search?{query,type,sortBy,filters[start],filters[count],filters[tag]}
 }
 
 --
-Query Suggestions
+Query Suggestions API
 It can return suggestions for given user query such as *query completion*, *did you mean*, ... etc.
 
 Returned JSON contains two highlevel objects:
@@ -436,4 +437,191 @@ GET /rest/suggestions/query_string?q=Hiberna
     }
 }
 
+--
+Management API
+This part of the API is used by 'DCP administrators' to manage configurations of DCP. Some operations can be used by *content providers* too.
+--
+---
+Content providers configuration API
+This part of the API allows to manage configurations of *content providers*. *Content provider* is an entity which stores content into DCP (see Content Push API).
+Configuration for the *content provider* contains some descriptive/contact informations, informations for authentication/authorization on the DCP REST API, and configuration of content types pushed into DCP by this provider.
 
+Content provider configuration fields:
+* `name` - DCP wide unique name of the provider. It is stored into `dcp_content_provider` field in content pushed by this provider. Also used for authentication on DCP REST API.
+* `description` - description of the provider.
+* `contact_email` - contact email for responsible person on provider side, so DCP admin can contact he/she.
+* `super_provider` - if `true` then this provider has 'DCP administrator' role on the DCP REST API.
+* `pwd_hash` - password hash for authentication on the DCP REST API. This field is accepted only during provider creation and never returned back over `get` operations. Special REST operation must be used to change password later.  
+* `type` - structure with configuration of content types pushed into DCP by this provider. Key in the structure is type name, which must be DCP wide unique (typically starts with content provider `name`). It is used on the 'Content Push API' and stored into `dcp_content_type` field of content pushed into DCP by this provider. Configuration of each type contains these fields:
+** `description` - description of this type, what contains, which system produces it etc.
+** `dcp_type` - value stored into `dcp_type` field of pushed content (see description in the [DCP Content object](#dcpcontetnobject) chapter).
+** `input_preprocessors` - array of preprocessors applied on content of this type while pushed over 'Content Push API'. Typically used to normalize values into other `dcp_` fields as `dcp_project`, `dcp_contributors`, `dcp_activity_dates` etc. [structured-content-tools](https://github.com/jbossorg/structured-content-tools) framework is used here.
+** `index/name` - name of search index in DCP internal ElasticSearch cluster content of this type is stored into.  
+** `index/type` - type for mapping in DCP internal ElasticSearch cluster content of this type is stored into.
+
+Example of content provider configuration:
+```
+{
+  "name": "jborg",
+  "description" : "Provider used by JBoss Community Team to manage DCP and push content from core jboss.org systems",
+  "contact_email" : "help@jboss.org",
+  "super_provider": true,
+  "pwd_hash": "aa345345324523452345234523",
+  "type": {
+    "jbossorg_blog": {
+      "description" : "Blog posts pushed into DCP by Borg system - planet.jboss.org",
+      "dcp_type": "blogpost",
+      "input_preprocessors": [
+        {
+          "name": "DCP project mapper - feed to dcp_project mapping",
+          "class": "org.jboss.elasticsearch.tools.content.ESLookupValuePreprocessor",
+          "settings": {
+            "target_field": "dcp_project",
+            "index_name": "dcp_projects",
+            "idx_search_field": "type_specific_code.jbossorg_blog",
+            "idx_result_field": "code",
+            "source_field": "feed",
+            "value_default": "unknown",
+            "index_type": "project"
+          }
+        }
+      ],
+      "index": {
+        "name": "jbossorg_blog",
+        "type": "jbossorg_blogpost"
+      }
+    },
+    "jbossorg_project_info": {
+      "description" : "Informations about projects (name, links, icons, licenses used etc) pushed into DCP by Magnolia CMS",
+      "dcp_type": "project_info",
+      "input_preprocessors": [
+        {
+          "name": "DCP project mapper - nodePath to dcp_project mapping",
+          "class": "org.jboss.elasticsearch.tools.content.ESLookupValuePreprocessor",
+          "settings": {
+            "target_field": "dcp_project",
+            "index_name": "dcp_projects",
+            "idx_search_field": "type_specific_code.jbossorg_project_info",
+            "idx_result_field": "code",
+            "source_field": "nodePath",
+            "value_default": "unknown",
+            "index_type": "project"
+          }
+        }
+      ],
+      "index": {
+        "name": "project_info",
+        "type": "jbossorg_project_info"
+      }
+    }
+  }
+}
+```
+---
+
+Get configuration for provider of given name.
+
+*Each authenticated provider can use this method to obtain own configuration.*
+GET /rest/provider/{name}
+< 200
+< Content-Type: application/json
+{
+  "name": "jborg",
+  "description" : "Provider used by JBoss Community Team to manage DCP and push content from core jboss.org systems",
+  "contact_email" : "help@jboss.org",
+  "super_provider": true,
+  "type": {
+    "jbossorg_blog": {
+      "description" : "Blog posts pushed into DCP by Borg system - planet.jboss.org",
+      "dcp_type": "blogpost",
+      "input_preprocessors": [
+        {
+          "name": "DCP project mapper - feed to dcp_project mapping",
+          "class": "org.jboss.elasticsearch.tools.content.ESLookupValuePreprocessor",
+          "settings": {
+            "target_field": "dcp_project",
+            "index_name": "dcp_projects",
+            "idx_search_field": "type_specific_code.jbossorg_blog",
+            "idx_result_field": "code",
+            "source_field": "feed",
+            "value_default": "unknown",
+            "index_type": "project"
+          }
+        }
+      ],
+      "index": {
+        "name": "jbossorg_blog",
+        "type": "jbossorg_blogpost"
+      }
+    },
+    "jbossorg_project_info": {
+      "description" : "Informations about projects (name, links, icons, licenses used etc) pushed into DCP by Magnolia CMS",
+      "dcp_type": "project_info",
+      "input_preprocessors": [
+        {
+          "name": "DCP project mapper - nodePath to dcp_project mapping",
+          "class": "org.jboss.elasticsearch.tools.content.ESLookupValuePreprocessor",
+          "settings": {
+            "target_field": "dcp_project",
+            "index_name": "dcp_projects",
+            "idx_search_field": "type_specific_code.jbossorg_project_info",
+            "idx_result_field": "code",
+            "source_field": "nodePath",
+            "value_default": "unknown",
+            "index_type": "project"
+          }
+        }
+      ],
+      "index": {
+        "name": "project_info",
+        "type": "jbossorg_project_info"
+      }
+    }
+  }
+}
+
+List provider definitions.
+
+##### Request parameters
+
+* `from` index of the first content object returned in the results array. The default value is 0 (start from begin of list).
+* `size` of returned results array. Default is 10.
+
+##### Response content
+The response contains a JSON structure with overall number of the providers in `total` field, and an array of the provider data in `hits` field. The content of the array depends on `from` and `size` request parameters.
+Each record in the array contains `id` field and then `data` field with full provider structure:
+
+```
+{
+  "total": "1",
+  "hits": [
+    {
+      "id": "1",
+      "data": {
+        //provider data object
+      }
+    }
+  ]
+}
+```
+
+GET /rest/provider{?from,size}
+< 200
+< Content-Type: application/json
+{
+  "total": "1",
+  "hits": [
+    {
+      "id": "1",
+      "data": {
+          "name": "jborg",
+  				"description" : "Provider used by JBoss Community Team to manage DCP and push content from core jboss.org systems",
+  				"contact_email" : "help@jboss.org",
+  				"super_provider": true
+      }
+    }
+  ]
+}
+
+TODO other operations for provider API part
+TODO project and contributor API part
