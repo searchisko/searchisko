@@ -453,11 +453,11 @@ Content provider configuration fields:
 * `super_provider` - if `true` then this provider has 'DCP administrator' role on the DCP REST API.
 * `pwd_hash` - password hash for authentication on the DCP REST API. This field is accepted only during provider creation and never returned back over `get` operations. Special REST operation must be used to change password later.  
 * `type` - structure with configuration of content types pushed into DCP by this provider. Key in the structure is type name, which must be DCP wide unique (typically starts with content provider `name`). It is used on the 'Content Push API' and stored into `dcp_content_type` field of content pushed into DCP by this provider. Configuration of each type contains these fields:
-** `description` - description of this type, what contains, which system produces it etc.
-** `dcp_type` - value stored into `dcp_type` field of pushed content (see description in the [DCP Content object](#dcpcontetnobject) chapter).
-** `input_preprocessors` - array of preprocessors applied on content of this type while pushed over 'Content Push API'. Typically used to normalize values into other `dcp_` fields as `dcp_project`, `dcp_contributors`, `dcp_activity_dates` etc. [structured-content-tools](https://github.com/jbossorg/structured-content-tools) framework is used here.
-** `index/name` - name of search index in DCP internal ElasticSearch cluster content of this type is stored into.  
-** `index/type` - type for mapping in DCP internal ElasticSearch cluster content of this type is stored into.
+ * `description` - description of this type, what contains, which system produces it etc.
+ * `dcp_type` - value stored into `dcp_type` field of pushed content (see description in the [DCP Content object](#dcpcontetnobject) chapter).
+ * `input_preprocessors` - array of preprocessors applied on content of this type while pushed over 'Content Push API'. Typically used to normalize values into other `dcp_` fields as `dcp_project`, `dcp_contributors`, `dcp_activity_dates` etc. [structured-content-tools](https://github.com/jbossorg/structured-content-tools) framework is used here.
+ * `index/name` - name of search index in DCP internal ElasticSearch cluster content of this type is stored into.  
+ * `index/type` - type for mapping in DCP internal ElasticSearch cluster content of this type is stored into.
 
 Example of content provider configuration:
 
