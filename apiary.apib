@@ -193,8 +193,24 @@ Content deleted successfully.
 Search API
 This part of the API is used by all systems that can use content stored in DCP.
 --
-Search contributions.
+
 GET /rest/search?{query,type,sortBy,filters[start],filters[count],filters[tag]}
+< 200
+< Content-Type: application/json
+{
+  "took":3,
+  "timed_out":false,
+  "_shards":{
+    "total":5,
+    "successful":5,
+    "failed":0
+   },
+   "hits":{
+     "total":393,
+     "max_score":null,
+     "hits":[]
+   }
+}
 
 Search contributions based on input parameters
 
@@ -232,22 +248,6 @@ Search contributions based on input parameters
 }
 ```
 
-< 200
-< Content-Type: application/json
-{
-  "took":3,
-  "timed_out":false,
-  "_shards":{
-    "total":5,
-    "successful":5,
-    "failed":0
-   },
-   "hits":{
-     "total":393,
-     "max_score":null,
-     "hits":[]
-   }
-}
 
 --
 Query Suggestions
