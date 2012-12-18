@@ -651,10 +651,13 @@ Change password for requested provider.
 New password is posted in request body.
 
 POST /rest/provider/{name}/password
-> Accept: application/json
+> Accept: text/plain
 < 200
+< Content-Type: text/plain
+
 
 Delete provider with given `name`.
-
 DELETE /rest/provider/{name}
 < 200
+< Content-Type: text/plain
+
