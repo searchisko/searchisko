@@ -157,6 +157,9 @@ The data normalizations are performed during this request processing and the con
 
 *Provider authentication required.*
 
+##### Request content
+JSON with content object.
+
 ##### Response content
 The response contains a JSON structure with a `status` field containing 'insert' or 'update' string and `message` field with a human readable description of the status.
 
@@ -438,12 +441,12 @@ GET /rest/suggestions/query_string?q=Hiberna
 }
 
 --
-Management API
-This part of the API is used by 'DCP administrators' to manage configurations of DCP. Some operations can be used by *content providers* too.
+Management API - content providers
 
-### Content providers API
 This part of the API allows to manage configurations of *content providers*. *Content provider* is an entity which stores content into DCP (see Content Push API).
 Configuration for the *content provider* contains some descriptive/contact informations, informations for authentication/authorization on the DCP REST API, and configuration of content types pushed into DCP by this provider.
+
+This part of the API is used by 'DCP administrators' to manage configurations of DCP. Some operations can be used by *content providers* too.
 
 Content provider configuration fields:
 
@@ -613,7 +616,7 @@ GET /rest/provider{?from,size}
   "total": "1",
   "hits": [
     {
-      "id": "1",
+      "id": "jborg",
       "data": {
           "name": "jborg",
           "description" : "Provider used by JBoss Community Team to manage DCP and push content from core jboss.org systems",
@@ -624,3 +627,34 @@ GET /rest/provider{?from,size}
   ]
 }
 
+Create/update configuration for provider with given `name`.
+
+##### Request content
+JSON with provider configuration structure.
+
+##### Response content
+The response contains a JSON structure with `id` field returning {name} o provider.
+
+POST /rest/provider/{name}
+> Accept: application/json
+< 200
+< Content-Type: application/json
+{
+  "id":"{name}"
+}
+
+Change password for requested provider.
+
+*Each authenticated provider can use this method to change his password.*
+
+##### Request content
+New password is posted in request body.
+
+POST /rest/provider/{name}/password
+> Accept: application/json
+< 200
+
+Delete provider with given `name`.
+
+DELETE /rest/provider/{name}
+< 200
