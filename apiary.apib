@@ -446,6 +446,7 @@ This part of the API allows to manage configurations of *content providers*. *Co
 Configuration for the *content provider* contains some descriptive/contact informations, informations for authentication/authorization on the DCP REST API, and configuration of content types pushed into DCP by this provider.
 
 Content provider configuration fields:
+
 * `name` - DCP wide unique name of the provider. It is stored into `dcp_content_provider` field in content pushed by this provider. Also used for authentication on DCP REST API.
 * `description` - description of the provider.
 * `contact_email` - contact email for responsible person on provider side, so DCP admin can contact he/she.
@@ -459,6 +460,7 @@ Content provider configuration fields:
 ** `index/type` - type for mapping in DCP internal ElasticSearch cluster content of this type is stored into.
 
 Example of content provider configuration:
+
 ```
 {
   "name": "jborg",
