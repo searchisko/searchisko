@@ -12,7 +12,7 @@ import java.lang.annotation.Target;
 
 /**
  * Annotation for securing whole class or method to be accessible only to provider<br/>
- * Annotation can be used on class which secures all methods. If is used at method then it overrides class annotation
+ * Annotation can be used on class which secures all methods. If is used at method then it overrides class annotation.
  * 
  * @author Libor Krzyzanek
  * 

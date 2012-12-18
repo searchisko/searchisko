@@ -66,6 +66,27 @@ public class ProjectRestServiceTest {
 		TestUtils.assertResponseStatus(tested.get("10"), Status.INTERNAL_SERVER_ERROR);
 	}
 
+	@Test
+	public void getAll_permissions() {
+		TestUtils.assertPermissionGuest(ProjectRestService.class, "getAll", Integer.class, Integer.class);
+	}
+
+	@Test
+	public void get_permissions() {
+		TestUtils.assertPermissionGuest(ProjectRestService.class, "get", String.class);
+	}
+
+	@Test
+	public void create_permissions() {
+		TestUtils.assertPermissionSuperProvider(ProjectRestService.class, "create", String.class, Map.class);
+		TestUtils.assertPermissionSuperProvider(ProjectRestService.class, "create", Map.class);
+	}
+
+	@Test
+	public void delete_permissions() {
+		TestUtils.assertPermissionSuperProvider(ProjectRestService.class, "delete", String.class);
+	}
+
 	protected ProjectRestService getTested() {
 		ProjectRestService tested = new ProjectRestService();
 		RestEntityServiceBaseTest.mockLogger(tested);

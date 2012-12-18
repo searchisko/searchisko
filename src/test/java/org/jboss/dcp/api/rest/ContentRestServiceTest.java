@@ -36,10 +36,14 @@ public class ContentRestServiceTest extends ESRealClientTestBase {
 	private static final String INDEX_NAME = "index_name";
 	private static final List<Map<String, Object>> PREPROCESSORS = new ArrayList<Map<String, Object>>();
 
+	@Test
+	public void pushContent_permissions() throws Exception {
+		TestUtils.assertPermissionProvider(ContentRestService.class, "pushContent", String.class, String.class, Map.class);
+	}
+
 	@SuppressWarnings("unchecked")
 	@Test
 	public void pushContent() throws Exception {
-
 		ContentRestService tested = getTested(false);
 
 		Map<String, Object> content = new HashMap<String, Object>();
@@ -153,6 +157,12 @@ public class ContentRestServiceTest extends ESRealClientTestBase {
 	}
 
 	@Test
+	public void deleteContent_permissions() throws Exception {
+		TestUtils.assertPermissionProvider(ContentRestService.class, "deleteContent", String.class, String.class,
+				String.class);
+	}
+
+	@Test
 	public void deleteContent() throws Exception {
 		ContentRestService tested = getTested(false);
 
@@ -212,8 +222,13 @@ public class ContentRestServiceTest extends ESRealClientTestBase {
 	}
 
 	@Test
-	public void getAllContent() throws IOException, InterruptedException {
+	public void getAllContent_permissions() throws IOException, InterruptedException {
+		TestUtils.assertPermissionGuest(ContentRestService.class, "getAllContent", String.class, Integer.class,
+				Integer.class, String.class);
+	}
 
+	@Test
+	public void getAllContent() throws IOException, InterruptedException {
 		ContentRestService tested = getTested(false);
 
 		// case - invalid input parameters
@@ -275,6 +290,11 @@ public class ContentRestServiceTest extends ESRealClientTestBase {
 			indexDelete(INDEX_NAME);
 			finalizeESClientForUnitTest();
 		}
+	}
+
+	@Test
+	public void getContent_permissions() {
+		TestUtils.assertPermissionGuest(ContentRestService.class, "getContent", String.class, String.class);
 	}
 
 	@SuppressWarnings("unchecked")

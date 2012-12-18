@@ -30,9 +30,13 @@ import org.jboss.resteasy.spi.interception.PreProcessInterceptor;
 import org.jboss.resteasy.util.Base64;
 
 /**
- * Interceptor handle authentication via standard HTTP basic authentication or via url parameters
+ * Interceptor handle authentication via standard HTTP basic authentication header or via url parameters called
+ * <code>provider</code> and <code>pwd</code> and store authenticated {@link Principal} into {@link SecurityContext} to
+ * be used later by authorization interceptor {@link SecurityPreProcessInterceptor} if necessary. Authentication check
+ * is done using {@link ProviderService#authenticate(String, String)}.
  * 
  * @author Libor Krzyzanek
+ * @author Vlastimil Elias (velias at redhat dot com)
  * 
  */
 @Provider
@@ -88,9 +92,10 @@ public class AuthenticationInterceptor implements PreProcessInterceptor {
 			if (queryParams != null) {
 				username = queryParams.getFirst("provider");
 				password = queryParams.getFirst("pwd");
-
-				authenticated = providerService.authenticate(username, password);
-				authenticationScheme = "CUSTOM";
+				if (username != null && !username.isEmpty() && password != null && !password.isEmpty()) {
+					authenticated = providerService.authenticate(username, password);
+					authenticationScheme = "CUSTOM";
+				}
 			}
 		}
 

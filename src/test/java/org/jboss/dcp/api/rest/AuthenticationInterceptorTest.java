@@ -24,6 +24,7 @@ import org.mockito.Mockito;
 
 /**
  * @author Libor Krzyzanek
+ * @author Vlastimil Elias (velias at redhat dot com)
  * 
  */
 public class AuthenticationInterceptorTest {
@@ -52,6 +53,7 @@ public class AuthenticationInterceptorTest {
 
 		ServerResponse res = tested.preProcess(requestMock, methodMock);
 		Assert.assertNull(res);
+		Mockito.verify(tested.providerService, Mockito.times(0)).authenticate(Mockito.anyString(), Mockito.anyString());
 	}
 
 	/**
@@ -76,6 +78,7 @@ public class AuthenticationInterceptorTest {
 
 		ServerResponse res = tested.preProcess(requestMock, methodMock);
 		Assert.assertNull(res);
+		Mockito.verify(tested.providerService, Mockito.times(1)).authenticate(Mockito.anyString(), Mockito.anyString());
 
 		SecurityContext ctx = ResteasyProviderFactory.getContextData(SecurityContext.class);
 		Assert.assertEquals("uname", ctx.getUserPrincipal().getName());

@@ -11,7 +11,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Annotation used for allowing any user to access distinct method or all methods within class where annotation is used
+ * Annotation used for allowing any user to access method where annotation is used.
  * 
  * @author Libor Krzyzanek
  * 

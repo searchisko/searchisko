@@ -8,6 +8,7 @@ package org.jboss.dcp.api.testtools;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.StringWriter;
+import java.lang.reflect.Method;
 import java.util.Map;
 
 import javax.ws.rs.core.Response;
@@ -18,6 +19,8 @@ import org.elasticsearch.common.settings.SettingsException;
 import org.elasticsearch.common.xcontent.XContentFactory;
 import org.elasticsearch.common.xcontent.XContentParser;
 import org.elasticsearch.common.xcontent.XContentType;
+import org.jboss.dcp.api.annotations.security.ProviderAllowed;
+import org.jboss.dcp.api.rest.SecurityPreProcessInterceptor;
 import org.junit.Assert;
 
 /**
@@ -26,6 +29,67 @@ import org.junit.Assert;
  * @author Vlastimil Elias (velias at redhat dot com)
  */
 public abstract class TestUtils {
+
+	/**
+	 * Assert REST API method is accessible by all users (even non authenticated).
+	 * 
+	 * @param testedClass class method is in
+	 * @param methodName name of method
+	 * @param methodParamTypes method parameter types
+	 */
+	public static void assertPermissionGuest(Class<?> testedClass, String methodName, Class<?>... methodParamTypes) {
+		Method method;
+		try {
+			method = testedClass.getMethod(methodName, methodParamTypes);
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+		ProviderAllowed pa = SecurityPreProcessInterceptor.getProviderAlowedAnnotation(testedClass, method);
+		if (pa != null && !SecurityPreProcessInterceptor.isGuestAllowed(method)) {
+			Assert.fail("Method must be GuestAllowed too");
+		}
+	}
+
+	/**
+	 * Assert REST API method is accessible by authenticated Providers only.
+	 * 
+	 * @param testedClass class method is in
+	 * @param methodName name of method
+	 * @param methodParamTypes method parameter types
+	 */
+	public static void assertPermissionProvider(Class<?> testedClass, String methodName, Class<?>... methodParamTypes) {
+		Method method;
+		try {
+			method = testedClass.getMethod(methodName, methodParamTypes);
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+		ProviderAllowed pa = SecurityPreProcessInterceptor.getProviderAlowedAnnotation(testedClass, method);
+		if (pa == null || SecurityPreProcessInterceptor.isGuestAllowed(method)) {
+			Assert.fail("Method must be ProviderAllowed only");
+		}
+	}
+
+	/**
+	 * Assert REST API method is accessible by authenticated Providers only.
+	 * 
+	 * @param testedClass class method is in
+	 * @param methodName name of method
+	 * @param methodParamTypes method parameter types
+	 */
+	public static void assertPermissionSuperProvider(Class<?> testedClass, String methodName,
+			Class<?>... methodParamTypes) {
+		Method method;
+		try {
+			method = testedClass.getMethod(methodName, methodParamTypes);
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+		ProviderAllowed pa = SecurityPreProcessInterceptor.getProviderAlowedAnnotation(testedClass, method);
+		if (pa == null || !pa.superProviderOnly() || SecurityPreProcessInterceptor.isGuestAllowed(method)) {
+			Assert.fail("Method must be ProviderAllowed.superProviderOnly");
+		}
+	}
 
 	/**
 	 * Assert passed in object is REST {@link Response} and has given status.

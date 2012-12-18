@@ -57,8 +57,7 @@ public class SecurityPreProcessInterceptorTest {
 
 		Mockito.when(tested.securityContext.getUserPrincipal()).thenReturn(principal);
 		ResourceMethod methodMock = Mockito.mock(ResourceMethod.class);
-		Mockito.when((Class<MethodAnnotationsMock>) methodMock.getResourceClass()).thenReturn(
-				MethodAnnotationsMock.class);
+		Mockito.when((Class<MethodAnnotationsMock>) methodMock.getResourceClass()).thenReturn(MethodAnnotationsMock.class);
 		Mockito.when(methodMock.getMethod()).thenReturn(MethodAnnotationsMock.class.getMethod("methodProviderAllowed"));
 
 		ServerResponse res = tested.preProcess(null, methodMock);
@@ -102,18 +101,17 @@ public class SecurityPreProcessInterceptorTest {
 
 	@Test
 	public void getProviderAlowedAnnotationTest() throws SecurityException, NoSuchMethodException {
-		SecurityPreProcessInterceptor tested = getTested();
 
-		Assert.assertNull(tested.getProviderAlowedAnnotation(MethodAnnotationsMock.class,
+		Assert.assertNull(SecurityPreProcessInterceptor.getProviderAlowedAnnotation(MethodAnnotationsMock.class,
 				MethodAnnotationsMock.class.getMethod("methodNotAnnotated")));
-		Assert.assertNull(tested.getProviderAlowedAnnotation(MethodAnnotationsMock.class,
+		Assert.assertNull(SecurityPreProcessInterceptor.getProviderAlowedAnnotation(MethodAnnotationsMock.class,
 				MethodAnnotationsMock.class.getMethod("methodGuestAllowed")));
 
-		Assert.assertNotNull(tested.getProviderAlowedAnnotation(MethodAnnotationsMock.class,
+		Assert.assertNotNull(SecurityPreProcessInterceptor.getProviderAlowedAnnotation(MethodAnnotationsMock.class,
 				MethodAnnotationsMock.class.getMethod("methodProviderAllowed")));
-		Assert.assertNotNull(tested.getProviderAlowedAnnotation(ClassProviderAllowedMock.class,
+		Assert.assertNotNull(SecurityPreProcessInterceptor.getProviderAlowedAnnotation(ClassProviderAllowedMock.class,
 				ClassProviderAllowedMock.class.getMethod("methodNotAnnotated")));
-		Assert.assertNotNull(tested.getProviderAlowedAnnotation(SubclassProviderAllowedMock.class,
+		Assert.assertNotNull(SecurityPreProcessInterceptor.getProviderAlowedAnnotation(SubclassProviderAllowedMock.class,
 				SubclassProviderAllowedMock.class.getMethod("methodNotAnnotated")));
 	}
 
@@ -134,6 +132,16 @@ public class SecurityPreProcessInterceptorTest {
 				SubclassProviderAllowedMock.class.getMethod("methodNotAnnotated")));
 		Assert.assertTrue(tested.accept(ClassSuperProviderAllowedMock.class,
 				ClassSuperProviderAllowedMock.class.getMethod("methodNotAnnotated")));
+	}
+
+	@Test
+	public void isGuestAllowed() throws SecurityException, NoSuchMethodException {
+		Assert.assertFalse(SecurityPreProcessInterceptor.isGuestAllowed(MethodAnnotationsMock.class
+				.getMethod("methodNotAnnotated")));
+		Assert.assertFalse(SecurityPreProcessInterceptor.isGuestAllowed(MethodAnnotationsMock.class
+				.getMethod("methodProviderAllowed")));
+		Assert.assertTrue(SecurityPreProcessInterceptor.isGuestAllowed(MethodAnnotationsMock.class
+				.getMethod("methodGuestAllowed")));
 	}
 
 	public static class MethodAnnotationsMock {

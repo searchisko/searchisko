@@ -45,7 +45,6 @@ public class ContributorRestService extends RestEntityServiceBase {
 	public Object search(@QueryParam("email") String email) {
 		try {
 			SearchResponse response = contributorService.search(email);
-
 			return new ESDataOnlyResponse(response);
 		} catch (Exception e) {
 			return createErrorResponse(e);

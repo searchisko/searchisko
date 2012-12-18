@@ -29,10 +29,14 @@ import org.jboss.resteasy.spi.interception.PreProcessInterceptor;
 import org.jboss.resteasy.util.HttpResponseCodes;
 
 /**
- * Security REST pre processor to handle security annotations which is de facto authorization. This preprocessor needs
- * to be placed after {@link AuthenticationInterceptor} which is done thanks to {@link HeaderDecoratorPrecedence}
+ * Security REST pre processor to handle security annotations used for authorization. This preprocessor needs to be
+ * placed after {@link AuthenticationInterceptor} which is done thanks to {@link HeaderDecoratorPrecedence}.
+ * <p>
+ * This interceptor uses {@link GuestAllowed} and {@link ProviderAllowed} annotations placed on REST API implementing
+ * classes and methods.
  * 
  * @author Libor Krzyzanek
+ * @author Vlastimil Elias (velias at redhat dot com)
  * @see SecurityInterceptor
  */
 @Provider
@@ -46,11 +50,14 @@ public class SecurityPreProcessInterceptor implements PreProcessInterceptor, Acc
 	@Context
 	protected SecurityContext securityContext;
 
+	/**
+	 * Returns false for methods which are allowed for all users (Guests) so
+	 * {@link #preProcess(HttpRequest, ResourceMethod)} is not called for them.
+	 */
 	@SuppressWarnings("rawtypes")
 	@Override
 	public boolean accept(Class declaring, Method method) {
-		boolean guestAllowed = method.isAnnotationPresent(GuestAllowed.class);
-		if (guestAllowed) {
+		if (isGuestAllowed(method)) {
 			log.fine("REST Security, method allowed to guest: " + declaring.getCanonicalName() + "." + method.getName());
 			return false;
 		}
@@ -69,6 +76,16 @@ public class SecurityPreProcessInterceptor implements PreProcessInterceptor, Acc
 	}
 
 	/**
+	 * Check if Guest (unauthenticated) access is explicitly allowed/enforced for given method.
+	 * 
+	 * @param method to check
+	 * @return true if guest access is allowed
+	 */
+	public static boolean isGuestAllowed(Method method) {
+		return method.isAnnotationPresent(GuestAllowed.class);
+	}
+
+	/**
 	 * Get {@link ProviderAllowed} annotation from method or method's class or declaring class.<br/>
 	 * Precedence is:<br/>
 	 * 1. Method<br/>
@@ -80,7 +97,7 @@ public class SecurityPreProcessInterceptor implements PreProcessInterceptor, Acc
 	 * @return
 	 */
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	protected ProviderAllowed getProviderAlowedAnnotation(Class declaring, Method method) {
+	public static ProviderAllowed getProviderAlowedAnnotation(Class declaring, Method method) {
 		if (method.isAnnotationPresent(ProviderAllowed.class)) {
 			return method.getAnnotation(ProviderAllowed.class);
 		} else {
@@ -95,9 +112,14 @@ public class SecurityPreProcessInterceptor implements PreProcessInterceptor, Acc
 		return null;
 	}
 
+	/**
+	 * Is called for methods which require restricted access, necessary authorization check is done here. Authenticated
+	 * Principal is prepared by {@link AuthenticationInterceptor} called before this and stored in {@link SecurityContext}
+	 * . .
+	 * 
+	 */
 	@Override
-	public ServerResponse preProcess(HttpRequest request, ResourceMethod method) throws Failure,
-			WebApplicationException {
+	public ServerResponse preProcess(HttpRequest request, ResourceMethod method) throws Failure, WebApplicationException {
 
 		Principal principal = securityContext.getUserPrincipal();
 
@@ -115,8 +137,7 @@ public class SecurityPreProcessInterceptor implements PreProcessInterceptor, Acc
 		ProviderAllowed providerAllowed = getProviderAlowedAnnotation(method.getResourceClass(), method.getMethod());
 
 		// Check roles
-		if (providerAllowed.superProviderOnly()
-				&& !securityContext.isUserInRole(CustomSecurityContext.SUPER_ADMIN_ROLE)) {
+		if (providerAllowed.superProviderOnly() && !securityContext.isUserInRole(CustomSecurityContext.SUPER_ADMIN_ROLE)) {
 			ServerResponse response = new ServerResponse();
 			response.setStatus(HttpResponseCodes.SC_FORBIDDEN);
 			return response;

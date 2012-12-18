@@ -267,6 +267,32 @@ public class ProviderRestServiceTest {
 		}
 	}
 
+	@Test
+	public void getAll_permissions() {
+		TestUtils.assertPermissionSuperProvider(ProviderRestService.class, "getAll", Integer.class, Integer.class);
+	}
+
+	@Test
+	public void get_permissions() {
+		TestUtils.assertPermissionProvider(ProviderRestService.class, "get", String.class);
+	}
+
+	@Test
+	public void create_permissions() {
+		TestUtils.assertPermissionSuperProvider(ProviderRestService.class, "create", String.class, Map.class);
+		TestUtils.assertPermissionSuperProvider(ProviderRestService.class, "create", Map.class);
+	}
+
+	@Test
+	public void delete_permissions() {
+		TestUtils.assertPermissionSuperProvider(ProviderRestService.class, "delete", String.class);
+	}
+
+	@Test
+	public void changePassword_permissions() {
+		TestUtils.assertPermissionProvider(ProviderRestService.class, "changePassword", String.class, String.class);
+	}
+
 	protected ProviderRestService getTested() {
 		ProviderRestService tested = new ProviderRestService();
 		RestEntityServiceBaseTest.mockLogger(tested);

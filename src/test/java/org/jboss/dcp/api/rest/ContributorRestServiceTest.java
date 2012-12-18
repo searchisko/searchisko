@@ -5,6 +5,8 @@
  */
 package org.jboss.dcp.api.rest;
 
+import java.util.Map;
+
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.StreamingOutput;
 
@@ -31,6 +33,11 @@ public class ContributorRestServiceTest {
 		Assert.assertNull(tested.entityService);
 		tested.init();
 		Assert.assertEquals(tested.contributorService, tested.entityService);
+	}
+
+	@Test
+	public void search_permissions() throws Exception {
+		TestUtils.assertPermissionGuest(ContributorRestService.class, "search", String.class);
 	}
 
 	@Test
@@ -63,6 +70,27 @@ public class ContributorRestServiceTest {
 			Mockito.when(tested.contributorService.search("email@em")).thenThrow(new RuntimeException("test exception"));
 			TestUtils.assertResponseStatus(tested.search("email@em"), Status.INTERNAL_SERVER_ERROR);
 		}
+	}
+
+	@Test
+	public void getAll_permissions() {
+		TestUtils.assertPermissionSuperProvider(ContributorRestService.class, "getAll", Integer.class, Integer.class);
+	}
+
+	@Test
+	public void get_permissions() {
+		TestUtils.assertPermissionSuperProvider(ContributorRestService.class, "get", String.class);
+	}
+
+	@Test
+	public void create_permissions() {
+		TestUtils.assertPermissionSuperProvider(ContributorRestService.class, "create", String.class, Map.class);
+		TestUtils.assertPermissionSuperProvider(ContributorRestService.class, "create", Map.class);
+	}
+
+	@Test
+	public void delete_permissions() {
+		TestUtils.assertPermissionSuperProvider(ContributorRestService.class, "delete", String.class);
 	}
 
 }
