@@ -194,9 +194,44 @@ Search API
 This part of the API is used by all systems that can use content stored in DCP.
 --
 Search contributions.
-GET /rest/search?TODO
+GET /rest/search?{query,type,sortBy,filters[start],filters[count],filters[tag]}
 < 200
-{ "foo": "bar" }
+
+Search contributions based on input parameters
+
+##### Request parameters
+
+* `query` full text query
+* `sortBy` sort result based on dcp_updated field. Value can be `old` or `new`
+* `type` filters result only to specific `dcp_content_type`
+* `filters[start]` start index. Default value is 0
+* `filters[count]` count of returned entries. Default is 10
+* `filters[tag]` filters result to specific tag
+
+##### Response content
+
+```
+{
+  "took":3,
+  "timed_out":false,
+  "_shards":{
+    "total":5,
+    "successful":5,
+    "failed":0
+   },
+   "hits":{
+     "total":393,
+     "max_score":null,
+     "hits":[
+       {
+         ...
+       },{
+         ...
+       }
+     ]
+   }
+}
+```
 
 
 --
