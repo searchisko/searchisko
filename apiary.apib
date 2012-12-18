@@ -440,9 +440,8 @@ GET /rest/suggestions/query_string?q=Hiberna
 --
 Management API
 This part of the API is used by 'DCP administrators' to manage configurations of DCP. Some operations can be used by *content providers* too.
---
----
-Content providers configuration API
+
+### Content providers API
 This part of the API allows to manage configurations of *content providers*. *Content provider* is an entity which stores content into DCP (see Content Push API).
 Configuration for the *content provider* contains some descriptive/contact informations, informations for authentication/authorization on the DCP REST API, and configuration of content types pushed into DCP by this provider.
 
@@ -517,7 +516,7 @@ Example of content provider configuration:
   }
 }
 ```
----
+--
 
 Get configuration for provider of given name.
 
@@ -615,9 +614,9 @@ GET /rest/provider{?from,size}
       "id": "1",
       "data": {
           "name": "jborg",
-  				"description" : "Provider used by JBoss Community Team to manage DCP and push content from core jboss.org systems",
-  				"contact_email" : "help@jboss.org",
-  				"super_provider": true
+          "description" : "Provider used by JBoss Community Team to manage DCP and push content from core jboss.org systems",
+          "contact_email" : "help@jboss.org",
+          "super_provider": true
       }
     }
   ]
