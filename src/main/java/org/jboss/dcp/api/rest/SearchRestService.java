@@ -18,6 +18,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
+import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
 import org.elasticsearch.ElasticSearchException;
@@ -30,6 +31,7 @@ import org.elasticsearch.index.query.FilteredQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.index.query.TermsFilterBuilder;
+import org.elasticsearch.indices.IndexMissingException;
 import org.elasticsearch.search.sort.SortOrder;
 import org.jboss.dcp.api.annotations.security.GuestAllowed;
 import org.jboss.dcp.api.model.QuerySettings;
@@ -109,7 +111,8 @@ public class SearchRestService extends RestServiceBase {
 			}
 
 			if (!searchFilters.isEmpty()) {
-				AndFilterBuilder f = new AndFilterBuilder(searchFilters.toArray(new FilterBuilder[searchFilters.size()]));
+				AndFilterBuilder f = new AndFilterBuilder(
+						searchFilters.toArray(new FilterBuilder[searchFilters.size()]));
 				qb = new FilteredQueryBuilder(qb, f);
 			}
 
@@ -131,6 +134,8 @@ public class SearchRestService extends RestServiceBase {
 			final SearchResponse searchResponse = srb.execute().actionGet();
 
 			return createResponse(searchResponse);
+		} catch (IndexMissingException e) {
+			return Response.status(Response.Status.NOT_FOUND).build();
 		} catch (ElasticSearchException e) {
 			getStatsClientService().writeStatistics(StatsRecordType.SEARCH, e, System.currentTimeMillis(),
 					settings.getQuery(), settings.getFilters());
