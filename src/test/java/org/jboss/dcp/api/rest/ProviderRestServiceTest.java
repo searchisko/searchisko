@@ -189,18 +189,41 @@ public class ProviderRestServiceTest {
 	public void create_id() {
 		ProviderRestService tested = getTested();
 
+		// case - invalid id parameter
+		{
+			Map<String, Object> m = new HashMap<String, Object>();
+			m.put(ProviderService.NAME, "myname");
+			TestUtils.assertResponseStatus(tested.create(null, m), Status.BAD_REQUEST);
+			TestUtils.assertResponseStatus(tested.create("", m), Status.BAD_REQUEST);
+		}
+
+		// case - invalid name field in input data
+		{
+			Map<String, Object> m = new HashMap<String, Object>();
+			TestUtils.assertResponseStatus(tested.create("myname", m), Status.BAD_REQUEST);
+			m.put(ProviderService.NAME, "");
+			TestUtils.assertResponseStatus(tested.create("myname", m), Status.BAD_REQUEST);
+		}
+
+		// case - name field in data is not same as id parameter
+		{
+			Map<String, Object> m = new HashMap<String, Object>();
+			m.put(ProviderService.NAME, "myanothername");
+			TestUtils.assertResponseStatus(tested.create("myname", m), Status.BAD_REQUEST);
+		}
+
 		// case - OK, no previously existing entity so new pwd hash used
 		{
 			Map<String, Object> m = new HashMap<String, Object>();
-			m.put(ProviderService.NAME, "name");
+			m.put(ProviderService.NAME, "myname");
 			m.put(ProviderService.PASSWORD_HASH, "pwhs");
-			Mockito.when(tested.entityService.get("12")).thenReturn(null);
-			Map<String, Object> ret = (Map<String, Object>) tested.create("12", m);
-			Assert.assertEquals("12", ret.get("id"));
+			Mockito.when(tested.entityService.get("myname")).thenReturn(null);
+			Map<String, Object> ret = (Map<String, Object>) tested.create("myname", m);
+			Assert.assertEquals("myname", ret.get("id"));
 			Assert.assertEquals("pwhs", m.get(ProviderService.PASSWORD_HASH));
-			Assert.assertEquals("name", m.get(ProviderService.NAME));
-			Mockito.verify(tested.entityService).create("12", m);
-			Mockito.verify(tested.entityService).get("12");
+			Assert.assertEquals("myname", m.get(ProviderService.NAME));
+			Mockito.verify(tested.entityService).create("myname", m);
+			Mockito.verify(tested.entityService).get("myname");
 			Mockito.verifyNoMoreInteractions(tested.entityService);
 		}
 
@@ -208,15 +231,15 @@ public class ProviderRestServiceTest {
 		{
 			Mockito.reset(tested.entityService);
 			Map<String, Object> m = new HashMap<String, Object>();
-			m.put(ProviderService.NAME, "name");
+			m.put(ProviderService.NAME, "myname");
 			m.put(ProviderService.PASSWORD_HASH, "pwhs");
 			Mockito.when(tested.entityService.get("12")).thenReturn(new HashMap<String, Object>());
-			Map<String, Object> ret = (Map<String, Object>) tested.create("12", m);
-			Assert.assertEquals("12", ret.get("id"));
+			Map<String, Object> ret = (Map<String, Object>) tested.create("myname", m);
+			Assert.assertEquals("myname", ret.get("id"));
 			Assert.assertEquals("pwhs", m.get(ProviderService.PASSWORD_HASH));
-			Assert.assertEquals("name", m.get(ProviderService.NAME));
-			Mockito.verify(tested.entityService).create("12", m);
-			Mockito.verify(tested.entityService).get("12");
+			Assert.assertEquals("myname", m.get(ProviderService.NAME));
+			Mockito.verify(tested.entityService).create("myname", m);
+			Mockito.verify(tested.entityService).get("myname");
 			Mockito.verifyNoMoreInteractions(tested.entityService);
 		}
 
@@ -224,17 +247,18 @@ public class ProviderRestServiceTest {
 		{
 			Mockito.reset(tested.entityService);
 			Map<String, Object> m = new HashMap<String, Object>();
-			m.put(ProviderService.NAME, "name");
+			m.put(ProviderService.NAME, "myname");
 			m.put(ProviderService.PASSWORD_HASH, "pwhs");
 			Map<String, Object> entityOld = new HashMap<String, Object>();
 			entityOld.put(ProviderService.PASSWORD_HASH, "pwhsold");
-			Mockito.when(tested.entityService.get("12")).thenReturn(entityOld);
-			Map<String, Object> ret = (Map<String, Object>) tested.create("12", m);
-			Assert.assertEquals("12", ret.get("id"));
+			entityOld.put(ProviderService.NAME, "myname");
+			Mockito.when(tested.entityService.get("myname")).thenReturn(entityOld);
+			Map<String, Object> ret = (Map<String, Object>) tested.create("myname", m);
+			Assert.assertEquals("myname", ret.get("id"));
 			Assert.assertEquals("pwhsold", m.get(ProviderService.PASSWORD_HASH));
-			Assert.assertEquals("name", m.get(ProviderService.NAME));
-			Mockito.verify(tested.entityService).create("12", m);
-			Mockito.verify(tested.entityService).get("12");
+			Assert.assertEquals("myname", m.get(ProviderService.NAME));
+			Mockito.verify(tested.entityService).create("myname", m);
+			Mockito.verify(tested.entityService).get("myname");
 			Mockito.verifyNoMoreInteractions(tested.entityService);
 		}
 
@@ -242,16 +266,17 @@ public class ProviderRestServiceTest {
 		{
 			Mockito.reset(tested.entityService);
 			Map<String, Object> m = new HashMap<String, Object>();
-			m.put(ProviderService.NAME, "name");
+			m.put(ProviderService.NAME, "myname");
 			Map<String, Object> entityOld = new HashMap<String, Object>();
 			entityOld.put(ProviderService.PASSWORD_HASH, "pwhsold");
-			Mockito.when(tested.entityService.get("12")).thenReturn(entityOld);
-			Map<String, Object> ret = (Map<String, Object>) tested.create("12", m);
-			Assert.assertEquals("12", ret.get("id"));
+			entityOld.put(ProviderService.NAME, "myname");
+			Mockito.when(tested.entityService.get("myname")).thenReturn(entityOld);
+			Map<String, Object> ret = (Map<String, Object>) tested.create("myname", m);
+			Assert.assertEquals("myname", ret.get("id"));
 			Assert.assertEquals("pwhsold", m.get(ProviderService.PASSWORD_HASH));
-			Assert.assertEquals("name", m.get(ProviderService.NAME));
-			Mockito.verify(tested.entityService).create("12", m);
-			Mockito.verify(tested.entityService).get("12");
+			Assert.assertEquals("myname", m.get(ProviderService.NAME));
+			Mockito.verify(tested.entityService).create("myname", m);
+			Mockito.verify(tested.entityService).get("myname");
 			Mockito.verifyNoMoreInteractions(tested.entityService);
 		}
 
@@ -259,10 +284,105 @@ public class ProviderRestServiceTest {
 		{
 			Mockito.reset(tested.entityService);
 			Map<String, Object> m = new HashMap<String, Object>();
-			Mockito.doThrow(new RuntimeException("my exception")).when(tested.entityService).create("12", m);
-			TestUtils.assertResponseStatus(tested.create("12", m), Status.INTERNAL_SERVER_ERROR);
-			Mockito.verify(tested.entityService).get("12");
-			Mockito.verify(tested.entityService).create("12", m);
+			m.put(ProviderService.NAME, "myname");
+			Mockito.doThrow(new RuntimeException("my exception")).when(tested.entityService).create("myname", m);
+			TestUtils.assertResponseStatus(tested.create("myname", m), Status.INTERNAL_SERVER_ERROR);
+			Mockito.verify(tested.entityService).get("myname");
+			Mockito.verify(tested.entityService).create("myname", m);
+			Mockito.verifyNoMoreInteractions(tested.entityService);
+		}
+	}
+
+	@SuppressWarnings("unchecked")
+	@Test
+	public void create_noid() {
+		ProviderRestService tested = getTested();
+
+		// case - invalid name field in input data
+		{
+			Map<String, Object> m = new HashMap<String, Object>();
+			TestUtils.assertResponseStatus(tested.create(m), Status.BAD_REQUEST);
+			m.put(ProviderService.NAME, "");
+			TestUtils.assertResponseStatus(tested.create(m), Status.BAD_REQUEST);
+		}
+
+		// case - OK, no previously existing entity so new pwd hash used
+		{
+			Map<String, Object> m = new HashMap<String, Object>();
+			m.put(ProviderService.NAME, "myname");
+			m.put(ProviderService.PASSWORD_HASH, "pwhs");
+			Mockito.when(tested.entityService.get("myname")).thenReturn(null);
+			Map<String, Object> ret = (Map<String, Object>) tested.create(m);
+			Assert.assertEquals("myname", ret.get("id"));
+			Assert.assertEquals("pwhs", m.get(ProviderService.PASSWORD_HASH));
+			Assert.assertEquals("myname", m.get(ProviderService.NAME));
+			Mockito.verify(tested.entityService).create("myname", m);
+			Mockito.verify(tested.entityService).get("myname");
+			Mockito.verifyNoMoreInteractions(tested.entityService);
+		}
+
+		// case - OK, previously existing entity without pwd hash, so new pwd hash used
+		{
+			Mockito.reset(tested.entityService);
+			Map<String, Object> m = new HashMap<String, Object>();
+			m.put(ProviderService.NAME, "myname");
+			m.put(ProviderService.PASSWORD_HASH, "pwhs");
+			Mockito.when(tested.entityService.get("12")).thenReturn(new HashMap<String, Object>());
+			Map<String, Object> ret = (Map<String, Object>) tested.create(m);
+			Assert.assertEquals("myname", ret.get("id"));
+			Assert.assertEquals("pwhs", m.get(ProviderService.PASSWORD_HASH));
+			Assert.assertEquals("myname", m.get(ProviderService.NAME));
+			Mockito.verify(tested.entityService).create("myname", m);
+			Mockito.verify(tested.entityService).get("myname");
+			Mockito.verifyNoMoreInteractions(tested.entityService);
+		}
+
+		// case - OK, previously existing entity with pwd hash, so old pwd hash preserved
+		{
+			Mockito.reset(tested.entityService);
+			Map<String, Object> m = new HashMap<String, Object>();
+			m.put(ProviderService.NAME, "myname");
+			m.put(ProviderService.PASSWORD_HASH, "pwhs");
+			Map<String, Object> entityOld = new HashMap<String, Object>();
+			entityOld.put(ProviderService.PASSWORD_HASH, "pwhsold");
+			entityOld.put(ProviderService.NAME, "myname");
+			Mockito.when(tested.entityService.get("myname")).thenReturn(entityOld);
+			Map<String, Object> ret = (Map<String, Object>) tested.create(m);
+			Assert.assertEquals("myname", ret.get("id"));
+			Assert.assertEquals("pwhsold", m.get(ProviderService.PASSWORD_HASH));
+			Assert.assertEquals("myname", m.get(ProviderService.NAME));
+			Mockito.verify(tested.entityService).create("myname", m);
+			Mockito.verify(tested.entityService).get("myname");
+			Mockito.verifyNoMoreInteractions(tested.entityService);
+		}
+
+		// case - OK, previously existing entity with pwd hash, so old pwd hash preserved. new entity without pwd hash
+		{
+			Mockito.reset(tested.entityService);
+			Map<String, Object> m = new HashMap<String, Object>();
+			m.put(ProviderService.NAME, "myname");
+			Map<String, Object> entityOld = new HashMap<String, Object>();
+			entityOld.put(ProviderService.PASSWORD_HASH, "pwhsold");
+			entityOld.put(ProviderService.NAME, "myname");
+			Mockito.when(tested.entityService.get("myname")).thenReturn(entityOld);
+			Map<String, Object> ret = (Map<String, Object>) tested.create(m);
+			Assert.assertEquals("myname", ret.get("id"));
+			Assert.assertEquals("pwhsold", m.get(ProviderService.PASSWORD_HASH));
+			Assert.assertEquals("myname", m.get(ProviderService.NAME));
+			Mockito.verify(tested.entityService).create("myname", m);
+			Mockito.verify(tested.entityService).get("myname");
+			Mockito.verifyNoMoreInteractions(tested.entityService);
+		}
+
+		// case - error
+		{
+			Mockito.reset(tested.entityService);
+			Map<String, Object> m = new HashMap<String, Object>();
+			m.put(ProviderService.NAME, "myname");
+			Mockito.doThrow(new RuntimeException("my exception")).when(tested.entityService).create("myname", m);
+			TestUtils.assertResponseStatus(tested.create(m), Status.INTERNAL_SERVER_ERROR);
+			Mockito.verify(tested.entityService).get("myname");
+			Mockito.verify(tested.entityService).create("myname", m);
 			Mockito.verifyNoMoreInteractions(tested.entityService);
 		}
 	}

@@ -97,10 +97,37 @@ public class ProviderRestService extends RestEntityServiceBase {
 	}
 
 	@POST
+	@Path("/")
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
+	public Object create(Map<String, Object> data) {
+		String nameFromData = (String) data.get(ProviderService.NAME);
+		if (nameFromData == null || nameFromData.isEmpty())
+			return Response.status(Status.BAD_REQUEST).entity("Required data field '" + ProviderService.NAME + "' not set")
+					.build();
+		return this.create(nameFromData, data);
+	}
+
+	@POST
 	@Path("/{id}")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	public Object create(@PathParam("id") String id, Map<String, Object> data) {
+
+		if (id == null || id.isEmpty()) {
+			return createRequiredFieldResponse("id");
+		}
+
+		String nameFromData = (String) data.get(ProviderService.NAME);
+		if (nameFromData == null || nameFromData.isEmpty())
+			return Response.status(Status.BAD_REQUEST).entity("Required data field '" + ProviderService.NAME + "' not set")
+					.build();
+
+		if (!id.equals(nameFromData)) {
+			return Response.status(Status.BAD_REQUEST)
+					.entity("Name in URL must be same as '" + ProviderService.NAME + "' field in data.").build();
+		}
+
 		try {
 			// do not update password hash if entity exists already!
 			Map<String, Object> entity = entityService.get(id);

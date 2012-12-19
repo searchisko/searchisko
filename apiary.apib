@@ -592,17 +592,17 @@ List provider definitions.
 * `size` of returned results array. Default is 10.
 
 ##### Response content
-The response contains a JSON structure with overall number of the providers in `total` field, and an array of the provider data in `hits` field. The content of the array depends on `from` and `size` request parameters.
-Each record in the array contains `id` field and then `data` field with full provider structure:
+The response contains a JSON structure with overall number of the providers in `total` field, and an array of the provider configuration data in `hits` field. The content of the array depends on `from` and `size` request parameters.
+Each record in the array contains `id` field with provider name and `data` field with full provider configuration structure:
 
 ```
 {
   "total": "1",
   "hits": [
     {
-      "id": "1",
+      "id": "provider name",
       "data": {
-        //provider data object
+        // content provider configuration object
       }
     }
   ]
@@ -618,32 +618,35 @@ GET /rest/provider{?from,size}
     {
       "id": "jborg",
       "data": {
-          "name": "jborg",
-          "description" : "Provider used by JBoss Community Team to manage DCP and push content from core jboss.org systems",
-          "contact_email" : "help@jboss.org",
-          "super_provider": true
+        "name": "jborg",
+        "description" : "Provider used by JBoss Community Team to manage DCP and push content from core jboss.org systems",
+        "contact_email" : "help@jboss.org"
       }
     }
   ]
 }
 
-Create/update configuration for provider with given `name`.
+Create/update configuration for provider. `name` field inside of provider configuration structure is used as primary ID for update.  
 
 ##### Request content
 JSON with provider configuration structure.
 
 ##### Response content
-The response contains a JSON structure with `id` field returning {name} o provider.
+The response contains a JSON structure with `id` field returning `name` o provider.
 
-POST /rest/provider/{name}
+POST /rest/provider
 > Accept: application/json
+{
+  "name" : "jborg",
+  "description" : "Provider used by JBoss Community Team to manage DCP and push content from core jboss.org systems"
+}
 < 200
 < Content-Type: application/json
 {
-  "id":"{name}"
+  "id":"jborg"
 }
 
-Change password for requested provider.
+Change password for provider with given `name`.
 
 *Each authenticated provider can use this method to change his password.*
 
@@ -653,11 +656,9 @@ New password is posted in request body.
 POST /rest/provider/{name}/password
 > Accept: text/plain
 < 200
-< Content-Type: text/plain
 
 
 Delete provider with given `name`.
 DELETE /rest/provider/{name}
 < 200
-< Content-Type: text/plain
 
