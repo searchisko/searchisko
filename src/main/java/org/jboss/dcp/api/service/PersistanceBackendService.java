@@ -49,7 +49,7 @@ public class PersistanceBackendService extends ElasticsearchClientService {
 
 	@Produces
 	@Named("providerServiceBackend")
-	public EntityService produceProviderService() {
+	public ElasticsearchEntityService produceProviderService() {
 		ElasticsearchEntityService serv = new ElasticsearchEntityService(client, INDEX_NAME, INDEX_TYPE_PROVIDER, false);
 
 		if (appConfigurationService.getAppConfiguration().isProviderCreateInitData()) {
