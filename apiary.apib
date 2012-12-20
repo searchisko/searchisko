@@ -662,3 +662,134 @@ Delete provider with given `name`.
 DELETE /rest/provider/{name}
 < 200
 
+--
+Management API - projects
+
+This part of the API allows to manage configurations of *projects*. This configuration is used by preprocessors in 'Content Push API' to normalize project identifier for `dcp_project` field.
+This part of the API is used by 'DCP administrators' to manage configurations of project mappings. Get operations can be used without authentication.
+
+To allow searches for normalization processing by preprocessors, project configuration documents are stored in the DCP back-end elasticsearch search index named `dcp_projects` as type named `project`.
+
+Project configuration fields:
+
+* `code` - DCP wide unique project identifier. It is stored into `dcp_project` field in content pushed into DCP and used as project identifier for Search API filters.
+* `name` - project name 
+* `description` - description of the project.
+* `type_specific_code` - Map structure with other codes used to map pushed data to this project. Key in structure marks type of code (eg. jboss.org JIRA project key), value in structure is code itself used during mapping.
+
+Example of project configuration:
+
+```
+{
+  "code": "jbosstools",
+  "name": "JBoss Tools",
+  "description" : "",
+  "type_specific_code" : {
+    "jbossorg_blog": ["jbosstools"],
+    "jbossorg_jira": ["JBIDE"],
+    "jbossorg_mailing_list": [],
+    "jbossorg_project_info": "/jbosstools"
+  }
+}
+```
+--
+
+Get project configuration for given project code.
+
+*Authentication not required to use this method*
+GET /rest/project/{code}
+< 200
+< Content-Type: application/json
+{
+  "code": "jbosstools",
+  "name": "JBoss Tools",
+  "description" : "",
+  "type_specific_code" : {
+    "jbossorg_blog": ["jbosstools"],
+    "jbossorg_jira": ["JBIDE"],
+    "jbossorg_mailing_list": [],
+    "jbossorg_project_info": "/jbosstools"
+  }
+}
+
+List project definitions.
+
+*Authentication not required to use this method*
+
+##### Request parameters
+
+* `from` index of the first content object returned in the results array. The default value is 0 (start from begin of list).
+* `size` of returned results array. Default is 10.
+
+##### Response content
+The response contains a JSON structure with overall number of the projects in `total` field, and an array of the project configuration data in `hits` field. 
+The content of the array depends on `from` and `size` request parameters.
+Each record in the array contains `id` field with project code and `data` field with full provider configuration structure:
+
+```
+{
+  "total": "1",
+  "hits": [
+    {
+      "id": "project code",
+      "data": {
+        // project configuration object
+      }
+    }
+  ]
+}
+```
+
+GET /rest/project{?from,size}
+< 200
+< Content-Type: application/json
+{
+  "total": "1",
+  "hits": [
+    {
+      "id": "jbosstools",
+      "data": {
+			  "code": "jbosstools",
+			  "name": "JBoss Tools",
+			  "description" : "",
+			  "type_specific_code" : {
+			    "jbossorg_blog": ["jbosstools"],
+			    "jbossorg_jira": ["JBIDE"],
+			    "jbossorg_mailing_list": "",
+			    "jbossorg_project_info": "/jbosstools"
+			  }
+			}
+    }
+  ]
+}
+
+Create/update project configuration. `code` field inside of project configuration structure is used as primary ID for update.  
+
+##### Request content
+JSON with project configuration structure.
+
+##### Response content
+The response contains a JSON structure with `id` field returning `code` o provider.
+
+POST /rest/project
+> Accept: application/json
+{
+  "code": "jbosstools",
+  "name": "JBoss Tools",
+  "description" : "",
+  "type_specific_code" : {
+    "jbossorg_blog": ["jbosstools"],
+    "jbossorg_jira": ["JBIDE"],
+    "jbossorg_mailing_list": "",
+    "jbossorg_project_info": "/jbosstools"
+  }
+}
+< 200
+< Content-Type: application/json
+{
+  "id":"jbosstools"
+}
+
+Delete project configuration for given project's `code`.
+DELETE /rest/project/{code}
+< 200
