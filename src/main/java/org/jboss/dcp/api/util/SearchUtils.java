@@ -21,7 +21,7 @@ public class SearchUtils {
 	 * Load properties from defined path e.g. "/app.properties"
 	 * 
 	 * @param path
-	 * @return newly intialized {@link Properties}
+	 * @return newly initialized {@link Properties}
 	 * @throws IOException
 	 * @see {@link Class#getResourceAsStream(String)}
 	 */

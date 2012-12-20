@@ -194,7 +194,7 @@ public class QuerySettings {
 	}
 
 	/**
-	 * Get serach query
+	 * Get search query
 	 * 
 	 * @return normalized query or null
 	 * @see QuerySettingsParser#normalizeQueryString(String)
