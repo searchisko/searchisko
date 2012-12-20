@@ -25,7 +25,7 @@ import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.search.ShardSearchFailure;
 import org.elasticsearch.client.Requests;
 import org.elasticsearch.common.unit.TimeValue;
-import org.jboss.dcp.api.config.StatsConfiguation;
+import org.jboss.dcp.api.config.StatsConfiguration;
 import org.jboss.dcp.api.config.TimeoutConfiguration;
 import org.jboss.dcp.api.model.AppConfiguration.ClientType;
 import org.jboss.dcp.api.model.QuerySettings;
@@ -47,7 +47,7 @@ public class StatsClientService extends ElasticsearchClientService {
 	protected static final String INDEX_TYPE = "stats";
 
 	@Inject
-	protected StatsConfiguation statsConfiguration;
+	protected StatsConfiguration statsConfiguration;
 
 	@Inject
 	protected TimeoutConfiguration timeout;

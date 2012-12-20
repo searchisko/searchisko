@@ -17,7 +17,7 @@ import org.elasticsearch.action.search.ShardSearchFailure;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.rest.RestStatus;
 import org.elasticsearch.search.SearchHits;
-import org.jboss.dcp.api.config.StatsConfiguation;
+import org.jboss.dcp.api.config.StatsConfiguration;
 import org.jboss.dcp.api.config.TimeoutConfiguration;
 import org.jboss.dcp.api.model.AppConfiguration;
 import org.jboss.dcp.api.model.AppConfiguration.ClientType;
@@ -75,14 +75,14 @@ public class StatsClientServiceTest {
 		Mockito.when(tested.timeout.stats()).thenReturn(256);
 
 		// case - statistics disabled
-		tested.statsConfiguration = new StatsConfiguation(false);
+		tested.statsConfiguration = new StatsConfiguration(false);
 		tested.writeStatistics(StatsRecordType.DOCUMENT_DETAIL, new ElasticSearchException("Test exception"),
 				DateTools.stringToTime("20121221121212121"), "my query", null);
 		Mockito.verifyZeroInteractions(tested.client);
 
 		// case - statistics enabled, no filter defined
 		Mockito.reset(tested.client);
-		tested.statsConfiguration = new StatsConfiguation(true);
+		tested.statsConfiguration = new StatsConfiguration(true);
 		TestIndexingAnswer answ = new TestIndexingAnswer(
 				tested,
 				"{\"status\":\"INTERNAL_SERVER_ERROR\",\"exception\":true,\"exception_detailed_message\":\"org.elasticsearch.ElasticSearchException: Test exception\",\"query_string\":\"my query\",\"date\":1356091932121,\"type\":\"document_detail\",\"exception_most_specific_cause\":\"org.elasticsearch.ElasticSearchException: Test exception\"}");
@@ -100,7 +100,7 @@ public class StatsClientServiceTest {
 
 		// case - exception from elasticsearch call is not thrown out of write method
 		Mockito.reset(tested.client);
-		tested.statsConfiguration = new StatsConfiguation(true);
+		tested.statsConfiguration = new StatsConfiguration(true);
 		Mockito.doThrow(new RuntimeException("testException")).when(tested.client)
 				.index(Mockito.any(IndexRequest.class), Mockito.any(ActionListener.class));
 
@@ -124,20 +124,20 @@ public class StatsClientServiceTest {
 		SearchResponse searchResponseMock = Mockito.mock(SearchResponse.class);
 
 		// case - statistics disabled
-		tested.statsConfiguration = new StatsConfiguation(false);
+		tested.statsConfiguration = new StatsConfiguration(false);
 		tested.writeStatistics(StatsRecordType.DOCUMENT_DETAIL, searchResponseMock,
 				DateTools.stringToTime("20121221121212121"), "my query", null);
 		Mockito.verifyZeroInteractions(tested.client);
 
 		// case - search response null
-		tested.statsConfiguration = new StatsConfiguation(true);
+		tested.statsConfiguration = new StatsConfiguration(true);
 		tested.writeStatistics(StatsRecordType.DOCUMENT_DETAIL, (SearchResponse) null,
 				DateTools.stringToTime("20121221121212121"), "my query", null);
 		Mockito.verifyZeroInteractions(tested.client);
 
 		// case - statistics enabled
 		Mockito.reset(tested.client);
-		tested.statsConfiguration = new StatsConfiguation(true);
+		tested.statsConfiguration = new StatsConfiguration(true);
 		SearchHits hitsMock = Mockito.mock(SearchHits.class);
 		Mockito.when(hitsMock.totalHits()).thenReturn(129l);
 		Mockito.when(hitsMock.maxScore()).thenReturn(29.3f);
@@ -166,7 +166,7 @@ public class StatsClientServiceTest {
 
 		// case - exception from elasticsearch call is not thrown out of write method
 		Mockito.reset(tested.client);
-		tested.statsConfiguration = new StatsConfiguation(true);
+		tested.statsConfiguration = new StatsConfiguration(true);
 		Mockito.doThrow(new RuntimeException("testException")).when(tested.client)
 				.index(Mockito.any(IndexRequest.class), Mockito.any(ActionListener.class));
 

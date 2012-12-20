@@ -11,7 +11,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 /**
- * Unit test for {@link StatsConfiguation}.
+ * Unit test for {@link StatsConfiguration}.
  * 
  * @author Vlastimil Elias (velias at redhat dot com)
  */
@@ -19,7 +19,7 @@ public class StatsConfiguationTest {
 
   @Test
   public void init() throws IOException {
-    StatsConfiguation tested = new StatsConfiguation();
+    StatsConfiguration tested = new StatsConfiguration();
     Assert.assertFalse(tested.enabled());
 
     tested.init();

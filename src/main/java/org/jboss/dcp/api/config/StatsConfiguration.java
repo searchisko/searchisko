@@ -27,14 +27,14 @@ import org.jboss.dcp.api.util.SearchUtils;
 @ApplicationScoped
 @Singleton
 @Startup
-public class StatsConfiguation {
+public class StatsConfiguration {
 
 	private boolean enabled;
 
 	/**
 	 * Default constructor.
 	 */
-	public StatsConfiguation() {
+	public StatsConfiguration() {
 
 	}
 
@@ -43,7 +43,7 @@ public class StatsConfiguation {
 	 * 
 	 * @param enabled to set
 	 */
-	public StatsConfiguation(boolean enabled) {
+	public StatsConfiguration(boolean enabled) {
 		super();
 		this.enabled = enabled;
 	}
