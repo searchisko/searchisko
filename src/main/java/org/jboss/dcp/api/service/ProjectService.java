@@ -21,6 +21,11 @@ import javax.ws.rs.core.StreamingOutput;
 @ApplicationScoped
 public class ProjectService implements EntityService {
 
+	/**
+	 * Field in project definition with project code, used as unique ID
+	 */
+	public static final String CODE = "code";
+
 	public static final String SEARCH_INDEX_NAME = "dcp_projects";
 
 	public static final String SEARCH_INDEX_TYPE = "project";

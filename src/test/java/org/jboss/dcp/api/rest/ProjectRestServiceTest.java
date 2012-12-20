@@ -14,6 +14,7 @@ import javax.ws.rs.core.SecurityContext;
 import junit.framework.Assert;
 
 import org.jboss.dcp.api.service.EntityService;
+import org.jboss.dcp.api.service.ProjectService;
 import org.jboss.dcp.api.testtools.TestUtils;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -64,6 +65,94 @@ public class ProjectRestServiceTest {
 		Mockito.reset(tested.entityService);
 		Mockito.when(tested.entityService.get("10")).thenThrow(new RuntimeException("my exception"));
 		TestUtils.assertResponseStatus(tested.get("10"), Status.INTERNAL_SERVER_ERROR);
+	}
+
+	@SuppressWarnings("unchecked")
+	@Test
+	public void create_id() {
+		ProjectRestService tested = getTested();
+
+		// case - invalid id parameter
+		{
+			Map<String, Object> m = new HashMap<String, Object>();
+			m.put(ProjectService.CODE, "myname");
+			TestUtils.assertResponseStatus(tested.create(null, m), Status.BAD_REQUEST);
+			TestUtils.assertResponseStatus(tested.create("", m), Status.BAD_REQUEST);
+		}
+
+		// case - invalid name field in input data
+		{
+			Map<String, Object> m = new HashMap<String, Object>();
+			TestUtils.assertResponseStatus(tested.create("myname", m), Status.BAD_REQUEST);
+			m.put(ProjectService.CODE, "");
+			TestUtils.assertResponseStatus(tested.create("myname", m), Status.BAD_REQUEST);
+		}
+
+		// case - name field in data is not same as id parameter
+		{
+			Map<String, Object> m = new HashMap<String, Object>();
+			m.put(ProjectService.CODE, "myanothername");
+			TestUtils.assertResponseStatus(tested.create("myname", m), Status.BAD_REQUEST);
+		}
+
+		// case - OK
+		{
+			Map<String, Object> m = new HashMap<String, Object>();
+			m.put(ProjectService.CODE, "myname");
+			Map<String, Object> ret = (Map<String, Object>) tested.create("myname", m);
+			Assert.assertEquals("myname", ret.get("id"));
+			Assert.assertEquals("myname", m.get(ProjectService.CODE));
+			Mockito.verify(tested.entityService).create("myname", m);
+			Mockito.verifyNoMoreInteractions(tested.entityService);
+		}
+
+		// case - error
+		{
+			Mockito.reset(tested.entityService);
+			Map<String, Object> m = new HashMap<String, Object>();
+			m.put(ProjectService.CODE, "myname");
+			Mockito.doThrow(new RuntimeException("my exception")).when(tested.entityService).create("myname", m);
+			TestUtils.assertResponseStatus(tested.create("myname", m), Status.INTERNAL_SERVER_ERROR);
+			Mockito.verify(tested.entityService).create("myname", m);
+			Mockito.verifyNoMoreInteractions(tested.entityService);
+		}
+	}
+
+	@SuppressWarnings("unchecked")
+	@Test
+	public void create_noid() {
+		ProjectRestService tested = getTested();
+
+		// case - invalid name field in input data
+		{
+			Map<String, Object> m = new HashMap<String, Object>();
+			TestUtils.assertResponseStatus(tested.create(m), Status.BAD_REQUEST);
+			m.put(ProjectService.CODE, "");
+			TestUtils.assertResponseStatus(tested.create(m), Status.BAD_REQUEST);
+		}
+
+		// case - OK
+		{
+			Map<String, Object> m = new HashMap<String, Object>();
+			m.put(ProjectService.CODE, "myname");
+			Mockito.when(tested.entityService.get("myname")).thenReturn(null);
+			Map<String, Object> ret = (Map<String, Object>) tested.create(m);
+			Assert.assertEquals("myname", ret.get("id"));
+			Assert.assertEquals("myname", m.get(ProjectService.CODE));
+			Mockito.verify(tested.entityService).create("myname", m);
+			Mockito.verifyNoMoreInteractions(tested.entityService);
+		}
+
+		// case - error
+		{
+			Mockito.reset(tested.entityService);
+			Map<String, Object> m = new HashMap<String, Object>();
+			m.put(ProjectService.CODE, "myname");
+			Mockito.doThrow(new RuntimeException("my exception")).when(tested.entityService).create("myname", m);
+			TestUtils.assertResponseStatus(tested.create(m), Status.INTERNAL_SERVER_ERROR);
+			Mockito.verify(tested.entityService).create("myname", m);
+			Mockito.verifyNoMoreInteractions(tested.entityService);
+		}
 	}
 
 	@Test
