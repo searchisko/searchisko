@@ -20,7 +20,7 @@ Some system data fields are defined by DCP, some  are added into the content ins
 * `dcp_content_id` -  content identifier is passed in by the provider, it must be unique for the given `dcp_content_type`
 * `dcp_updated` - date of last content update in DCP - system field, always necessary
 * `dcp_project` - normalized DCP wide identifier of the project - system field - it is used for the project facet and filter in the Search API
-* `dcp_contributors` - array of contributing persons, no duplicities in array, persons identifiers normalized during push into DCP - each person represented as String "Name Surname <primaryemail@email.com>" - in Search API used for persons facet and filter
+* `dcp_contributors` - array of contributing persons, no duplicities in array, persons identifiers normalized during push into DCP - each person represented as string `Name Surname <primaryemail@email.com>` - in Search API used for persons facet and filter
 * `dcp_activity_dates` - array of timestamps representing some activity on the content - in the Search API used for the time facet and filter
 * `dcp_tags` - array of tags (Strings) - in the Search API used for facet (tagcloud) and filter - it is not directly pushed by the content provider because we plan a mechanism for additional user defined tags, so we need to rewrite this field internally. The content provider should use `tags` field instead.
 * `dcp_title` - content title - used to present the document in the basic search GUI - it can be directly set by the content provider during the push operation.
@@ -793,5 +793,146 @@ POST /rest/project
 
 Delete project configuration for given project's `code`.
 DELETE /rest/project/{code}
+< 200
+
+
+--
+Management API - contributors
+
+This part of the API allows to manage configurations of *contributors*. This configuration contains distinct informations/identifiers used by preprocessors in 'Content Push API' to normalize project identifier for `dcp_contributors` field.
+This part of the API is used by 'DCP administrators' to manage configurations of contributors mappings.
+
+To allow searches for normalization processing by preprocessors, contributor configuration documents are stored in the DCP back-end elasticsearch search index named `dcp_contributors` as type named `contributor`.
+
+Contributor configuration fields:
+
+* `code` - DCP wide unique contributor identifier. It is stored into `dcp_contributors` field in content pushed into DCP and used as project identifier for Search API filters.
+* `email` - array of all email addresses used by this person for community content creation (used for code search during normalization on Content Push API). 
+* `display_name` - 
+
+Example of contributor configuration:
+
+```
+{
+  "code": "John Doe <john@doe.org>",
+  "display_name": "John Doe",
+  "email" : ["john@doe.org", "john.doe@gmail.com"]
+}
+```
+--
+
+Get contributor configuration for given `id`.
+
+GET /rest/contributor/{id}
+< 200
+< Content-Type: application/json
+{
+  "code": "John Doe <john@doe.org>",
+  "display_name": "John Doe",
+  "email" : ["john@doe.org", "john.doe@gmail.com"]
+}
+
+Search contributor configuration for given email address.
+
+GET /rest/contributor/search?email={email}
+< 200
+< Content-Type: application/json
+{
+  "total": "1",
+  "hits": [
+    {
+      "id": "21",
+      "data": {
+				  "code": "John Doe <john@doe.org>",
+				  "display_name": "John Doe",
+				  "email" : ["john@doe.org", "john.doe@gmail.com"]
+				}
+			}
+    }
+  ]
+}
+
+List contributor definitions.
+
+##### Request parameters
+
+* `from` index of the first content object returned in the results array. The default value is 0 (start from begin of list).
+* `size` of returned results array. Default is 10.
+
+##### Response content
+The response contains a JSON structure with overall number of the contributor definitions in `total` field, and an array of the contributor configuration data in `hits` field. 
+The content of the array depends on `from` and `size` request parameters.
+Each record in the array contains `id` field with unique id for other REST operations, and `data` field with full contributor configuration structure:
+
+```
+{
+  "total": "1",
+  "hits": [
+    {
+      "id": "unique id in DCP",
+      "data": {
+        // contributor configuration object
+      }
+    }
+  ]
+}
+```
+
+GET /rest/contributor{?from,size}
+< 200
+< Content-Type: application/json
+{
+  "total": "1",
+  "hits": [
+    {
+      "id": "21",
+      "data": {
+				  "code": "John Doe <john@doe.org>",
+				  "display_name": "John Doe",
+				  "email" : ["john@doe.org", "john.doe@gmail.com"]
+				}
+			}
+    }
+  ]
+}
+
+Create/update contributor configuration. 
+If `id` is provided as part of request URL then this one is used, so for update you have to use it always. 
+If `id` is not provided then new record is created in the DCP and some unique id is allocated and returned back.  
+
+##### Request content
+JSON with project configuration structure.
+
+##### Response content
+The response contains a JSON structure with `id`. Returns DCP generated id for request without input id.
+
+POST /rest/contributor
+> Accept: application/json
+{
+  "code": "John Doe <john@doe.org>",
+  "display_name": "John Doe",
+  "email" : ["john@doe.org", "john.doe@gmail.com"]
+}
+< 200
+< Content-Type: application/json
+{
+  "id":"22"
+}
+
+POST /rest/contributor/22
+> Accept: application/json
+{
+  "code": "John Doe <john@doe.org>",
+  "display_name": "John Doe",
+  "email" : ["john@doe.org", "john.doe@gmail.com"]
+}
+< 200
+< Content-Type: application/json
+{
+  "id":"22"
+}
+
+Delete contributor configuration.
+DELETE /rest/contributor/{id}
 < 200
 
