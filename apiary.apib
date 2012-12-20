@@ -808,14 +808,12 @@ Contributor configuration fields:
 
 * `code` - DCP wide unique contributor identifier. It is stored into `dcp_contributors` field in content pushed into DCP and used as project identifier for Search API filters.
 * `email` - array of all email addresses used by this person for community content creation (used for code search during normalization on Content Push API). 
-* `display_name` - 
 
 Example of contributor configuration:
 
 ```
 {
-  "code": "John Doe <john@doe.org>",
-  "display_name": "John Doe",
+  "code" : "John Doe <john@doe.org>",
   "email" : ["john@doe.org", "john.doe@gmail.com"]
 }
 ```
@@ -827,8 +825,7 @@ GET /rest/contributor/{id}
 < 200
 < Content-Type: application/json
 {
-  "code": "John Doe <john@doe.org>",
-  "display_name": "John Doe",
+  "code" : "John Doe <john@doe.org>",
   "email" : ["john@doe.org", "john.doe@gmail.com"]
 }
 
@@ -843,8 +840,7 @@ GET /rest/contributor/search?email={email}
     {
       "id": "21",
       "data": {
-				  "code": "John Doe <john@doe.org>",
-				  "display_name": "John Doe",
+				  "code" : "John Doe <john@doe.org>",
 				  "email" : ["john@doe.org", "john.doe@gmail.com"]
 				}
 			}
@@ -887,8 +883,7 @@ GET /rest/contributor{?from,size}
     {
       "id": "21",
       "data": {
-				  "code": "John Doe <john@doe.org>",
-				  "display_name": "John Doe",
+				  "code" : "John Doe <john@doe.org>",
 				  "email" : ["john@doe.org", "john.doe@gmail.com"]
 				}
 			}
@@ -896,34 +891,38 @@ GET /rest/contributor{?from,size}
   ]
 }
 
-Create/update contributor configuration. 
-If `id` is provided as part of request URL then this one is used, so for update you have to use it always. 
-If `id` is not provided then new record is created in the DCP and some unique id is allocated and returned back.  
+Create new contributor configuration with generated `id`. 
 
 ##### Request content
-JSON with project configuration structure.
+JSON with contributor configuration structure.
 
 ##### Response content
-The response contains a JSON structure with `id`. Returns DCP generated id for request without input id.
+The response contains a JSON structure with `id` generated for newly created record.
 
 POST /rest/contributor
 > Accept: application/json
 {
-  "code": "John Doe <john@doe.org>",
-  "display_name": "John Doe",
-  "email" : ["john@doe.org", "john.doe@gmail.com"]
+  "code" : "John Doe <john@doe.org>",
+  "email" : ["john@doe.org","john.doe@gmail.com"]
 }
 < 200
 < Content-Type: application/json
 {
-  "id":"22"
+  "id":"21"
 }
 
-POST /rest/contributor/22
+Create/update contributor configuration for requested `id`. 
+
+##### Request content
+JSON with contributor configuration structure.
+
+##### Response content
+The response contains a JSON structure with `id`.
+
+POST /rest/contributor/{id}
 > Accept: application/json
 {
-  "code": "John Doe <john@doe.org>",
-  "display_name": "John Doe",
+  "code" : "John Doe <john@doe.org>",
   "email" : ["john@doe.org", "john.doe@gmail.com"]
 }
 < 200
@@ -932,7 +931,7 @@ POST /rest/contributor/22
   "id":"22"
 }
 
-Delete contributor configuration.
+Delete contributor configuration with given `id`.
 DELETE /rest/contributor/{id}
 < 200
 
