@@ -132,6 +132,8 @@ public class SearchRestService extends RestServiceBase {
 			log.log(Level.INFO, "Search query: {0}", srb);
 
 			final SearchResponse searchResponse = srb.execute().actionGet();
+			
+			addSimpleCORSSourceHeader();
 
 			return createResponse(searchResponse);
 		} catch (IndexMissingException e) {

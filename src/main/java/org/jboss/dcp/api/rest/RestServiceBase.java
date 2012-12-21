@@ -12,6 +12,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.inject.Inject;
+import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
@@ -50,6 +51,9 @@ public class RestServiceBase {
 
 	@Context
 	protected SecurityContext securityContext;
+
+	@Context
+	protected HttpServletResponse response;
 
 	/**
 	 * Get provider name based on security user principal
@@ -123,5 +127,12 @@ public class RestServiceBase {
 
 	public TimeoutConfiguration getTimeout() {
 		return timeout;
+	}
+
+	/**
+	 * Adds HTTP header to response to allow access rest resources from different domain
+	 */
+	public void addSimpleCORSSourceHeader() {
+		response.setHeader("Access-Control-Allow-Origin", "*");
 	}
 }
