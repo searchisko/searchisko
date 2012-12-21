@@ -107,7 +107,7 @@ public class RestServiceBase {
 
 	public Response createErrorResponse(Exception ex) {
 		if (log.isLoggable(Level.WARNING)) {
-			log.log(Level.WARNING, "Exception {0} occured. Message: {1}",
+			log.log(Level.WARNING, "Exception {0} occurred. Message: {1}",
 					new Object[] { ex.getClass().getName(), ex.getMessage() });
 			log.log(Level.INFO, "Exception trace.", ex);
 		}
