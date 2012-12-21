@@ -70,10 +70,10 @@ public class AuthenticationInterceptor implements PreProcessInterceptor {
 					byte[] decoded = Base64.decode(hash);
 					String usernamePassword = new String(decoded);
 
-					int colomn = usernamePassword.indexOf(':');
-					if (colomn > 0) {
-						username = usernamePassword.substring(0, colomn);
-						password = usernamePassword.substring(colomn + 1, usernamePassword.length());
+					int colon = usernamePassword.indexOf(':');
+					if (colon > 0) {
+						username = usernamePassword.substring(0, colon);
+						password = usernamePassword.substring(colon + 1, usernamePassword.length());
 
 						authenticated = providerService.authenticate(username, password);
 						authenticationScheme = SecurityContext.BASIC_AUTH;
