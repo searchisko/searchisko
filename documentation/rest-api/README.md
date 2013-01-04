@@ -16,6 +16,6 @@ Usually the version with the highest number is the current one but the DCP updat
 List of available *dcp_type*s
 --------------------------
 
-+ [project_info](project_info/v1/project_info.md) the data about the [JBoss community projects](https://www.jboss.org/projects.html). 
-+ [issue](issue/v1/issue.md) the data from community project's issue trackers (JIRA, Bugzilla, etc.) about project bugs, feature requests etc.
-+ [blogpost](blogpost/v1/blogpost.md) the data about blog posts related to the community projects.
++ [blogpost](https://github.com/jbossorg/dcp-api/blob/master/documentation/rest-api/blogpost/v1/blogpost.md) the data about blog posts related to the community projects.
++ [issue](https://github.com/jbossorg/dcp-api/blob/master/documentation/rest-api/issue/v1/issue.md) the data from community project's issue trackers (JIRA, Bugzilla, etc.) about project bugs, feature requests etc.
++ [project_info](https://github.com/jbossorg/dcp-api/blob/master/documentation/rest-api/project_info/v1/project_info.md) the data about the [JBoss community projects](https://www.jboss.org/projects.html). 
