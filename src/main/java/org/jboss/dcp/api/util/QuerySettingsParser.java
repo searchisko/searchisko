@@ -66,10 +66,8 @@ public class QuerySettingsParser {
 	/**
 	 * Sanity query in given settings. Trim it and patch wildchard if not null, else use <code>match_all:{}</code>.
 	 * 
-	 * @param settings
-	 *            to sanity query in.
-	 * @throws IllegalArgumentException
-	 *             if settings is null
+	 * @param settings to sanity query in.
+	 * @throws IllegalArgumentException if settings is null
 	 */
 	public static void sanityQuery(QuerySettings settings) throws IllegalArgumentException {
 		if (settings == null) {
@@ -86,8 +84,7 @@ public class QuerySettingsParser {
 	/**
 	 * Normalize search query string - trim it, return null if empty, patch wildchars.
 	 * 
-	 * @param query
-	 *            to normalize
+	 * @param query to normalize
 	 * @return normalized query
 	 */
 	public static String normalizeQueryString(String query) {
@@ -112,14 +109,16 @@ public class QuerySettingsParser {
 	}
 
 	/**
-	 * Parse REST parameters to standardized query settings
+	 * Parse REST parameters to standardized query settings.
 	 * 
-	 * @param params
-	 * @return
-	 * @throws Exception
+	 * @param params to parse
+	 * @return query settings
+	 * @throws IllegalArgumentException if some param has invalid value
 	 */
 	public static QuerySettings parseUriParams(MultivaluedMap<String, String> params) throws IllegalArgumentException {
 		QuerySettings settings = new QuerySettings();
+		QuerySettings.Filters filters = new QuerySettings.Filters();
+		settings.setFilters(filters);
 		if (params == null) {
 			return settings;
 		}
@@ -131,7 +130,6 @@ public class QuerySettingsParser {
 			settings.setQuery(normalizeQueryString(query));
 		}
 
-		QuerySettings.Filters filters = new QuerySettings.Filters();
 		if (params.containsKey(QuerySettings.Filters.PROJECTS_KEY)) {
 			filters.setProjects(params.get(QuerySettings.Filters.PROJECTS_KEY));
 		}
@@ -167,8 +165,6 @@ public class QuerySettingsParser {
 			}
 		}
 
-		settings.setFilters(filters);
-
 		return settings;
 	}
 
@@ -178,6 +174,7 @@ public class QuerySettingsParser {
 	 * @param parameterMap
 	 * @return
 	 * @throws Exception
+	 * @deprecated due {@link #parseUriParams(MultivaluedMap)}
 	 */
 	public static QuerySettings parseSettings(Map<String, String[]> parameterMap) throws Exception {
 

@@ -58,7 +58,7 @@ public class QuerySettings {
 		public void setProjects(List<String> projects) {
 			this.projects = projects;
 		}
-		
+
 		public void setAuthor(String[] author) {
 			this.author = author;
 		}
@@ -86,7 +86,7 @@ public class QuerySettings {
 		public List<String> getProjects() {
 			return projects;
 		}
-		
+
 		public String[] getAuthor() {
 			return author;
 		}
@@ -167,7 +167,7 @@ public class QuerySettings {
 	}
 
 	/**
-	 * DCP content Type
+	 * DCP content Type - dcp_content_type field
 	 */
 	private String contentType;
 
