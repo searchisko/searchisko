@@ -19,7 +19,13 @@ public class QuerySettings {
 
 	public static class Filters {
 
-		private String[] project = null;
+		public static final String PROJECTS_KEY = "filters[project]";
+
+		/**
+		 * Filtering based on project
+		 */
+		private List<String> projects = null;
+
 		private String[] author = null;
 		private String[] mailList = null;
 
@@ -49,10 +55,10 @@ public class QuerySettings {
 
 		private String past = null;
 
-		public void setProject(String[] project) {
-			this.project = project;
+		public void setProjects(List<String> projects) {
+			this.projects = projects;
 		}
-
+		
 		public void setAuthor(String[] author) {
 			this.author = author;
 		}
@@ -77,10 +83,10 @@ public class QuerySettings {
 			this.past = past;
 		}
 
-		public String[] getProject() {
-			return project;
+		public List<String> getProjects() {
+			return projects;
 		}
-
+		
 		public String[] getAuthor() {
 			return author;
 		}

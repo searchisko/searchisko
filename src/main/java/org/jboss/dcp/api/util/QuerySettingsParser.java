@@ -66,8 +66,10 @@ public class QuerySettingsParser {
 	/**
 	 * Sanity query in given settings. Trim it and patch wildchard if not null, else use <code>match_all:{}</code>.
 	 * 
-	 * @param settings to sanity query in.
-	 * @throws IllegalArgumentException if settings is null
+	 * @param settings
+	 *            to sanity query in.
+	 * @throws IllegalArgumentException
+	 *             if settings is null
 	 */
 	public static void sanityQuery(QuerySettings settings) throws IllegalArgumentException {
 		if (settings == null) {
@@ -84,7 +86,8 @@ public class QuerySettingsParser {
 	/**
 	 * Normalize search query string - trim it, return null if empty, patch wildchars.
 	 * 
-	 * @param query to normalize
+	 * @param query
+	 *            to normalize
 	 * @return normalized query
 	 */
 	public static String normalizeQueryString(String query) {
@@ -122,11 +125,15 @@ public class QuerySettingsParser {
 		}
 
 		settings.setContentType(params.getFirst("type"));
-		QuerySettings.Filters filters = new QuerySettings.Filters();
 
 		if (params.containsKey(QuerySettings.QUERY_KEY)) {
 			String query = params.getFirst(QuerySettings.QUERY_KEY);
 			settings.setQuery(normalizeQueryString(query));
+		}
+
+		QuerySettings.Filters filters = new QuerySettings.Filters();
+		if (params.containsKey(QuerySettings.Filters.PROJECTS_KEY)) {
+			filters.setProjects(params.get(QuerySettings.Filters.PROJECTS_KEY));
 		}
 
 		if (params.containsKey(QuerySettings.Filters.START_KEY)) {
@@ -234,9 +241,9 @@ public class QuerySettingsParser {
 			ensureFilters(settings).setAuthor(parameterMap.get("filters[author][]"));
 		}
 
-		if (keys.contains("filters[project][]")) {
-			ensureFilters(settings).setProject(parameterMap.get("filters[project][]"));
-		}
+		// if (keys.contains("filters[project][]")) {
+		// ensureFilters(settings).setProjects(parameterMap.get("filters[project][]"));
+		// }
 
 		if (keys.contains("filters[mailList][]")) {
 			ensureFilters(settings).setMailList(parameterMap.get("filters[mailList][]"));

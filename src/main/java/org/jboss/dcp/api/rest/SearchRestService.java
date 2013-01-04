@@ -109,6 +109,10 @@ public class SearchRestService extends RestServiceBase {
 			if (filters.getTags() != null) {
 				searchFilters.add(new TermsFilterBuilder("dcp_tags", filters.getTags()));
 			}
+			// Projects
+			if (filters.getProjects() != null) {
+				searchFilters.add(new TermsFilterBuilder("dcp_project", filters.getProjects()));
+			}
 
 			if (!searchFilters.isEmpty()) {
 				AndFilterBuilder f = new AndFilterBuilder(
@@ -132,7 +136,7 @@ public class SearchRestService extends RestServiceBase {
 			log.log(Level.INFO, "Search query: {0}", srb);
 
 			final SearchResponse searchResponse = srb.execute().actionGet();
-			
+
 			addSimpleCORSSourceHeader();
 
 			return createResponse(searchResponse);

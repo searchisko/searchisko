@@ -227,6 +227,7 @@ Search contributions based on input parameters
 * `filters[start]` start index. Default value is 0
 * `filters[count]` count of returned entries. Default is 10
 * `filters[tag]` filters result to specific tag
+* `filters[tag]` filters result to specific project defined in `dcp_project` field
 
 ##### Response content
 
@@ -254,7 +255,7 @@ Search contributions based on input parameters
 ```
 
 
-GET /rest/search?{query,type,sortBy,filters[start],filters[count],filters[tag]}
+GET /rest/search?{query,type,sortBy,filters[start],filters[count],filters[tag],filters[project]}
 < 200
 < Content-Type: application/json
 {

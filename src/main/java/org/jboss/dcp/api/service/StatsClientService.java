@@ -120,8 +120,8 @@ public class StatsClientService extends ElasticsearchClientService {
 			if (filters.getMailList() != null && filters.getMailList().length > 0) {
 				source.put("filters_mailLists", filters.getMailList());
 			}
-			if (filters.getProject() != null && filters.getProject().length > 0) {
-				source.put("filters_projects", filters.getProject());
+			if (filters.getProjects() != null && !filters.getProjects().isEmpty()) {
+				source.put("filters_projects", filters.getProjects());
 			}
 			if (filters.getStart() != null) {
 				source.put("filters_start", filters.getStart());
@@ -189,8 +189,8 @@ public class StatsClientService extends ElasticsearchClientService {
 			if (filters.getMailList() != null && filters.getMailList().length > 0) {
 				source.put("filters_mailLists", filters.getMailList());
 			}
-			if (filters.getProject() != null && filters.getProject().length > 0) {
-				source.put("filters_projects", filters.getProject());
+			if (filters.getProjects() != null && !filters.getProjects().isEmpty()) {
+				source.put("filters_projects", filters.getProjects());
 			}
 			if (filters.getStart() != null) {
 				source.put("filters_start", filters.getStart());

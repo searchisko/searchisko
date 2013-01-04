@@ -78,9 +78,9 @@ public class ProxyQueryBuilder {
             if (f.getMailList() != null) {
                 queryFilters.put("mailList",new TermsFilterBuilder("mail_list", f.getMailList()));
             }
-            if (f.getProject() != null) {
-                queryFilters.put("project",new TermsFilterBuilder("_index", f.getProject()));
-            }
+//            if (f.getProject() != null) {
+//                queryFilters.put("project",new TermsFilterBuilder("_index", f.getProject()));
+//            }
             if (f.getFrom() != null || f.getTo() != null) {
                 RangeFilterBuilder range = new RangeFilterBuilder("date");
                 if (f.getFrom() != null) { range.from(f.getFrom()).includeLower(true); }
