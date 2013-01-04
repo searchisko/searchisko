@@ -9,6 +9,9 @@ This *dcp_type* was created a result of this [feature request](https://issues.jb
 
 Also Magnolia will supply the results for the data before the DCP will be fully implemented. Both Magnolia and DCP (after it is implemented) will return the JSON structure as described in this aricle. After DCP is ready, the content will be served from it and the feature will be turned off on Magnolia. After the change each application that will take the data from Magnolia will just change the URL to DCP format.
 
+For now the data will be available on http(s)://www.jboss.org/rest/projectData. If you specify the *dcp_content_id* in the URL, i.e. https://www.jboss.org/rest/projectData/gatein, you will receive the same structure, but with just one record.
+
+
 An example of the search results:
 ---------------------------------
 
