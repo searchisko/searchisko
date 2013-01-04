@@ -5,7 +5,7 @@ This project contains implementation of API for Distributed Contribution Platfor
 
 REST API on-line Documentation & Server Mock are available at <http://docs.jbossorg.apiary.io/>
 	
-[Description of types of data stored in the DCP](documentation/rest-api/index.md).
+Description of types of data stored in the DCP can be found in this repo in the `documentation` subfolder.
 
 
 Development

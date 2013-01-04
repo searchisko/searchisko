@@ -1,7 +1,7 @@
 DCP REST API index
 ==================
 
-The DCP is able to search for the requested data. If you are authorized by the [JBoss.org team](http://www.jboss.org/about.html), you can also supply data to the system. One can use a REST API for both. If you are not familiar with the basic principles of DCP, please, read [this](http://docs.jbossorg.apiary.io/).
+DCP REST API on-line Documentation & Server Mock are available at <http://docs.jbossorg.apiary.io/>
 
 The DCP content can be characterized by a type (i.e. e-mails, blog posts, forum posts, issues etc. See **dcp_type** in the basic principles article). Each *type* has its own logical structure and it will require specific fields to be filled.
 
