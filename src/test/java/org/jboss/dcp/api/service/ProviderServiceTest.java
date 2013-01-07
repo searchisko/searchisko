@@ -175,6 +175,91 @@ public class ProviderServiceTest extends ESRealClientTestBase {
 	}
 
 	@Test
+	public void getSearchIndices() {
+		Map<String, Object> typeDef = new HashMap<String, Object>();
+
+		// case - index field not defined
+		try {
+			ProviderService.getSearchIndices(typeDef, "mytype");
+			Assert.fail("SettingsException expected");
+		} catch (SettingsException e) {
+			// OK
+		}
+
+		// case - bad type of value for index element
+		typeDef.put(ProviderService.INDEX, "baaad");
+		try {
+			ProviderService.getSearchIndices(typeDef, "mytype");
+			Assert.fail("SettingsException expected");
+		} catch (SettingsException e) {
+			// OK
+		}
+
+		Map<String, Object> indexElement = new HashMap<String, Object>();
+		typeDef.put(ProviderService.INDEX, indexElement);
+		// case - index field defined but search_indices nor name field is empty
+		try {
+			ProviderService.getSearchIndices(typeDef, "mytype");
+			Assert.fail("SettingsException expected");
+		} catch (SettingsException e) {
+			// OK
+		}
+
+		indexElement.put(ProviderService.NAME, "myindex");
+		// case - search_indices not found but name found correct
+		Assert.assertArrayEquals(new String[] { "myindex" }, ProviderService.getSearchIndices(typeDef, "mytype"));
+
+		// case - search_indices not found, empty value for name element
+		indexElement.put(ProviderService.NAME, "");
+		try {
+			ProviderService.getSearchIndices(typeDef, "mytype");
+			Assert.fail("SettingsException expected");
+		} catch (SettingsException e) {
+			// OK
+		}
+
+		// case - search_indices not found, empty value for name element
+		indexElement.put(ProviderService.NAME, "   ");
+		try {
+			ProviderService.getSearchIndices(typeDef, "mytype");
+			Assert.fail("SettingsException expected");
+		} catch (SettingsException e) {
+			// OK
+		}
+
+		// case - search_indices not found, bad type of value for name element
+		indexElement.put(ProviderService.NAME, new Integer(10));
+		try {
+			ProviderService.getSearchIndices(typeDef, "mytype");
+			Assert.fail("SettingsException expected");
+		} catch (SettingsException e) {
+			// OK
+		}
+
+		indexElement.put(ProviderService.NAME, "myindex");
+		// case - search_indices contains one String
+		indexElement.put(ProviderService.SEARCH_INDICES, "mysearchindex");
+		Assert.assertArrayEquals(new String[] { "mysearchindex" }, ProviderService.getSearchIndices(typeDef, "mytype"));
+
+		// case - search_indices contains list of Strings
+		List<String> lis = new ArrayList<String>();
+		lis.add("mysearchindex");
+		lis.add("mysearchindex2");
+		indexElement.put(ProviderService.SEARCH_INDICES, lis);
+		Assert.assertArrayEquals(new String[] { "mysearchindex", "mysearchindex2" },
+				ProviderService.getSearchIndices(typeDef, "mytype"));
+
+		// case - search_indices with bad type of value
+		indexElement.put(ProviderService.SEARCH_INDICES, new Integer(10));
+		try {
+			ProviderService.getSearchIndices(typeDef, "mytype");
+			Assert.fail("SettingsException expected");
+		} catch (SettingsException e) {
+			// OK
+		}
+	}
+
+	@Test
 	public void getIndexType() {
 		Map<String, Object> typeDef = new HashMap<String, Object>();
 

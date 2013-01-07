@@ -24,7 +24,7 @@ import org.jboss.elasticsearch.tools.content.StructuredContentPreprocessor;
 import org.jboss.elasticsearch.tools.content.StructuredContentPreprocessorFactory;
 
 /**
- * Service related to Content Provider.
+ * Service related to Content Provider, mainly reading provider configuration files.
  * 
  * @author Libor Krzyzanek
  * @author Vlastimil Elias (velias at redhat dot com)
@@ -34,21 +34,26 @@ import org.jboss.elasticsearch.tools.content.StructuredContentPreprocessorFactor
 @ApplicationScoped
 public class ProviderService {
 
-	/** Key for provider's name which is unique identifier - can be same as provdier's ID **/
+	/**
+	 * Key for provider's name which is unique identifier - can be same as provdier's ID. Also used during Configuration
+	 * read to get index name.
+	 **/
 	public static final String NAME = "name";
 
-	/** Key for password hash **/
+	/** Configuration file Key for password hash **/
 	public static final String PASSWORD_HASH = "pwd_hash";
 
-	/** Key for flag is provider is super provider **/
+	/** Configuration Key for flag if provider is super provider (administrator of DCP) **/
 	public static final String SUPER_PROVIDER = "super_provider";
 
-	/** Key for content type **/
+	/** Configuration Key for content type **/
 	public static final String TYPE = "type";
-	/** Key for index settings **/
+	/** Configuration Key for index settings **/
 	public static final String INDEX = "index";
-	/** Key for dcp_type setting **/
+	/** Configuration Key for dcp_type setting **/
 	public static final String DCP_TYPE = "dcp_type";
+	/** Configuration Key for Elastic Search indices **/
+	public static final String SEARCH_INDICES = "search_indices";
 
 	@Inject
 	protected Logger log;
@@ -253,9 +258,46 @@ public class ProviderService {
 
 			if (ret == null || ret.trim().isEmpty())
 				throw new SettingsException("Incorrect configuration of 'index.name' for dcp_provider_type='" + typeName
-						+ "'. Search index name is not defined. Contact administrators please.");
+						+ "'. SearchBackend index name is not defined. Contact administrators please.");
 			return ret;
 
+		} catch (ClassCastException e) {
+			throw new SettingsException("Incorrect structure of 'index' configuration for dcp_provider_type='" + typeName
+					+ "'. Contact administrators please.");
+		}
+	}
+
+	/**
+	 * Get array of names of search indices in search subsystem used for searching values for given
+	 * <code>dcp_content_type</code>. Array or string with indices name is get from
+	 * {@value ProviderService#SEARCH_INDICES} config value if exists, if not then main index name is used, see
+	 * {@link #getIndexName(Map, String)}.
+	 * 
+	 * @param typeDef <code>dcp_content_type</code> configuration structure
+	 * @param typeName <code>dcp_content_type</code> name to be used for error messages
+	 * @return search index name
+	 */
+	@SuppressWarnings("unchecked")
+	public static String[] getSearchIndices(Map<String, Object> typeDef, String typeName) {
+		try {
+			if (typeDef.get(INDEX) == null) {
+				throw new SettingsException("Missing 'index' section in configuration for dcp_provider_type='" + typeName
+						+ "'. Contact administrators please.");
+			}
+			Object val = ((Map<String, Object>) typeDef.get(INDEX)).get(SEARCH_INDICES);
+			if (val == null) {
+				return new String[] { getIndexName(typeDef, typeName) };
+			} else {
+				if (val instanceof String) {
+					return new String[] { (String) val };
+				} else if (val instanceof List) {
+					return (String[]) ((List<String>) val).toArray(new String[((List<String>) val).size()]);
+				} else {
+					throw new SettingsException("Incorrect configuration of 'index." + SEARCH_INDICES
+							+ "' for dcp_provider_type='" + typeName
+							+ "'. Value must be string or array of strings. Contact administrators please.");
+				}
+			}
 		} catch (ClassCastException e) {
 			throw new SettingsException("Incorrect structure of 'index' configuration for dcp_provider_type='" + typeName
 					+ "'. Contact administrators please.");
@@ -278,7 +320,7 @@ public class ProviderService {
 
 			if (ret == null || ret.trim().isEmpty())
 				throw new SettingsException("Incorrect configuration of 'index.type' for dcp_provider_type='" + typeName
-						+ "'. Search index type is not defined. Contact administrators please.");
+						+ "'. SearchBackend index type is not defined. Contact administrators please.");
 			return ret;
 
 		} catch (ClassCastException e) {

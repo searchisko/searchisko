@@ -479,8 +479,9 @@ Content provider configuration fields:
  * `description` - description of this type, what contains, which system produces it etc.
  * `dcp_type` - value stored into `dcp_type` field of pushed content (see description in the [DCP Content object](#dcpcontetnobject) chapter).
  * `input_preprocessors` - array of preprocessors applied on content of this type while pushed over 'Content Push API'. Typically used to normalize values into other `dcp_` fields as `dcp_project`, `dcp_contributors`, `dcp_activity_dates` etc. [structured-content-tools](https://github.com/jbossorg/structured-content-tools) framework is used here.
- * `index/name` - name of search index in DCP internal ElasticSearch cluster content of this type is stored into.  
+ * `index/name` - name of search index in DCP internal ElasticSearch cluster content of this type is stored into during push.  
  * `index/type` - type for mapping in DCP internal ElasticSearch cluster content of this type is stored into.
+ * `index/search_indices` - array with names of search indices in DCP internal ElasticSearch cluster used during searching for this content type. Optional, name from `index/name` field is used for search if this field is not defined.
 
 Example of content provider configuration:
 
@@ -512,7 +513,8 @@ Example of content provider configuration:
       ],
       "index": {
         "name": "jbossorg_blog",
-        "type": "jbossorg_blogpost"
+        "type": "jbossorg_blogpost",
+        "search_indices": ["jbossorg_blog", "jbossorg_blog_2012"]
       }
     },
     "jbossorg_project_info": {

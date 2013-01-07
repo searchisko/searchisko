@@ -77,13 +77,8 @@ public class SearchRestService extends RestServiceBase {
 					return createBadFieldDataResponse("type");
 				}
 
-				// TODO _SEARCH optionally use another field from type definition for search indexes, so we can use rolling
-				// indexes here
-				String indexName = ProviderService.getIndexName(typeDef, type);
-				String indexType = ProviderService.getIndexType(typeDef, type);
-
-				srb.setIndices(indexName);
-				srb.setTypes(indexType);
+				srb.setIndices(ProviderService.getSearchIndices(typeDef, type));
+				srb.setTypes(ProviderService.getIndexType(typeDef, type));
 			} else {
 				// TODO _SEARCH indexes used to search all types should be configurable, so we can remove some 'internal' data
 				// from searching
