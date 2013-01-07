@@ -93,6 +93,9 @@ public class SearchRestService extends RestServiceBase {
 				qb = QueryBuilders.matchAllQuery();
 			}
 
+			// TODO _SEARCH other filtering by: dcp_type, dcp_contributors, dcp_activity_dates from, dcp_activity_dates to,
+			// dcp_content_provider
+
 			// Create filters
 			QuerySettings.Filters filters = settings.getFilters();
 			if (filters.getStart() != null) {
@@ -120,8 +123,12 @@ public class SearchRestService extends RestServiceBase {
 
 			srb.setQuery(qb);
 
+			// TODO _SEARCH return facets data if facets=true
+
 			// Sort
 			if (settings.getSortBy() != null) {
+				// TODO _SEARCH ordering by date should be over new field 'dcp_last_activity_date' which should be maximum from
+				// dcp_activity_dates
 				if (settings.getSortBy().compareTo(SortByValue.NEW) == 0) {
 					srb.addSort("dcp_updated", SortOrder.DESC);
 				} else if (settings.getSortBy().compareTo(SortByValue.OLD) == 0) {

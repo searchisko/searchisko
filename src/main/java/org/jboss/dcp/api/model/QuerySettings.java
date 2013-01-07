@@ -10,16 +10,17 @@ import java.util.List;
 import org.jboss.dcp.api.util.QuerySettingsParser;
 
 /**
- * Query settings sent by ajax client to servlet proxy.
+ * Search Query settings sent from client to search method.
  * 
  * @author lvlcek@redhat.com
  * @author Libor Krzyzanek
+ * @author Vlastimil Elias (velias at redhat dot com)
  */
 public class QuerySettings {
 
 	public static class Filters {
 
-		public static final String PROJECTS_KEY = "filters[project]";
+		public static final String PROJECTS_KEY = "project";
 
 		/**
 		 * Filtering based on project
@@ -34,24 +35,24 @@ public class QuerySettings {
 		 */
 		private List<String> tags = null;
 
-		public static final String TAGS_KEY = "filters[tag]";
+		public static final String TAGS_KEY = "tag";
 
 		private String from = null;
 		private String to = null;
 
 		/**
-		 * Paging - start
+		 * Results Paging - start index
 		 */
 		private Integer start = null;
 
-		public static final String START_KEY = "filters[start]";
+		public static final String START_KEY = "start";
 
 		/**
-		 * Paging - count
+		 * Results Paging - count of results
 		 */
 		private Integer count = null;
 
-		public static final String COUNT_KEY = "filters[count]";
+		public static final String COUNT_KEY = "count";
 
 		private String past = null;
 
@@ -141,6 +142,9 @@ public class QuerySettings {
 
 	private String interval;
 
+	/**
+	 * Sorting of results
+	 */
 	private SortByValue sortBy;
 
 	public static final String SORT_BY_KEY = "sortBy";
@@ -167,7 +171,7 @@ public class QuerySettings {
 	}
 
 	/**
-	 * DCP content Type - dcp_content_type field
+	 * DCP content Type Filtering - dcp_content_type field
 	 */
 	private String contentType;
 

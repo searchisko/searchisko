@@ -40,7 +40,7 @@ Some system data fields are defined by DCP, some  are added into the content ins
 * `dcp_updated` - date of last content update in DCP - system field, always necessary
 * `dcp_project` - normalized DCP wide identifier of the project - system field - it is used for the project facet and filter in the Search API
 * `dcp_contributors` - array of contributing persons, no duplicities in array, persons identifiers normalized during push into DCP - each person represented as string `Name Surname <primaryemail@email.com>` - in Search API used for persons facet and filter
-* `dcp_activity_dates` - array of timestamps representing some activity on the content - in the Search API used for the time facet and filter
+* `dcp_activity_dates` - array of timestamps representing some activity on the content (when the content was created or changed etc. in source system) - in the Search API used for the time facet and filter
 * `dcp_tags` - array of tags (Strings) - in the Search API used for facet (tagcloud) and filter - it is not directly pushed by the content provider because we plan a mechanism for additional user defined tags, so we need to rewrite this field internally. The content provider should use `tags` field instead.
 * `dcp_title` - content title - used to present the document in the basic search GUI - it can be directly set by the content provider during the push operation.
 * `dcp_url_view` - URL where the document can be viewed in its original system in human readable form - used to open the document from the basic search GUI - can be directly set by the content provider during the push
@@ -222,12 +222,18 @@ Search contributions based on input parameters
 ##### Request parameters
 
 * `query` full text query
-* `sortBy` sort result based on dcp_updated field. Value can be `old` or `new`
+* `sortBy` sort result. Value can be `old` (to sort content from oldest to newest) or `new` (to sort from newest to oldest). Sorting by fulltext score is used if param is not provided.
+* `start` start index or returned entries. Default value is 0
+* `count` count of returned entries. Default is 10
+* `content_provider` filters result only to data provided by specified provider - `dcp_content_provider` field
 * `type` filters result only to specific `dcp_content_type`
-* `filters[start]` start index. Default value is 0
-* `filters[count]` count of returned entries. Default is 10
-* `filters[tag]` filters result to specific tag (this param can be used multiple times to get results for more tags)
-* `filters[project]` filters result to specific project defined in `dcp_project` field (this param can be used multiple times to get results for more projects)
+* `dcp_type` filters result only to specific `dcp_type`
+* `tag` filters result to specific tag defined in `dcp_tags` field. This param can be used multiple times to get results for more tags.
+* `project` filters result to specific project defined in `dcp_project` field. This param can be used multiple times to get results for more projects.
+* `activity_date_from` filters results only for data with some activity (field `dcp_activity_dates`) after given date. ISO format used, eg. `2012-12-21T12:12:12Z`.  
+* `activity_date_to` filters results only for data with some activity (field `dcp_activity_dates`) before given date. ISO format used, eg. `2012-12-21T12:12:12Z`.
+* `contributor` filters results only for data with activity from given contributor (field `dcp_contributors`)
+* `facets` if set to `true` then response contains data for facets: contributors, activity_dates, projects, dcp_types  
 
 ##### Response content
 
@@ -255,7 +261,7 @@ Search contributions based on input parameters
 ```
 
 
-GET /rest/search?{query,type,sortBy,filters[start],filters[count],filters[tag],filters[project]}
+GET /rest/search?{query,sortBy,start,count,content_provider,type,dcp_type,tag,project,activity_date_from,activity_date_to,contributor,facets}
 < 200
 < Content-Type: application/json
 {
