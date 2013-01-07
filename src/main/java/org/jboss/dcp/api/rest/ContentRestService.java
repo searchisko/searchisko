@@ -184,13 +184,6 @@ public class ContentRestService extends RestServiceBase {
 			String indexName = ProviderService.getIndexName(typeDef, type);
 			String indexType = ProviderService.getIndexType(typeDef, type);
 
-			// Run preprocessors
-			providerService.runPreprocessors(type, ProviderService.getPreprocessors(typeDef, type), content);
-
-			// Copy distinct data from content to normalized fields
-			content.put(DCP_TAGS, content.get("tags"));
-			// TODO EXTERNAL_TAGS - add external tags for this document into dcp_tags field
-
 			// fill some normalized fields - should be last step to avoid changing them via preprocessors
 			content.put(DCP_CONTENT_PROVIDER, getProvider());
 			content.put(DCP_CONTENT_ID, contentId);
@@ -200,6 +193,12 @@ public class ContentRestService extends RestServiceBase {
 			if (content.get(DCP_UPDATED) == null) {
 				content.put(DCP_UPDATED, new Date());
 			}
+			// Copy distinct data from content to normalized fields
+			content.put(DCP_TAGS, content.get("tags"));
+			// TODO EXTERNAL_TAGS - add external tags for this document into dcp_tags field
+
+			// Run preprocessors to manipulate other fields
+			providerService.runPreprocessors(type, ProviderService.getPreprocessors(typeDef, type), content);
 
 			// TODO PERSISTENCE - Store to Persistence
 
