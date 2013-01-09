@@ -93,7 +93,8 @@ public class SearchRestService extends RestServiceBase {
 				qb = QueryBuilders.matchAllQuery();
 			}
 
-			// TODO _SEARCH other filtering by: dcp_type, dcp_contributors, dcp_activity_dates from, dcp_activity_dates to,
+			// TODO _SEARCH other filtering by: dcp_type, dcp_contributors, activity_date_interval, dcp_activity_dates from,
+			// dcp_activity_dates to,
 			// dcp_content_provider
 
 			// Create filters
@@ -123,7 +124,8 @@ public class SearchRestService extends RestServiceBase {
 
 			srb.setQuery(qb);
 
-			// TODO _SEARCH return facets data if facets=true
+			// TODO _SEARCH return facets data depending on facet params
+			// TODO _SEARCH handle field params to return configured fields only
 
 			// Sort
 			if (settings.getSortBy() != null) {
