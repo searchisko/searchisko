@@ -88,14 +88,16 @@ public class SearchRestService extends RestServiceBase {
 			// Fulltext query
 			QueryBuilder qb = null;
 			if (settings.getQuery() != null) {
+				// TODO _SEARCH load fields used for fulltext query from DCP configuration changeable during runtime.
 				qb = QueryBuilders.queryString(settings.getQuery());
+				// TODO _SEARCH perform highlights if param query_highlight=true. Load fields used for highlighting from DCP
+				// configuration changeable on runtime
 			} else {
 				qb = QueryBuilders.matchAllQuery();
 			}
 
 			// TODO _SEARCH other filtering by: dcp_type, dcp_contributors, activity_date_interval, dcp_activity_dates from,
-			// dcp_activity_dates to,
-			// dcp_content_provider
+			// dcp_activity_dates to, dcp_content_provider
 
 			// Create filters
 			QuerySettings.Filters filters = settings.getFilters();
@@ -124,8 +126,8 @@ public class SearchRestService extends RestServiceBase {
 
 			srb.setQuery(qb);
 
-			// TODO _SEARCH return facets data depending on facet params
-			// TODO _SEARCH handle field params to return configured fields only
+			// TODO _SEARCH return facets data depending on 'facet' params
+			// TODO _SEARCH handle 'field' params to return configured fields only. Use defined set of fields by default.
 
 			// Sort
 			if (settings.getSortBy() != null) {
