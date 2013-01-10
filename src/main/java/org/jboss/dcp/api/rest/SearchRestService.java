@@ -41,9 +41,10 @@ import org.jboss.dcp.api.service.StatsRecordType;
 import org.jboss.dcp.api.util.QuerySettingsParser;
 
 /**
- * Search REST API
+ * Search REST API.
  * 
  * @author Libor Krzyzanek
+ * @author Vlastimil Elias (velias at redhat dot com)
  * 
  */
 @RequestScoped
@@ -60,18 +61,18 @@ public class SearchRestService extends RestServiceBase {
 	@GuestAllowed
 	public Object search(@Context UriInfo uriInfo) {
 
-		QuerySettings settings = null;
+		QuerySettings querySettings = null;
 		try {
 			MultivaluedMap<String, String> params = uriInfo.getQueryParameters();
-			settings = QuerySettingsParser.parseUriParams(params);
+			querySettings = QuerySettingsParser.parseUriParams(params);
 		} catch (Exception e) {
 			return createErrorResponse(e);
 		}
 
 		try {
 			SearchRequestBuilder srb = new SearchRequestBuilder(getSearchClientService().getClient());
-			if (settings.getContentType() != null) {
-				String type = settings.getContentType();
+			if (querySettings.getContentType() != null) {
+				String type = querySettings.getContentType();
 				Map<String, Object> typeDef = providerService.findContentType(type);
 				if (typeDef == null) {
 					return createBadFieldDataResponse("type");
@@ -85,80 +86,115 @@ public class SearchRestService extends RestServiceBase {
 				srb.setIndices("_all");
 			}
 
-			// Fulltext query
-			QueryBuilder qb = null;
-			if (settings.getQuery() != null) {
-				// TODO _SEARCH load fields used for fulltext query from DCP configuration changeable during runtime.
-				qb = QueryBuilders.queryString(settings.getQuery());
-				// TODO _SEARCH perform highlights if param query_highlight=true. Load fields used for highlighting from DCP
-				// configuration changeable on runtime
-			} else {
-				qb = QueryBuilders.matchAllQuery();
-			}
-
-			// TODO _SEARCH other filtering by: dcp_type, dcp_contributors, activity_date_interval, dcp_activity_dates from,
-			// dcp_activity_dates to, dcp_content_provider
-
-			// Create filters
-			QuerySettings.Filters filters = settings.getFilters();
-			if (filters.getStart() != null) {
-				srb.setFrom(filters.getStart());
-			}
-
-			if (filters.getCount() != null) {
-				srb.setSize(filters.getCount());
-			}
-
-			List<FilterBuilder> searchFilters = new ArrayList<FilterBuilder>();
-			// Tags
-			if (filters.getTags() != null) {
-				searchFilters.add(new TermsFilterBuilder("dcp_tags", filters.getTags()));
-			}
-			// Projects
-			if (filters.getProjects() != null) {
-				searchFilters.add(new TermsFilterBuilder("dcp_project", filters.getProjects()));
-			}
-
-			if (!searchFilters.isEmpty()) {
-				AndFilterBuilder f = new AndFilterBuilder(searchFilters.toArray(new FilterBuilder[searchFilters.size()]));
-				qb = new FilteredQueryBuilder(qb, f);
-			}
-
+			QueryBuilder qb = handleFullTextSearchSettings(querySettings);
+			qb = handleCommonFiltersSettings(querySettings, qb);
 			srb.setQuery(qb);
 
+			handleSortingSettings(querySettings, srb);
+
 			// TODO _SEARCH return facets data depending on 'facet' params
-			// TODO _SEARCH handle 'field' params to return configured fields only. Use defined set of fields by default.
 
-			// Sort
-			if (settings.getSortBy() != null) {
-				// TODO _SEARCH ordering by date should be over new field 'dcp_last_activity_date' which should be maximum from
-				// dcp_activity_dates
-				if (settings.getSortBy().compareTo(SortByValue.NEW) == 0) {
-					srb.addSort("dcp_updated", SortOrder.DESC);
-				} else if (settings.getSortBy().compareTo(SortByValue.OLD) == 0) {
-					srb.addSort("dcp_updated", SortOrder.ASC);
-				}
-			}
-
+			handleResponseContentSettings(querySettings, srb);
 			srb.setTimeout(TimeValue.timeValueSeconds(getTimeout().search()));
 
-			log.log(Level.INFO, "Search query: {0}", srb);
+			log.log(Level.FINE, "ElasticSearch Search request: {0}", srb);
 
 			final SearchResponse searchResponse = srb.execute().actionGet();
 
-			addSimpleCORSSourceHeader();
+			getStatsClientService().writeStatistics(StatsRecordType.SEARCH, searchResponse, System.currentTimeMillis(),
+					querySettings.getQuery(), querySettings.getFilters());
 
+			addSimpleCORSSourceResponseHeader();
 			return createResponse(searchResponse);
 		} catch (IndexMissingException e) {
 			return Response.status(Response.Status.NOT_FOUND).build();
 		} catch (ElasticSearchException e) {
 			getStatsClientService().writeStatistics(StatsRecordType.SEARCH, e, System.currentTimeMillis(),
-					settings.getQuery(), settings.getFilters());
+					querySettings.getQuery(), querySettings.getFilters());
 			return createErrorResponse(e);
 		} catch (Exception e) {
 			return createErrorResponse(e);
 		}
+	}
 
+	/**
+	 * @param querySettings
+	 * @return builder for query, newer null
+	 */
+	protected QueryBuilder handleFullTextSearchSettings(QuerySettings querySettings) {
+		if (querySettings.getQuery() != null) {
+			// TODO _SEARCH load fields used for fulltext query from DCP configuration changeable during runtime.
+			QueryBuilder qb = QueryBuilders.queryString(querySettings.getQuery());
+			// TODO _SEARCH perform highlights if param query_highlight=true. Load fields used for highlighting from DCP
+			// configuration changeable on runtime
+			return qb;
+		} else {
+			return QueryBuilders.matchAllQuery();
+		}
+
+	}
+
+	/**
+	 * @param querySettings
+	 * @return filter builder if some filters are here, null if not filters necessary
+	 */
+	protected QueryBuilder handleCommonFiltersSettings(QuerySettings querySettings, QueryBuilder qb) {
+		QuerySettings.Filters filters = querySettings.getFilters();
+		List<FilterBuilder> searchFilters = new ArrayList<FilterBuilder>();
+
+		// TODO _SEARCH other filtering by: dcp_type, dcp_contributors, activity_date_interval, dcp_activity_dates from,
+		// dcp_activity_dates to, dcp_content_provider
+
+		if (filters != null) {
+			if (filters.getTags() != null) {
+				searchFilters.add(new TermsFilterBuilder("dcp_tags", filters.getTags()));
+			}
+			if (filters.getProjects() != null) {
+				searchFilters.add(new TermsFilterBuilder("dcp_project", filters.getProjects()));
+			}
+		}
+
+		if (!searchFilters.isEmpty()) {
+			return new FilteredQueryBuilder(qb, new AndFilterBuilder(searchFilters.toArray(new FilterBuilder[searchFilters
+					.size()])));
+		} else {
+			return qb;
+		}
+	}
+
+	/**
+	 * @param querySettings
+	 * @param srb request builder to set sorting for
+	 */
+	protected void handleSortingSettings(QuerySettings querySettings, SearchRequestBuilder srb) {
+		if (querySettings.getSortBy() != null) {
+			// TODO _SEARCH ordering by date should be over new field 'dcp_last_activity_date' which should be maximum from
+			// dcp_activity_dates
+			if (querySettings.getSortBy().compareTo(SortByValue.NEW) == 0) {
+				srb.addSort("dcp_updated", SortOrder.DESC);
+			} else if (querySettings.getSortBy().compareTo(SortByValue.OLD) == 0) {
+				srb.addSort("dcp_updated", SortOrder.ASC);
+			}
+		}
+	}
+
+	/**
+	 * @param querySettings
+	 * @param srb request builder to set response content for
+	 */
+	protected void handleResponseContentSettings(QuerySettings querySettings, SearchRequestBuilder srb) {
+
+		// TODO _SEARCH handle 'field' params to return configured fields only. Use defined set of fields by default (loaded
+		// from DCP configuration).
+
+		// pagging of results
+		QuerySettings.Filters filters = querySettings.getFilters();
+		if (filters.getStart() != null) {
+			srb.setFrom(filters.getStart());
+		}
+		if (filters.getCount() != null) {
+			srb.setSize(filters.getCount());
+		}
 	}
 
 }

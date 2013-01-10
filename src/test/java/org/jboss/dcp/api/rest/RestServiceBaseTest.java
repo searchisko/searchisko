@@ -12,6 +12,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
 
+import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.SecurityContext;
@@ -109,5 +110,23 @@ public class RestServiceBaseTest {
 		Response r = TestUtils.assertResponseStatus(tested.createErrorResponse(new Exception("my exception")),
 				Status.INTERNAL_SERVER_ERROR);
 		Assert.assertEquals("Error [java.lang.Exception]: my exception", r.getEntity());
+	}
+
+	@Test
+	public void addSimpleCORSSourceResponseHeader() {
+		RestServiceBase tested = getTested();
+
+		// case - exception when response object is not injected in bean
+		try {
+			tested.addSimpleCORSSourceResponseHeader();
+			Assert.fail("NullPointerException expected");
+		} catch (NullPointerException e) {
+			// OK
+		}
+
+		// case - set OK
+		tested.response = Mockito.mock(HttpServletResponse.class);
+		tested.addSimpleCORSSourceResponseHeader();
+		Mockito.verify(tested.response).setHeader("Access-Control-Allow-Origin", "*");
 	}
 }

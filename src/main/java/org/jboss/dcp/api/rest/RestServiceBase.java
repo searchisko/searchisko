@@ -132,7 +132,7 @@ public class RestServiceBase {
 	/**
 	 * Adds HTTP header to response to allow access rest resources from different domain
 	 */
-	public void addSimpleCORSSourceHeader() {
+	public void addSimpleCORSSourceResponseHeader() {
 		response.setHeader("Access-Control-Allow-Origin", "*");
 	}
 }
