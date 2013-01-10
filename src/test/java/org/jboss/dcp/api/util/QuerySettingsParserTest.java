@@ -54,7 +54,7 @@ public class QuerySettingsParserTest {
 			QuerySettings ret = QuerySettingsParser.parseUriParams(params);
 			Assert.assertNotNull(ret);
 			// note query is sanitized in settings!
-			assertQuerySettings(ret, "mytype", "query * query2", SortByValue.NEW, false, "proj1,proj2", 10, 20, "tg1,tg2");
+			assertQuerySettings(ret, "mytype", "query * query2", SortByValue.NEW, "proj1,proj2", 10, 20, "tg1,tg2");
 		}
 	}
 
@@ -123,18 +123,18 @@ public class QuerySettingsParserTest {
 	}
 
 	private void assertQuerySettingsEmpty(QuerySettings qs) {
-		assertQuerySettings(qs, null, null, null, false, null, null, null, null);
+		assertQuerySettings(qs, null, null, null, null, null, null, null);
 	}
 
 	private void assertQuerySettings(QuerySettings qs, String expectedContentType, String expectedQuery,
-			SortByValue expectedSortBy, boolean expectedCount, String expectedFilterProjects, Integer expectedFilterStart,
+			SortByValue expectedSortBy, String expectedFilterProjects, Integer expectedFilterStart,
 			Integer expectedFilterCount, String expectedFilterTags) {
-		Assert.assertEquals(expectedContentType, qs.getContentType());
+
 		Assert.assertEquals(expectedQuery, qs.getQuery());
 		Assert.assertEquals(expectedSortBy, qs.getSortBy());
-		Assert.assertEquals(expectedCount, qs.getCount());
 		QuerySettings.Filters filters = qs.getFilters();
 		Assert.assertNotNull("Filters instance expected not null", filters);
+		Assert.assertEquals(expectedContentType, filters.getContentType());
 		Assert.assertArrayEquals(expectedFilterProjects != null ? expectedFilterProjects.split(",") : null,
 				filters.getProjects() != null ? filters.getProjects().toArray(new String[] {}) : null);
 		Assert.assertEquals(expectedFilterStart, filters.getStart());
@@ -208,6 +208,19 @@ public class QuerySettingsParserTest {
 		settings.setQuery(" test ** ?? * query *? ?* ** ?  ");
 		QuerySettingsParser.sanityQuery(settings);
 		Assert.assertEquals("test * ? * query * * * ?", settings.getQuery());
+	}
+
+	@Test
+	public void trimmToNull() {
+		Assert.assertNull(QuerySettingsParser.trimmToNull(null));
+		Assert.assertNull(QuerySettingsParser.trimmToNull(""));
+		Assert.assertNull(QuerySettingsParser.trimmToNull(" "));
+		Assert.assertNull(QuerySettingsParser.trimmToNull("     \t "));
+
+		Assert.assertEquals("a", QuerySettingsParser.trimmToNull("a"));
+		Assert.assertEquals("a", QuerySettingsParser.trimmToNull("a "));
+		Assert.assertEquals("a", QuerySettingsParser.trimmToNull(" a"));
+		Assert.assertEquals("abcd aaa", QuerySettingsParser.trimmToNull("   abcd aaa \t   "));
 	}
 
 }

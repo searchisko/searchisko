@@ -7,7 +7,6 @@ package org.jboss.dcp.api.util;
 
 import java.util.Map;
 import java.util.Set;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.ws.rs.core.MultivaluedMap;
@@ -88,14 +87,11 @@ public class QuerySettingsParser {
 	 * @return normalized query
 	 */
 	public static String normalizeQueryString(String query) {
+		query = trimmToNull(query);
 		if (query == null) {
 			return null;
 		}
-		String q = query.trim();
-		if (q.length() == 0) {
-			return null;
-		}
-		return patchhWildchars(q);
+		return patchhWildchars(query);
 	}
 
 	private static String patchhWildchars(String q) {
@@ -123,7 +119,7 @@ public class QuerySettingsParser {
 			return settings;
 		}
 
-		settings.setContentType(params.getFirst("type"));
+		filters.setContentType(trimmToNull(params.getFirst(QuerySettings.Filters.CONTENT_TYPE_KEY)));
 
 		if (params.containsKey(QuerySettings.QUERY_KEY)) {
 			String query = params.getFirst(QuerySettings.QUERY_KEY);
@@ -169,6 +165,21 @@ public class QuerySettingsParser {
 	}
 
 	/**
+	 * Trim string and return null if empty.
+	 * 
+	 * @param value to trim
+	 * @return trimmed value or null if empty
+	 */
+	protected static String trimmToNull(String value) {
+		if (value != null) {
+			value = value.trim();
+			if (value.isEmpty())
+				value = null;
+		}
+		return value;
+	}
+
+	/**
 	 * Parse HTTP request URL parameters into query settings
 	 * 
 	 * @param parameterMap
@@ -192,32 +203,32 @@ public class QuerySettingsParser {
 		// log.info("key: {}, value: {}",key, parameterMap.get(key));
 		// }
 
-		if (keys.contains("count")) {
-			boolean value = false;
-			try {
-				value = Boolean.parseBoolean(parameterMap.get("count")[0]);
-			} catch (Throwable e) {
-				log.log(Level.FINE, "Error parsing value of count param {0}", parameterMap.get("count")[0]);
-			}
-			settings.setCount(value);
-		}
+		// if (keys.contains("count")) {
+		// boolean value = false;
+		// try {
+		// value = Boolean.parseBoolean(parameterMap.get("count")[0]);
+		// } catch (Throwable e) {
+		// log.log(Level.FINE, "Error parsing value of count param {0}", parameterMap.get("count")[0]);
+		// }
+		// settings.setCount(value);
+		// }
 
-		String value = MonthIntervalNames.MONTH.toString();
-		if (keys.contains("filters[interval]")) {
-			try {
-				value = parameterMap.get("filters[interval]")[0];
-				if ("1w".equalsIgnoreCase(value)) {
-					value = "week";
-				}
-				value = value.toUpperCase();
-				value = MonthIntervalNames.valueOf(value).toString();
-			} catch (Throwable e) {
-				log.log(Level.FINE, "Error parsing value of filters[interval] param '{0}', using default value",
-						parameterMap.get("filters[interval]")[0]);
-				value = MonthIntervalNames.MONTH.toString();
-			}
-		}
-		settings.setInterval(value);
+		// String value = MonthIntervalNames.MONTH.toString();
+		// if (keys.contains("filters[interval]")) {
+		// try {
+		// value = parameterMap.get("filters[interval]")[0];
+		// if ("1w".equalsIgnoreCase(value)) {
+		// value = "week";
+		// }
+		// value = value.toUpperCase();
+		// value = MonthIntervalNames.valueOf(value).toString();
+		// } catch (Throwable e) {
+		// log.log(Level.FINE, "Error parsing value of filters[interval] param '{0}', using default value",
+		// parameterMap.get("filters[interval]")[0]);
+		// value = MonthIntervalNames.MONTH.toString();
+		// }
+		// }
+		// settings.setInterval(value);
 
 		String q = "";
 		if (keys.contains("query")) {
@@ -242,10 +253,6 @@ public class QuerySettingsParser {
 		// ensureFilters(settings).setProjects(parameterMap.get("filters[project][]"));
 		// }
 
-		if (keys.contains("filters[mailList][]")) {
-			ensureFilters(settings).setMailList(parameterMap.get("filters[mailList][]"));
-		}
-
 		if (keys.contains("filters[from]")) {
 			ensureFilters(settings).setFrom(parameterMap.get("filters[from]")[0]);
 		}
@@ -254,9 +261,9 @@ public class QuerySettingsParser {
 			ensureFilters(settings).setTo(parameterMap.get("filters[to]")[0]);
 		}
 
-		if (keys.contains("filters[past]")) {
-			ensureFilters(settings).setPast(parameterMap.get("filters[past]")[0]);
-		}
+		// if (keys.contains("filters[past]")) {
+		// ensureFilters(settings).setPast(parameterMap.get("filters[past]")[0]);
+		// }
 
 		return settings;
 

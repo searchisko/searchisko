@@ -20,6 +20,13 @@ public class QuerySettings {
 
 	public static class Filters {
 
+		public static final String CONTENT_TYPE_KEY = "type";
+
+		/**
+		 * DCP content Type Filtering - dcp_content_type field
+		 */
+		private String contentType;
+
 		public static final String PROJECTS_KEY = "project";
 
 		/**
@@ -28,7 +35,6 @@ public class QuerySettings {
 		private List<String> projects = null;
 
 		private String[] author = null;
-		private String[] mailList = null;
 
 		/**
 		 * Filtering based on tags
@@ -54,18 +60,12 @@ public class QuerySettings {
 
 		public static final String COUNT_KEY = "count";
 
-		private String past = null;
-
 		public void setProjects(List<String> projects) {
 			this.projects = projects;
 		}
 
 		public void setAuthor(String[] author) {
 			this.author = author;
-		}
-
-		public void setMailList(String[] mailList) {
-			this.mailList = mailList;
 		}
 
 		public void setFrom(String from) {
@@ -80,20 +80,12 @@ public class QuerySettings {
 			this.start = start;
 		}
 
-		public void setPast(String past) {
-			this.past = past;
-		}
-
 		public List<String> getProjects() {
 			return projects;
 		}
 
 		public String[] getAuthor() {
 			return author;
-		}
-
-		public String[] getMailList() {
-			return mailList;
 		}
 
 		public String getFrom() {
@@ -106,10 +98,6 @@ public class QuerySettings {
 
 		public Integer getStart() {
 			return start;
-		}
-
-		public String getPast() {
-			return past;
 		}
 
 		public Integer getCount() {
@@ -128,9 +116,16 @@ public class QuerySettings {
 			this.tags = tags;
 		}
 
+		public String getContentType() {
+			return contentType;
+		}
+
+		public void setContentType(String contentType) {
+			this.contentType = contentType;
+		}
+
 	}
 
-	private boolean count = false;
 	private Filters filters;
 
 	/**
@@ -139,8 +134,6 @@ public class QuerySettings {
 	private String query;
 
 	public static final String QUERY_KEY = "query";
-
-	private String interval;
 
 	/**
 	 * Sorting of results
@@ -170,15 +163,6 @@ public class QuerySettings {
 		}
 	}
 
-	/**
-	 * DCP content Type Filtering - dcp_content_type field
-	 */
-	private String contentType;
-
-	public void setCount(boolean value) {
-		this.count = value;
-	}
-
 	public void setFilters(Filters filters) {
 		this.filters = filters;
 	}
@@ -187,16 +171,8 @@ public class QuerySettings {
 		this.query = query;
 	}
 
-	public void setInterval(String interval) {
-		this.interval = interval;
-	}
-
 	public void setSortBy(SortByValue sortBy) {
 		this.sortBy = sortBy;
-	}
-
-	public boolean getCount() {
-		return this.count;
 	}
 
 	public Filters getFilters() {
@@ -213,20 +189,8 @@ public class QuerySettings {
 		return query;
 	}
 
-	public String getInterval() {
-		return interval;
-	}
-
 	public SortByValue getSortBy() {
 		return sortBy;
-	}
-
-	public String getContentType() {
-		return contentType;
-	}
-
-	public void setContentType(String contentType) {
-		this.contentType = contentType;
 	}
 
 }

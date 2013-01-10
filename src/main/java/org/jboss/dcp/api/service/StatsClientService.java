@@ -110,26 +110,7 @@ public class StatsClientService extends ElasticsearchClientService {
 		source.put("exception_most_specific_cause", ex.getMostSpecificCause());
 		source.put("status", ex.status());
 
-		if (filters != null) {
-			if (filters.getAuthor() != null && filters.getAuthor().length > 0) {
-				source.put("filters_authors", filters.getAuthor());
-			}
-			if (filters.getFrom() != null) {
-				source.put("filters_from", filters.getFrom());
-			}
-			if (filters.getMailList() != null && filters.getMailList().length > 0) {
-				source.put("filters_mailLists", filters.getMailList());
-			}
-			if (filters.getProjects() != null && !filters.getProjects().isEmpty()) {
-				source.put("filters_projects", filters.getProjects());
-			}
-			if (filters.getStart() != null) {
-				source.put("filters_start", filters.getStart());
-			}
-			if (filters.getTo() != null) {
-				source.put("filters_to", filters.getTo());
-			}
-		}
+		addFilters(source, filters);
 
 		try {
 			IndexRequest ir = Requests.indexRequest().index(INDEX_NAME).type(INDEX_TYPE)
@@ -179,26 +160,7 @@ public class StatsClientService extends ElasticsearchClientService {
 			}
 		}
 
-		if (filters != null) {
-			if (filters.getAuthor() != null && filters.getAuthor().length > 0) {
-				source.put("filters_authors", filters.getAuthor());
-			}
-			if (filters.getFrom() != null) {
-				source.put("filters_from", filters.getFrom());
-			}
-			if (filters.getMailList() != null && filters.getMailList().length > 0) {
-				source.put("filters_mailLists", filters.getMailList());
-			}
-			if (filters.getProjects() != null && !filters.getProjects().isEmpty()) {
-				source.put("filters_projects", filters.getProjects());
-			}
-			if (filters.getStart() != null) {
-				source.put("filters_start", filters.getStart());
-			}
-			if (filters.getTo() != null) {
-				source.put("filters_to", filters.getTo());
-			}
-		}
+		addFilters(source, filters);
 
 		try {
 			IndexRequest ir = Requests.indexRequest().index(INDEX_NAME).type(INDEX_TYPE)
@@ -207,6 +169,31 @@ public class StatsClientService extends ElasticsearchClientService {
 			client.index(ir, statsLogListener);
 		} catch (Throwable e) {
 			log.log(Level.FINEST, "Error writing into stats server: " + e.getMessage(), e);
+		}
+	}
+
+	/**
+	 * @param source
+	 * @param filters
+	 */
+	protected void addFilters(Map<String, Object> source, QuerySettings.Filters filters) {
+		if (filters != null) {
+			if (filters.getContentType() != null) {
+				source.put("filters_content_type", filters.getContentType());
+			}
+			if (filters.getProjects() != null && !filters.getProjects().isEmpty()) {
+				source.put("filters_projects", filters.getProjects());
+			}
+			if (filters.getTags() != null && !filters.getTags().isEmpty()) {
+				source.put("filters_tags", filters.getTags());
+			}
+			if (filters.getStart() != null) {
+				source.put("filters_start", filters.getStart());
+			}
+			if (filters.getCount() != null) {
+				source.put("filters_count", filters.getCount());
+			}
+
 		}
 	}
 

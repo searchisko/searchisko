@@ -489,6 +489,7 @@ Content provider configuration fields:
 * `type` - structure with configuration of content types pushed into DCP by this provider. Key in the structure is type name, which must be DCP wide unique (typically starts with content provider `name`). It is used on the 'Content Push API' and stored into `dcp_content_type` field of content pushed into DCP by this provider. Configuration of each type contains these fields:
  * `description` - description of this type, what contains, which system produces it etc.
  * `dcp_type` - value stored into `dcp_type` field of pushed content (see description in the [DCP Content object](#dcpcontetnobject) chapter).
+ * `search_all_excluded` - optional, if `true` then documents with this type are excluded from searchings targeted to all documents (so can be searched only by explicit requests for this type)
  * `input_preprocessors` - array of preprocessors applied on content of this type while pushed over 'Content Push API'. Typically used to normalize values into other `dcp_` fields as `dcp_project`, `dcp_contributors`, `dcp_activity_dates` etc. [structured-content-tools](https://github.com/jbossorg/structured-content-tools) framework is used here.
  * `index/name` - name of search index in DCP internal ElasticSearch cluster content of this type is stored into during push.  
  * `index/type` - type for mapping in DCP internal ElasticSearch cluster content of this type is stored into.
@@ -507,6 +508,7 @@ Example of content provider configuration:
     "jbossorg_blog": {
       "description" : "Blog posts pushed into DCP by Borg system - planet.jboss.org",
       "dcp_type": "blogpost",
+      "search_all_excluded" : "false",
       "input_preprocessors": [
         {
           "name": "DCP project mapper - feed to dcp_project mapping",

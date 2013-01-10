@@ -71,8 +71,8 @@ public class SearchRestService extends RestServiceBase {
 
 		try {
 			SearchRequestBuilder srb = new SearchRequestBuilder(getSearchClientService().getClient());
-			if (querySettings.getContentType() != null) {
-				String type = querySettings.getContentType();
+			if (querySettings.getFilters() != null && querySettings.getFilters().getContentType() != null) {
+				String type = querySettings.getFilters().getContentType();
 				Map<String, Object> typeDef = providerService.findContentType(type);
 				if (typeDef == null) {
 					return createBadFieldDataResponse("type");
@@ -82,7 +82,10 @@ public class SearchRestService extends RestServiceBase {
 				srb.setTypes(ProviderService.getIndexType(typeDef, type));
 			} else {
 				// TODO _SEARCH indexes used to search all types should be configurable, so we can remove some 'internal' data
-				// from searching
+				// from searching. Load all defined dcp_contnet_type and use indices from ones without
+				// `search_all_excluded=true`. Loading should be cached!
+
+				// TODO _SEARCH load set of indices for filtering by 'dcp_type' if requested. Loading should be cached!
 				srb.setIndices("_all");
 			}
 
@@ -149,7 +152,7 @@ public class SearchRestService extends RestServiceBase {
 			if (filters.getTags() != null) {
 				searchFilters.add(new TermsFilterBuilder("dcp_tags", filters.getTags()));
 			}
-			if (filters.getProjects() != null) {
+			if (filters.getProjects() != null && !filters.getProjects().isEmpty()) {
 				searchFilters.add(new TermsFilterBuilder("dcp_project", filters.getProjects()));
 			}
 		}
