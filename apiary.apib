@@ -267,6 +267,7 @@ Search contributions based on input parameters
 GET /rest/search?{query,sortBy,start,count,content_provider,type,dcp_type,tag,project,activity_date_from,activity_date_to,contributor,facets}
 < 200
 < Content-Type: application/json
+< Access-Control-Allow-Origin: *
 {
   "took":3,
   "timed_out":false,
@@ -359,6 +360,7 @@ The individual actions are described using symbolic commands. An interpretation 
 
 GET /rest/suggestions/query_string{?q}
 < 200
+< Content-Type: application/json
 < Access-Control-Allow-Origin: *
 {
     "view": {
@@ -781,7 +783,7 @@ GET /rest/project{?from,size}
     {
       "id": "jbosstools",
       "data": {
-			  "code": "jbosstools",
+    		  "code": "jbosstools",
 			  "name": "JBoss Tools",
 			  "description" : "",
 			  "type_specific_code" : {
