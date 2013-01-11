@@ -47,11 +47,11 @@ public class ProviderServiceTest extends ESRealClientTestBase {
 	}
 
 	@Test
-	public void getContentType() {
+	public void extractContentType() {
 		Map<String, Object> providerDef = new HashMap<String, Object>();
 
 		// case - type field not defined
-		Assert.assertNull(ProviderService.getContentType(providerDef, "mytype"));
+		Assert.assertNull(ProviderService.extractContentType(providerDef, "mytype"));
 
 		Map<String, Object> types = new HashMap<String, Object>();
 		providerDef.put(ProviderService.TYPE, types);
@@ -59,14 +59,14 @@ public class ProviderServiceTest extends ESRealClientTestBase {
 		types.put("typeBadStructure", "baad");
 
 		// case - type not defined in type field
-		Assert.assertNull(ProviderService.getContentType(providerDef, "mytype"));
+		Assert.assertNull(ProviderService.extractContentType(providerDef, "mytype"));
 
 		// case - type found
-		Assert.assertEquals(types.get("typeOk"), ProviderService.getContentType(providerDef, "typeOk"));
+		Assert.assertEquals(types.get("typeOk"), ProviderService.extractContentType(providerDef, "typeOk"));
 
 		// case - bad configuration of concrete type
 		try {
-			ProviderService.getContentType(providerDef, "typeBadStructure");
+			ProviderService.extractContentType(providerDef, "typeBadStructure");
 			Assert.fail("SettingsException expected");
 		} catch (SettingsException e) {
 			// OK
@@ -75,7 +75,7 @@ public class ProviderServiceTest extends ESRealClientTestBase {
 		// case - bad configuration of type field
 		providerDef.put(ProviderService.TYPE, "baaad");
 		try {
-			ProviderService.getContentType(providerDef, "mytype");
+			ProviderService.extractContentType(providerDef, "mytype");
 			Assert.fail("SettingsException expected");
 		} catch (SettingsException e) {
 			// OK
@@ -84,27 +84,27 @@ public class ProviderServiceTest extends ESRealClientTestBase {
 	}
 
 	@Test
-	public void getPreprocessors() {
+	public void extractPreprocessors() {
 		Map<String, Object> typeDef = new HashMap<String, Object>();
 
 		// case - preprocessors field not defined
-		Assert.assertNull(ProviderService.getPreprocessors(typeDef, "mytype"));
+		Assert.assertNull(ProviderService.extractPreprocessors(typeDef, "mytype"));
 
 		// case - preprocessors field OK
 		typeDef.put("input_preprocessors", new ArrayList<Map<String, Object>>());
-		Assert.assertEquals(typeDef.get("input_preprocessors"), ProviderService.getPreprocessors(typeDef, "mytype"));
+		Assert.assertEquals(typeDef.get("input_preprocessors"), ProviderService.extractPreprocessors(typeDef, "mytype"));
 
 		// case - preprocessors field with bad element type
 		try {
 			typeDef.put("input_preprocessors", "badstructureelement");
-			ProviderService.getPreprocessors(typeDef, "mytype");
+			ProviderService.extractPreprocessors(typeDef, "mytype");
 			Assert.fail("SettingsException expected");
 		} catch (SettingsException e) {
 			// OK
 		}
 		try {
 			typeDef.put("input_preprocessors", new HashMap<String, Object>());
-			ProviderService.getPreprocessors(typeDef, "mytype");
+			ProviderService.extractPreprocessors(typeDef, "mytype");
 			Assert.fail("SettingsException expected");
 		} catch (SettingsException e) {
 			// OK
@@ -112,12 +112,12 @@ public class ProviderServiceTest extends ESRealClientTestBase {
 	}
 
 	@Test
-	public void getIndexName() {
+	public void extractIndexName() {
 		Map<String, Object> typeDef = new HashMap<String, Object>();
 
 		// case - index field not defined
 		try {
-			ProviderService.getIndexName(typeDef, "mytype");
+			ProviderService.extractIndexName(typeDef, "mytype");
 			Assert.fail("SettingsException expected");
 		} catch (SettingsException e) {
 			// OK
@@ -127,7 +127,7 @@ public class ProviderServiceTest extends ESRealClientTestBase {
 		typeDef.put(ProviderService.INDEX, indexElement);
 		// case - index field defined but name field is empty
 		try {
-			ProviderService.getIndexName(typeDef, "mytype");
+			ProviderService.extractIndexName(typeDef, "mytype");
 			Assert.fail("SettingsException expected");
 		} catch (SettingsException e) {
 			// OK
@@ -135,12 +135,12 @@ public class ProviderServiceTest extends ESRealClientTestBase {
 
 		indexElement.put(ProviderService.NAME, "myindex");
 		// case - index name found correct found
-		Assert.assertEquals(indexElement.get(ProviderService.NAME), ProviderService.getIndexName(typeDef, "mytype"));
+		Assert.assertEquals(indexElement.get(ProviderService.NAME), ProviderService.extractIndexName(typeDef, "mytype"));
 
 		// case - empty value for name element
 		indexElement.put(ProviderService.NAME, "");
 		try {
-			ProviderService.getIndexName(typeDef, "mytype");
+			ProviderService.extractIndexName(typeDef, "mytype");
 			Assert.fail("SettingsException expected");
 		} catch (SettingsException e) {
 			// OK
@@ -149,7 +149,7 @@ public class ProviderServiceTest extends ESRealClientTestBase {
 		// case - empty value for name element
 		indexElement.put(ProviderService.NAME, "   ");
 		try {
-			ProviderService.getIndexName(typeDef, "mytype");
+			ProviderService.extractIndexName(typeDef, "mytype");
 			Assert.fail("SettingsException expected");
 		} catch (SettingsException e) {
 			// OK
@@ -158,7 +158,7 @@ public class ProviderServiceTest extends ESRealClientTestBase {
 		// case - bad type of value for name element
 		indexElement.put(ProviderService.NAME, new Integer(10));
 		try {
-			ProviderService.getIndexName(typeDef, "mytype");
+			ProviderService.extractIndexName(typeDef, "mytype");
 			Assert.fail("SettingsException expected");
 		} catch (SettingsException e) {
 			// OK
@@ -167,7 +167,7 @@ public class ProviderServiceTest extends ESRealClientTestBase {
 		// case - bad type of value for index element
 		typeDef.put(ProviderService.INDEX, "baaad");
 		try {
-			ProviderService.getIndexName(typeDef, "mytype");
+			ProviderService.extractIndexName(typeDef, "mytype");
 			Assert.fail("SettingsException expected");
 		} catch (SettingsException e) {
 			// OK
@@ -175,12 +175,12 @@ public class ProviderServiceTest extends ESRealClientTestBase {
 	}
 
 	@Test
-	public void getSearchIndices() {
+	public void extractSearchIndices() {
 		Map<String, Object> typeDef = new HashMap<String, Object>();
 
 		// case - index field not defined
 		try {
-			ProviderService.getSearchIndices(typeDef, "mytype");
+			ProviderService.extractSearchIndices(typeDef, "mytype");
 			Assert.fail("SettingsException expected");
 		} catch (SettingsException e) {
 			// OK
@@ -189,7 +189,7 @@ public class ProviderServiceTest extends ESRealClientTestBase {
 		// case - bad type of value for index element
 		typeDef.put(ProviderService.INDEX, "baaad");
 		try {
-			ProviderService.getSearchIndices(typeDef, "mytype");
+			ProviderService.extractSearchIndices(typeDef, "mytype");
 			Assert.fail("SettingsException expected");
 		} catch (SettingsException e) {
 			// OK
@@ -199,7 +199,7 @@ public class ProviderServiceTest extends ESRealClientTestBase {
 		typeDef.put(ProviderService.INDEX, indexElement);
 		// case - index field defined but search_indices nor name field is empty
 		try {
-			ProviderService.getSearchIndices(typeDef, "mytype");
+			ProviderService.extractSearchIndices(typeDef, "mytype");
 			Assert.fail("SettingsException expected");
 		} catch (SettingsException e) {
 			// OK
@@ -207,12 +207,12 @@ public class ProviderServiceTest extends ESRealClientTestBase {
 
 		indexElement.put(ProviderService.NAME, "myindex");
 		// case - search_indices not found but name found correct
-		Assert.assertArrayEquals(new String[] { "myindex" }, ProviderService.getSearchIndices(typeDef, "mytype"));
+		Assert.assertArrayEquals(new String[] { "myindex" }, ProviderService.extractSearchIndices(typeDef, "mytype"));
 
 		// case - search_indices not found, empty value for name element
 		indexElement.put(ProviderService.NAME, "");
 		try {
-			ProviderService.getSearchIndices(typeDef, "mytype");
+			ProviderService.extractSearchIndices(typeDef, "mytype");
 			Assert.fail("SettingsException expected");
 		} catch (SettingsException e) {
 			// OK
@@ -221,7 +221,7 @@ public class ProviderServiceTest extends ESRealClientTestBase {
 		// case - search_indices not found, empty value for name element
 		indexElement.put(ProviderService.NAME, "   ");
 		try {
-			ProviderService.getSearchIndices(typeDef, "mytype");
+			ProviderService.extractSearchIndices(typeDef, "mytype");
 			Assert.fail("SettingsException expected");
 		} catch (SettingsException e) {
 			// OK
@@ -230,7 +230,7 @@ public class ProviderServiceTest extends ESRealClientTestBase {
 		// case - search_indices not found, bad type of value for name element
 		indexElement.put(ProviderService.NAME, new Integer(10));
 		try {
-			ProviderService.getSearchIndices(typeDef, "mytype");
+			ProviderService.extractSearchIndices(typeDef, "mytype");
 			Assert.fail("SettingsException expected");
 		} catch (SettingsException e) {
 			// OK
@@ -239,7 +239,7 @@ public class ProviderServiceTest extends ESRealClientTestBase {
 		indexElement.put(ProviderService.NAME, "myindex");
 		// case - search_indices contains one String
 		indexElement.put(ProviderService.SEARCH_INDICES, "mysearchindex");
-		Assert.assertArrayEquals(new String[] { "mysearchindex" }, ProviderService.getSearchIndices(typeDef, "mytype"));
+		Assert.assertArrayEquals(new String[] { "mysearchindex" }, ProviderService.extractSearchIndices(typeDef, "mytype"));
 
 		// case - search_indices contains list of Strings
 		List<String> lis = new ArrayList<String>();
@@ -247,12 +247,12 @@ public class ProviderServiceTest extends ESRealClientTestBase {
 		lis.add("mysearchindex2");
 		indexElement.put(ProviderService.SEARCH_INDICES, lis);
 		Assert.assertArrayEquals(new String[] { "mysearchindex", "mysearchindex2" },
-				ProviderService.getSearchIndices(typeDef, "mytype"));
+				ProviderService.extractSearchIndices(typeDef, "mytype"));
 
 		// case - search_indices with bad type of value
 		indexElement.put(ProviderService.SEARCH_INDICES, new Integer(10));
 		try {
-			ProviderService.getSearchIndices(typeDef, "mytype");
+			ProviderService.extractSearchIndices(typeDef, "mytype");
 			Assert.fail("SettingsException expected");
 		} catch (SettingsException e) {
 			// OK
@@ -260,12 +260,39 @@ public class ProviderServiceTest extends ESRealClientTestBase {
 	}
 
 	@Test
-	public void getIndexType() {
+	public void extractSearchAllExcluded() {
+		Map<String, Object> typeDef = new HashMap<String, Object>();
+
+		// case - search_all_excluded field not defined
+		Assert.assertFalse(ProviderService.extractSearchAllExcluded(typeDef));
+
+		// case - search_all_excluded field defined but empty
+		typeDef.put(ProviderService.SEARCH_ALL_EXCLUDED, "");
+		Assert.assertFalse(ProviderService.extractSearchAllExcluded(typeDef));
+
+		// case - dcp_type field defined but invalid data type
+		typeDef.put(ProviderService.SEARCH_ALL_EXCLUDED, new Integer(10));
+		Assert.assertFalse(ProviderService.extractSearchAllExcluded(typeDef));
+
+		// case - search_all_excluded correct found
+		typeDef.put(ProviderService.SEARCH_ALL_EXCLUDED, "false");
+		Assert.assertFalse(ProviderService.extractSearchAllExcluded(typeDef));
+		typeDef.put(ProviderService.SEARCH_ALL_EXCLUDED, "False");
+		Assert.assertFalse(ProviderService.extractSearchAllExcluded(typeDef));
+
+		typeDef.put(ProviderService.SEARCH_ALL_EXCLUDED, "true");
+		Assert.assertTrue(ProviderService.extractSearchAllExcluded(typeDef));
+		typeDef.put(ProviderService.SEARCH_ALL_EXCLUDED, "True");
+		Assert.assertTrue(ProviderService.extractSearchAllExcluded(typeDef));
+	}
+
+	@Test
+	public void extractIndexType() {
 		Map<String, Object> typeDef = new HashMap<String, Object>();
 
 		// case - index field not defined
 		try {
-			ProviderService.getIndexType(typeDef, "mytype");
+			ProviderService.extractIndexType(typeDef, "mytype");
 			Assert.fail("SettingsException expected");
 		} catch (SettingsException e) {
 			// OK
@@ -275,7 +302,7 @@ public class ProviderServiceTest extends ESRealClientTestBase {
 		typeDef.put(ProviderService.INDEX, indexElement);
 		// case - index field defined but type field is empty
 		try {
-			ProviderService.getIndexType(typeDef, "mytype");
+			ProviderService.extractIndexType(typeDef, "mytype");
 			Assert.fail("SettingsException expected");
 		} catch (SettingsException e) {
 			// OK
@@ -283,12 +310,12 @@ public class ProviderServiceTest extends ESRealClientTestBase {
 
 		// case - index type found correct found
 		indexElement.put(ProviderService.TYPE, "myidxtype");
-		Assert.assertEquals(indexElement.get(ProviderService.TYPE), ProviderService.getIndexType(typeDef, "mytype"));
+		Assert.assertEquals(indexElement.get(ProviderService.TYPE), ProviderService.extractIndexType(typeDef, "mytype"));
 
 		// case - empty value for type element
 		indexElement.put(ProviderService.TYPE, "");
 		try {
-			ProviderService.getIndexType(typeDef, "mytype");
+			ProviderService.extractIndexType(typeDef, "mytype");
 			Assert.fail("SettingsException expected");
 		} catch (SettingsException e) {
 			// OK
@@ -297,7 +324,7 @@ public class ProviderServiceTest extends ESRealClientTestBase {
 		// case - empty value for type element
 		indexElement.put(ProviderService.TYPE, "  ");
 		try {
-			ProviderService.getIndexType(typeDef, "mytype");
+			ProviderService.extractIndexType(typeDef, "mytype");
 			Assert.fail("SettingsException expected");
 		} catch (SettingsException e) {
 			// OK
@@ -306,7 +333,7 @@ public class ProviderServiceTest extends ESRealClientTestBase {
 		// case - bad type of value for type element
 		indexElement.put(ProviderService.TYPE, new Integer(10));
 		try {
-			ProviderService.getIndexType(typeDef, "mytype");
+			ProviderService.extractIndexType(typeDef, "mytype");
 			Assert.fail("SettingsException expected");
 		} catch (SettingsException e) {
 			// OK
@@ -315,7 +342,7 @@ public class ProviderServiceTest extends ESRealClientTestBase {
 		// case - bad type of value for index element
 		typeDef.put(ProviderService.INDEX, "baaad");
 		try {
-			ProviderService.getIndexType(typeDef, "mytype");
+			ProviderService.extractIndexType(typeDef, "mytype");
 			Assert.fail("SettingsException expected");
 		} catch (SettingsException e) {
 			// OK
@@ -323,12 +350,12 @@ public class ProviderServiceTest extends ESRealClientTestBase {
 	}
 
 	@Test
-	public void getDcpType() {
+	public void extractDcpType() {
 		Map<String, Object> typeDef = new HashMap<String, Object>();
 
 		// case - dcp_type field not defined
 		try {
-			ProviderService.getDcpType(typeDef, "mytype");
+			ProviderService.extractDcpType(typeDef, "mytype");
 			Assert.fail("SettingsException expected");
 		} catch (SettingsException e) {
 			// OK
@@ -337,7 +364,7 @@ public class ProviderServiceTest extends ESRealClientTestBase {
 		// case - dcp_type field defined but empty
 		typeDef.put(ProviderService.DCP_TYPE, "");
 		try {
-			ProviderService.getDcpType(typeDef, "mytype");
+			ProviderService.extractDcpType(typeDef, "mytype");
 			Assert.fail("SettingsException expected");
 		} catch (SettingsException e) {
 			// OK
@@ -346,7 +373,7 @@ public class ProviderServiceTest extends ESRealClientTestBase {
 		// case - dcp_type field defined but empty
 		typeDef.put(ProviderService.DCP_TYPE, "  ");
 		try {
-			ProviderService.getDcpType(typeDef, "mytype");
+			ProviderService.extractDcpType(typeDef, "mytype");
 			Assert.fail("SettingsException expected");
 		} catch (SettingsException e) {
 			// OK
@@ -354,7 +381,7 @@ public class ProviderServiceTest extends ESRealClientTestBase {
 
 		// case - index type found correct found
 		typeDef.put(ProviderService.DCP_TYPE, "mydcptype");
-		Assert.assertEquals(typeDef.get(ProviderService.DCP_TYPE), ProviderService.getDcpType(typeDef, "mytype"));
+		Assert.assertEquals(typeDef.get(ProviderService.DCP_TYPE), ProviderService.extractDcpType(typeDef, "mytype"));
 	}
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
@@ -396,7 +423,7 @@ public class ProviderServiceTest extends ESRealClientTestBase {
 
 		// case - preprocessors run OK
 		{
-			List<Map<String, Object>> preprocessorsDef = ProviderService.getPreprocessors(
+			List<Map<String, Object>> preprocessorsDef = ProviderService.extractPreprocessors(
 					(Map<String, Object>) ((Map<String, Object>) TestUtils.loadJSONFromClasspathFile("/provider/provider_1.json")
 							.get("type")).get("provider1_mailing"), "provider1_mailing");
 			Map<String, Object> data = new HashMap<String, Object>();
@@ -407,7 +434,7 @@ public class ProviderServiceTest extends ESRealClientTestBase {
 
 		// case - preprocessors run OK when data is null
 		{
-			List<Map<String, Object>> preprocessorsDef = ProviderService.getPreprocessors(
+			List<Map<String, Object>> preprocessorsDef = ProviderService.extractPreprocessors(
 					(Map<String, Object>) ((Map<String, Object>) TestUtils.loadJSONFromClasspathFile("/provider/provider_1.json")
 							.get("type")).get("provider1_mailing"), "provider1_mailing");
 			Map<String, Object> data = null;

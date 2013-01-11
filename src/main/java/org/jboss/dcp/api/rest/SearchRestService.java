@@ -6,8 +6,11 @@
 package org.jboss.dcp.api.rest;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 
 import javax.enterprise.context.RequestScoped;
@@ -24,6 +27,7 @@ import javax.ws.rs.core.UriInfo;
 import org.elasticsearch.ElasticSearchException;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
+import org.elasticsearch.common.settings.SettingsException;
 import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.index.query.AndFilterBuilder;
 import org.elasticsearch.index.query.FilterBuilder;
@@ -53,7 +57,7 @@ import org.jboss.dcp.api.util.QuerySettingsParser;
 public class SearchRestService extends RestServiceBase {
 
 	@Inject
-	private ProviderService providerService;
+	protected ProviderService providerService;
 
 	@GET
 	@Path("/")
@@ -65,29 +69,10 @@ public class SearchRestService extends RestServiceBase {
 		try {
 			MultivaluedMap<String, String> params = uriInfo.getQueryParameters();
 			querySettings = QuerySettingsParser.parseUriParams(params);
-		} catch (Exception e) {
-			return createErrorResponse(e);
-		}
 
-		try {
 			SearchRequestBuilder srb = new SearchRequestBuilder(getSearchClientService().getClient());
-			if (querySettings.getFilters() != null && querySettings.getFilters().getContentType() != null) {
-				String type = querySettings.getFilters().getContentType();
-				Map<String, Object> typeDef = providerService.findContentType(type);
-				if (typeDef == null) {
-					return createBadFieldDataResponse("type");
-				}
 
-				srb.setIndices(ProviderService.getSearchIndices(typeDef, type));
-				srb.setTypes(ProviderService.getIndexType(typeDef, type));
-			} else {
-				// TODO _SEARCH indexes used to search all types should be configurable, so we can remove some 'internal' data
-				// from searching. Load all defined dcp_contnet_type and use indices from ones without
-				// `search_all_excluded=true`. Loading should be cached!
-
-				// TODO _SEARCH load set of indices for filtering by 'dcp_type' if requested. Loading should be cached!
-				srb.setIndices("_all");
-			}
+			handleSearchInicesAndTypes(querySettings, srb);
 
 			QueryBuilder qb = handleFullTextSearchSettings(querySettings);
 			qb = handleCommonFiltersSettings(querySettings, qb);
@@ -109,6 +94,8 @@ public class SearchRestService extends RestServiceBase {
 
 			addSimpleCORSSourceResponseHeader();
 			return createResponse(searchResponse);
+		} catch (IllegalArgumentException e) {
+			return createBadFieldDataResponse(e.getMessage());
 		} catch (IndexMissingException e) {
 			return Response.status(Response.Status.NOT_FOUND).build();
 		} catch (ElasticSearchException e) {
@@ -117,6 +104,49 @@ public class SearchRestService extends RestServiceBase {
 			return createErrorResponse(e);
 		} catch (Exception e) {
 			return createErrorResponse(e);
+		}
+	}
+
+	/**
+	 * @param querySettings
+	 * @param srb
+	 */
+	protected void handleSearchInicesAndTypes(QuerySettings querySettings, SearchRequestBuilder srb) {
+		if (querySettings.getFilters() != null && querySettings.getFilters().getContentType() != null) {
+			String type = querySettings.getFilters().getContentType();
+			Map<String, Object> typeDef = providerService.findContentType(type);
+			if (typeDef == null) {
+				throw new IllegalArgumentException("type");
+			}
+			srb.setIndices(ProviderService.extractSearchIndices(typeDef, type));
+			srb.setTypes(ProviderService.extractIndexType(typeDef, type));
+		} else {
+			// TODO _SEARCH load set of indices for filtering by 'dcp_type' if requested.
+			String dcpType = null;
+			Set<String> indexNames = new LinkedHashSet<String>();
+			List<Map<String, Object>> allProviders = providerService.listAllProviders();
+			for (Map<String, Object> providerCfg : allProviders) {
+				try {
+					@SuppressWarnings("unchecked")
+					Map<String, Map<String, Object>> types = (Map<String, Map<String, Object>>) providerCfg
+							.get(ProviderService.TYPE);
+					if (types != null) {
+						for (String typeName : types.keySet()) {
+							Map<String, Object> typeDef = types.get(typeName);
+							if ((dcpType == null && !ProviderService.extractSearchAllExcluded(typeDef))
+									|| (dcpType != null && dcpType.equals(ProviderService.extractDcpType(typeDef, typeName)))) {
+								indexNames.addAll(Arrays.asList(ProviderService.extractSearchIndices(typeDef, typeName)));
+							}
+						}
+					}
+				} catch (ClassCastException e) {
+					throw new SettingsException("Incorrect configuration of 'type' section for dcp_provider="
+							+ providerCfg.get(ProviderService.NAME) + ". Contact administrators please.");
+				}
+			}
+
+			// TODO _SEARCH extracted index names should be cached with timeout! dcpType must be used for caching!
+			srb.setIndices(indexNames.toArray(new String[indexNames.size()]));
 		}
 	}
 

@@ -5,6 +5,7 @@
  */
 package org.jboss.dcp.api.service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
@@ -20,6 +21,7 @@ import org.elasticsearch.common.settings.SettingsException;
 import org.elasticsearch.index.query.FilterBuilders;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.indices.IndexMissingException;
+import org.elasticsearch.search.SearchHit;
 import org.jboss.elasticsearch.tools.content.StructuredContentPreprocessor;
 import org.jboss.elasticsearch.tools.content.StructuredContentPreprocessorFactory;
 
@@ -54,6 +56,8 @@ public class ProviderService {
 	public static final String DCP_TYPE = "dcp_type";
 	/** Configuration Key for Elastic Search indices **/
 	public static final String SEARCH_INDICES = "search_indices";
+
+	public static final String SEARCH_ALL_EXCLUDED = "search_all_excluded";
 
 	@Inject
 	protected Logger log;
@@ -167,6 +171,30 @@ public class ProviderService {
 	}
 
 	/**
+	 * List configuration for all providers.
+	 * 
+	 * @return list with configurations for all providers
+	 */
+	public List<Map<String, Object>> listAllProviders() {
+		// TODO VEL unit test
+		List<Map<String, Object>> ret = new ArrayList<Map<String, Object>>();
+		SearchRequestBuilder searchBuilder = entityService.createSearchRequestBuilder();
+		searchBuilder.setQuery(QueryBuilders.matchAllQuery());
+		searchBuilder.setSize(-1);
+		try {
+			SearchResponse response = entityService.search(searchBuilder);
+			if (response.getHits().getTotalHits() > 0) {
+				for (SearchHit hit : response.getHits().getHits()) {
+					ret.add(hit.getSource());
+				}
+			}
+		} catch (IndexMissingException e) {
+			log.warning("Missing search index for providers configurations: " + e.getMessage());
+		}
+		return ret;
+	}
+
+	/**
 	 * Run defined content preprocessors on passed in content.
 	 * 
 	 * @param typeName <code>dcp_content_type</code> name we run preprocessors for to be used for error messages
@@ -210,7 +238,7 @@ public class ProviderService {
 	 * @throws SettingsException for incorrect configuration structure
 	 */
 	@SuppressWarnings("unchecked")
-	public static Map<String, Object> getContentType(Map<String, Object> providerDef, String typeName) {
+	public static Map<String, Object> extractContentType(Map<String, Object> providerDef, String typeName) {
 		try {
 			Map<String, Object> types = (Map<String, Object>) providerDef.get(TYPE);
 			if (types != null) {
@@ -233,7 +261,7 @@ public class ProviderService {
 	 * @return list of preprocessor configurations
 	 */
 	@SuppressWarnings("unchecked")
-	public static List<Map<String, Object>> getPreprocessors(Map<String, Object> typeDef, String typeName) {
+	public static List<Map<String, Object>> extractPreprocessors(Map<String, Object> typeDef, String typeName) {
 		try {
 			return (List<Map<String, Object>>) typeDef.get("input_preprocessors");
 		} catch (ClassCastException e) {
@@ -250,7 +278,7 @@ public class ProviderService {
 	 * @return search index name
 	 */
 	@SuppressWarnings("unchecked")
-	public static String getIndexName(Map<String, Object> typeDef, String typeName) {
+	public static String extractIndexName(Map<String, Object> typeDef, String typeName) {
 		try {
 			String ret = null;
 			if (typeDef.get(INDEX) != null)
@@ -271,14 +299,14 @@ public class ProviderService {
 	 * Get array of names of search indices in search subsystem used for searching values for given
 	 * <code>dcp_content_type</code>. Array or string with indices name is get from
 	 * {@value ProviderService#SEARCH_INDICES} config value if exists, if not then main index name is used, see
-	 * {@link #getIndexName(Map, String)}.
+	 * {@link #extractIndexName(Map, String)}.
 	 * 
 	 * @param typeDef <code>dcp_content_type</code> configuration structure
 	 * @param typeName <code>dcp_content_type</code> name to be used for error messages
 	 * @return search index name
 	 */
 	@SuppressWarnings("unchecked")
-	public static String[] getSearchIndices(Map<String, Object> typeDef, String typeName) {
+	public static String[] extractSearchIndices(Map<String, Object> typeDef, String typeName) {
 		try {
 			if (typeDef.get(INDEX) == null) {
 				throw new SettingsException("Missing 'index' section in configuration for dcp_provider_type='" + typeName
@@ -286,7 +314,7 @@ public class ProviderService {
 			}
 			Object val = ((Map<String, Object>) typeDef.get(INDEX)).get(SEARCH_INDICES);
 			if (val == null) {
-				return new String[] { getIndexName(typeDef, typeName) };
+				return new String[] { extractIndexName(typeDef, typeName) };
 			} else {
 				if (val instanceof String) {
 					return new String[] { (String) val };
@@ -312,7 +340,7 @@ public class ProviderService {
 	 * @return search type name
 	 */
 	@SuppressWarnings("unchecked")
-	public static String getIndexType(Map<String, Object> typeDef, String typeName) {
+	public static String extractIndexType(Map<String, Object> typeDef, String typeName) {
 		try {
 			String ret = null;
 			if (typeDef.get(INDEX) != null)
@@ -337,7 +365,7 @@ public class ProviderService {
 	 * @return <code>dcp_type</code> value
 	 * @throws SettingsException if value is not present in configuration or is invalid
 	 */
-	public static String getDcpType(Map<String, Object> typeDef, String typeName) {
+	public static String extractDcpType(Map<String, Object> typeDef, String typeName) {
 		String ret = null;
 		if (typeDef.get(DCP_TYPE) != null)
 			ret = typeDef.get(DCP_TYPE).toString();
@@ -347,6 +375,21 @@ public class ProviderService {
 					+ ". Contact administrators please.");
 
 		return ret;
+	}
+
+	/**
+	 * Get {@value ProviderService#SEARCH_ALL_EXCLUDED} value from one <code>dcp_content_type</code> configuration
+	 * structure. Handle all cases if not in structure etc.
+	 * 
+	 * @param typeDef <code>dcp_content_type</code> configuration structure
+	 * @return SEARCH_ALL_EXCLUDED value from configuration
+	 * @throws SettingsException if value is not present in configuration or is invalid
+	 */
+	public static boolean extractSearchAllExcluded(Map<String, Object> typeDef) {
+		if (typeDef.containsKey(SEARCH_ALL_EXCLUDED))
+			return Boolean.parseBoolean(typeDef.get(SEARCH_ALL_EXCLUDED).toString());
+		else
+			return false;
 	}
 
 	public EntityService getEntityService() {

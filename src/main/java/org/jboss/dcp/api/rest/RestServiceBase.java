@@ -109,7 +109,7 @@ public class RestServiceBase {
 		if (log.isLoggable(Level.WARNING)) {
 			log.log(Level.WARNING, "Exception {0} occurred. Message: {1}",
 					new Object[] { ex.getClass().getName(), ex.getMessage() });
-			log.log(Level.INFO, "Exception trace.", ex);
+			log.log(Level.FINE, "Exception trace.", ex);
 		}
 		if (ex instanceof IllegalArgumentException) {
 			return Response.serverError().entity(ex.getMessage()).build();

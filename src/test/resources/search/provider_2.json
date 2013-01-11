@@ -1,0 +1,29 @@
+{
+    "name"    : "provider2",
+    "type"     : {
+        "provider2_issue" : {
+            "dcp_type"  : "issue2",
+            "index": {
+                "name" : "idx_provider2_issue",
+                "type"  : "t_provider2_issue",
+                "search_indices" : ["idx_provider2_issue1","idx_provider2_issue2"]
+            }
+        },
+        "provider2_mailing" : {
+            "dcp_type"  : "mailing2",
+            "index": {
+                "name" : "idx_provider2_mailing",
+                "type"  : "t_provider2_mailing"
+            }
+        },
+        "provider2_cosi" : {
+            "dcp_type"  : "cosi",
+            "search_all_excluded" : "true",
+            "index": {
+                "name" : "idx_provider2_cosi",
+                "type"  : "t_provider2_cosi",
+                "search_indices" : ["idx_provider2_cosi1","idx_provider2_cosi2"]
+            }
+        }
+    }
+}

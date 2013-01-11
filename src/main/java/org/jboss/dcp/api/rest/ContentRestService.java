@@ -82,8 +82,8 @@ public class ContentRestService extends RestServiceBase {
 				return createBadFieldDataResponse("type");
 			}
 
-			String indexName = ProviderService.getIndexName(typeDef, type);
-			String indexType = ProviderService.getIndexType(typeDef, type);
+			String indexName = ProviderService.extractIndexName(typeDef, type);
+			String indexType = ProviderService.extractIndexType(typeDef, type);
 
 			SearchRequestBuilder srb = new SearchRequestBuilder(getSearchClientService().getClient());
 			srb.setIndices(indexName);
@@ -136,8 +136,8 @@ public class ContentRestService extends RestServiceBase {
 
 			String dcpContentId = providerService.generateDcpId(type, contentId);
 
-			String indexName = ProviderService.getIndexName(typeDef, type);
-			String indexType = ProviderService.getIndexType(typeDef, type);
+			String indexName = ProviderService.extractIndexName(typeDef, type);
+			String indexType = ProviderService.extractIndexType(typeDef, type);
 
 			GetResponse getResponse = getSearchClientService().getClient().prepareGet(indexName, indexType, dcpContentId)
 					.execute().actionGet();
@@ -173,7 +173,7 @@ public class ContentRestService extends RestServiceBase {
 		}
 		try {
 			Map<String, Object> provider = providerService.findProvider(getProvider());
-			Map<String, Object> typeDef = ProviderService.getContentType(provider, type);
+			Map<String, Object> typeDef = ProviderService.extractContentType(provider, type);
 			if (typeDef == null) {
 				return createBadFieldDataResponse("type");
 			}
@@ -181,15 +181,15 @@ public class ContentRestService extends RestServiceBase {
 			String dcpContentId = providerService.generateDcpId(type, contentId);
 
 			// check search subsystem configuration
-			String indexName = ProviderService.getIndexName(typeDef, type);
-			String indexType = ProviderService.getIndexType(typeDef, type);
+			String indexName = ProviderService.extractIndexName(typeDef, type);
+			String indexType = ProviderService.extractIndexType(typeDef, type);
 
 			// fill some normalized fields - should be last step to avoid changing them via preprocessors
 			content.put(DCP_CONTENT_PROVIDER, getProvider());
 			content.put(DCP_CONTENT_ID, contentId);
 			content.put(DCP_CONTENT_TYPE, type);
 			content.put(DCP_ID, dcpContentId);
-			content.put(DCP_TYPE, ProviderService.getDcpType(typeDef, type));
+			content.put(DCP_TYPE, ProviderService.extractDcpType(typeDef, type));
 			if (content.get(DCP_UPDATED) == null) {
 				content.put(DCP_UPDATED, new Date());
 			}
@@ -198,7 +198,7 @@ public class ContentRestService extends RestServiceBase {
 			// TODO EXTERNAL_TAGS - add external tags for this document into dcp_tags field
 
 			// Run preprocessors to manipulate other fields
-			providerService.runPreprocessors(type, ProviderService.getPreprocessors(typeDef, type), content);
+			providerService.runPreprocessors(type, ProviderService.extractPreprocessors(typeDef, type), content);
 
 			// TODO PERSISTENCE - Store to Persistence
 
@@ -234,7 +234,7 @@ public class ContentRestService extends RestServiceBase {
 		}
 		try {
 			Map<String, Object> provider = providerService.findProvider(getProvider());
-			Map<String, Object> typeDef = ProviderService.getContentType(provider, type);
+			Map<String, Object> typeDef = ProviderService.extractContentType(provider, type);
 			if (typeDef == null) {
 				return createBadFieldDataResponse("type");
 			}
@@ -243,8 +243,8 @@ public class ContentRestService extends RestServiceBase {
 
 			// TODO PERSISTENCE - Remove from persistence if exists
 
-			String indexName = ProviderService.getIndexName(typeDef, type);
-			String indexType = ProviderService.getIndexType(typeDef, type);
+			String indexName = ProviderService.extractIndexName(typeDef, type);
+			String indexType = ProviderService.extractIndexType(typeDef, type);
 
 			DeleteResponse dr = getSearchClientService().getClient().prepareDelete(indexName, indexType, dcpContentId)
 					.execute().actionGet();

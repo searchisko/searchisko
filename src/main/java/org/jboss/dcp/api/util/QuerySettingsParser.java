@@ -109,7 +109,8 @@ public class QuerySettingsParser {
 	 * 
 	 * @param params to parse
 	 * @return query settings
-	 * @throws IllegalArgumentException if some param has invalid value
+	 * @throws IllegalArgumentException if some param has invalid value. Message from exception contains parameter name
+	 *           and is used for error handling later!
 	 */
 	public static QuerySettings parseUriParams(MultivaluedMap<String, String> params) throws IllegalArgumentException {
 		QuerySettings settings = new QuerySettings();
@@ -134,7 +135,7 @@ public class QuerySettingsParser {
 			try {
 				filters.setStart(new Integer(params.getFirst(QuerySettings.Filters.START_KEY)));
 			} catch (NumberFormatException e) {
-				throw new IllegalArgumentException("Parameter " + QuerySettings.Filters.START_KEY + " has bad value");
+				throw new IllegalArgumentException(QuerySettings.Filters.START_KEY);
 			}
 		}
 
@@ -142,7 +143,7 @@ public class QuerySettingsParser {
 			try {
 				filters.setCount(new Integer(params.getFirst(QuerySettings.Filters.COUNT_KEY)));
 			} catch (NumberFormatException e) {
-				throw new IllegalArgumentException("Parameter " + QuerySettings.Filters.COUNT_KEY + " has bad value");
+				throw new IllegalArgumentException(QuerySettings.Filters.COUNT_KEY);
 			}
 		}
 
@@ -157,7 +158,7 @@ public class QuerySettingsParser {
 			} else if (QuerySettings.SortByValue.OLD.name().equalsIgnoreCase(sortByString)) {
 				settings.setSortBy(SortByValue.OLD);
 			} else {
-				throw new IllegalArgumentException("Parameter " + QuerySettings.SORT_BY_KEY + " has bad value");
+				throw new IllegalArgumentException(QuerySettings.SORT_BY_KEY);
 			}
 		}
 
