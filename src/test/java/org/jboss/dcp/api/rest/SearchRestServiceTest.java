@@ -17,8 +17,10 @@ import javax.ws.rs.core.UriInfo;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.search.sort.SortOrder;
 import org.jboss.dcp.api.model.QuerySettings;
 import org.jboss.dcp.api.model.QuerySettings.Filters;
+import org.jboss.dcp.api.model.QuerySettings.SortByValue;
 import org.jboss.dcp.api.service.ProviderService;
 import org.jboss.dcp.api.testtools.TestUtils;
 import org.junit.Assert;
@@ -213,7 +215,6 @@ public class SearchRestServiceTest {
 
 		// case - no fulltext parameter requested
 		{
-			QueryBuilder qb = QueryBuilders.matchAllQuery();
 			QueryBuilder qbRes = tested.handleFulltextSearchSettings(querySettings);
 			TestUtils.assertStringFromClasspathFile("/search/query_match_all.json", qbRes.toString());
 		}
@@ -291,5 +292,49 @@ public class SearchRestServiceTest {
 			Mockito.verify(srbMock).setFrom(42);
 			Mockito.verifyNoMoreInteractions(srbMock);
 		}
+	}
+
+	@Test
+	public void handleSortingSettings() {
+		SearchRestService tested = new SearchRestService();
+		tested.log = Logger.getLogger("testlogger");
+
+		SearchRequestBuilder srbMock = Mockito.mock(SearchRequestBuilder.class);
+
+		// case - NPE when no settings passed in
+		try {
+			tested.handleSortingSettings(null, srbMock);
+			Assert.fail("NullPointerException expected");
+		} catch (NullPointerException e) {
+			Mockito.verifyNoMoreInteractions(srbMock);
+			// OK
+		}
+
+		// case - sorting not requested
+		{
+			Mockito.reset(srbMock);
+			QuerySettings querySettings = new QuerySettings();
+			tested.handleSortingSettings(querySettings, srbMock);
+			Mockito.verifyNoMoreInteractions(srbMock);
+		}
+
+		// case - sorting requests
+		{
+			Mockito.reset(srbMock);
+			QuerySettings querySettings = new QuerySettings();
+			querySettings.setSortBy(SortByValue.NEW);
+			tested.handleSortingSettings(querySettings, srbMock);
+			Mockito.verify(srbMock).addSort("dcp_updated", SortOrder.DESC);
+			Mockito.verifyNoMoreInteractions(srbMock);
+		}
+		{
+			Mockito.reset(srbMock);
+			QuerySettings querySettings = new QuerySettings();
+			querySettings.setSortBy(SortByValue.OLD);
+			tested.handleSortingSettings(querySettings, srbMock);
+			Mockito.verify(srbMock).addSort("dcp_updated", SortOrder.ASC);
+			Mockito.verifyNoMoreInteractions(srbMock);
+		}
+
 	}
 }

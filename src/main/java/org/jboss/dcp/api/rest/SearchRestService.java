@@ -208,9 +208,9 @@ public class SearchRestService extends RestServiceBase {
 		if (querySettings.getSortBy() != null) {
 			// TODO _SEARCH ordering by date should be over new field 'dcp_last_activity_date' which should be maximum from
 			// dcp_activity_dates
-			if (querySettings.getSortBy().compareTo(SortByValue.NEW) == 0) {
+			if (querySettings.getSortBy().equals(SortByValue.NEW)) {
 				srb.addSort("dcp_updated", SortOrder.DESC);
-			} else if (querySettings.getSortBy().compareTo(SortByValue.OLD) == 0) {
+			} else if (querySettings.getSortBy().equals(SortByValue.OLD)) {
 				srb.addSort("dcp_updated", SortOrder.ASC);
 			}
 		}
