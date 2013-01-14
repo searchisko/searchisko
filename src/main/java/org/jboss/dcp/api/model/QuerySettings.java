@@ -27,6 +27,13 @@ public class QuerySettings {
 		 */
 		private String contentType;
 
+		public static final String DCP_TYPE_KEY = "dcp_type";
+
+		/**
+		 * DCP Type Filtering - dcp_type field
+		 */
+		private String dcpType;
+
 		public static final String PROJECTS_KEY = "project";
 
 		/**
@@ -34,17 +41,12 @@ public class QuerySettings {
 		 */
 		private List<String> projects = null;
 
-		private String[] author = null;
-
 		/**
 		 * Filtering based on tags
 		 */
 		private List<String> tags = null;
 
 		public static final String TAGS_KEY = "tag";
-
-		private String from = null;
-		private String to = null;
 
 		/**
 		 * Results Paging - start index
@@ -60,20 +62,14 @@ public class QuerySettings {
 
 		public static final String COUNT_KEY = "count";
 
+		@Override
+		public String toString() {
+			return "Filters [contentType=" + contentType + ", dcpType=" + dcpType + ", projects=" + projects + ", tags="
+					+ tags + ", start=" + start + ", count=" + count + "]";
+		}
+
 		public void setProjects(List<String> projects) {
 			this.projects = projects;
-		}
-
-		public void setAuthor(String[] author) {
-			this.author = author;
-		}
-
-		public void setFrom(String from) {
-			this.from = from;
-		}
-
-		public void setTo(String to) {
-			this.to = to;
 		}
 
 		public void setStart(Integer start) {
@@ -82,18 +78,6 @@ public class QuerySettings {
 
 		public List<String> getProjects() {
 			return projects;
-		}
-
-		public String[] getAuthor() {
-			return author;
-		}
-
-		public String getFrom() {
-			return from;
-		}
-
-		public String getTo() {
-			return to;
 		}
 
 		public Integer getStart() {
@@ -122,6 +106,14 @@ public class QuerySettings {
 
 		public void setContentType(String contentType) {
 			this.contentType = contentType;
+		}
+
+		public String getDcpType() {
+			return dcpType;
+		}
+
+		public void setDcpType(String dcpType) {
+			this.dcpType = dcpType;
 		}
 
 	}
@@ -191,6 +183,11 @@ public class QuerySettings {
 
 	public SortByValue getSortBy() {
 		return sortBy;
+	}
+
+	@Override
+	public String toString() {
+		return "QuerySettings [query=" + query + ", sortBy=" + sortBy + ", filters=" + filters + "]";
 	}
 
 }

@@ -19,8 +19,6 @@ import org.elasticsearch.index.query.FilteredQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.index.query.QueryFilterBuilder;
-import org.elasticsearch.index.query.RangeFilterBuilder;
-import org.elasticsearch.index.query.TermsFilterBuilder;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.elasticsearch.search.facet.FacetBuilders;
 import org.elasticsearch.search.facet.terms.TermsFacetBuilder;
@@ -57,25 +55,25 @@ public class ProxyQueryBuilder {
 		if (settings.getFilters() != null) {
 			QuerySettings.Filters f = settings.getFilters();
 
-			if (f.getAuthor() != null) {
-				queryFilters.put("author.not_analyzed", new TermsFilterBuilder("author.not_analyzed", f.getAuthor()));
-			}
+			// if (f.getAuthor() != null) {
+			// queryFilters.put("author.not_analyzed", new TermsFilterBuilder("author.not_analyzed", f.getAuthor()));
+			// }
 			// if (f.getMailList() != null) {
 			// queryFilters.put("mailList",new TermsFilterBuilder("mail_list", f.getMailList()));
 			// }
 			// if (f.getProject() != null) {
 			// queryFilters.put("project",new TermsFilterBuilder("_index", f.getProject()));
 			// }
-			if (f.getFrom() != null || f.getTo() != null) {
-				RangeFilterBuilder range = new RangeFilterBuilder("date");
-				if (f.getFrom() != null) {
-					range.from(f.getFrom()).includeLower(true);
-				}
-				if (f.getTo() != null) {
-					range.to(f.getTo()).includeUpper(true);
-				}
-				queryFilters.put("range", range);
-			}
+			// if (f.getFrom() != null || f.getTo() != null) {
+			// RangeFilterBuilder range = new RangeFilterBuilder("date");
+			// if (f.getFrom() != null) {
+			// range.from(f.getFrom()).includeLower(true);
+			// }
+			// if (f.getTo() != null) {
+			// range.to(f.getTo()).includeUpper(true);
+			// }
+			// queryFilters.put("range", range);
+			// }
 			// Apply "past" filter only if explicit from/to filters were not used.
 			// (i.e. from/to filters always DO OVERRIDE past filter)
 			// else if (f.getPast() != null) {
@@ -178,15 +176,15 @@ public class ProxyQueryBuilder {
 		if (!queryFilters.isEmpty()) {
 			b.facet(new TermsFacetBuilder("author").field("author.not_analyzed").size(150).global(true)
 					.facetFilter(new AndFilterBuilder(getFilters(queryFilters, "query", "range", "project", "mailList"))));
-			if (settings.getFilters().getAuthor() != null) {
-				b.facet(new TermsFacetBuilder("author_filter")
-						.field("author.not_analyzed")
-						.size(30)
-						.global(true)
-						.facetFilter(
-								new AndFilterBuilder(getFilters(queryFilters, "query", "author.not_analyzed", "range", "project",
-										"mailList"))));
-			}
+			// if (settings.getFilters().getAuthor() != null) {
+			// b.facet(new TermsFacetBuilder("author_filter")
+			// .field("author.not_analyzed")
+			// .size(30)
+			// .global(true)
+			// .facetFilter(
+			// new AndFilterBuilder(getFilters(queryFilters, "query", "author.not_analyzed", "range", "project",
+			// "mailList"))));
+			// }
 		} else {
 			b.facet(new TermsFacetBuilder("author").field("author.not_analyzed").size(150).global(true)
 					.facetFilter(new QueryFilterBuilder(qb_wth_fields)));

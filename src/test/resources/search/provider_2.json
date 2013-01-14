@@ -2,7 +2,7 @@
     "name"    : "provider2",
     "type"     : {
         "provider2_issue" : {
-            "dcp_type"  : "issue2",
+            "dcp_type"  : "issue",
             "index": {
                 "name" : "idx_provider2_issue",
                 "type"  : "t_provider2_issue",
@@ -10,7 +10,7 @@
             }
         },
         "provider2_mailing" : {
-            "dcp_type"  : "mailing2",
+            "dcp_type"  : "mailing",
             "index": {
                 "name" : "idx_provider2_mailing",
                 "type"  : "t_provider2_mailing"

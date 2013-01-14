@@ -7,6 +7,7 @@ package org.jboss.dcp.api.util;
 
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.ws.rs.core.MultivaluedMap;
@@ -121,6 +122,7 @@ public class QuerySettingsParser {
 		}
 
 		filters.setContentType(trimmToNull(params.getFirst(QuerySettings.Filters.CONTENT_TYPE_KEY)));
+		filters.setDcpType(trimmToNull(params.getFirst(QuerySettings.Filters.DCP_TYPE_KEY)));
 
 		if (params.containsKey(QuerySettings.QUERY_KEY)) {
 			String query = params.getFirst(QuerySettings.QUERY_KEY);
@@ -162,6 +164,9 @@ public class QuerySettingsParser {
 			}
 		}
 
+		if (log.isLoggable(Level.FINE)) {
+			log.fine("Requested search settings: " + settings);
+		}
 		return settings;
 	}
 
@@ -246,21 +251,21 @@ public class QuerySettingsParser {
 		// settings.setSortBy(SortByValue.valueOf(params.getFirst(QuerySettings.SORT_BY_KEY)));
 		// }
 
-		if (keys.contains("filters[author][]")) {
-			ensureFilters(settings).setAuthor(parameterMap.get("filters[author][]"));
-		}
+		// if (keys.contains("filters[author][]")) {
+		// ensureFilters(settings).setAuthor(parameterMap.get("filters[author][]"));
+		// }
 
 		// if (keys.contains("filters[project][]")) {
 		// ensureFilters(settings).setProjects(parameterMap.get("filters[project][]"));
 		// }
 
-		if (keys.contains("filters[from]")) {
-			ensureFilters(settings).setFrom(parameterMap.get("filters[from]")[0]);
-		}
-
-		if (keys.contains("filters[to]")) {
-			ensureFilters(settings).setTo(parameterMap.get("filters[to]")[0]);
-		}
+		// if (keys.contains("filters[from]")) {
+		// ensureFilters(settings).setFrom(parameterMap.get("filters[from]")[0]);
+		// }
+		//
+		// if (keys.contains("filters[to]")) {
+		// ensureFilters(settings).setTo(parameterMap.get("filters[to]")[0]);
+		// }
 
 		// if (keys.contains("filters[past]")) {
 		// ensureFilters(settings).setPast(parameterMap.get("filters[past]")[0]);

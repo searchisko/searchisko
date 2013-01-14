@@ -74,7 +74,7 @@ public class SearchRestService extends RestServiceBase {
 
 			handleSearchInicesAndTypes(querySettings, srb);
 
-			QueryBuilder qb = handleFullTextSearchSettings(querySettings);
+			QueryBuilder qb = handleFulltextSearchSettings(querySettings);
 			qb = handleCommonFiltersSettings(querySettings, qb);
 			srb.setQuery(qb);
 
@@ -121,8 +121,10 @@ public class SearchRestService extends RestServiceBase {
 			srb.setIndices(ProviderService.extractSearchIndices(typeDef, type));
 			srb.setTypes(ProviderService.extractIndexType(typeDef, type));
 		} else {
-			// TODO _SEARCH load set of indices for filtering by 'dcp_type' if requested.
 			String dcpType = null;
+			if (querySettings.getFilters() != null) {
+				dcpType = querySettings.getFilters().getDcpType();
+			}
 			Set<String> indexNames = new LinkedHashSet<String>();
 			List<Map<String, Object>> allProviders = providerService.listAllProviders();
 			for (Map<String, Object> providerCfg : allProviders) {
@@ -154,7 +156,7 @@ public class SearchRestService extends RestServiceBase {
 	 * @param querySettings
 	 * @return builder for query, newer null
 	 */
-	protected QueryBuilder handleFullTextSearchSettings(QuerySettings querySettings) {
+	protected QueryBuilder handleFulltextSearchSettings(QuerySettings querySettings) {
 		if (querySettings.getQuery() != null) {
 			// TODO _SEARCH load fields used for fulltext query from DCP configuration changeable during runtime.
 			QueryBuilder qb = QueryBuilders.queryString(querySettings.getQuery());
@@ -175,11 +177,14 @@ public class SearchRestService extends RestServiceBase {
 		QuerySettings.Filters filters = querySettings.getFilters();
 		List<FilterBuilder> searchFilters = new ArrayList<FilterBuilder>();
 
-		// TODO _SEARCH other filtering by: dcp_type, dcp_contributors, activity_date_interval, dcp_activity_dates from,
+		// TODO _SEARCH other filtering by: dcp_contributors, activity_date_interval, dcp_activity_dates from,
 		// dcp_activity_dates to, dcp_content_provider
 
 		if (filters != null) {
-			if (filters.getTags() != null) {
+			if (filters.getDcpType() != null) {
+				searchFilters.add(new TermsFilterBuilder("dcp_type", filters.getDcpType()));
+			}
+			if (filters.getTags() != null && !filters.getTags().isEmpty()) {
 				searchFilters.add(new TermsFilterBuilder("dcp_tags", filters.getTags()));
 			}
 			if (filters.getProjects() != null && !filters.getProjects().isEmpty()) {
@@ -222,11 +227,13 @@ public class SearchRestService extends RestServiceBase {
 
 		// pagging of results
 		QuerySettings.Filters filters = querySettings.getFilters();
-		if (filters.getStart() != null) {
-			srb.setFrom(filters.getStart());
-		}
-		if (filters.getCount() != null) {
-			srb.setSize(filters.getCount());
+		if (filters != null) {
+			if (filters.getStart() != null) {
+				srb.setFrom(filters.getStart());
+			}
+			if (filters.getCount() != null) {
+				srb.setSize(filters.getCount());
+			}
 		}
 	}
 

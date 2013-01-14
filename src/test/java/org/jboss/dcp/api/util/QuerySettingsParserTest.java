@@ -42,7 +42,8 @@ public class QuerySettingsParserTest {
 
 		// all params used
 		{
-			params.add("type", "mytype");
+			params.add(QuerySettings.Filters.CONTENT_TYPE_KEY, "mytype ");
+			params.add(QuerySettings.Filters.DCP_TYPE_KEY, "myDcpType ");
 			params.add(QuerySettings.QUERY_KEY, "query ** query2");
 			params.add(QuerySettings.SORT_BY_KEY, "new");
 			params.add(QuerySettings.Filters.PROJECTS_KEY, "proj1");
@@ -54,7 +55,8 @@ public class QuerySettingsParserTest {
 			QuerySettings ret = QuerySettingsParser.parseUriParams(params);
 			Assert.assertNotNull(ret);
 			// note query is sanitized in settings!
-			assertQuerySettings(ret, "mytype", "query * query2", SortByValue.NEW, "proj1,proj2", 10, 20, "tg1,tg2");
+			assertQuerySettings(ret, "mytype", "myDcpType", "query * query2", SortByValue.NEW, "proj1,proj2", 10, 20,
+					"tg1,tg2");
 		}
 	}
 
@@ -123,11 +125,11 @@ public class QuerySettingsParserTest {
 	}
 
 	private void assertQuerySettingsEmpty(QuerySettings qs) {
-		assertQuerySettings(qs, null, null, null, null, null, null, null);
+		assertQuerySettings(qs, null, null, null, null, null, null, null, null);
 	}
 
-	private void assertQuerySettings(QuerySettings qs, String expectedContentType, String expectedQuery,
-			SortByValue expectedSortBy, String expectedFilterProjects, Integer expectedFilterStart,
+	private void assertQuerySettings(QuerySettings qs, String expectedContentType, String expectedDcpType,
+			String expectedQuery, SortByValue expectedSortBy, String expectedFilterProjects, Integer expectedFilterStart,
 			Integer expectedFilterCount, String expectedFilterTags) {
 
 		Assert.assertEquals(expectedQuery, qs.getQuery());
@@ -135,6 +137,7 @@ public class QuerySettingsParserTest {
 		QuerySettings.Filters filters = qs.getFilters();
 		Assert.assertNotNull("Filters instance expected not null", filters);
 		Assert.assertEquals(expectedContentType, filters.getContentType());
+		Assert.assertEquals(expectedDcpType, filters.getDcpType());
 		Assert.assertArrayEquals(expectedFilterProjects != null ? expectedFilterProjects.split(",") : null,
 				filters.getProjects() != null ? filters.getProjects().toArray(new String[] {}) : null);
 		Assert.assertEquals(expectedFilterStart, filters.getStart());
