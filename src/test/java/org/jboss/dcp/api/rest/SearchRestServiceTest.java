@@ -175,7 +175,7 @@ public class SearchRestServiceTest {
 		{
 			QueryBuilder qb = QueryBuilders.matchAllQuery();
 			QueryBuilder qbRes = tested.handleCommonFiltersSettings(querySettings, qb);
-			TestUtils.assertStringFromClasspathFile("/search/query_match_all.json", qbRes.toString());
+			TestUtils.assertJsonContentFromClasspathFile("/search/query_match_all.json", qbRes.toString());
 		}
 
 		Filters filters = new Filters();
@@ -184,7 +184,7 @@ public class SearchRestServiceTest {
 		{
 			QueryBuilder qb = QueryBuilders.matchAllQuery();
 			QueryBuilder qbRes = tested.handleCommonFiltersSettings(querySettings, qb);
-			TestUtils.assertStringFromClasspathFile("/search/query_match_all.json", qbRes.toString());
+			TestUtils.assertJsonContentFromClasspathFile("/search/query_match_all.json", qbRes.toString());
 		}
 
 		// case - all filters used
@@ -194,7 +194,87 @@ public class SearchRestServiceTest {
 			filters.setProjects(Arrays.asList(new String[] { "pr1", "pr2" }));
 			QueryBuilder qb = QueryBuilders.matchAllQuery();
 			QueryBuilder qbRes = tested.handleCommonFiltersSettings(querySettings, qb);
-			TestUtils.assertStringFromClasspathFile("/search/query_filters_moreFilters.json", qbRes.toString());
+			TestUtils.assertJsonContentFromClasspathFile("/search/query_filters_moreFilters.json", qbRes.toString());
+		}
+	}
+
+	@Test
+	public void handleCommonFiltersSettings_projects() throws IOException {
+		SearchRestService tested = new SearchRestService();
+		tested.log = Logger.getLogger("testlogger");
+
+		QuerySettings querySettings = new QuerySettings();
+		Filters filters = new Filters();
+		querySettings.setFilters(filters);
+		// case - list of projects is null
+		{
+			QueryBuilder qb = QueryBuilders.matchAllQuery();
+			QueryBuilder qbRes = tested.handleCommonFiltersSettings(querySettings, qb);
+			TestUtils.assertJsonContentFromClasspathFile("/search/query_match_all.json", qbRes.toString());
+		}
+
+		// case - list of projects is empty
+		{
+			filters.setProjects(Arrays.asList(new String[] {}));
+			QueryBuilder qb = QueryBuilders.matchAllQuery();
+			QueryBuilder qbRes = tested.handleCommonFiltersSettings(querySettings, qb);
+			TestUtils.assertJsonContentFromClasspathFile("/search/query_match_all.json", qbRes.toString());
+		}
+
+		// case - one project
+		{
+			filters.setProjects(Arrays.asList(new String[] { "pr1" }));
+			QueryBuilder qb = QueryBuilders.matchAllQuery();
+			QueryBuilder qbRes = tested.handleCommonFiltersSettings(querySettings, qb);
+			TestUtils.assertJsonContentFromClasspathFile("/search/query_filters_projects_one.json", qbRes.toString());
+		}
+
+		// case - more projects
+		{
+			filters.setProjects(Arrays.asList(new String[] { "pr1", "pr2", "pr3", "pr4" }));
+			QueryBuilder qb = QueryBuilders.matchAllQuery();
+			QueryBuilder qbRes = tested.handleCommonFiltersSettings(querySettings, qb);
+			TestUtils.assertJsonContentFromClasspathFile("/search/query_filters_projects_more.json", qbRes.toString());
+		}
+	}
+
+	@Test
+	public void handleCommonFiltersSettings_tags() throws IOException {
+		SearchRestService tested = new SearchRestService();
+		tested.log = Logger.getLogger("testlogger");
+
+		QuerySettings querySettings = new QuerySettings();
+		Filters filters = new Filters();
+		querySettings.setFilters(filters);
+		// case - list of tags is null
+		{
+			QueryBuilder qb = QueryBuilders.matchAllQuery();
+			QueryBuilder qbRes = tested.handleCommonFiltersSettings(querySettings, qb);
+			TestUtils.assertJsonContentFromClasspathFile("/search/query_match_all.json", qbRes.toString());
+		}
+
+		// case - list of tags is empty
+		{
+			filters.setTags(Arrays.asList(new String[] {}));
+			QueryBuilder qb = QueryBuilders.matchAllQuery();
+			QueryBuilder qbRes = tested.handleCommonFiltersSettings(querySettings, qb);
+			TestUtils.assertJsonContentFromClasspathFile("/search/query_match_all.json", qbRes.toString());
+		}
+
+		// case - one tag
+		{
+			filters.setTags(Arrays.asList(new String[] { "tg1" }));
+			QueryBuilder qb = QueryBuilders.matchAllQuery();
+			QueryBuilder qbRes = tested.handleCommonFiltersSettings(querySettings, qb);
+			TestUtils.assertJsonContentFromClasspathFile("/search/query_filters_tags_one.json", qbRes.toString());
+		}
+
+		// case - more tags
+		{
+			filters.setTags(Arrays.asList(new String[] { "tg1", "tg2", "tg3", "tg4" }));
+			QueryBuilder qb = QueryBuilders.matchAllQuery();
+			QueryBuilder qbRes = tested.handleCommonFiltersSettings(querySettings, qb);
+			TestUtils.assertJsonContentFromClasspathFile("/search/query_filters_tags_more.json", qbRes.toString());
 		}
 	}
 
@@ -216,14 +296,14 @@ public class SearchRestServiceTest {
 		// case - no fulltext parameter requested
 		{
 			QueryBuilder qbRes = tested.handleFulltextSearchSettings(querySettings);
-			TestUtils.assertStringFromClasspathFile("/search/query_match_all.json", qbRes.toString());
+			TestUtils.assertJsonContentFromClasspathFile("/search/query_match_all.json", qbRes.toString());
 		}
 
 		// case - fulltext parameter requested
 		{
 			querySettings.setQuery("my query string");
 			QueryBuilder qbRes = tested.handleFulltextSearchSettings(querySettings);
-			TestUtils.assertStringFromClasspathFile("/search/query_fulltext.json", qbRes.toString());
+			TestUtils.assertJsonContentFromClasspathFile("/search/query_fulltext.json", qbRes.toString());
 		}
 	}
 

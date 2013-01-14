@@ -5,6 +5,7 @@
  */
 package org.jboss.dcp.api.testtools;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.StringWriter;
@@ -15,6 +16,9 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
 
 import org.apache.commons.io.IOUtils;
+import org.codehaus.jackson.JsonNode;
+import org.codehaus.jackson.map.DeserializationConfig;
+import org.codehaus.jackson.map.ObjectMapper;
 import org.elasticsearch.common.settings.SettingsException;
 import org.elasticsearch.common.xcontent.XContentFactory;
 import org.elasticsearch.common.xcontent.XContentParser;
@@ -134,6 +138,28 @@ public abstract class TestUtils {
 	 */
 	public static void assertStringFromClasspathFile(String expectedFilePath, String actual) throws IOException {
 		Assert.assertEquals(readStringFromClasspathFile(expectedFilePath), actual);
+	}
+
+	/**
+	 * Assert passed in JSON string is same as JSON content of given file loaded from classpath.
+	 * 
+	 * @param expectedJsonFilePath path to JSON file inside classpath
+	 * @param actualJsonString JSON content to assert for equality
+	 * @throws IOException
+	 */
+	public static void assertJsonContentFromClasspathFile(String expectedJsonFilePath, String actualJsonString)
+			throws IOException {
+		JsonNode actualRootNode = getMapper().readValue(new ByteArrayInputStream(actualJsonString.getBytes()),
+				JsonNode.class);
+		JsonNode expectedRootNode = getMapper().readValue(TestUtils.class.getResourceAsStream(expectedJsonFilePath),
+				JsonNode.class);
+		Assert.assertEquals(expectedRootNode, actualRootNode);
+	}
+
+	private static ObjectMapper getMapper() {
+		ObjectMapper mapper = new ObjectMapper();
+		mapper.configure(DeserializationConfig.Feature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+		return mapper;
 	}
 
 	/**

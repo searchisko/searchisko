@@ -1,0 +1,16 @@
+{
+  "filtered" : {
+    "query" : {
+      "match_all" : { }
+    },
+    "filter" : {
+      "and" : {
+        "filters" : [ {
+          "terms" : {
+            "dcp_project" : [ "pr1", "pr2", "pr3", "pr4" ]
+          }
+        } ]
+      }
+    }
+  }
+}
