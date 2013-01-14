@@ -28,7 +28,7 @@ import org.junit.Test;
 import org.mockito.Mockito;
 
 /**
- * TODO Unit test for {@link SearchRestService}
+ * Unit test for {@link SearchRestService}
  * 
  * @author Vlastimil Elias (velias at redhat dot com)
  */
@@ -190,6 +190,7 @@ public class SearchRestServiceTest {
 		// case - all filters used
 		{
 			filters.setDcpType("myDcpType");
+			filters.setDcpContentProvider("my_content_provider");
 			filters.setTags(Arrays.asList(new String[] { "tag1", "tag2" }));
 			filters.setProjects(Arrays.asList(new String[] { "pr1", "pr2" }));
 			QueryBuilder qb = QueryBuilders.matchAllQuery();

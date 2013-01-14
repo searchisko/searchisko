@@ -123,6 +123,7 @@ public class QuerySettingsParser {
 
 		filters.setContentType(trimmToNull(params.getFirst(QuerySettings.Filters.CONTENT_TYPE_KEY)));
 		filters.setDcpType(trimmToNull(params.getFirst(QuerySettings.Filters.DCP_TYPE_KEY)));
+		filters.setDcpContentProvider(trimmToNull(params.getFirst(QuerySettings.Filters.DCP_CONTENT_PROVIDER)));
 
 		if (params.containsKey(QuerySettings.QUERY_KEY)) {
 			String query = params.getFirst(QuerySettings.QUERY_KEY);

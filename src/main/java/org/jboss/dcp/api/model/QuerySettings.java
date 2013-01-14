@@ -36,6 +36,10 @@ public class QuerySettings {
 
 		public static final String PROJECTS_KEY = "project";
 
+		private String dcpContentProvider;
+
+		public static final String DCP_CONTENT_PROVIDER = "content_provider";
+
 		/**
 		 * Filtering based on project
 		 */
@@ -64,8 +68,9 @@ public class QuerySettings {
 
 		@Override
 		public String toString() {
-			return "Filters [contentType=" + contentType + ", dcpType=" + dcpType + ", projects=" + projects + ", tags="
-					+ tags + ", start=" + start + ", count=" + count + "]";
+			return "Filters [contentType=" + contentType + ", dcpType=" + dcpType + ", dcpContentProvider="
+					+ dcpContentProvider + ", projects=" + projects + ", tags=" + tags + ", start=" + start + ", count=" + count
+					+ "]";
 		}
 
 		public void setProjects(List<String> projects) {
@@ -114,6 +119,14 @@ public class QuerySettings {
 
 		public void setDcpType(String dcpType) {
 			this.dcpType = dcpType;
+		}
+
+		public String getDcpContentProvider() {
+			return dcpContentProvider;
+		}
+
+		public void setDcpContentProvider(String dcpContentProvider) {
+			this.dcpContentProvider = dcpContentProvider;
 		}
 
 	}

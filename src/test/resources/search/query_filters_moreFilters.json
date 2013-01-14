@@ -9,6 +9,10 @@
           "terms" : {
             "dcp_type" : [ "myDcpType" ]
           }
+        },{
+          "terms" : {
+            "dcp_content_provider" : [ "my_content_provider" ]
+          }
         }, {
           "terms" : {
             "dcp_tags" : [ "tag1", "tag2" ]

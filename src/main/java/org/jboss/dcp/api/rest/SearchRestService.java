@@ -178,11 +178,14 @@ public class SearchRestService extends RestServiceBase {
 		List<FilterBuilder> searchFilters = new ArrayList<FilterBuilder>();
 
 		// TODO _SEARCH other filtering by: dcp_contributors, activity_date_interval, dcp_activity_dates from,
-		// dcp_activity_dates to, dcp_content_provider
+		// dcp_activity_dates to
 
 		if (filters != null) {
 			if (filters.getDcpType() != null) {
 				searchFilters.add(new TermsFilterBuilder("dcp_type", filters.getDcpType()));
+			}
+			if (filters.getDcpContentProvider() != null) {
+				searchFilters.add(new TermsFilterBuilder("dcp_content_provider", filters.getDcpContentProvider()));
 			}
 			if (filters.getTags() != null && !filters.getTags().isEmpty()) {
 				searchFilters.add(new TermsFilterBuilder("dcp_tags", filters.getTags()));
