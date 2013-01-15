@@ -7,7 +7,7 @@
       "and" : {
         "filters" : [ {
           "terms" : {
-            "dcp_type" : [ "myDcpType" ]
+            "dcp_type" : [ "myDcpType", "myDcpType2" ]
           }
         },{
           "terms" : {

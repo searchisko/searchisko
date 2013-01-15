@@ -5,6 +5,8 @@
  */
 package org.jboss.dcp.api.util;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
@@ -122,7 +124,6 @@ public class QuerySettingsParser {
 		}
 
 		filters.setContentType(trimmToNull(params.getFirst(QuerySettings.Filters.CONTENT_TYPE_KEY)));
-		filters.setDcpType(trimmToNull(params.getFirst(QuerySettings.Filters.DCP_TYPE_KEY)));
 		filters.setDcpContentProvider(trimmToNull(params.getFirst(QuerySettings.Filters.DCP_CONTENT_PROVIDER)));
 
 		if (params.containsKey(QuerySettings.QUERY_KEY)) {
@@ -130,9 +131,9 @@ public class QuerySettingsParser {
 			settings.setQuery(normalizeQueryString(query));
 		}
 
-		if (params.containsKey(QuerySettings.Filters.PROJECTS_KEY)) {
-			filters.setProjects(params.get(QuerySettings.Filters.PROJECTS_KEY));
-		}
+		filters.setDcpType(normalizeListParam(params.get(QuerySettings.Filters.DCP_TYPE_KEY)));
+
+		filters.setProjects(normalizeListParam(params.get(QuerySettings.Filters.PROJECTS_KEY)));
 
 		if (params.containsKey(QuerySettings.Filters.START_KEY)) {
 			try {
@@ -150,9 +151,7 @@ public class QuerySettingsParser {
 			}
 		}
 
-		if (params.containsKey(QuerySettings.Filters.TAGS_KEY)) {
-			filters.setTags(params.get(QuerySettings.Filters.TAGS_KEY));
-		}
+		filters.setTags(normalizeListParam(params.get(QuerySettings.Filters.TAGS_KEY)));
 
 		if (params.containsKey(QuerySettings.SORT_BY_KEY)) {
 			String sortByString = params.getFirst(QuerySettings.SORT_BY_KEY);
@@ -169,6 +168,23 @@ public class QuerySettingsParser {
 			log.fine("Requested search settings: " + settings);
 		}
 		return settings;
+	}
+
+	protected static List<String> normalizeListParam(List<String> param) {
+		if (param == null || param.isEmpty()) {
+			return null;
+		}
+		List<String> ret = new ArrayList<String>();
+		for (String s : param) {
+			s = trimmToNull(s);
+			if (s != null) {
+				ret.add(s);
+			}
+		}
+		if (ret.isEmpty())
+			return null;
+		else
+			return ret;
 	}
 
 	/**

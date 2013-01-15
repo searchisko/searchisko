@@ -121,9 +121,9 @@ public class SearchRestService extends RestServiceBase {
 			srb.setIndices(ProviderService.extractSearchIndices(typeDef, type));
 			srb.setTypes(ProviderService.extractIndexType(typeDef, type));
 		} else {
-			String dcpType = null;
+			List<String> dcpTypesRequested = null;
 			if (querySettings.getFilters() != null) {
-				dcpType = querySettings.getFilters().getDcpType();
+				dcpTypesRequested = querySettings.getFilters().getDcpType();
 			}
 			Set<String> indexNames = new LinkedHashSet<String>();
 			List<Map<String, Object>> allProviders = providerService.listAllProviders();
@@ -135,8 +135,9 @@ public class SearchRestService extends RestServiceBase {
 					if (types != null) {
 						for (String typeName : types.keySet()) {
 							Map<String, Object> typeDef = types.get(typeName);
-							if ((dcpType == null && !ProviderService.extractSearchAllExcluded(typeDef))
-									|| (dcpType != null && dcpType.equals(ProviderService.extractDcpType(typeDef, typeName)))) {
+							if ((dcpTypesRequested == null && !ProviderService.extractSearchAllExcluded(typeDef))
+									|| (dcpTypesRequested != null && dcpTypesRequested.contains(ProviderService.extractDcpType(typeDef,
+											typeName)))) {
 								indexNames.addAll(Arrays.asList(ProviderService.extractSearchIndices(typeDef, typeName)));
 							}
 						}

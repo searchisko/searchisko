@@ -44,20 +44,21 @@ public class QuerySettingsParserTest {
 		{
 			params.add(QuerySettings.Filters.CONTENT_TYPE_KEY, "mytype ");
 			params.add(QuerySettings.Filters.DCP_TYPE_KEY, "myDcpType ");
+			params.add(QuerySettings.Filters.DCP_TYPE_KEY, " myDcpType2");
 			params.add(QuerySettings.Filters.DCP_CONTENT_PROVIDER, "myprovider ");
 			params.add(QuerySettings.QUERY_KEY, "query ** query2");
 			params.add(QuerySettings.SORT_BY_KEY, "new");
-			params.add(QuerySettings.Filters.PROJECTS_KEY, "proj1");
+			params.add(QuerySettings.Filters.PROJECTS_KEY, "proj1 ");
 			params.add(QuerySettings.Filters.PROJECTS_KEY, "proj2");
 			params.add(QuerySettings.Filters.START_KEY, "10");
 			params.add(QuerySettings.Filters.COUNT_KEY, "20");
-			params.add(QuerySettings.Filters.TAGS_KEY, "tg1");
+			params.add(QuerySettings.Filters.TAGS_KEY, "tg1 ");
 			params.add(QuerySettings.Filters.TAGS_KEY, "tg2");
 			QuerySettings ret = QuerySettingsParser.parseUriParams(params);
 			Assert.assertNotNull(ret);
 			// note query is sanitized in settings!
-			assertQuerySettings(ret, "mytype", "myDcpType", "query * query2", SortByValue.NEW, "proj1,proj2", 10, 20,
-					"tg1,tg2", "myprovider");
+			assertQuerySettings(ret, "mytype", "myDcpType,myDcpType2", "query * query2", SortByValue.NEW, "proj1,proj2", 10,
+					20, "tg1,tg2", "myprovider");
 		}
 	}
 
@@ -74,7 +75,8 @@ public class QuerySettingsParserTest {
 		QuerySettings.Filters filters = qs.getFilters();
 		Assert.assertNotNull("Filters instance expected not null", filters);
 		Assert.assertEquals(expectedContentType, filters.getContentType());
-		Assert.assertEquals(expectedDcpType, filters.getDcpType());
+		Assert.assertArrayEquals(expectedDcpType != null ? expectedDcpType.split(",") : null,
+				filters.getDcpType() != null ? filters.getDcpType().toArray(new String[] {}) : null);
 		Assert.assertEquals(expectedDcpProvider, filters.getDcpContentProvider());
 		Assert.assertArrayEquals(expectedFilterProjects != null ? expectedFilterProjects.split(",") : null,
 				filters.getProjects() != null ? filters.getProjects().toArray(new String[] {}) : null);

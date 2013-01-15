@@ -126,7 +126,7 @@ public class SearchRestServiceTest {
 		// case - dcp_type filter used
 		{
 			Mockito.reset(tested.providerService, searchRequestBuilderMock);
-			filters.setDcpType("issue");
+			filters.setDcpType(Arrays.asList(new String[] { "issue" }));
 			List<Map<String, Object>> mockedProvidersList = new ArrayList<Map<String, Object>>();
 			mockedProvidersList.add(TestUtils.loadJSONFromClasspathFile("/search/provider_1.json"));
 			mockedProvidersList.add(TestUtils.loadJSONFromClasspathFile("/search/provider_2.json"));
@@ -141,7 +141,7 @@ public class SearchRestServiceTest {
 		// case - dcp_type filter used - type with search_all_excluded=true can be used if named
 		{
 			Mockito.reset(tested.providerService, searchRequestBuilderMock);
-			filters.setDcpType("cosi");
+			filters.setDcpType(Arrays.asList(new String[] { "cosi" }));
 			List<Map<String, Object>> mockedProvidersList = new ArrayList<Map<String, Object>>();
 			mockedProvidersList.add(TestUtils.loadJSONFromClasspathFile("/search/provider_1.json"));
 			mockedProvidersList.add(TestUtils.loadJSONFromClasspathFile("/search/provider_2.json"));
@@ -150,6 +150,22 @@ public class SearchRestServiceTest {
 			Mockito.verify(tested.providerService).listAllProviders();
 			Mockito.verify(searchRequestBuilderMock).setIndices(
 					new String[] { "idx_provider1_cosi1", "idx_provider1_cosi2", "idx_provider2_cosi1", "idx_provider2_cosi2" });
+			Mockito.verifyNoMoreInteractions(searchRequestBuilderMock);
+		}
+
+		// case - dcp_type filter used with multiple values
+		{
+			Mockito.reset(tested.providerService, searchRequestBuilderMock);
+			filters.setDcpType(Arrays.asList("issue", "cosi"));
+			List<Map<String, Object>> mockedProvidersList = new ArrayList<Map<String, Object>>();
+			mockedProvidersList.add(TestUtils.loadJSONFromClasspathFile("/search/provider_1.json"));
+			mockedProvidersList.add(TestUtils.loadJSONFromClasspathFile("/search/provider_2.json"));
+			Mockito.when(tested.providerService.listAllProviders()).thenReturn(mockedProvidersList);
+			tested.handleSearchInicesAndTypes(querySettings, searchRequestBuilderMock);
+			Mockito.verify(tested.providerService).listAllProviders();
+			Mockito.verify(searchRequestBuilderMock).setIndices(
+					new String[] { "idx_provider1_cosi1", "idx_provider1_cosi2", "idx_provider1_issue", "idx_provider2_cosi1",
+							"idx_provider2_cosi2", "idx_provider2_issue1", "idx_provider2_issue2" });
 			Mockito.verifyNoMoreInteractions(searchRequestBuilderMock);
 		}
 
@@ -189,7 +205,7 @@ public class SearchRestServiceTest {
 
 		// case - all filters used
 		{
-			filters.setDcpType("myDcpType");
+			filters.setDcpType(Arrays.asList("myDcpType", "myDcpType2"));
 			filters.setDcpContentProvider("my_content_provider");
 			filters.setTags(Arrays.asList(new String[] { "tag1", "tag2" }));
 			filters.setProjects(Arrays.asList(new String[] { "pr1", "pr2" }));

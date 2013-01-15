@@ -32,7 +32,7 @@ public class QuerySettings {
 		/**
 		 * DCP Type Filtering - dcp_type field
 		 */
-		private String dcpType;
+		private List<String> dcpType;
 
 		public static final String PROJECTS_KEY = "project";
 
@@ -113,11 +113,11 @@ public class QuerySettings {
 			this.contentType = contentType;
 		}
 
-		public String getDcpType() {
+		public List<String> getDcpType() {
 			return dcpType;
 		}
 
-		public void setDcpType(String dcpType) {
+		public void setDcpType(List<String> dcpType) {
 			this.dcpType = dcpType;
 		}
 
