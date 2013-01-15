@@ -60,7 +60,8 @@ public class PersistanceBackendService extends ElasticsearchClientService {
 				client.admin().indices().prepareCreate(INDEX_NAME).execute().actionGet();
 				Map<String, Object> jbossorgEntity = new HashMap<String, Object>();
 				jbossorgEntity.put(ProviderService.NAME, "jbossorg");
-				jbossorgEntity.put(ProviderService.PASSWORD_HASH, "0228a71fe1a4cf2f8a177cad2f165f5a4e021af6");
+				// initial password: jbossorgjbossorg
+				jbossorgEntity.put(ProviderService.PASSWORD_HASH, "47dc8a4d65fe0cd5b1236b7e8612634e604a0c2f");
 				jbossorgEntity.put(ProviderService.SUPER_PROVIDER, true);
 
 				serv.create("jbossorg", jbossorgEntity);
