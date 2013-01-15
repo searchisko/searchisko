@@ -131,7 +131,7 @@ public class QuerySettingsParser {
 			settings.setQuery(normalizeQueryString(query));
 		}
 
-		filters.setDcpType(normalizeListParam(params.get(QuerySettings.Filters.DCP_TYPE_KEY)));
+		filters.setDcpTypes(normalizeListParam(params.get(QuerySettings.Filters.DCP_TYPES_KEY)));
 
 		filters.setProjects(normalizeListParam(params.get(QuerySettings.Filters.PROJECTS_KEY)));
 
@@ -152,6 +152,7 @@ public class QuerySettingsParser {
 		}
 
 		filters.setTags(normalizeListParam(params.get(QuerySettings.Filters.TAGS_KEY)));
+		filters.setContributors(normalizeListParam(params.get(QuerySettings.Filters.CONTRIBUTORS_KEY)));
 
 		if (params.containsKey(QuerySettings.SORT_BY_KEY)) {
 			String sortByString = params.getFirst(QuerySettings.SORT_BY_KEY);

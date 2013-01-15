@@ -126,7 +126,7 @@ public class SearchRestServiceTest {
 		// case - dcp_type filter used
 		{
 			Mockito.reset(tested.providerService, searchRequestBuilderMock);
-			filters.setDcpType(Arrays.asList(new String[] { "issue" }));
+			filters.setDcpTypes(Arrays.asList(new String[] { "issue" }));
 			List<Map<String, Object>> mockedProvidersList = new ArrayList<Map<String, Object>>();
 			mockedProvidersList.add(TestUtils.loadJSONFromClasspathFile("/search/provider_1.json"));
 			mockedProvidersList.add(TestUtils.loadJSONFromClasspathFile("/search/provider_2.json"));
@@ -141,7 +141,7 @@ public class SearchRestServiceTest {
 		// case - dcp_type filter used - type with search_all_excluded=true can be used if named
 		{
 			Mockito.reset(tested.providerService, searchRequestBuilderMock);
-			filters.setDcpType(Arrays.asList(new String[] { "cosi" }));
+			filters.setDcpTypes(Arrays.asList(new String[] { "cosi" }));
 			List<Map<String, Object>> mockedProvidersList = new ArrayList<Map<String, Object>>();
 			mockedProvidersList.add(TestUtils.loadJSONFromClasspathFile("/search/provider_1.json"));
 			mockedProvidersList.add(TestUtils.loadJSONFromClasspathFile("/search/provider_2.json"));
@@ -156,7 +156,7 @@ public class SearchRestServiceTest {
 		// case - dcp_type filter used with multiple values
 		{
 			Mockito.reset(tested.providerService, searchRequestBuilderMock);
-			filters.setDcpType(Arrays.asList("issue", "cosi"));
+			filters.setDcpTypes(Arrays.asList("issue", "cosi"));
 			List<Map<String, Object>> mockedProvidersList = new ArrayList<Map<String, Object>>();
 			mockedProvidersList.add(TestUtils.loadJSONFromClasspathFile("/search/provider_1.json"));
 			mockedProvidersList.add(TestUtils.loadJSONFromClasspathFile("/search/provider_2.json"));
@@ -205,10 +205,11 @@ public class SearchRestServiceTest {
 
 		// case - all filters used
 		{
-			filters.setDcpType(Arrays.asList("myDcpType", "myDcpType2"));
+			filters.setDcpTypes(Arrays.asList("myDcpType", "myDcpType2"));
 			filters.setDcpContentProvider("my_content_provider");
-			filters.setTags(Arrays.asList(new String[] { "tag1", "tag2" }));
-			filters.setProjects(Arrays.asList(new String[] { "pr1", "pr2" }));
+			filters.setTags(Arrays.asList("tag1", "tag2"));
+			filters.setProjects(Arrays.asList("pr1", "pr2"));
+			filters.setContributors(Arrays.asList("John Doe <john@doe.com>", "Dan Boo <boo@boo.net>"));
 			QueryBuilder qb = QueryBuilders.matchAllQuery();
 			QueryBuilder qbRes = tested.handleCommonFiltersSettings(querySettings, qb);
 			TestUtils.assertJsonContentFromClasspathFile("/search/query_filters_moreFilters.json", qbRes.toString());
@@ -292,6 +293,46 @@ public class SearchRestServiceTest {
 			QueryBuilder qb = QueryBuilders.matchAllQuery();
 			QueryBuilder qbRes = tested.handleCommonFiltersSettings(querySettings, qb);
 			TestUtils.assertJsonContentFromClasspathFile("/search/query_filters_tags_more.json", qbRes.toString());
+		}
+	}
+
+	@Test
+	public void handleCommonFiltersSettings_contributors() throws IOException {
+		SearchRestService tested = new SearchRestService();
+		tested.log = Logger.getLogger("testlogger");
+
+		QuerySettings querySettings = new QuerySettings();
+		Filters filters = new Filters();
+		querySettings.setFilters(filters);
+		// case - list of contributors is null
+		{
+			QueryBuilder qb = QueryBuilders.matchAllQuery();
+			QueryBuilder qbRes = tested.handleCommonFiltersSettings(querySettings, qb);
+			TestUtils.assertJsonContentFromClasspathFile("/search/query_match_all.json", qbRes.toString());
+		}
+
+		// case - list of contributors is empty
+		{
+			filters.setContributors(Arrays.asList(new String[] {}));
+			QueryBuilder qb = QueryBuilders.matchAllQuery();
+			QueryBuilder qbRes = tested.handleCommonFiltersSettings(querySettings, qb);
+			TestUtils.assertJsonContentFromClasspathFile("/search/query_match_all.json", qbRes.toString());
+		}
+
+		// case - one contributor
+		{
+			filters.setContributors(Arrays.asList(new String[] { "tg1" }));
+			QueryBuilder qb = QueryBuilders.matchAllQuery();
+			QueryBuilder qbRes = tested.handleCommonFiltersSettings(querySettings, qb);
+			TestUtils.assertJsonContentFromClasspathFile("/search/query_filters_contributors_one.json", qbRes.toString());
+		}
+
+		// case - more contributors
+		{
+			filters.setContributors(Arrays.asList(new String[] { "tg1", "tg2", "tg3", "tg4" }));
+			QueryBuilder qb = QueryBuilders.matchAllQuery();
+			QueryBuilder qbRes = tested.handleCommonFiltersSettings(querySettings, qb);
+			TestUtils.assertJsonContentFromClasspathFile("/search/query_filters_contributors_more.json", qbRes.toString());
 		}
 	}
 

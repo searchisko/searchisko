@@ -123,7 +123,7 @@ public class SearchRestService extends RestServiceBase {
 		} else {
 			List<String> dcpTypesRequested = null;
 			if (querySettings.getFilters() != null) {
-				dcpTypesRequested = querySettings.getFilters().getDcpType();
+				dcpTypesRequested = querySettings.getFilters().getDcpTypes();
 			}
 			Set<String> indexNames = new LinkedHashSet<String>();
 			List<Map<String, Object>> allProviders = providerService.listAllProviders();
@@ -178,22 +178,14 @@ public class SearchRestService extends RestServiceBase {
 		QuerySettings.Filters filters = querySettings.getFilters();
 		List<FilterBuilder> searchFilters = new ArrayList<FilterBuilder>();
 
-		// TODO _SEARCH other filtering by: dcp_contributors, activity_date_interval, dcp_activity_dates from,
-		// dcp_activity_dates to
+		// TODO _SEARCH other filtering by: activity_date_interval, dcp_activity_dates from, dcp_activity_dates to
 
 		if (filters != null) {
-			if (filters.getDcpType() != null) {
-				searchFilters.add(new TermsFilterBuilder("dcp_type", filters.getDcpType()));
-			}
-			if (filters.getDcpContentProvider() != null) {
-				searchFilters.add(new TermsFilterBuilder("dcp_content_provider", filters.getDcpContentProvider()));
-			}
-			if (filters.getTags() != null && !filters.getTags().isEmpty()) {
-				searchFilters.add(new TermsFilterBuilder("dcp_tags", filters.getTags()));
-			}
-			if (filters.getProjects() != null && !filters.getProjects().isEmpty()) {
-				searchFilters.add(new TermsFilterBuilder("dcp_project", filters.getProjects()));
-			}
+			addFilter(searchFilters, "dcp_type", filters.getDcpTypes());
+			addFilter(searchFilters, "dcp_content_provider", filters.getDcpContentProvider());
+			addFilter(searchFilters, "dcp_tags", filters.getTags());
+			addFilter(searchFilters, "dcp_project", filters.getProjects());
+			addFilter(searchFilters, "dcp_contributors", filters.getContributors());
 		}
 
 		if (!searchFilters.isEmpty()) {
@@ -201,6 +193,18 @@ public class SearchRestService extends RestServiceBase {
 					.size()])));
 		} else {
 			return qb;
+		}
+	}
+
+	private void addFilter(List<FilterBuilder> searchFilters, String filterField, List<String> filterValue) {
+		if (filterValue != null && !filterValue.isEmpty()) {
+			searchFilters.add(new TermsFilterBuilder(filterField, filterValue));
+		}
+	}
+
+	private void addFilter(List<FilterBuilder> searchFilters, String filterField, String filterValue) {
+		if (filterValue != null && !filterValue.isEmpty()) {
+			searchFilters.add(new TermsFilterBuilder(filterField, filterValue));
 		}
 	}
 

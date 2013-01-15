@@ -10,6 +10,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.lang.reflect.Method;
+import java.util.List;
 import java.util.Map;
 
 import javax.ws.rs.core.Response;
@@ -33,6 +34,17 @@ import org.junit.Assert;
  * @author Vlastimil Elias (velias at redhat dot com)
  */
 public abstract class TestUtils {
+
+	/**
+	 * Assert list contains expected values.
+	 * 
+	 * @param expectedValuesCommaSeparated comma separated list of expected values
+	 * @param actualValue actual list with string values
+	 */
+	public static void assertEqualsListValue(String expectedValuesCommaSeparated, List<String> actualValue) {
+		Assert.assertArrayEquals(expectedValuesCommaSeparated != null ? expectedValuesCommaSeparated.split(",") : null,
+				actualValue != null ? actualValue.toArray(new String[] {}) : null);
+	}
 
 	/**
 	 * Assert REST API method is accessible by all users (even non authenticated).

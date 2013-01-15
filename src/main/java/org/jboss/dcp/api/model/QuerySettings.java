@@ -27,18 +27,18 @@ public class QuerySettings {
 		 */
 		private String contentType;
 
-		public static final String DCP_TYPE_KEY = "dcp_type";
+		public static final String DCP_TYPES_KEY = "dcp_type";
 
 		/**
 		 * DCP Type Filtering - dcp_type field
 		 */
-		private List<String> dcpType;
+		private List<String> dcpTypes;
 
-		public static final String PROJECTS_KEY = "project";
+		public static final String DCP_CONTENT_PROVIDER = "content_provider";
 
 		private String dcpContentProvider;
 
-		public static final String DCP_CONTENT_PROVIDER = "content_provider";
+		public static final String PROJECTS_KEY = "project";
 
 		/**
 		 * Filtering based on project
@@ -51,6 +51,13 @@ public class QuerySettings {
 		private List<String> tags = null;
 
 		public static final String TAGS_KEY = "tag";
+
+		/**
+		 * Filtering based on contributors
+		 */
+		private List<String> contributors = null;
+
+		public static final String CONTRIBUTORS_KEY = "contributor";
 
 		/**
 		 * Results Paging - start index
@@ -68,9 +75,9 @@ public class QuerySettings {
 
 		@Override
 		public String toString() {
-			return "Filters [contentType=" + contentType + ", dcpType=" + dcpType + ", dcpContentProvider="
-					+ dcpContentProvider + ", projects=" + projects + ", tags=" + tags + ", start=" + start + ", count=" + count
-					+ "]";
+			return "Filters [contentType=" + contentType + ", dcpTypes=" + dcpTypes + ", dcpContentProvider="
+					+ dcpContentProvider + ", projects=" + projects + ", tags=" + tags + ", contributors=" + contributors
+					+ ", start=" + start + ", count=" + count + "]";
 		}
 
 		public void setProjects(List<String> projects) {
@@ -113,12 +120,12 @@ public class QuerySettings {
 			this.contentType = contentType;
 		}
 
-		public List<String> getDcpType() {
-			return dcpType;
+		public List<String> getDcpTypes() {
+			return dcpTypes;
 		}
 
-		public void setDcpType(List<String> dcpType) {
-			this.dcpType = dcpType;
+		public void setDcpTypes(List<String> dcpTypes) {
+			this.dcpTypes = dcpTypes;
 		}
 
 		public String getDcpContentProvider() {
@@ -127,6 +134,14 @@ public class QuerySettings {
 
 		public void setDcpContentProvider(String dcpContentProvider) {
 			this.dcpContentProvider = dcpContentProvider;
+		}
+
+		public List<String> getContributors() {
+			return contributors;
+		}
+
+		public void setContributors(List<String> contributors) {
+			this.contributors = contributors;
 		}
 
 	}

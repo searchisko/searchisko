@@ -5,10 +5,14 @@
  */
 package org.jboss.dcp.api.util;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+
 import javax.ws.rs.core.MultivaluedMap;
 
 import org.jboss.dcp.api.model.QuerySettings;
 import org.jboss.dcp.api.model.QuerySettings.SortByValue;
+import org.jboss.dcp.api.testtools.TestUtils;
 import org.jboss.dcp.api.util.QuerySettingsParser.MonthIntervalNames;
 import org.jboss.dcp.api.util.QuerySettingsParser.PastIntervalNames;
 import org.jboss.resteasy.specimpl.MultivaluedMapImpl;
@@ -43,48 +47,164 @@ public class QuerySettingsParserTest {
 		// all params used
 		{
 			params.add(QuerySettings.Filters.CONTENT_TYPE_KEY, "mytype ");
-			params.add(QuerySettings.Filters.DCP_TYPE_KEY, "myDcpType ");
-			params.add(QuerySettings.Filters.DCP_TYPE_KEY, " myDcpType2");
+			params.add(QuerySettings.Filters.DCP_TYPES_KEY, "myDcpType ");
+			params.add(QuerySettings.Filters.DCP_TYPES_KEY, " myDcpType2");
+			params.add(QuerySettings.Filters.DCP_TYPES_KEY, " ");
 			params.add(QuerySettings.Filters.DCP_CONTENT_PROVIDER, "myprovider ");
 			params.add(QuerySettings.QUERY_KEY, "query ** query2");
 			params.add(QuerySettings.SORT_BY_KEY, "new");
 			params.add(QuerySettings.Filters.PROJECTS_KEY, "proj1 ");
 			params.add(QuerySettings.Filters.PROJECTS_KEY, "proj2");
+			params.add(QuerySettings.Filters.PROJECTS_KEY, " ");
 			params.add(QuerySettings.Filters.START_KEY, "10");
 			params.add(QuerySettings.Filters.COUNT_KEY, "20");
 			params.add(QuerySettings.Filters.TAGS_KEY, "tg1 ");
 			params.add(QuerySettings.Filters.TAGS_KEY, "tg2");
+			params.add(QuerySettings.Filters.TAGS_KEY, "  ");
+			params.add(QuerySettings.Filters.CONTRIBUTORS_KEY, "John Doe <john@doe.com> ");
+			params.add(QuerySettings.Filters.CONTRIBUTORS_KEY, " Dan Boo <boo@boo.net>");
+			params.add(QuerySettings.Filters.CONTRIBUTORS_KEY, "  ");
 			QuerySettings ret = QuerySettingsParser.parseUriParams(params);
 			Assert.assertNotNull(ret);
-			// note query is sanitized in settings!
+			// note - we test here query is sanitized in settings!
 			assertQuerySettings(ret, "mytype", "myDcpType,myDcpType2", "query * query2", SortByValue.NEW, "proj1,proj2", 10,
-					20, "tg1,tg2", "myprovider");
+					20, "tg1,tg2", "myprovider", "John Doe <john@doe.com>,Dan Boo <boo@boo.net>");
 		}
 	}
 
 	private void assertQuerySettingsEmpty(QuerySettings qs) {
-		assertQuerySettings(qs, null, null, null, null, null, null, null, null, null);
+		assertQuerySettings(qs, null, null, null, null, null, null, null, null, null, null);
 	}
 
-	private void assertQuerySettings(QuerySettings qs, String expectedContentType, String expectedDcpType,
+	private void assertQuerySettings(QuerySettings qs, String expectedContentType, String expectedDcpTypes,
 			String expectedQuery, SortByValue expectedSortBy, String expectedFilterProjects, Integer expectedFilterStart,
-			Integer expectedFilterCount, String expectedFilterTags, String expectedDcpProvider) {
+			Integer expectedFilterCount, String expectedFilterTags, String expectedDcpProvider, String expectedContributors) {
 
 		Assert.assertEquals(expectedQuery, qs.getQuery());
 		Assert.assertEquals(expectedSortBy, qs.getSortBy());
 		QuerySettings.Filters filters = qs.getFilters();
 		Assert.assertNotNull("Filters instance expected not null", filters);
 		Assert.assertEquals(expectedContentType, filters.getContentType());
-		Assert.assertArrayEquals(expectedDcpType != null ? expectedDcpType.split(",") : null,
-				filters.getDcpType() != null ? filters.getDcpType().toArray(new String[] {}) : null);
+		TestUtils.assertEqualsListValue(expectedDcpTypes, filters.getDcpTypes());
 		Assert.assertEquals(expectedDcpProvider, filters.getDcpContentProvider());
-		Assert.assertArrayEquals(expectedFilterProjects != null ? expectedFilterProjects.split(",") : null,
-				filters.getProjects() != null ? filters.getProjects().toArray(new String[] {}) : null);
+		TestUtils.assertEqualsListValue(expectedFilterProjects, filters.getProjects());
 		Assert.assertEquals(expectedFilterStart, filters.getStart());
 		Assert.assertEquals(expectedFilterCount, filters.getCount());
-		Assert.assertArrayEquals(expectedFilterTags != null ? expectedFilterTags.split(",") : null,
-				filters.getTags() != null ? filters.getTags().toArray(new String[] {}) : null);
+		TestUtils.assertEqualsListValue(expectedFilterTags, filters.getTags());
+		TestUtils.assertEqualsListValue(expectedContributors, filters.getContributors());
 
+	}
+
+	@Test
+	public void parseUriParams_dcpType() {
+		// case - no param in request
+		{
+			MultivaluedMap<String, String> params = new MultivaluedMapImpl<String, String>();
+			QuerySettings ret = QuerySettingsParser.parseUriParams(params);
+			Assert.assertNotNull(ret);
+			Assert.assertNull(ret.getFilters().getDcpTypes());
+		}
+		// case - one empty param in request leads to null
+		{
+			MultivaluedMap<String, String> params = new MultivaluedMapImpl<String, String>();
+			params.add(QuerySettings.Filters.DCP_TYPES_KEY, " ");
+			QuerySettings ret = QuerySettingsParser.parseUriParams(params);
+			Assert.assertNotNull(ret);
+			Assert.assertNull(ret.getFilters().getDcpTypes());
+		}
+		// case - more empty params in request lead to null
+		{
+			MultivaluedMap<String, String> params = new MultivaluedMapImpl<String, String>();
+			params.add(QuerySettings.Filters.DCP_TYPES_KEY, " ");
+			params.add(QuerySettings.Filters.DCP_TYPES_KEY, "");
+			QuerySettings ret = QuerySettingsParser.parseUriParams(params);
+			Assert.assertNotNull(ret);
+			Assert.assertNull(ret.getFilters().getDcpTypes());
+		}
+	}
+
+	@Test
+	public void parseUriParams_projects() {
+		// case - no param in request
+		{
+			MultivaluedMap<String, String> params = new MultivaluedMapImpl<String, String>();
+			QuerySettings ret = QuerySettingsParser.parseUriParams(params);
+			Assert.assertNotNull(ret);
+			Assert.assertNull(ret.getFilters().getProjects());
+		}
+		// case - one empty param in request leads to null
+		{
+			MultivaluedMap<String, String> params = new MultivaluedMapImpl<String, String>();
+			params.add(QuerySettings.Filters.PROJECTS_KEY, " ");
+			QuerySettings ret = QuerySettingsParser.parseUriParams(params);
+			Assert.assertNotNull(ret);
+			Assert.assertNull(ret.getFilters().getProjects());
+		}
+		// case - more empty params in request lead to null
+		{
+			MultivaluedMap<String, String> params = new MultivaluedMapImpl<String, String>();
+			params.add(QuerySettings.Filters.PROJECTS_KEY, " ");
+			params.add(QuerySettings.Filters.PROJECTS_KEY, "");
+			QuerySettings ret = QuerySettingsParser.parseUriParams(params);
+			Assert.assertNotNull(ret);
+			Assert.assertNull(ret.getFilters().getProjects());
+		}
+	}
+
+	@Test
+	public void parseUriParams_tags() {
+		// case - no param in request
+		{
+			MultivaluedMap<String, String> params = new MultivaluedMapImpl<String, String>();
+			QuerySettings ret = QuerySettingsParser.parseUriParams(params);
+			Assert.assertNotNull(ret);
+			Assert.assertNull(ret.getFilters().getTags());
+		}
+		// case - one empty param in request leads to null
+		{
+			MultivaluedMap<String, String> params = new MultivaluedMapImpl<String, String>();
+			params.add(QuerySettings.Filters.TAGS_KEY, " ");
+			QuerySettings ret = QuerySettingsParser.parseUriParams(params);
+			Assert.assertNotNull(ret);
+			Assert.assertNull(ret.getFilters().getTags());
+		}
+		// case - more empty params in request lead to null
+		{
+			MultivaluedMap<String, String> params = new MultivaluedMapImpl<String, String>();
+			params.add(QuerySettings.Filters.TAGS_KEY, " ");
+			params.add(QuerySettings.Filters.TAGS_KEY, "");
+			QuerySettings ret = QuerySettingsParser.parseUriParams(params);
+			Assert.assertNotNull(ret);
+			Assert.assertNull(ret.getFilters().getTags());
+		}
+	}
+
+	@Test
+	public void parseUriParams_contributors() {
+		// case - no param in request
+		{
+			MultivaluedMap<String, String> params = new MultivaluedMapImpl<String, String>();
+			QuerySettings ret = QuerySettingsParser.parseUriParams(params);
+			Assert.assertNotNull(ret);
+			Assert.assertNull(ret.getFilters().getTags());
+		}
+		// case - one empty param in request leads to null
+		{
+			MultivaluedMap<String, String> params = new MultivaluedMapImpl<String, String>();
+			params.add(QuerySettings.Filters.CONTRIBUTORS_KEY, " ");
+			QuerySettings ret = QuerySettingsParser.parseUriParams(params);
+			Assert.assertNotNull(ret);
+			Assert.assertNull(ret.getFilters().getContributors());
+		}
+		// case - more empty params in request lead to null
+		{
+			MultivaluedMap<String, String> params = new MultivaluedMapImpl<String, String>();
+			params.add(QuerySettings.Filters.CONTRIBUTORS_KEY, " ");
+			params.add(QuerySettings.Filters.CONTRIBUTORS_KEY, "");
+			QuerySettings ret = QuerySettingsParser.parseUriParams(params);
+			Assert.assertNotNull(ret);
+			Assert.assertNull(ret.getFilters().getContributors());
+		}
 	}
 
 	@Test
@@ -228,6 +348,19 @@ public class QuerySettingsParserTest {
 		Assert.assertEquals("a", QuerySettingsParser.trimmToNull("a "));
 		Assert.assertEquals("a", QuerySettingsParser.trimmToNull(" a"));
 		Assert.assertEquals("abcd aaa", QuerySettingsParser.trimmToNull("   abcd aaa \t   "));
+	}
+
+	@Test
+	public void normalizeListParam() {
+		Assert.assertNull(QuerySettingsParser.normalizeListParam(null));
+		Assert.assertNull(QuerySettingsParser.normalizeListParam(new ArrayList<String>()));
+		Assert.assertNull(QuerySettingsParser.normalizeListParam(Arrays.asList("")));
+		Assert.assertNull(QuerySettingsParser.normalizeListParam(Arrays.asList("", " ", " \n  \t")));
+		Assert.assertArrayEquals(new String[] { "ahoj" },
+				QuerySettingsParser.normalizeListParam(Arrays.asList("", " ", "ahoj ")).toArray());
+		Assert.assertArrayEquals(new String[] { "ahoj", "cao" },
+				QuerySettingsParser.normalizeListParam(Arrays.asList("", " ", "ahoj ", "\tcao ")).toArray());
+
 	}
 
 }

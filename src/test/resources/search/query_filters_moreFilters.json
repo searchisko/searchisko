@@ -21,6 +21,10 @@
           "terms" : {
             "dcp_project" : [ "pr1", "pr2" ]
           }
+        }, {
+          "terms" : {
+            "dcp_contributors" : [ "John Doe <john@doe.com>", "Dan Boo <boo@boo.net>" ]
+          }
         } ]
       }
     }
