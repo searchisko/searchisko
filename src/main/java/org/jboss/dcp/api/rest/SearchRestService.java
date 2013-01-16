@@ -27,6 +27,8 @@ import javax.ws.rs.core.UriInfo;
 import org.elasticsearch.ElasticSearchException;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
+import org.elasticsearch.common.joda.time.format.DateTimeFormatter;
+import org.elasticsearch.common.joda.time.format.ISODateTimeFormat;
 import org.elasticsearch.common.settings.SettingsException;
 import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.index.query.AndFilterBuilder;
@@ -34,6 +36,7 @@ import org.elasticsearch.index.query.FilterBuilder;
 import org.elasticsearch.index.query.FilteredQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.index.query.RangeFilterBuilder;
 import org.elasticsearch.index.query.TermsFilterBuilder;
 import org.elasticsearch.indices.IndexMissingException;
 import org.elasticsearch.search.sort.SortOrder;
@@ -170,6 +173,8 @@ public class SearchRestService extends RestServiceBase {
 
 	}
 
+	private static final DateTimeFormatter DATE_TIME_FORMATTER_UTC = ISODateTimeFormat.dateTime().withZoneUTC();
+
 	/**
 	 * @param querySettings
 	 * @return filter builder if some filters are here, null if not filters necessary
@@ -178,14 +183,27 @@ public class SearchRestService extends RestServiceBase {
 		QuerySettings.Filters filters = querySettings.getFilters();
 		List<FilterBuilder> searchFilters = new ArrayList<FilterBuilder>();
 
-		// TODO _SEARCH other filtering by: activity_date_interval, dcp_activity_dates from, dcp_activity_dates to
-
 		if (filters != null) {
 			addFilter(searchFilters, "dcp_type", filters.getDcpTypes());
 			addFilter(searchFilters, "dcp_content_provider", filters.getDcpContentProvider());
 			addFilter(searchFilters, "dcp_tags", filters.getTags());
 			addFilter(searchFilters, "dcp_project", filters.getProjects());
 			addFilter(searchFilters, "dcp_contributors", filters.getContributors());
+			if (filters.getActivityDateInterval() != null) {
+				RangeFilterBuilder range = new RangeFilterBuilder("dcp_activity_dates");
+				range.from(DATE_TIME_FORMATTER_UTC.print(filters.getActivityDateInterval().getFromTimestamp())).includeLower(
+						true);
+				searchFilters.add(range);
+			} else if (filters.getActivityDateFrom() != null || filters.getActivityDateTo() != null) {
+				RangeFilterBuilder range = new RangeFilterBuilder("dcp_activity_dates");
+				if (filters.getActivityDateFrom() != null) {
+					range.from(DATE_TIME_FORMATTER_UTC.print(filters.getActivityDateFrom())).includeLower(true);
+				}
+				if (filters.getActivityDateTo() != null) {
+					range.to(DATE_TIME_FORMATTER_UTC.print(filters.getActivityDateTo())).includeUpper(true);
+				}
+				searchFilters.add(range);
+			}
 		}
 
 		if (!searchFilters.isEmpty()) {

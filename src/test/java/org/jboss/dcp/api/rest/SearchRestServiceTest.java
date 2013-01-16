@@ -23,6 +23,7 @@ import org.jboss.dcp.api.model.QuerySettings.Filters;
 import org.jboss.dcp.api.model.QuerySettings.SortByValue;
 import org.jboss.dcp.api.service.ProviderService;
 import org.jboss.dcp.api.testtools.TestUtils;
+import org.jboss.dcp.api.util.QuerySettingsParser.PastIntervalName;
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -210,9 +211,72 @@ public class SearchRestServiceTest {
 			filters.setTags(Arrays.asList("tag1", "tag2"));
 			filters.setProjects(Arrays.asList("pr1", "pr2"));
 			filters.setContributors(Arrays.asList("John Doe <john@doe.com>", "Dan Boo <boo@boo.net>"));
+			// activityDateInterval not tested here because variable, see separate test
+			filters.setActivityDateFrom(1359232356456L);
+			filters.setActivityDateTo(1359232366456L);
 			QueryBuilder qb = QueryBuilders.matchAllQuery();
 			QueryBuilder qbRes = tested.handleCommonFiltersSettings(querySettings, qb);
 			TestUtils.assertJsonContentFromClasspathFile("/search/query_filters_moreFilters.json", qbRes.toString());
+		}
+	}
+
+	@Test
+	public void handleCommonFiltersSettings_ActivityDateInterval() throws IOException {
+		SearchRestService tested = new SearchRestService();
+		tested.log = Logger.getLogger("testlogger");
+
+		QuerySettings querySettings = new QuerySettings();
+		Filters filters = new Filters();
+		querySettings.setFilters(filters);
+		filters.setActivityDateInterval(PastIntervalName.DAY);
+		// set date_from and date_to to some values to test this is ignored if interval is used
+		filters.setActivityDateTo(1359232366456L);
+		filters.setActivityDateFrom(1359232356456L);
+		{
+			QueryBuilder qb = QueryBuilders.matchAllQuery();
+			QueryBuilder qbRes = tested.handleCommonFiltersSettings(querySettings, qb);
+			String s = qbRes.toString().replaceAll("[ \\n\\t]", "");
+			Assert.assertTrue(s.contains("\"range\":{\"dcp_activity_dates\":{\"from\":\""));
+			Assert.assertTrue(s.contains("\"to\":null"));
+			Assert.assertFalse(s.contains("2013-01-26T20:32:46.456Z"));
+			Assert.assertFalse(s.contains("2013-01-26T20:32:36.456Z"));
+		}
+	}
+
+	@Test
+	public void handleCommonFiltersSettings_ActivityDateFromTo() throws IOException {
+		SearchRestService tested = new SearchRestService();
+		tested.log = Logger.getLogger("testlogger");
+
+		QuerySettings querySettings = new QuerySettings();
+		Filters filters = new Filters();
+		querySettings.setFilters(filters);
+
+		// case - only from
+		filters.setActivityDateFrom(1359232356456L);
+		filters.setActivityDateTo(null);
+		{
+			QueryBuilder qb = QueryBuilders.matchAllQuery();
+			QueryBuilder qbRes = tested.handleCommonFiltersSettings(querySettings, qb);
+			TestUtils.assertJsonContentFromClasspathFile("/search/query_filters_activityDateFrom.json", qbRes.toString());
+		}
+
+		// case - only to
+		filters.setActivityDateFrom(null);
+		filters.setActivityDateTo(1359232366456L);
+		{
+			QueryBuilder qb = QueryBuilders.matchAllQuery();
+			QueryBuilder qbRes = tested.handleCommonFiltersSettings(querySettings, qb);
+			TestUtils.assertJsonContentFromClasspathFile("/search/query_filters_activityDateTo.json", qbRes.toString());
+		}
+
+		// case - both bounds
+		filters.setActivityDateFrom(1359232356456L);
+		filters.setActivityDateTo(1359232366456L);
+		{
+			QueryBuilder qb = QueryBuilders.matchAllQuery();
+			QueryBuilder qbRes = tested.handleCommonFiltersSettings(querySettings, qb);
+			TestUtils.assertJsonContentFromClasspathFile("/search/query_filters_activityDateFromTo.json", qbRes.toString());
 		}
 	}
 

@@ -13,8 +13,7 @@ import javax.ws.rs.core.MultivaluedMap;
 import org.jboss.dcp.api.model.QuerySettings;
 import org.jboss.dcp.api.model.QuerySettings.SortByValue;
 import org.jboss.dcp.api.testtools.TestUtils;
-import org.jboss.dcp.api.util.QuerySettingsParser.MonthIntervalNames;
-import org.jboss.dcp.api.util.QuerySettingsParser.PastIntervalNames;
+import org.jboss.dcp.api.util.QuerySettingsParser.PastIntervalName;
 import org.jboss.resteasy.specimpl.MultivaluedMapImpl;
 import org.junit.Assert;
 import org.junit.Test;
@@ -64,21 +63,26 @@ public class QuerySettingsParserTest {
 			params.add(QuerySettings.Filters.CONTRIBUTORS_KEY, "John Doe <john@doe.com> ");
 			params.add(QuerySettings.Filters.CONTRIBUTORS_KEY, " Dan Boo <boo@boo.net>");
 			params.add(QuerySettings.Filters.CONTRIBUTORS_KEY, "  ");
+			params.add(QuerySettings.Filters.ACTIVITY_DATE_INTERVAL_KEY, "week");
+			params.add(QuerySettings.Filters.ACTIVITY_DATE_FROM_KEY, "2013-01-26T20:32:36.456Z");
+			params.add(QuerySettings.Filters.ACTIVITY_DATE_TO_KEY, "2013-01-26T20:32:46.456+0100");
 			QuerySettings ret = QuerySettingsParser.parseUriParams(params);
 			Assert.assertNotNull(ret);
 			// note - we test here query is sanitized in settings!
 			assertQuerySettings(ret, "mytype", "myDcpType,myDcpType2", "query * query2", SortByValue.NEW, "proj1,proj2", 10,
-					20, "tg1,tg2", "myprovider", "John Doe <john@doe.com>,Dan Boo <boo@boo.net>");
+					20, "tg1,tg2", "myprovider", "John Doe <john@doe.com>,Dan Boo <boo@boo.net>", PastIntervalName.WEEK,
+					1359232356456L, 1359228766456L);
 		}
 	}
 
 	private void assertQuerySettingsEmpty(QuerySettings qs) {
-		assertQuerySettings(qs, null, null, null, null, null, null, null, null, null, null);
+		assertQuerySettings(qs, null, null, null, null, null, null, null, null, null, null, null, null, null);
 	}
 
 	private void assertQuerySettings(QuerySettings qs, String expectedContentType, String expectedDcpTypes,
 			String expectedQuery, SortByValue expectedSortBy, String expectedFilterProjects, Integer expectedFilterStart,
-			Integer expectedFilterCount, String expectedFilterTags, String expectedDcpProvider, String expectedContributors) {
+			Integer expectedFilterCount, String expectedFilterTags, String expectedDcpProvider, String expectedContributors,
+			PastIntervalName expectedADInterval, Long expectedADFrom, Long expectedADTo) {
 
 		Assert.assertEquals(expectedQuery, qs.getQuery());
 		Assert.assertEquals(expectedSortBy, qs.getSortBy());
@@ -92,7 +96,9 @@ public class QuerySettingsParserTest {
 		Assert.assertEquals(expectedFilterCount, filters.getCount());
 		TestUtils.assertEqualsListValue(expectedFilterTags, filters.getTags());
 		TestUtils.assertEqualsListValue(expectedContributors, filters.getContributors());
-
+		Assert.assertEquals(expectedADInterval, filters.getActivityDateInterval());
+		Assert.assertEquals(expectedADFrom, filters.getActivityDateFrom());
+		Assert.assertEquals(expectedADTo, filters.getActivityDateTo());
 	}
 
 	@Test
@@ -186,7 +192,7 @@ public class QuerySettingsParserTest {
 			MultivaluedMap<String, String> params = new MultivaluedMapImpl<String, String>();
 			QuerySettings ret = QuerySettingsParser.parseUriParams(params);
 			Assert.assertNotNull(ret);
-			Assert.assertNull(ret.getFilters().getTags());
+			Assert.assertNull(ret.getFilters().getContributors());
 		}
 		// case - one empty param in request leads to null
 		{
@@ -204,6 +210,90 @@ public class QuerySettingsParserTest {
 			QuerySettings ret = QuerySettingsParser.parseUriParams(params);
 			Assert.assertNotNull(ret);
 			Assert.assertNull(ret.getFilters().getContributors());
+		}
+	}
+
+	@Test
+	public void parseUriParams_activityDateInterval() {
+		// case - no param in request
+		{
+			MultivaluedMap<String, String> params = new MultivaluedMapImpl<String, String>();
+			QuerySettings ret = QuerySettingsParser.parseUriParams(params);
+			Assert.assertNotNull(ret);
+			Assert.assertNull(ret.getFilters().getActivityDateInterval());
+		}
+		// case - empty param in request leads to null
+		{
+			MultivaluedMap<String, String> params = new MultivaluedMapImpl<String, String>();
+			params.add(QuerySettings.Filters.ACTIVITY_DATE_INTERVAL_KEY, " ");
+			QuerySettings ret = QuerySettingsParser.parseUriParams(params);
+			Assert.assertNotNull(ret);
+			Assert.assertNull(ret.getFilters().getActivityDateInterval());
+		}
+		// case - bad param in request leads to exception
+		try {
+			MultivaluedMap<String, String> params = new MultivaluedMapImpl<String, String>();
+			params.add(QuerySettings.Filters.ACTIVITY_DATE_INTERVAL_KEY, "bad");
+			QuerySettingsParser.parseUriParams(params);
+			Assert.fail("IllegalArgumentException expected");
+		} catch (IllegalArgumentException e) {
+			// OK
+		}
+	}
+
+	@Test
+	public void parseUriParams_activityDateFrom() {
+		// case - no param in request
+		{
+			MultivaluedMap<String, String> params = new MultivaluedMapImpl<String, String>();
+			QuerySettings ret = QuerySettingsParser.parseUriParams(params);
+			Assert.assertNotNull(ret);
+			Assert.assertNull(ret.getFilters().getActivityDateFrom());
+		}
+		// case - empty param in request leads to null
+		{
+			MultivaluedMap<String, String> params = new MultivaluedMapImpl<String, String>();
+			params.add(QuerySettings.Filters.ACTIVITY_DATE_FROM_KEY, " ");
+			QuerySettings ret = QuerySettingsParser.parseUriParams(params);
+			Assert.assertNotNull(ret);
+			Assert.assertNull(ret.getFilters().getActivityDateFrom());
+		}
+		// case - bad param in request leads to exception
+		try {
+			MultivaluedMap<String, String> params = new MultivaluedMapImpl<String, String>();
+			params.add(QuerySettings.Filters.ACTIVITY_DATE_FROM_KEY, "bad");
+			QuerySettingsParser.parseUriParams(params);
+			Assert.fail("IllegalArgumentException expected");
+		} catch (IllegalArgumentException e) {
+			// OK
+		}
+	}
+
+	@Test
+	public void parseUriParams_activityDateTo() {
+		// case - no param in request
+		{
+			MultivaluedMap<String, String> params = new MultivaluedMapImpl<String, String>();
+			QuerySettings ret = QuerySettingsParser.parseUriParams(params);
+			Assert.assertNotNull(ret);
+			Assert.assertNull(ret.getFilters().getActivityDateTo());
+		}
+		// case - empty param in request leads to null
+		{
+			MultivaluedMap<String, String> params = new MultivaluedMapImpl<String, String>();
+			params.add(QuerySettings.Filters.ACTIVITY_DATE_TO_KEY, " ");
+			QuerySettings ret = QuerySettingsParser.parseUriParams(params);
+			Assert.assertNotNull(ret);
+			Assert.assertNull(ret.getFilters().getActivityDateTo());
+		}
+		// case - bad param in request leads to exception
+		try {
+			MultivaluedMap<String, String> params = new MultivaluedMapImpl<String, String>();
+			params.add(QuerySettings.Filters.ACTIVITY_DATE_TO_KEY, "bad");
+			QuerySettingsParser.parseUriParams(params);
+			Assert.fail("IllegalArgumentException expected");
+		} catch (IllegalArgumentException e) {
+			// OK
 		}
 	}
 
@@ -242,6 +332,13 @@ public class QuerySettingsParserTest {
 			Assert.assertNotNull(ret);
 			Assert.assertEquals(new Integer(10), ret.getFilters().getStart());
 		}
+		{
+			MultivaluedMap<String, String> params = new MultivaluedMapImpl<String, String>();
+			params.add(QuerySettings.Filters.START_KEY, "");
+			QuerySettings ret = QuerySettingsParser.parseUriParams(params);
+			Assert.assertNotNull(ret);
+			Assert.assertNull(ret.getFilters().getStart());
+		}
 		try {
 			MultivaluedMap<String, String> params = new MultivaluedMapImpl<String, String>();
 			params.add(QuerySettings.Filters.START_KEY, "10bad");
@@ -261,6 +358,13 @@ public class QuerySettingsParserTest {
 			Assert.assertNotNull(ret);
 			Assert.assertEquals(new Integer(10), ret.getFilters().getCount());
 		}
+		{
+			MultivaluedMap<String, String> params = new MultivaluedMapImpl<String, String>();
+			params.add(QuerySettings.Filters.COUNT_KEY, "");
+			QuerySettings ret = QuerySettingsParser.parseUriParams(params);
+			Assert.assertNotNull(ret);
+			Assert.assertNull(ret.getFilters().getCount());
+		}
 		try {
 			MultivaluedMap<String, String> params = new MultivaluedMapImpl<String, String>();
 			params.add(QuerySettings.Filters.COUNT_KEY, "10bad");
@@ -272,20 +376,39 @@ public class QuerySettingsParserTest {
 	}
 
 	@Test
-	public void value_MonthIntervalNames() {
-		Assert.assertEquals(3, MonthIntervalNames.values().length);
-		Assert.assertEquals("day", MonthIntervalNames.DAY.toString());
-		Assert.assertEquals("1w", MonthIntervalNames.WEEK.toString());
-		Assert.assertEquals("month", MonthIntervalNames.MONTH.toString());
+	public void PastIntervalName_values() {
+		Assert.assertEquals(5, PastIntervalName.values().length);
+		Assert.assertEquals("day", PastIntervalName.DAY.toString());
+		Assert.assertEquals("week", PastIntervalName.WEEK.toString());
+		Assert.assertEquals("month", PastIntervalName.MONTH.toString());
+		Assert.assertEquals("quarter", PastIntervalName.QUARTER.toString());
+		Assert.assertEquals("year", PastIntervalName.YEAR.toString());
 	}
 
 	@Test
-	public void value_PastIntervalNames() {
-		Assert.assertEquals(4, PastIntervalNames.values().length);
-		Assert.assertEquals("week", PastIntervalNames.WEEK.toString());
-		Assert.assertEquals("month", PastIntervalNames.MONTH.toString());
-		Assert.assertEquals("quarter", PastIntervalNames.QUARTER.toString());
-		Assert.assertEquals("year", PastIntervalNames.YEAR.toString());
+	public void PastIntervalName_parseRequestParameterValue() {
+		Assert.assertNull(PastIntervalName.parseRequestParameterValue(null));
+		Assert.assertNull(PastIntervalName.parseRequestParameterValue(" "));
+		Assert.assertNull(PastIntervalName.parseRequestParameterValue(" \t\n"));
+		for (PastIntervalName n : PastIntervalName.values()) {
+			Assert.assertEquals(n, PastIntervalName.parseRequestParameterValue(n.toString()));
+		}
+		try {
+			PastIntervalName.parseRequestParameterValue("unknown");
+			Assert.fail("IllegalArgumentException expected");
+		} catch (IllegalArgumentException e) {
+			// OK
+		}
+	}
+
+	@Test
+	public void PastIntervalName_getFromTimestamp() {
+		long check = System.currentTimeMillis() - 1000L * 60L * 60L * 24L;
+		long v = PastIntervalName.DAY.getFromTimestamp();
+
+		Assert.assertTrue((check - 500) < v);
+		Assert.assertTrue(v < (check + 500));
+
 	}
 
 	@Test
@@ -360,6 +483,75 @@ public class QuerySettingsParserTest {
 				QuerySettingsParser.normalizeListParam(Arrays.asList("", " ", "ahoj ")).toArray());
 		Assert.assertArrayEquals(new String[] { "ahoj", "cao" },
 				QuerySettingsParser.normalizeListParam(Arrays.asList("", " ", "ahoj ", "\tcao ")).toArray());
+
+	}
+
+	@Test
+	public void readIntegerParam() {
+		Assert.assertNull(QuerySettingsParser.readIntegerParam(null, "key"));
+
+		MultivaluedMap<String, String> params = new MultivaluedMapImpl<String, String>();
+		Assert.assertNull(QuerySettingsParser.readIntegerParam(params, "key"));
+
+		params.add("key", "");
+		Assert.assertNull(QuerySettingsParser.readIntegerParam(params, "key"));
+
+		params.clear();
+		params.add("key", "  \t");
+		Assert.assertNull(QuerySettingsParser.readIntegerParam(params, "key"));
+
+		params.clear();
+		params.add("key", "10");
+		Assert.assertEquals(new Integer(10), QuerySettingsParser.readIntegerParam(params, "key"));
+
+		params.clear();
+		params.add("key", "10err");
+		try {
+			QuerySettingsParser.readIntegerParam(params, "key");
+			Assert.fail("IllegalArgumentException expected");
+		} catch (IllegalArgumentException e) {
+			// OK
+		}
+	}
+
+	@Test
+	public void readDateParam() {
+		Assert.assertNull(QuerySettingsParser.readDateParam(null, "key"));
+
+		MultivaluedMap<String, String> params = new MultivaluedMapImpl<String, String>();
+		Assert.assertNull(QuerySettingsParser.readDateParam(params, "key"));
+
+		params.add("key", "");
+		Assert.assertNull(QuerySettingsParser.readDateParam(params, "key"));
+
+		params.clear();
+		params.add("key", "  \t");
+		Assert.assertNull(QuerySettingsParser.readDateParam(params, "key"));
+
+		params.clear();
+		params.add("key", "2013-01-16T12:23:45.454Z");
+		Assert.assertEquals(new Long(1358339025454L), QuerySettingsParser.readDateParam(params, "key"));
+
+		params.clear();
+		params.add("key", "2013-01-16T12:23:45Z");
+		Assert.assertEquals(new Long(1358339025000L), QuerySettingsParser.readDateParam(params, "key"));
+
+		params.clear();
+		params.add("key", "2013-01-16T12:23:45.454+0100");
+		Assert.assertEquals(new Long(1358335425454L), QuerySettingsParser.readDateParam(params, "key"));
+
+		params.clear();
+		params.add("key", "2013-01-16T12:23:45-0500");
+		Assert.assertEquals(new Long(1358357025000L), QuerySettingsParser.readDateParam(params, "key"));
+
+		params.clear();
+		params.add("key", "2/2/2013");
+		try {
+			QuerySettingsParser.readDateParam(params, "key");
+			Assert.fail("IllegalArgumentException expected");
+		} catch (IllegalArgumentException e) {
+			// OK
+		}
 
 	}
 

@@ -8,6 +8,7 @@ package org.jboss.dcp.api.model;
 import java.util.List;
 
 import org.jboss.dcp.api.util.QuerySettingsParser;
+import org.jboss.dcp.api.util.QuerySettingsParser.PastIntervalName;
 
 /**
  * Search Query settings sent from client to search method.
@@ -60,6 +61,18 @@ public class QuerySettings {
 		public static final String CONTRIBUTORS_KEY = "contributor";
 
 		/**
+		 * Filtering based on activity dates
+		 */
+		private PastIntervalName activityDateInterval;
+
+		public static final String ACTIVITY_DATE_INTERVAL_KEY = "activity_date_interval";
+
+		public static final String ACTIVITY_DATE_FROM_KEY = "activity_date_from";
+		public static final String ACTIVITY_DATE_TO_KEY = "activity_date_to";
+		private Long activityDateFrom;
+		private Long activityDateTo;
+
+		/**
 		 * Results Paging - start index
 		 */
 		private Integer start = null;
@@ -77,7 +90,24 @@ public class QuerySettings {
 		public String toString() {
 			return "Filters [contentType=" + contentType + ", dcpTypes=" + dcpTypes + ", dcpContentProvider="
 					+ dcpContentProvider + ", projects=" + projects + ", tags=" + tags + ", contributors=" + contributors
-					+ ", start=" + start + ", count=" + count + "]";
+					+ ", activityDateInterval=" + activityDateInterval + ", activityDateFrom=" + activityDateFrom
+					+ ", activityDateTo=" + activityDateTo + ", start=" + start + ", count=" + count + "]";
+		}
+
+		public Long getActivityDateFrom() {
+			return activityDateFrom;
+		}
+
+		public void setActivityDateFrom(Long activityDateFrom) {
+			this.activityDateFrom = activityDateFrom;
+		}
+
+		public Long getActivityDateTo() {
+			return activityDateTo;
+		}
+
+		public void setActivityDateTo(Long activityDateTo) {
+			this.activityDateTo = activityDateTo;
 		}
 
 		public void setProjects(List<String> projects) {
@@ -144,6 +174,14 @@ public class QuerySettings {
 			this.contributors = contributors;
 		}
 
+		public PastIntervalName getActivityDateInterval() {
+			return activityDateInterval;
+		}
+
+		public void setActivityDateInterval(PastIntervalName activityDateInterval) {
+			this.activityDateInterval = activityDateInterval;
+		}
+
 	}
 
 	private Filters filters;
@@ -162,25 +200,30 @@ public class QuerySettings {
 
 	public static final String SORT_BY_KEY = "sortBy";
 
-	public enum SortByValue {
+	public static enum SortByValue {
 		/**
 		 * Newest first
 		 */
-		NEW {
-			@Override
-			public String toString() {
-				return "new";
-			}
-		},
+		NEW("new"),
 		/**
 		 * Oldest first
 		 */
-		OLD {
-			@Override
-			public String toString() {
-				return "old";
-			}
+		OLD("old");
+
+		/**
+		 * Value used in request parameter
+		 */
+		private String value;
+
+		private SortByValue(String value) {
+			this.value = value;
 		}
+
+		@Override
+		public String toString() {
+			return value;
+		}
+
 	}
 
 	public void setFilters(Filters filters) {
