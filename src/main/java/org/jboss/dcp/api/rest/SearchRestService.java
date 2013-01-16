@@ -232,12 +232,10 @@ public class SearchRestService extends RestServiceBase {
 	 */
 	protected void handleSortingSettings(QuerySettings querySettings, SearchRequestBuilder srb) {
 		if (querySettings.getSortBy() != null) {
-			// TODO _SEARCH ordering by date should be over new field 'dcp_last_activity_date' which should be maximum from
-			// dcp_activity_dates
 			if (querySettings.getSortBy().equals(SortByValue.NEW)) {
-				srb.addSort("dcp_updated", SortOrder.DESC);
+				srb.addSort("dcp_last_activity_date", SortOrder.DESC);
 			} else if (querySettings.getSortBy().equals(SortByValue.OLD)) {
-				srb.addSort("dcp_updated", SortOrder.ASC);
+				srb.addSort("dcp_last_activity_date", SortOrder.ASC);
 			}
 		}
 	}
