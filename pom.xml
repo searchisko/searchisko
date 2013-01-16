@@ -215,7 +215,7 @@
 		<dependency>
 			<groupId>org.jboss.elasticsearch</groupId>
 			<artifactId>structured-content-tools</artifactId>
-			<version>1.0.0</version>
+			<version>1.1.0</version>
 		</dependency>
 
 		<dependency>
