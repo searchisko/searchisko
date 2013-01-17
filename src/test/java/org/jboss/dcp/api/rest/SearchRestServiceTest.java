@@ -526,7 +526,7 @@ public class SearchRestServiceTest {
 			QuerySettings querySettings = new QuerySettings();
 			querySettings.setSortBy(SortByValue.NEW);
 			tested.handleSortingSettings(querySettings, srbMock);
-			Mockito.verify(srbMock).addSort("dcp_updated", SortOrder.DESC);
+			Mockito.verify(srbMock).addSort("dcp_last_activity_date", SortOrder.DESC);
 			Mockito.verifyNoMoreInteractions(srbMock);
 		}
 		{
@@ -534,7 +534,7 @@ public class SearchRestServiceTest {
 			QuerySettings querySettings = new QuerySettings();
 			querySettings.setSortBy(SortByValue.OLD);
 			tested.handleSortingSettings(querySettings, srbMock);
-			Mockito.verify(srbMock).addSort("dcp_updated", SortOrder.ASC);
+			Mockito.verify(srbMock).addSort("dcp_last_activity_date", SortOrder.ASC);
 			Mockito.verifyNoMoreInteractions(srbMock);
 		}
 
