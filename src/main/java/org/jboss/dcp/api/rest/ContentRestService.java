@@ -31,6 +31,7 @@ import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.indices.IndexMissingException;
 import org.elasticsearch.search.sort.SortOrder;
+import org.jboss.dcp.api.DcpContentObjectFields;
 import org.jboss.dcp.api.annotations.security.GuestAllowed;
 import org.jboss.dcp.api.annotations.security.ProviderAllowed;
 import org.jboss.dcp.api.service.ProviderService;
@@ -48,21 +49,6 @@ import org.jboss.dcp.api.service.ProviderService;
 @Consumes(MediaType.APPLICATION_JSON)
 @ProviderAllowed
 public class ContentRestService extends RestServiceBase {
-
-	/** DCP normalized document field constant */
-	public static final String DCP_UPDATED = "dcp_updated";
-	/** DCP normalized document field constant */
-	public static final String DCP_TYPE = "dcp_type";
-	/** DCP normalized document field constant */
-	public static final String DCP_ID = "dcp_id";
-	/** DCP normalized document field constant */
-	public static final String DCP_CONTENT_ID = "dcp_content_id";
-	/** DCP normalized document field constant */
-	public static final String DCP_CONTENT_TYPE = "dcp_content_type";
-	/** DCP normalized document field constant */
-	public static final String DCP_CONTENT_PROVIDER = "dcp_content_provider";
-	/** DCP normalized document field constant */
-	public static final String DCP_TAGS = "dcp_tags";
 
 	@Inject
 	protected ProviderService providerService;
@@ -99,15 +85,15 @@ public class ContentRestService extends RestServiceBase {
 			}
 			if (sort != null) {
 				if (sort.equalsIgnoreCase(SortOrder.ASC.name())) {
-					srb.addSort(DCP_UPDATED, SortOrder.ASC);
+					srb.addSort(DcpContentObjectFields.DCP_UPDATED, SortOrder.ASC);
 				} else if (sort.equalsIgnoreCase(SortOrder.DESC.name())) {
-					srb.addSort(DCP_UPDATED, SortOrder.DESC);
+					srb.addSort(DcpContentObjectFields.DCP_UPDATED, SortOrder.DESC);
 				}
 			}
 
 			final SearchResponse response = srb.execute().actionGet();
 
-			return new ESDataOnlyResponse(response, DCP_CONTENT_ID);
+			return new ESDataOnlyResponse(response, DcpContentObjectFields.DCP_CONTENT_ID);
 		} catch (IndexMissingException e) {
 			return Response.status(Response.Status.NOT_FOUND).build();
 		} catch (Exception e) {
@@ -185,16 +171,14 @@ public class ContentRestService extends RestServiceBase {
 			String indexType = ProviderService.extractIndexType(typeDef, type);
 
 			// fill some normalized fields - should be last step to avoid changing them via preprocessors
-			content.put(DCP_CONTENT_PROVIDER, getProvider());
-			content.put(DCP_CONTENT_ID, contentId);
-			content.put(DCP_CONTENT_TYPE, type);
-			content.put(DCP_ID, dcpContentId);
-			content.put(DCP_TYPE, ProviderService.extractDcpType(typeDef, type));
-			if (content.get(DCP_UPDATED) == null) {
-				content.put(DCP_UPDATED, new Date());
-			}
+			content.put(DcpContentObjectFields.DCP_CONTENT_PROVIDER, getProvider());
+			content.put(DcpContentObjectFields.DCP_CONTENT_ID, contentId);
+			content.put(DcpContentObjectFields.DCP_CONTENT_TYPE, type);
+			content.put(DcpContentObjectFields.DCP_ID, dcpContentId);
+			content.put(DcpContentObjectFields.DCP_TYPE, ProviderService.extractDcpType(typeDef, type));
+			content.put(DcpContentObjectFields.DCP_UPDATED, new Date());
 			// Copy distinct data from content to normalized fields
-			content.put(DCP_TAGS, content.get("tags"));
+			content.put(DcpContentObjectFields.DCP_TAGS, content.get("tags"));
 			// TODO EXTERNAL_TAGS - add external tags for this document into dcp_tags field
 
 			// Run preprocessors to manipulate other fields

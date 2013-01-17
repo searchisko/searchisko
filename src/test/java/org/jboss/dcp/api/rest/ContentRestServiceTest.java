@@ -8,7 +8,6 @@ package org.jboss.dcp.api.rest;
 import java.io.IOException;
 import java.security.Principal;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -17,7 +16,7 @@ import java.util.logging.Logger;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
 
-import org.elasticsearch.common.joda.time.format.ISODateTimeFormat;
+import org.jboss.dcp.api.DcpContentObjectFields;
 import org.jboss.dcp.api.service.ProviderService;
 import org.jboss.dcp.api.testtools.ESRealClientTestBase;
 import org.jboss.dcp.api.testtools.TestUtils;
@@ -76,8 +75,6 @@ public class ContentRestServiceTest extends ESRealClientTestBase {
 				indexDelete(INDEX_NAME);
 				content.clear();
 				content.put("test", "testvalue");
-				Date d = new Date();
-				content.put(ContentRestService.DCP_UPDATED, d);
 				Response r = TestUtils.assertResponseStatus(tested.pushContent("known", "1", content), Response.Status.OK);
 				Assert.assertEquals("insert", ((Map<String, String>) r.getEntity()).get("status"));
 				Mockito.verify(tested.providerService).runPreprocessors("known", PREPROCESSORS, content);
@@ -85,16 +82,13 @@ public class ContentRestServiceTest extends ESRealClientTestBase {
 				Map<String, Object> doc = indexGetDocument(INDEX_NAME, INDEX_TYPE, "known-1");
 				Assert.assertNotNull(doc);
 				Assert.assertEquals("testvalue", doc.get("test"));
-				Assert.assertEquals("jbossorg", doc.get(ContentRestService.DCP_CONTENT_PROVIDER));
-				Assert.assertEquals("1", doc.get(ContentRestService.DCP_CONTENT_ID));
-				Assert.assertEquals("known", doc.get(ContentRestService.DCP_CONTENT_TYPE));
-				Assert.assertEquals("my_dcp_type", doc.get(ContentRestService.DCP_TYPE));
-				Assert.assertEquals("known-1", doc.get(ContentRestService.DCP_ID));
-				Assert
-						.assertEquals(d,
-								ISODateTimeFormat.dateTimeParser().parseDateTime((String) doc.get(ContentRestService.DCP_UPDATED))
-										.toDate());
-				Assert.assertEquals(null, doc.get(ContentRestService.DCP_TAGS));
+				Assert.assertEquals("jbossorg", doc.get(DcpContentObjectFields.DCP_CONTENT_PROVIDER));
+				Assert.assertEquals("1", doc.get(DcpContentObjectFields.DCP_CONTENT_ID));
+				Assert.assertEquals("known", doc.get(DcpContentObjectFields.DCP_CONTENT_TYPE));
+				Assert.assertEquals("my_dcp_type", doc.get(DcpContentObjectFields.DCP_TYPE));
+				Assert.assertEquals("known-1", doc.get(DcpContentObjectFields.DCP_ID));
+				Assert.assertNotNull(doc.get(DcpContentObjectFields.DCP_UPDATED));
+				Assert.assertEquals(null, doc.get(DcpContentObjectFields.DCP_TAGS));
 			}
 
 			// case - insert when index is found, fill dcp_updated if not provided in content, process tags provided in
@@ -103,7 +97,7 @@ public class ContentRestServiceTest extends ESRealClientTestBase {
 				Mockito.reset(tested.providerService);
 				setupProviderServiceMock(tested);
 				content.put("test2", "testvalue2");
-				content.remove(ContentRestService.DCP_UPDATED);
+				content.remove(DcpContentObjectFields.DCP_UPDATED);
 				String[] tags = new String[] { "tag_value" };
 				content.put("tags", tags);
 				Response r = TestUtils.assertResponseStatus(tested.pushContent("known", "2", content), Response.Status.OK);
@@ -114,13 +108,13 @@ public class ContentRestServiceTest extends ESRealClientTestBase {
 				Assert.assertNotNull(doc);
 				Assert.assertEquals("testvalue", doc.get("test"));
 				Assert.assertEquals("testvalue2", doc.get("test2"));
-				Assert.assertEquals("jbossorg", doc.get(ContentRestService.DCP_CONTENT_PROVIDER));
-				Assert.assertEquals("2", doc.get(ContentRestService.DCP_CONTENT_ID));
-				Assert.assertEquals("known", doc.get(ContentRestService.DCP_CONTENT_TYPE));
-				Assert.assertEquals("my_dcp_type", doc.get(ContentRestService.DCP_TYPE));
-				Assert.assertEquals("known-2", doc.get(ContentRestService.DCP_ID));
-				Assert.assertNotNull(doc.get(ContentRestService.DCP_UPDATED));
-				Assert.assertEquals("tag_value", ((List<String>) doc.get(ContentRestService.DCP_TAGS)).get(0));
+				Assert.assertEquals("jbossorg", doc.get(DcpContentObjectFields.DCP_CONTENT_PROVIDER));
+				Assert.assertEquals("2", doc.get(DcpContentObjectFields.DCP_CONTENT_ID));
+				Assert.assertEquals("known", doc.get(DcpContentObjectFields.DCP_CONTENT_TYPE));
+				Assert.assertEquals("my_dcp_type", doc.get(DcpContentObjectFields.DCP_TYPE));
+				Assert.assertEquals("known-2", doc.get(DcpContentObjectFields.DCP_ID));
+				Assert.assertNotNull(doc.get(DcpContentObjectFields.DCP_UPDATED));
+				Assert.assertEquals("tag_value", ((List<String>) doc.get(DcpContentObjectFields.DCP_TAGS)).get(0));
 			}
 
 			// case - rewrite document in index
@@ -129,8 +123,6 @@ public class ContentRestServiceTest extends ESRealClientTestBase {
 				setupProviderServiceMock(tested);
 				content.clear();
 				content.put("test3", "testvalue3");
-				Date d = new Date();
-				content.put(ContentRestService.DCP_UPDATED, d);
 				Response r = TestUtils.assertResponseStatus(tested.pushContent("known", "1", content), Response.Status.OK);
 				Assert.assertEquals("update", ((Map<String, String>) r.getEntity()).get("status"));
 				Mockito.verify(tested.providerService).runPreprocessors("known", PREPROCESSORS, content);
@@ -139,16 +131,13 @@ public class ContentRestServiceTest extends ESRealClientTestBase {
 				Assert.assertNotNull(doc);
 				Assert.assertEquals(null, doc.get("test"));
 				Assert.assertEquals("testvalue3", doc.get("test3"));
-				Assert.assertEquals("jbossorg", doc.get(ContentRestService.DCP_CONTENT_PROVIDER));
-				Assert.assertEquals("1", doc.get(ContentRestService.DCP_CONTENT_ID));
-				Assert.assertEquals("known", doc.get(ContentRestService.DCP_CONTENT_TYPE));
-				Assert.assertEquals("my_dcp_type", doc.get(ContentRestService.DCP_TYPE));
-				Assert.assertEquals("known-1", doc.get(ContentRestService.DCP_ID));
-				Assert
-						.assertEquals(d,
-								ISODateTimeFormat.dateTimeParser().parseDateTime((String) doc.get(ContentRestService.DCP_UPDATED))
-										.toDate());
-				Assert.assertEquals(null, doc.get(ContentRestService.DCP_TAGS));
+				Assert.assertEquals("jbossorg", doc.get(DcpContentObjectFields.DCP_CONTENT_PROVIDER));
+				Assert.assertEquals("1", doc.get(DcpContentObjectFields.DCP_CONTENT_ID));
+				Assert.assertEquals("known", doc.get(DcpContentObjectFields.DCP_CONTENT_TYPE));
+				Assert.assertEquals("my_dcp_type", doc.get(DcpContentObjectFields.DCP_TYPE));
+				Assert.assertEquals("known-1", doc.get(DcpContentObjectFields.DCP_ID));
+				Assert.assertNotNull(doc.get(DcpContentObjectFields.DCP_UPDATED));
+				Assert.assertEquals(null, doc.get(DcpContentObjectFields.DCP_TAGS));
 			}
 		} finally {
 			indexDelete(INDEX_NAME);

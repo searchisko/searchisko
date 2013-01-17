@@ -40,6 +40,7 @@ import org.elasticsearch.index.query.RangeFilterBuilder;
 import org.elasticsearch.index.query.TermsFilterBuilder;
 import org.elasticsearch.indices.IndexMissingException;
 import org.elasticsearch.search.sort.SortOrder;
+import org.jboss.dcp.api.DcpContentObjectFields;
 import org.jboss.dcp.api.annotations.security.GuestAllowed;
 import org.jboss.dcp.api.model.QuerySettings;
 import org.jboss.dcp.api.model.QuerySettings.SortByValue;
@@ -184,18 +185,18 @@ public class SearchRestService extends RestServiceBase {
 		List<FilterBuilder> searchFilters = new ArrayList<FilterBuilder>();
 
 		if (filters != null) {
-			addFilter(searchFilters, "dcp_type", filters.getDcpTypes());
-			addFilter(searchFilters, "dcp_content_provider", filters.getDcpContentProvider());
-			addFilter(searchFilters, "dcp_tags", filters.getTags());
-			addFilter(searchFilters, "dcp_project", filters.getProjects());
-			addFilter(searchFilters, "dcp_contributors", filters.getContributors());
+			addFilter(searchFilters, DcpContentObjectFields.DCP_TYPE, filters.getDcpTypes());
+			addFilter(searchFilters, DcpContentObjectFields.DCP_CONTENT_PROVIDER, filters.getDcpContentProvider());
+			addFilter(searchFilters, DcpContentObjectFields.DCP_TAGS, filters.getTags());
+			addFilter(searchFilters, DcpContentObjectFields.DCP_PROJECT, filters.getProjects());
+			addFilter(searchFilters, DcpContentObjectFields.DCP_CONTRIBUTORS, filters.getContributors());
 			if (filters.getActivityDateInterval() != null) {
-				RangeFilterBuilder range = new RangeFilterBuilder("dcp_activity_dates");
+				RangeFilterBuilder range = new RangeFilterBuilder(DcpContentObjectFields.DCP_ACTIVITY_DATES);
 				range.from(DATE_TIME_FORMATTER_UTC.print(filters.getActivityDateInterval().getFromTimestamp())).includeLower(
 						true);
 				searchFilters.add(range);
 			} else if (filters.getActivityDateFrom() != null || filters.getActivityDateTo() != null) {
-				RangeFilterBuilder range = new RangeFilterBuilder("dcp_activity_dates");
+				RangeFilterBuilder range = new RangeFilterBuilder(DcpContentObjectFields.DCP_ACTIVITY_DATES);
 				if (filters.getActivityDateFrom() != null) {
 					range.from(DATE_TIME_FORMATTER_UTC.print(filters.getActivityDateFrom())).includeLower(true);
 				}
@@ -233,9 +234,9 @@ public class SearchRestService extends RestServiceBase {
 	protected void handleSortingSettings(QuerySettings querySettings, SearchRequestBuilder srb) {
 		if (querySettings.getSortBy() != null) {
 			if (querySettings.getSortBy().equals(SortByValue.NEW)) {
-				srb.addSort("dcp_last_activity_date", SortOrder.DESC);
+				srb.addSort(DcpContentObjectFields.DCP_LAST_ACTIVITY_DATE, SortOrder.DESC);
 			} else if (querySettings.getSortBy().equals(SortByValue.OLD)) {
-				srb.addSort("dcp_last_activity_date", SortOrder.ASC);
+				srb.addSort(DcpContentObjectFields.DCP_LAST_ACTIVITY_DATE, SortOrder.ASC);
 			}
 		}
 	}
