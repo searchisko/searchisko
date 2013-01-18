@@ -226,8 +226,8 @@ Search contributions based on input parameters
 * `query` full text query string
 * `query_highlight` when set to `true` and full text search is used over `query` param, then results contains data with highlighted query matches.
 * `sortBy` sort result. Value can be `old` (to sort content from oldest to newest activity) or `new` (to sort from newest to oldest activity). Sorting by fulltext score is used if param is not provided.
-* `start` start index or returned entries. Default value is 0
-* `count` count of returned entries. Default is 10
+* `from` start index or returned entries. Default value is 0. Useful together with `size` for results pagination.
+* `size` maximal number of returned entries. Default is 10, maximal value is 500.
 * `facet` you can specify name of [facet](http://www.elasticsearch.org/guide/reference/api/search/facets/) you want to include in response. Available facet names are: `top_contributors`, `activity_dates_histogram`, `per_project_counts`, `per_dcp_type_counts`, `tag_cloud`. This param can be used multiple times to get more facet data in the response.
 * `field` you can use this param multiple times to specify which [fields](http://www.elasticsearch.org/guide/reference/api/search/fields.html) from search index will be returned in results. If not used then predefined set of basic `dcp_xx` fields is returned. If you want complete documents use `_source` value for this param. Be careful about performance impact of this param, consult DCP administrators if necessary! 
 * `content_provider` filters result only to data provided by specified provider - `dcp_content_provider` field

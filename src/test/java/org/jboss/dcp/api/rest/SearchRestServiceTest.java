@@ -460,35 +460,88 @@ public class SearchRestServiceTest {
 			Mockito.verifyNoMoreInteractions(srbMock);
 		}
 
-		// case - count requested
+		// case - size requested
 		{
 			Mockito.reset(srbMock);
 			QuerySettings querySettings = new QuerySettings();
 			querySettings.setFilters(new Filters());
-			querySettings.getFilters().setCount(124);
+			querySettings.getFilters().setSize(124);
 			tested.handleResponseContentSettings(querySettings, srbMock);
 			Mockito.verify(srbMock).setSize(124);
 			Mockito.verifyNoMoreInteractions(srbMock);
 		}
 
-		// case - start requested
+		// case - size requested but over maximum so stripped
 		{
 			Mockito.reset(srbMock);
 			QuerySettings querySettings = new QuerySettings();
 			querySettings.setFilters(new Filters());
-			querySettings.getFilters().setStart(42);
+			querySettings.getFilters().setSize(SearchRestService.RESPONSE_MAX_SIZE + 10);
+			tested.handleResponseContentSettings(querySettings, srbMock);
+			Mockito.verify(srbMock).setSize(SearchRestService.RESPONSE_MAX_SIZE);
+			Mockito.verifyNoMoreInteractions(srbMock);
+		}
+
+		// case - size requested is 0
+		{
+			Mockito.reset(srbMock);
+			QuerySettings querySettings = new QuerySettings();
+			querySettings.setFilters(new Filters());
+			querySettings.getFilters().setSize(0);
+			tested.handleResponseContentSettings(querySettings, srbMock);
+			Mockito.verify(srbMock).setSize(0);
+			Mockito.verifyNoMoreInteractions(srbMock);
+		}
+
+		// case - size requested is under 0 so not used
+		{
+			Mockito.reset(srbMock);
+			QuerySettings querySettings = new QuerySettings();
+			querySettings.setFilters(new Filters());
+			querySettings.getFilters().setSize(-1);
+			tested.handleResponseContentSettings(querySettings, srbMock);
+			Mockito.verifyNoMoreInteractions(srbMock);
+		}
+
+		// case - from requested
+		{
+			Mockito.reset(srbMock);
+			QuerySettings querySettings = new QuerySettings();
+			querySettings.setFilters(new Filters());
+			querySettings.getFilters().setFrom(42);
 			tested.handleResponseContentSettings(querySettings, srbMock);
 			Mockito.verify(srbMock).setFrom(42);
 			Mockito.verifyNoMoreInteractions(srbMock);
 		}
 
-		// case - count and start requested
+		// case - from requested is 0
 		{
 			Mockito.reset(srbMock);
 			QuerySettings querySettings = new QuerySettings();
 			querySettings.setFilters(new Filters());
-			querySettings.getFilters().setCount(124);
-			querySettings.getFilters().setStart(42);
+			querySettings.getFilters().setFrom(0);
+			tested.handleResponseContentSettings(querySettings, srbMock);
+			Mockito.verify(srbMock).setFrom(0);
+			Mockito.verifyNoMoreInteractions(srbMock);
+		}
+
+		// case - from requested is under 0 so not used
+		{
+			Mockito.reset(srbMock);
+			QuerySettings querySettings = new QuerySettings();
+			querySettings.setFilters(new Filters());
+			querySettings.getFilters().setFrom(-1);
+			tested.handleResponseContentSettings(querySettings, srbMock);
+			Mockito.verifyNoMoreInteractions(srbMock);
+		}
+
+		// case - size and from requested
+		{
+			Mockito.reset(srbMock);
+			QuerySettings querySettings = new QuerySettings();
+			querySettings.setFilters(new Filters());
+			querySettings.getFilters().setSize(124);
+			querySettings.getFilters().setFrom(42);
 			tested.handleResponseContentSettings(querySettings, srbMock);
 			Mockito.verify(srbMock).setSize(124);
 			Mockito.verify(srbMock).setFrom(42);

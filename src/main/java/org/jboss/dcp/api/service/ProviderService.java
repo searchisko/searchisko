@@ -176,11 +176,11 @@ public class ProviderService {
 	 * @return list with configurations for all providers
 	 */
 	public List<Map<String, Object>> listAllProviders() {
-		// TODO VEL unit test
+		// TODO _SEARCH VEL unit test
 		List<Map<String, Object>> ret = new ArrayList<Map<String, Object>>();
 		SearchRequestBuilder searchBuilder = entityService.createSearchRequestBuilder();
 		searchBuilder.setQuery(QueryBuilders.matchAllQuery());
-		searchBuilder.setSize(-1);
+		searchBuilder.setSize(1000);
 		try {
 			SearchResponse response = entityService.search(searchBuilder);
 			if (response.getHits().getTotalHits() > 0) {

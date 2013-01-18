@@ -12,6 +12,7 @@ import javax.ws.rs.core.MultivaluedMap;
 
 import org.jboss.dcp.api.model.QuerySettings;
 import org.jboss.dcp.api.model.QuerySettings.SortByValue;
+import org.jboss.dcp.api.rest.SearchRestService;
 import org.jboss.dcp.api.testtools.TestUtils;
 import org.jboss.dcp.api.util.QuerySettingsParser.PastIntervalName;
 import org.jboss.resteasy.specimpl.MultivaluedMapImpl;
@@ -55,8 +56,8 @@ public class QuerySettingsParserTest {
 			params.add(QuerySettings.Filters.PROJECTS_KEY, "proj1 ");
 			params.add(QuerySettings.Filters.PROJECTS_KEY, "proj2");
 			params.add(QuerySettings.Filters.PROJECTS_KEY, " ");
-			params.add(QuerySettings.Filters.START_KEY, "10");
-			params.add(QuerySettings.Filters.COUNT_KEY, "20");
+			params.add(QuerySettings.Filters.FROM_KEY, "10");
+			params.add(QuerySettings.Filters.SIZE_KEY, "20");
 			params.add(QuerySettings.Filters.TAGS_KEY, "tg1 ");
 			params.add(QuerySettings.Filters.TAGS_KEY, "tg2");
 			params.add(QuerySettings.Filters.TAGS_KEY, "  ");
@@ -92,8 +93,8 @@ public class QuerySettingsParserTest {
 		TestUtils.assertEqualsListValue(expectedDcpTypes, filters.getDcpTypes());
 		Assert.assertEquals(expectedDcpProvider, filters.getDcpContentProvider());
 		TestUtils.assertEqualsListValue(expectedFilterProjects, filters.getProjects());
-		Assert.assertEquals(expectedFilterStart, filters.getStart());
-		Assert.assertEquals(expectedFilterCount, filters.getCount());
+		Assert.assertEquals(expectedFilterStart, filters.getFrom());
+		Assert.assertEquals(expectedFilterCount, filters.getSize());
 		TestUtils.assertEqualsListValue(expectedFilterTags, filters.getTags());
 		TestUtils.assertEqualsListValue(expectedContributors, filters.getContributors());
 		Assert.assertEquals(expectedADInterval, filters.getActivityDateInterval());
@@ -324,24 +325,41 @@ public class QuerySettingsParserTest {
 	}
 
 	@Test
-	public void parseUriParams_filter_start() {
+	public void parseUriParams_filter_from() {
 		{
 			MultivaluedMap<String, String> params = new MultivaluedMapImpl<String, String>();
-			params.add(QuerySettings.Filters.START_KEY, "10");
+			params.add(QuerySettings.Filters.FROM_KEY, "10");
 			QuerySettings ret = QuerySettingsParser.parseUriParams(params);
 			Assert.assertNotNull(ret);
-			Assert.assertEquals(new Integer(10), ret.getFilters().getStart());
+			Assert.assertEquals(new Integer(10), ret.getFilters().getFrom());
 		}
 		{
 			MultivaluedMap<String, String> params = new MultivaluedMapImpl<String, String>();
-			params.add(QuerySettings.Filters.START_KEY, "");
+			params.add(QuerySettings.Filters.FROM_KEY, "0");
 			QuerySettings ret = QuerySettingsParser.parseUriParams(params);
 			Assert.assertNotNull(ret);
-			Assert.assertNull(ret.getFilters().getStart());
+			Assert.assertEquals(new Integer(0), ret.getFilters().getFrom());
 		}
+		{
+			MultivaluedMap<String, String> params = new MultivaluedMapImpl<String, String>();
+			params.add(QuerySettings.Filters.FROM_KEY, "");
+			QuerySettings ret = QuerySettingsParser.parseUriParams(params);
+			Assert.assertNotNull(ret);
+			Assert.assertNull(ret.getFilters().getFrom());
+		}
+		// bad format of value
 		try {
 			MultivaluedMap<String, String> params = new MultivaluedMapImpl<String, String>();
-			params.add(QuerySettings.Filters.START_KEY, "10bad");
+			params.add(QuerySettings.Filters.FROM_KEY, "10bad");
+			QuerySettingsParser.parseUriParams(params);
+			Assert.fail("IllegalArgumentException expected");
+		} catch (IllegalArgumentException e) {
+			// OK
+		}
+		// value too low
+		try {
+			MultivaluedMap<String, String> params = new MultivaluedMapImpl<String, String>();
+			params.add(QuerySettings.Filters.FROM_KEY, "-1");
 			QuerySettingsParser.parseUriParams(params);
 			Assert.fail("IllegalArgumentException expected");
 		} catch (IllegalArgumentException e) {
@@ -350,24 +368,57 @@ public class QuerySettingsParserTest {
 	}
 
 	@Test
-	public void parseUriParams_filter_count() {
+	public void parseUriParams_filter_size() {
 		{
 			MultivaluedMap<String, String> params = new MultivaluedMapImpl<String, String>();
-			params.add(QuerySettings.Filters.COUNT_KEY, "10");
+			params.add(QuerySettings.Filters.SIZE_KEY, "10");
 			QuerySettings ret = QuerySettingsParser.parseUriParams(params);
 			Assert.assertNotNull(ret);
-			Assert.assertEquals(new Integer(10), ret.getFilters().getCount());
+			Assert.assertEquals(new Integer(10), ret.getFilters().getSize());
 		}
 		{
 			MultivaluedMap<String, String> params = new MultivaluedMapImpl<String, String>();
-			params.add(QuerySettings.Filters.COUNT_KEY, "");
+			params.add(QuerySettings.Filters.SIZE_KEY, "0");
 			QuerySettings ret = QuerySettingsParser.parseUriParams(params);
 			Assert.assertNotNull(ret);
-			Assert.assertNull(ret.getFilters().getCount());
+			Assert.assertEquals(new Integer(0), ret.getFilters().getSize());
 		}
+		{
+			MultivaluedMap<String, String> params = new MultivaluedMapImpl<String, String>();
+			params.add(QuerySettings.Filters.SIZE_KEY, "" + SearchRestService.RESPONSE_MAX_SIZE);
+			QuerySettings ret = QuerySettingsParser.parseUriParams(params);
+			Assert.assertNotNull(ret);
+			Assert.assertEquals(new Integer(SearchRestService.RESPONSE_MAX_SIZE), ret.getFilters().getSize());
+		}
+		{
+			MultivaluedMap<String, String> params = new MultivaluedMapImpl<String, String>();
+			params.add(QuerySettings.Filters.SIZE_KEY, "");
+			QuerySettings ret = QuerySettingsParser.parseUriParams(params);
+			Assert.assertNotNull(ret);
+			Assert.assertNull(ret.getFilters().getSize());
+		}
+		// bad format of value
 		try {
 			MultivaluedMap<String, String> params = new MultivaluedMapImpl<String, String>();
-			params.add(QuerySettings.Filters.COUNT_KEY, "10bad");
+			params.add(QuerySettings.Filters.SIZE_KEY, "10bad");
+			QuerySettingsParser.parseUriParams(params);
+			Assert.fail("IllegalArgumentException expected");
+		} catch (IllegalArgumentException e) {
+			// OK
+		}
+		// too low value
+		try {
+			MultivaluedMap<String, String> params = new MultivaluedMapImpl<String, String>();
+			params.add(QuerySettings.Filters.SIZE_KEY, "-1");
+			QuerySettingsParser.parseUriParams(params);
+			Assert.fail("IllegalArgumentException expected");
+		} catch (IllegalArgumentException e) {
+			// OK
+		}
+		// too high value
+		try {
+			MultivaluedMap<String, String> params = new MultivaluedMapImpl<String, String>();
+			params.add(QuerySettings.Filters.SIZE_KEY, (SearchRestService.RESPONSE_MAX_SIZE + 1) + "");
 			QuerySettingsParser.parseUriParams(params);
 			Assert.fail("IllegalArgumentException expected");
 		} catch (IllegalArgumentException e) {

@@ -27,11 +27,14 @@ import org.jboss.dcp.api.util.QuerySettingsParser;
 
 /**
  * @author lvlcek@redhat.com
+ * @deprecated
  */
 public class ProxyQueryBuilder {
 
+	@SuppressWarnings("unused")
 	private final static Logger log = Logger.getLogger(ProxyQueryBuilder.class.getName());
 
+	@SuppressWarnings("unused")
 	public static SearchSourceBuilder buildSearchQuery(QuerySettings settings) throws Exception {
 
 		QuerySettingsParser.sanityQuery(settings);
@@ -119,8 +122,8 @@ public class ProxyQueryBuilder {
 		SearchSourceBuilder b = new SearchSourceBuilder();
 		b.query(qb_wth_fields);
 
-		if (settings.getFilters() != null && settings.getFilters().getStart() != null) {
-			int from = settings.getFilters().getStart();
+		if (settings.getFilters() != null && settings.getFilters().getFrom() != null) {
+			int from = settings.getFilters().getFrom();
 			if (from > 0) {
 				b.from(from);
 			}

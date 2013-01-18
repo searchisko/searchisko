@@ -15,6 +15,7 @@ import javax.ws.rs.core.MultivaluedMap;
 import org.elasticsearch.common.joda.time.format.ISODateTimeFormat;
 import org.jboss.dcp.api.model.QuerySettings;
 import org.jboss.dcp.api.model.QuerySettings.SortByValue;
+import org.jboss.dcp.api.rest.SearchRestService;
 
 /**
  * Query settings parser
@@ -149,8 +150,12 @@ public class QuerySettingsParser {
 		filters.setActivityDateFrom(readDateParam(params, QuerySettings.Filters.ACTIVITY_DATE_FROM_KEY));
 		filters.setActivityDateTo(readDateParam(params, QuerySettings.Filters.ACTIVITY_DATE_TO_KEY));
 
-		filters.setStart(readIntegerParam(params, QuerySettings.Filters.START_KEY));
-		filters.setCount(readIntegerParam(params, QuerySettings.Filters.COUNT_KEY));
+		filters.setFrom(readIntegerParam(params, QuerySettings.Filters.FROM_KEY));
+		if (filters.getFrom() != null && filters.getFrom() < 0)
+			throw new IllegalArgumentException(QuerySettings.Filters.FROM_KEY);
+		filters.setSize(readIntegerParam(params, QuerySettings.Filters.SIZE_KEY));
+		if (filters.getSize() != null && (filters.getSize() < 0 || filters.getSize() > SearchRestService.RESPONSE_MAX_SIZE))
+			throw new IllegalArgumentException(QuerySettings.Filters.SIZE_KEY);
 
 		if (params.containsKey(QuerySettings.SORT_BY_KEY)) {
 			String sortByString = params.getFirst(QuerySettings.SORT_BY_KEY);

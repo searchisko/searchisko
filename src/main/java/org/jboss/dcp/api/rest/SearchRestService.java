@@ -175,6 +175,10 @@ public class SearchRestService extends RestServiceBase {
 	}
 
 	private static final DateTimeFormatter DATE_TIME_FORMATTER_UTC = ISODateTimeFormat.dateTime().withZoneUTC();
+	/**
+	 * Maximal size of response.
+	 */
+	public static final int RESPONSE_MAX_SIZE = 500;
 
 	/**
 	 * @param querySettings
@@ -253,11 +257,14 @@ public class SearchRestService extends RestServiceBase {
 		// pagging of results
 		QuerySettings.Filters filters = querySettings.getFilters();
 		if (filters != null) {
-			if (filters.getStart() != null) {
-				srb.setFrom(filters.getStart());
+			if (filters.getFrom() != null && filters.getFrom() >= 0) {
+				srb.setFrom(filters.getFrom());
 			}
-			if (filters.getCount() != null) {
-				srb.setSize(filters.getCount());
+			if (filters.getSize() != null && filters.getSize() >= 0) {
+				int size = filters.getSize();
+				if (size > RESPONSE_MAX_SIZE)
+					size = RESPONSE_MAX_SIZE;
+				srb.setSize(size);
 			}
 		}
 	}

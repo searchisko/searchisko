@@ -187,11 +187,11 @@ public class StatsClientService extends ElasticsearchClientService {
 			if (filters.getTags() != null && !filters.getTags().isEmpty()) {
 				source.put("filters_tags", filters.getTags());
 			}
-			if (filters.getStart() != null) {
-				source.put("filters_start", filters.getStart());
+			if (filters.getFrom() != null) {
+				source.put("filters_start", filters.getFrom());
 			}
-			if (filters.getCount() != null) {
-				source.put("filters_count", filters.getCount());
+			if (filters.getSize() != null) {
+				source.put("filters_count", filters.getSize());
 			}
 
 		}

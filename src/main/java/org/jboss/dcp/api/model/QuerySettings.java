@@ -75,23 +75,23 @@ public class QuerySettings {
 		/**
 		 * Results Paging - start index
 		 */
-		private Integer start = null;
+		private Integer from = null;
 
-		public static final String START_KEY = "start";
+		public static final String FROM_KEY = "from";
 
 		/**
-		 * Results Paging - count of results
+		 * Results Paging - count of returned results
 		 */
-		private Integer count = null;
+		private Integer size = null;
 
-		public static final String COUNT_KEY = "count";
+		public static final String SIZE_KEY = "size";
 
 		@Override
 		public String toString() {
 			return "Filters [contentType=" + contentType + ", dcpTypes=" + dcpTypes + ", dcpContentProvider="
 					+ dcpContentProvider + ", projects=" + projects + ", tags=" + tags + ", contributors=" + contributors
 					+ ", activityDateInterval=" + activityDateInterval + ", activityDateFrom=" + activityDateFrom
-					+ ", activityDateTo=" + activityDateTo + ", start=" + start + ", count=" + count + "]";
+					+ ", activityDateTo=" + activityDateTo + ", from=" + from + ", size=" + size + "]";
 		}
 
 		public Long getActivityDateFrom() {
@@ -114,24 +114,24 @@ public class QuerySettings {
 			this.projects = projects;
 		}
 
-		public void setStart(Integer start) {
-			this.start = start;
+		public void setFrom(Integer from) {
+			this.from = from;
 		}
 
 		public List<String> getProjects() {
 			return projects;
 		}
 
-		public Integer getStart() {
-			return start;
+		public Integer getFrom() {
+			return from;
 		}
 
-		public Integer getCount() {
-			return count;
+		public Integer getSize() {
+			return size;
 		}
 
-		public void setCount(Integer count) {
-			this.count = count;
+		public void setSize(Integer size) {
+			this.size = size;
 		}
 
 		public List<String> getTags() {
