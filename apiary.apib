@@ -39,6 +39,7 @@ Some system data fields are defined by DCP, some  are added into the content ins
 * `dcp_content_id` -  content identifier is passed in by the provider, it must be unique for the given `dcp_content_type`
 * `dcp_updated` - date of last content update in DCP - system field, always necessary
 * `dcp_project` - normalized DCP wide identifier of the project - system field - it is used for the project facet and filter in the Search API
+* `dcp_project_name` - human readable name of project based on `dcp_project` identifier - system field 
 * `dcp_contributors` - array of contributing persons, no duplicities in array, persons identifiers normalized during push into DCP - each person represented as string `Name Surname <primaryemail@email.com>` - in Search API used for persons facet and filter
 * `dcp_activity_dates` - array of timestamps representing some activity on the content (when the content was created or changed etc. in source system) - in the Search API used for the time facet and filter
 * `dcp_last_activity_date` - timestamp representing last activity on the content (it's max value from `dcp_activity_dates`), used for sorting on search API.

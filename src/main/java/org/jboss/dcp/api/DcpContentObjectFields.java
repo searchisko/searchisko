@@ -15,6 +15,7 @@ public final class DcpContentObjectFields {
 	public static final String DCP_ID = "dcp_id";
 	public static final String DCP_TYPE = "dcp_type";
 	public static final String DCP_PROJECT = "dcp_project";
+	public static final String DCP_PROJECT_NAME = "dcp_project_name";
 	public static final String DCP_CONTENT_ID = "dcp_content_id";
 	public static final String DCP_CONTENT_TYPE = "dcp_content_type";
 	public static final String DCP_CONTENT_PROVIDER = "dcp_content_provider";
