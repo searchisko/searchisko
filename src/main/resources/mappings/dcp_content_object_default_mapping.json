@@ -1,0 +1,29 @@
+{
+    "dcp_content_object_default" : {
+        "_timestamp" : { "enabled" : true },
+        "_all" : {"enabled" : true},
+        "properties" : {
+            "dcp_content_provider" : {"type" : "string", "analyzer" : "keyword", "include_in_all":"false"},
+            "dcp_content_type"     : {"type" : "string", "analyzer" : "keyword", "include_in_all":"false"},
+            "dcp_content_id" : {"type" : "string", "analyzer" : "keyword", "include_in_all":"false"},
+            "dcp_id" : {"type" : "string", "analyzer" : "keyword", "include_in_all":"false"},
+            "dcp_type" : {"type" : "string", "analyzer" : "keyword", "store":"yes", "include_in_all":"false"},
+            "dcp_title" : {"type" : "string", "store":"yes", "include_in_all":"true"},
+            "dcp_url_view" : {"type" : "string", "store":"yes", "include_in_all":"true"},
+            "dcp_description" : {"type" : "string", "store":"yes", "include_in_all":"true"},
+            "dcp_updated" : {"type" : "date", "include_in_all":"false"},
+            "dcp_project" : {"type" : "string", "analyzer" : "keyword", "store":"yes", "include_in_all":"false"},
+            "dcp_project_name" : {"type" : "string", "store":"yes", "include_in_all":"true"},
+            "dcp_contributors" : {
+                "type" : "multi_field",
+                "fields" : {
+                    "fulltext" : {"type" : "string", "index" : "analyzed"},
+                    "dcp_contributors" : {"type" : "string", "analyzer" : "keyword", "store":"yes"}
+                }
+             },             
+            "dcp_tags" : {"type" : "string", "analyzer" : "keyword", "store":"yes", "include_in_all":"true"},
+            "dcp_last_activity_date" : {"type" : "date", "store":"yes", "include_in_all":"false"},
+            "dcp_activity_dates" : {"type" : "date", "include_in_all":"false"}
+        }
+    }
+}
