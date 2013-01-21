@@ -83,4 +83,10 @@ public class PersistanceBackendService extends ElasticsearchClientService {
 		return new ElasticsearchEntityService(client, INDEX_NAME, "contributor", false);
 	}
 
+	@Produces
+	@Named("configServiceBackend")
+	public EntityService produceConfigService() {
+		return new ElasticsearchEntityService(client, INDEX_NAME, "config", false);
+	}
+
 }

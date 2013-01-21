@@ -82,6 +82,13 @@ public class PersistanceBackendServiceTest extends ESRealClientTestBase {
 		assertElasticsearchEntityService(s, tested.client, EXPECTED_INDEX_NAME, "contributor");
 	}
 
+	@Test
+	public void produceConfigService() {
+		PersistanceBackendService tested = getTested();
+		EntityService s = tested.produceConfigService();
+		assertElasticsearchEntityService(s, tested.client, EXPECTED_INDEX_NAME, "config");
+	}
+
 	private void assertElasticsearchEntityService(EntityService actualService, Client expectedClient,
 			String expectedIndexName, String expectedIndexType) {
 		Assert.assertEquals(ElasticsearchEntityService.class, actualService.getClass());

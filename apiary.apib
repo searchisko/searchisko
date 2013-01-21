@@ -974,3 +974,91 @@ Delete contributor configuration with given `id`.
 DELETE /rest/contributor/{id}
 < 200
 
+
+--
+Management API - configuration
+
+This part of the API is used by 'DCP administrators' to manage DCP configuration documents.
+Configuration documents use distinct structures depending on DCP feature they configure. 
+They are referenced from DCP code by defined `id`. For list of supported confioguration document id's and related configuration document structure see DCP documentation.  
+
+--
+
+Get configuration document for given `id`.
+
+GET /rest/config/{id}
+< 200
+< Content-Type: application/json
+{
+  "code1" : "sfehgsdg",
+  "code2" : "aerafa"
+}
+
+
+List all configuration documents.
+
+##### Request parameters
+
+* `from` index of the first document returned in the results array. The default value is 0 (start from begin of list).
+* `size` of returned results array. Default is 10.
+
+##### Response content
+The response contains a JSON structure with overall number of the configuration documents in `total` field, and an array of the configuration documents in `hits` field. 
+The content of the array depends on `from` and `size` request parameters.
+Each record in the array contains `id` field with unique id for other REST operations, and `data` field with full configuration document:
+
+```
+{
+  "total": "1",
+  "hits": [
+    {
+      "id": "unique id in DCP",
+      "data": {
+        // configuration document
+      }
+    }
+  ]
+}
+```
+
+GET /rest/config{?from,size}
+< 200
+< Content-Type: application/json
+{
+  "total": "1",
+  "hits": [
+    {
+      "id": "search_config_codes",
+      "data": {
+				  "code1" : "sfehgsdg",
+  				"code2" : "aerafa"
+				}
+			}
+    }
+  ]
+}
+
+Create/update configuration document for given `id`. 
+
+##### Request content
+JSON with configuration document.
+
+##### Response content
+The response contains a JSON structure with `id`.
+
+POST /rest/config/{id}
+> Accept: application/json
+{
+  "code1" : "sfehgsdg",
+  "code2" : "aerafa"
+}
+< 200
+< Content-Type: application/json
+{
+  "id":"22"
+}
+
+Delete configuration document with given `id`.
+DELETE /rest/config/{id}
+< 200
+
