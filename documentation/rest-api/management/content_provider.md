@@ -1,7 +1,7 @@
 Content provider
 ================
 
-*Content provider* is an entity which stores content into DCP (see Content Push API).
+*Content provider* is an entity that stores content into DCP (see Content Push API).
 Configuration for the *content provider* contains some descriptive/contact informations, informations for authentication/authorization on the DCP REST API, and configuration of content types pushed into DCP by this provider.
 It's managed over 'Management API - content providers'.
 
