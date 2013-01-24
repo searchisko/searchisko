@@ -77,7 +77,7 @@ Description of data fields for the issue record:
 <tr><td>comments</td><td>Array of comment for issue. 'Comment data structure' is described below.</td></tr>
 </tbody>
 </table>
-**Note:** some standard DCP system fields prefixed by `dcp_` are not described here. Description may be found in general documentation for "DCP Content object".  	
+**Note:** some standard DCP [system fields](dcp_content_object.md) prefixed by `dcp_` are not described here. Description may be found in general documentation for "DCP Content object".  	
 
 'Contributor data structure' description:
 <table border="1">

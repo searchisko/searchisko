@@ -3,19 +3,29 @@ DCP REST API index
 
 DCP REST API on-line Documentation & Server Mock are available at <http://docs.jbossorg.apiary.io/>
 
-The DCP content can be characterized by a type (i.e. e-mails, blog posts, forum posts, issues etc. See **dcp_type** in the basic principles article). Each *type* has its own logical structure and it will require specific fields to be filled.
+##DCP Content objects
+DCP content is main reason why DCP exists. It can be pushed into DCP by registered providers over 'Content Push API' and searched over 'Search API' and 'Query Suggestions API'.
 
-You can find description of the content available in DCP here, and in case you were approved as the provider of the data, you will also find the necessary format for the submit.
+The DCP content can be characterized by a type (i.e. e-mails, blog posts, forum posts, issues etc. See **dcp_type** in the basic principles article). 
+Each *dcp_type* has its own logical structure and it will require specific fields to be filled. All types also share some common [system data fields](https://github.com/jbossorg/dcp-api/blob/master/documentation/rest-api/content/dcp_content_object.md).
+
+You can find description of the each content type available in DCP in [`content`](https://github.com/jbossorg/dcp-api/blob/master/documentation/rest-api/content/) subfolder in this directory.
 
 *Note: If you run your own instance of DCP, consider the documents in this folder as an inspiration. You will have your own content.*
 
-Each folder in this directory has its name after the *dcp_type* field. Each of these directories will have at least one subdirectory that describes the current version. Their names will correspond with the version number (v1, v2.....).
+###List of available *dcp_type*s
 
-Usually the version with the highest number is the current one but the DCP update process counts with a temporary transition time when the two last versions will be valid. 
++ [blogpost](https://github.com/jbossorg/dcp-api/blob/master/documentation/rest-api/content/blogpost.md) the data about blog posts related to the community projects.
++ [issue](https://github.com/jbossorg/dcp-api/blob/master/documentation/rest-api/content/issue.md) the data from community project's issue trackers (JIRA, Bugzilla, etc.) about project bugs, feature requests etc.
++ [project_info](https://github.com/jbossorg/dcp-api/blob/master/documentation/rest-api/content/project_info.md) the data about the [JBoss community projects](https://www.jboss.org/projects.html). 
 
-List of available *dcp_type*s
---------------------------
+##Data structures for Management API
+Bunch of other informations is necessary to run DCP. They are managed over distinct parts of 'Management API'.
+ 
+[`management`](https://github.com/jbossorg/dcp-api/blob/master/documentation/rest-api/management/) subfolder in this directory contains files with description of document structures for management API:
 
-+ [blogpost](https://github.com/jbossorg/dcp-api/blob/master/documentation/rest-api/blogpost/v1/blogpost.md) the data about blog posts related to the community projects.
-+ [issue](https://github.com/jbossorg/dcp-api/blob/master/documentation/rest-api/issue/v1/issue.md) the data from community project's issue trackers (JIRA, Bugzilla, etc.) about project bugs, feature requests etc.
-+ [project_info](https://github.com/jbossorg/dcp-api/blob/master/documentation/rest-api/project_info/v1/project_info.md) the data about the [JBoss community projects](https://www.jboss.org/projects.html). 
++ content provider - document type used by 'Management API - content providers'
++ project - document type used by 'Management API - projects'
++ contributor - document type used by 'Management API - contributors'
++ config_*  - document types used by 'Management API - configuration'
+
