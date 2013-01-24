@@ -53,6 +53,8 @@ public class QuerySettingsParserTest {
 			params.add(QuerySettings.Filters.DCP_CONTENT_PROVIDER, "myprovider ");
 			params.add(QuerySettings.QUERY_KEY, "query ** query2");
 			params.add(QuerySettings.SORT_BY_KEY, "new");
+			params.add(QuerySettings.FIELDS_KEY, "rf1");
+			params.add(QuerySettings.FIELDS_KEY, "_rf2 ");
 			params.add(QuerySettings.Filters.PROJECTS_KEY, "proj1 ");
 			params.add(QuerySettings.Filters.PROJECTS_KEY, "proj2");
 			params.add(QuerySettings.Filters.PROJECTS_KEY, " ");
@@ -72,18 +74,18 @@ public class QuerySettingsParserTest {
 			// note - we test here query is sanitized in settings!
 			assertQuerySettings(ret, "mytype", "myDcpType,myDcpType2", "query * query2", SortByValue.NEW, "proj1,proj2", 10,
 					20, "tg1,tg2", "myprovider", "John Doe <john@doe.com>,Dan Boo <boo@boo.net>", PastIntervalName.WEEK,
-					1359232356456L, 1359228766456L);
+					1359232356456L, 1359228766456L, "rf1,_rf2");
 		}
 	}
 
 	private void assertQuerySettingsEmpty(QuerySettings qs) {
-		assertQuerySettings(qs, null, null, null, null, null, null, null, null, null, null, null, null, null);
+		assertQuerySettings(qs, null, null, null, null, null, null, null, null, null, null, null, null, null, null);
 	}
 
 	private void assertQuerySettings(QuerySettings qs, String expectedContentType, String expectedDcpTypes,
 			String expectedQuery, SortByValue expectedSortBy, String expectedFilterProjects, Integer expectedFilterStart,
 			Integer expectedFilterCount, String expectedFilterTags, String expectedDcpProvider, String expectedContributors,
-			PastIntervalName expectedADInterval, Long expectedADFrom, Long expectedADTo) {
+			PastIntervalName expectedADInterval, Long expectedADFrom, Long expectedADTo, String expectedFields) {
 
 		Assert.assertEquals(expectedQuery, qs.getQuery());
 		Assert.assertEquals(expectedSortBy, qs.getSortBy());
@@ -100,6 +102,7 @@ public class QuerySettingsParserTest {
 		Assert.assertEquals(expectedADInterval, filters.getActivityDateInterval());
 		Assert.assertEquals(expectedADFrom, filters.getActivityDateFrom());
 		Assert.assertEquals(expectedADTo, filters.getActivityDateTo());
+		TestUtils.assertEqualsListValue(expectedFields, qs.getFields());
 	}
 
 	@Test
@@ -423,6 +426,34 @@ public class QuerySettingsParserTest {
 			Assert.fail("IllegalArgumentException expected");
 		} catch (IllegalArgumentException e) {
 			// OK
+		}
+	}
+
+	@Test
+	public void parseUriParams_field() {
+		// case - no param in request
+		{
+			MultivaluedMap<String, String> params = new MultivaluedMapImpl<String, String>();
+			QuerySettings ret = QuerySettingsParser.parseUriParams(params);
+			Assert.assertNotNull(ret);
+			Assert.assertNull(ret.getFields());
+		}
+		// case - one empty param in request leads to null
+		{
+			MultivaluedMap<String, String> params = new MultivaluedMapImpl<String, String>();
+			params.add(QuerySettings.FIELDS_KEY, " ");
+			QuerySettings ret = QuerySettingsParser.parseUriParams(params);
+			Assert.assertNotNull(ret);
+			Assert.assertNull(ret.getFields());
+		}
+		// case - more empty params in request lead to null
+		{
+			MultivaluedMap<String, String> params = new MultivaluedMapImpl<String, String>();
+			params.add(QuerySettings.FIELDS_KEY, " ");
+			params.add(QuerySettings.FIELDS_KEY, "");
+			QuerySettings ret = QuerySettingsParser.parseUriParams(params);
+			Assert.assertNotNull(ret);
+			Assert.assertNull(ret.getFields());
 		}
 	}
 

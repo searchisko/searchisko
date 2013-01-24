@@ -8,6 +8,7 @@ package org.jboss.dcp.api.rest;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
@@ -21,6 +22,7 @@ import org.elasticsearch.search.sort.SortOrder;
 import org.jboss.dcp.api.model.QuerySettings;
 import org.jboss.dcp.api.model.QuerySettings.Filters;
 import org.jboss.dcp.api.model.QuerySettings.SortByValue;
+import org.jboss.dcp.api.service.ConfigService;
 import org.jboss.dcp.api.service.ProviderService;
 import org.jboss.dcp.api.testtools.TestUtils;
 import org.jboss.dcp.api.util.QuerySettingsParser.PastIntervalName;
@@ -430,9 +432,10 @@ public class SearchRestServiceTest {
 	}
 
 	@Test
-	public void handleResponseContentSettings() {
+	public void handleResponseContentSettings_pager() {
 		SearchRestService tested = new SearchRestService();
 		tested.log = Logger.getLogger("testlogger");
+		tested.configService = Mockito.mock(ConfigService.class);
 
 		SearchRequestBuilder srbMock = Mockito.mock(SearchRequestBuilder.class);
 
@@ -546,6 +549,95 @@ public class SearchRestServiceTest {
 			Mockito.verify(srbMock).setSize(124);
 			Mockito.verify(srbMock).setFrom(42);
 			Mockito.verifyNoMoreInteractions(srbMock);
+		}
+	}
+
+	@Test
+	public void handleResponseContentSettings_fields() {
+		SearchRestService tested = new SearchRestService();
+		tested.log = Logger.getLogger("testlogger");
+		tested.configService = Mockito.mock(ConfigService.class);
+
+		SearchRequestBuilder srbMock = Mockito.mock(SearchRequestBuilder.class);
+
+		// case - NPE when no settings passed in
+		try {
+			tested.handleResponseContentSettings(null, srbMock);
+			Assert.fail("NullPointerException expected");
+		} catch (NullPointerException e) {
+			Mockito.verifyNoMoreInteractions(srbMock);
+			// OK
+		}
+
+		// case - no fields requested so defaults loaded from configuration but null
+		{
+			Mockito.reset(srbMock, tested.configService);
+			Mockito.when(tested.configService.get(ConfigService.CFGNAME_SEARCH_RESPONSE_FIELDS)).thenReturn(null);
+			QuerySettings querySettings = new QuerySettings();
+			tested.handleResponseContentSettings(querySettings, srbMock);
+			Mockito.verify(tested.configService).get(ConfigService.CFGNAME_SEARCH_RESPONSE_FIELDS);
+			Mockito.verifyNoMoreInteractions(srbMock);
+			Mockito.verifyNoMoreInteractions(tested.configService);
+		}
+
+		// case - no fields requested so defaults loaded from configuration but do not contains correct key
+		{
+			// default is not defined
+			Mockito.reset(srbMock, tested.configService);
+			Map<String, Object> mockConfig = new HashMap<String, Object>();
+			Mockito.when(tested.configService.get(ConfigService.CFGNAME_SEARCH_RESPONSE_FIELDS)).thenReturn(mockConfig);
+			QuerySettings querySettings = new QuerySettings();
+			tested.handleResponseContentSettings(querySettings, srbMock);
+			Mockito.verify(tested.configService).get(ConfigService.CFGNAME_SEARCH_RESPONSE_FIELDS);
+			Mockito.verifyNoMoreInteractions(srbMock);
+			Mockito.verifyNoMoreInteractions(tested.configService);
+		}
+
+		// case - no fields requested so defaults loaded from configuration, contains correct key with String value
+		{
+			// default is not defined
+			Mockito.reset(srbMock, tested.configService);
+			Map<String, Object> mockConfig = new HashMap<String, Object>();
+			mockConfig.put(ConfigService.CFGNAME_SEARCH_RESPONSE_FIELDS, "aa");
+			Mockito.when(tested.configService.get(ConfigService.CFGNAME_SEARCH_RESPONSE_FIELDS)).thenReturn(mockConfig);
+			QuerySettings querySettings = new QuerySettings();
+			tested.handleResponseContentSettings(querySettings, srbMock);
+			Mockito.verify(tested.configService).get(ConfigService.CFGNAME_SEARCH_RESPONSE_FIELDS);
+			Mockito.verify(srbMock).addField("aa");
+			Mockito.verifyNoMoreInteractions(srbMock);
+			Mockito.verifyNoMoreInteractions(tested.configService);
+		}
+
+		// case - no fields requested so defaults loaded from configuration, contains correct key with List value
+		{
+			// default is not defined
+			Mockito.reset(srbMock, tested.configService);
+			Map<String, Object> mockConfig = new HashMap<String, Object>();
+			List<String> cfgList = new ArrayList<String>();
+			cfgList.add("bb");
+			cfgList.add("cc");
+			mockConfig.put(ConfigService.CFGNAME_SEARCH_RESPONSE_FIELDS, cfgList);
+			Mockito.when(tested.configService.get(ConfigService.CFGNAME_SEARCH_RESPONSE_FIELDS)).thenReturn(mockConfig);
+			QuerySettings querySettings = new QuerySettings();
+			tested.handleResponseContentSettings(querySettings, srbMock);
+			Mockito.verify(tested.configService).get(ConfigService.CFGNAME_SEARCH_RESPONSE_FIELDS);
+			Mockito.verify(srbMock).addFields(new String[] { "bb", "cc" });
+			Mockito.verifyNoMoreInteractions(srbMock);
+			Mockito.verifyNoMoreInteractions(tested.configService);
+		}
+
+		// case - fields requested
+		{
+			Mockito.reset(srbMock, tested.configService);
+			QuerySettings querySettings = new QuerySettings();
+			List<String> fields = new ArrayList<String>();
+			querySettings.setFields(fields);
+			fields.add("aa");
+			fields.add("bb");
+			tested.handleResponseContentSettings(querySettings, srbMock);
+			Mockito.verify(srbMock).addFields(new String[] { "aa", "bb" });
+			Mockito.verifyNoMoreInteractions(srbMock);
+			Mockito.verifyZeroInteractions(tested.configService);
 		}
 	}
 

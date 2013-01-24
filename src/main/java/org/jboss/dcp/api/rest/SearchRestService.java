@@ -7,6 +7,7 @@ package org.jboss.dcp.api.rest;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -44,6 +45,7 @@ import org.jboss.dcp.api.DcpContentObjectFields;
 import org.jboss.dcp.api.annotations.security.GuestAllowed;
 import org.jboss.dcp.api.model.QuerySettings;
 import org.jboss.dcp.api.model.QuerySettings.SortByValue;
+import org.jboss.dcp.api.service.ConfigService;
 import org.jboss.dcp.api.service.ProviderService;
 import org.jboss.dcp.api.service.StatsRecordType;
 import org.jboss.dcp.api.util.QuerySettingsParser;
@@ -62,6 +64,9 @@ public class SearchRestService extends RestServiceBase {
 
 	@Inject
 	protected ProviderService providerService;
+
+	@Inject
+	protected ConfigService configService;
 
 	@GET
 	@Path("/")
@@ -165,6 +170,7 @@ public class SearchRestService extends RestServiceBase {
 		if (querySettings.getQuery() != null) {
 			// TODO _SEARCH load fields used for fulltext query from DCP configuration changeable during runtime.
 			QueryBuilder qb = QueryBuilders.queryString(querySettings.getQuery());
+
 			// TODO _SEARCH perform highlights if param query_highlight=true. Load fields used for highlighting from DCP
 			// configuration changeable on runtime
 			return qb;
@@ -249,10 +255,26 @@ public class SearchRestService extends RestServiceBase {
 	 * @param querySettings
 	 * @param srb request builder to set response content for
 	 */
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	protected void handleResponseContentSettings(QuerySettings querySettings, SearchRequestBuilder srb) {
 
-		// TODO _SEARCH handle 'field' params to return configured fields only. Use defined set of fields by default (loaded
-		// from DCP configuration).
+		// handle 'field' params to return configured fields only. Use default set of fields loaded from DCP configuration.
+		if (querySettings.getFields() != null) {
+			srb.addFields((querySettings.getFields()).toArray(new String[querySettings.getFields().size()]));
+		} else {
+			Map<String, Object> cf = configService.get(ConfigService.CFGNAME_SEARCH_RESPONSE_FIELDS);
+			if (cf != null && cf.containsKey(ConfigService.CFGNAME_SEARCH_RESPONSE_FIELDS)) {
+				Object o = cf.get(ConfigService.CFGNAME_SEARCH_RESPONSE_FIELDS);
+				if (o instanceof Collection) {
+					srb.addFields(((Collection<String>) o).toArray(new String[((Collection) o).size()]));
+				} else if (o instanceof String) {
+					srb.addField((String) o);
+				} else {
+					throw new SettingsException(ConfigService.CFGNAME_SEARCH_RESPONSE_FIELDS
+							+ " DCP configuration document is invalid. Contact administrators please.");
+				}
+			}
+		}
 
 		// pagging of results
 		QuerySettings.Filters filters = querySettings.getFilters();
@@ -268,5 +290,4 @@ public class SearchRestService extends RestServiceBase {
 			}
 		}
 	}
-
 }

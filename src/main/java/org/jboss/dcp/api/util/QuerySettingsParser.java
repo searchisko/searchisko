@@ -138,6 +138,7 @@ public class QuerySettingsParser {
 		}
 
 		settings.setQuery(normalizeQueryString(params.getFirst(QuerySettings.QUERY_KEY)));
+		settings.setFields(normalizeListParam(params.get(QuerySettings.FIELDS_KEY)));
 
 		filters.setContentType(trimmToNull(params.getFirst(QuerySettings.Filters.CONTENT_TYPE_KEY)));
 		filters.setDcpContentProvider(trimmToNull(params.getFirst(QuerySettings.Filters.DCP_CONTENT_PROVIDER)));

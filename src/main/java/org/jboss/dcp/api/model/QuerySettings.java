@@ -194,6 +194,13 @@ public class QuerySettings {
 	public static final String QUERY_KEY = "query";
 
 	/**
+	 * List of fields in response
+	 */
+	private List<String> fields;
+
+	public static final String FIELDS_KEY = "field";
+
+	/**
 	 * Sorting of results
 	 */
 	private SortByValue sortBy;
@@ -256,9 +263,17 @@ public class QuerySettings {
 		return sortBy;
 	}
 
+	public List<String> getFields() {
+		return fields;
+	}
+
+	public void setFields(List<String> fields) {
+		this.fields = fields;
+	}
+
 	@Override
 	public String toString() {
-		return "QuerySettings [query=" + query + ", sortBy=" + sortBy + ", filters=" + filters + "]";
+		return "QuerySettings [filters=" + filters + ", query=" + query + ", fields=" + fields + ", sortBy=" + sortBy + "]";
 	}
 
 }
