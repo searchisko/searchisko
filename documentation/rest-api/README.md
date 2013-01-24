@@ -4,12 +4,12 @@ DCP REST API index
 DCP REST API on-line Documentation & Server Mock are available at <http://docs.jbossorg.apiary.io/>
 
 ##DCP Content objects
-DCP content is main reason why DCP exists. It can be pushed into DCP by registered providers over 'Content Push API' and searched over 'Search API' and 'Query Suggestions API'.
+DCP content is the main reason why DCP exists. It can be pushed into DCP by the registered providers over 'Content Push API' and searched over 'Search API' and 'Query Suggestions API'.
 
 The DCP content can be characterized by a type (i.e. e-mails, blog posts, forum posts, issues etc. See **dcp_type** in the basic principles article). 
 Each *dcp_type* has its own logical structure and it will require specific fields to be filled. All types also share some common [system data fields](https://github.com/jbossorg/dcp-api/blob/master/documentation/rest-api/content/dcp_content_object.md).
 
-You can find description of the each content type available in DCP in [`content`](https://github.com/jbossorg/dcp-api/blob/master/documentation/rest-api/content/) subfolder in this directory.
+You can find the description of the each content type available in DCP in [`content`](https://github.com/jbossorg/dcp-api/blob/master/documentation/rest-api/content/) subfolder in this directory.
 
 *Note: If you run your own instance of DCP, consider the documents in this folder as an inspiration. You will have your own content.*
 
