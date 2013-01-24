@@ -25,56 +25,9 @@ To support synergy, informations stored into DCP will be normalized in these are
 
 **Distributed Contribution Platform** provides **REST API** for informations manipulation and search/retrieve described in this document.
 
-# <a id="dcpcontetnobject"></a>DCP Content object
+[Data structures used on this API are described here](https://github.com/jbossorg/dcp-api/blob/master/documentation/rest-api/).
 
-This chapter describes main content object which can be pushed to and retrieved or searched from DCP.
- 
-DCP Content object is a JSON document with a free structure. There is no restriction how many key value pairs must be defined or in what structure.
-Some system data fields are defined by DCP, some  are added into the content inside DCP. Those data fields are prefixed by `dcp_`:
-
-* `dcp_type` - DCP wide normalized content type - eg. mailing-list email, issue, blogpost, IRC post, commit, discussion thread - system field, always necessary
-* `dcp_id` - content id unique in the whole DCP platform - system field, always necessary. It is constructed during the 'Content Push API' operation from `dcp_content_type` and `dcp_content_id`.
-* `dcp_content_provider` - identification of the provider that stored the given data into the platform - system field, always necessary - eg. 'jbossorg', 'seam_project' etc.
-* `dcp_content_type` - identifier of the provider defined content type for 'Content Push API'. It is unique in the whole DCP so it starts with `dcp_content_provider`, eg. 'jbossorg_jira_issue', 'jbossorg_blog' etc. 
-* `dcp_content_id` -  content identifier is passed in by the provider, it must be unique for the given `dcp_content_type`
-* `dcp_updated` - date of last content update in DCP - system field, always necessary
-* `dcp_project` - normalized DCP wide identifier of the project - system field - it is used for the project facet and filter in the Search API
-* `dcp_project_name` - human readable name of project based on `dcp_project` identifier - system field 
-* `dcp_contributors` - array of contributing persons, no duplicities in array, persons identifiers normalized during push into DCP - each person represented as string `Name Surname <primaryemail@email.com>` - in Search API used for persons facet and filter
-* `dcp_activity_dates` - array of timestamps representing some activity on the content (when the content was created or changed etc. in source system) - in the Search API used for the time facet and filter
-* `dcp_last_activity_date` - timestamp representing last activity on the content (it's max value from `dcp_activity_dates`), used for sorting on search API.
-* `dcp_tags` - array of tags (Strings) - in the Search API used for facet (tag cloud) and filter - it is not directly pushed by the content provider because we plan a mechanism for additional user defined tags, so we need to rewrite this field internally. The content provider should use `tags` field instead.
-* `dcp_title` - content title - used to present the document in the basic search GUI - it can be directly set by the content provider during the push operation.
-* `dcp_url_view` - URL where the document can be viewed in its original system in human readable form - used to open the document from the basic search GUI - can be directly set by the content provider during the push
-* `dcp_description` - short text representing the content - used to show the content in the basic search GUI for queries that do not produce highlights - it can be directly set by the content provider during the push
-
-
-DCP Content described by example:
-
-```
-{
-    Free JSON Structure representing content. It can be one key - value pair or something more structured.
-    It's defined only by content provider.
-
-    "tags": ["Content_tag1", "tag2", "tag3"],
-
-    "dcp_content_provider": "jbossorg",
-    "dcp_content_type": "jbossorg_jira_issue",
-    "dcp_content_id": "AS7-1254",
-    "dcp_id": "jbossorg_jira_issue-AS7-1254",
-    "dcp_type": "issue",
-    "dcp_title": "AS7-1254 - Set the port_range on JGroups stacks to 1",
-    "dcp_url_view": "https://issues.jboss.org/browse/AS7-1254",
-    "dcp_description": "Set the port_range on JGroups stacks to 1 to lock down the ports.",
-    "dcp_updated": "2012-12-06T06:34:55.000Z",
-    "dcp_project": "as7",
-    "dcp_project_name": "JBoss AS7",
-    "dcp_contributors": ["John Doe <john@doe.org>", "Pat Mat <pat@mat.org>"],
-    "dcp_activity_dates": ["2012-12-06T06:34:55.000Z", "2012-12-05T01:48:05.000Z"],
-    "dcp_last_activity_date" : "2012-12-06T06:34:55.000Z", 
-    "dcp_tags": ["Content_tag1", "tag2", "tag3", "user_defined_additional_tag"]
-}
-```
+[This document describes structure of main content object](https://github.com/jbossorg/dcp-api/blob/master/documentation/rest-api/content/dcp_content_object.md) which can be pushed to and retrieved or searched from DCP.
 
 # Authentication
 
@@ -92,7 +45,7 @@ Some operation calls on REST API need to be authenticated by the provider. The c
 
 --
 Content Push API
-This part of API is primarily used by *content providers* to manipulate content in DCP. 
+This part of API is primarily used by *content providers* to manipulate [content](https://github.com/jbossorg/dcp-api/blob/master/documentation/rest-api/content/dcp_content_object.md) in DCP. 
 
 Each provider has set of 'provider types' defined in DCP, which are passed on this API as `{dcp_content_type}` URL path part.
 'Provider type' is one type of content object stored into DCP by given provider (eg. issue from provider's issue tracking system, blog post from provider's blogging system etc).
@@ -479,87 +432,10 @@ GET /rest/suggestions/query_string?q=Hiberna
 Management API - content providers
 
 This part of the API allows to manage configurations of *content providers*. *Content provider* is an entity which stores content into DCP (see Content Push API).
-Configuration for the *content provider* contains some descriptive/contact informations, informations for authentication/authorization on the DCP REST API, and configuration of content types pushed into DCP by this provider.
 
-This part of the API is used by 'DCP administrators' to manage configurations of DCP. Some operations can be used by *content providers* too.
+This part of the API is used by 'DCP administrators', some operations can be used by *content providers* alone too.
 
-Content provider configuration fields:
-
-* `name` - DCP wide unique name of the provider. It is stored into `dcp_content_provider` field in content pushed by this provider. Also used for authentication on DCP REST API.
-* `description` - description of the provider.
-* `contact_email` - contact email for responsible person on provider side, so DCP admin can contact he/she.
-* `super_provider` - if `true` then this provider has 'DCP administrator' role on the DCP REST API.
-* `pwd_hash` - password hash for authentication on the DCP REST API. This field is accepted only during provider creation and never returned back over `get` operations. Special REST operation must be used to change password later.  
-* `type` - structure with configuration of content types pushed into DCP by this provider. Key in the structure is type name, which must be DCP wide unique (typically starts with content provider `name`). It is used on the 'Content Push API' and stored into `dcp_content_type` field of content pushed into DCP by this provider. Configuration of each type contains these fields:
- * `description` - description of this type, what contains, which system produces it etc.
- * `dcp_type` - value stored into `dcp_type` field of pushed content (see description in the [DCP Content object](#dcpcontetnobject) chapter).
- * `search_all_excluded` - optional, if `true` then documents with this type are excluded from searchings targeted to all documents (so can be searched only by explicit requests for this type)
- * `input_preprocessors` - array of preprocessors applied on content of this type while pushed over 'Content Push API'. Typically used to normalize values into other `dcp_` fields as `dcp_project`, `dcp_contributors`, `dcp_activity_dates` etc. [structured-content-tools](https://github.com/jbossorg/structured-content-tools) framework is used here.
- * `index/name` - name of search index in DCP internal ElasticSearch cluster content of this type is stored into during push.  
- * `index/type` - type for mapping in DCP internal ElasticSearch cluster content of this type is stored into.
- * `index/search_indices` - array with names of search indices in DCP internal ElasticSearch cluster used during searching for this content type. Optional, name from `index/name` field is used for search if this field is not defined.
-
-Example of content provider configuration:
-
-```
-{
-  "name": "jborg",
-  "description" : "Provider used by JBoss Community Team to manage DCP and push content from core jboss.org systems",
-  "contact_email" : "help@jboss.org",
-  "super_provider": true,
-  "pwd_hash": "aa345345324523452345234523",
-  "type": {
-    "jbossorg_blog": {
-      "description" : "Blog posts pushed into DCP by Borg system - planet.jboss.org",
-      "dcp_type": "blogpost",
-      "search_all_excluded" : "false",
-      "input_preprocessors": [
-        {
-          "name": "DCP project mapper - feed to dcp_project mapping",
-          "class": "org.jboss.elasticsearch.tools.content.ESLookupValuePreprocessor",
-          "settings": {
-            "target_field": "dcp_project",
-            "index_name": "dcp_projects",
-            "idx_search_field": "type_specific_code.jbossorg_blog",
-            "idx_result_field": "code",
-            "source_field": "feed",
-            "value_default": "unknown",
-            "index_type": "project"
-          }
-        }
-      ],
-      "index": {
-        "name": "jbossorg_blog",
-        "type": "jbossorg_blogpost",
-        "search_indices": ["jbossorg_blog", "jbossorg_blog_2012"]
-      }
-    },
-    "jbossorg_project_info": {
-      "description" : "Informations about projects (name, links, icons, licenses used etc) pushed into DCP by Magnolia CMS",
-      "dcp_type": "project_info",
-      "input_preprocessors": [
-        {
-          "name": "DCP project mapper - nodePath to dcp_project mapping",
-          "class": "org.jboss.elasticsearch.tools.content.ESLookupValuePreprocessor",
-          "settings": {
-            "target_field": "dcp_project",
-            "index_name": "dcp_projects",
-            "idx_search_field": "type_specific_code.jbossorg_project_info",
-            "idx_result_field": "code",
-            "source_field": "nodePath",
-            "value_default": "unknown",
-            "index_type": "project"
-          }
-        }
-      ],
-      "index": {
-        "name": "project_info",
-        "type": "jbossorg_project_info"
-      }
-    }
-  }
-}
-```
+[Data structure used on this API is documented here](https://github.com/jbossorg/dcp-api/blob/master/documentation/rest-api/management/content_provider.md).
 --
 
 Get configuration for provider of given name.
@@ -706,32 +582,9 @@ DELETE /rest/provider/{name}
 Management API - projects
 
 This part of the API allows to manage configurations of *projects*. This configuration is used by preprocessors in 'Content Push API' to normalize project identifier for `dcp_project` field.
-This part of the API is used by 'DCP administrators' to manage configurations of project mappings. Get operations can be used without authentication.
+This part of the API is used by 'DCP administrators'. Get operations can be used without authentication.
 
-To allow searches for normalization processing by preprocessors, project configuration documents are stored in the DCP back-end elasticsearch search index named `dcp_projects` as type named `project`.
-
-Project configuration fields:
-
-* `code` - DCP wide unique project identifier. It is stored into `dcp_project` field in content pushed into DCP and used as project identifier for Search API filters.
-* `name` - project name 
-* `description` - description of the project.
-* `type_specific_code` - Map structure with other codes used to map pushed data to this project. Key in structure marks type of code (eg. jboss.org JIRA project key), value in structure is code itself used during mapping.
-
-Example of project configuration:
-
-```
-{
-  "code": "jbosstools",
-  "name": "JBoss Tools",
-  "description" : "",
-  "type_specific_code" : {
-    "jbossorg_blog": ["jbosstools"],
-    "jbossorg_jira": ["JBIDE"],
-    "jbossorg_mailing_list": [],
-    "jbossorg_project_info": "/jbosstools"
-  }
-}
-```
+[Data structure used on this API is documented here](https://github.com/jbossorg/dcp-api/blob/master/documentation/rest-api/management/project.md).
 --
 
 Get project configuration for given project code.
@@ -839,23 +692,9 @@ DELETE /rest/project/{code}
 Management API - contributors
 
 This part of the API allows to manage configurations of *contributors*. This configuration contains distinct informations/identifiers used by preprocessors in 'Content Push API' to normalize project identifier for `dcp_contributors` field.
-This part of the API is used by 'DCP administrators' to manage configurations of contributors mappings.
+This part of the API is used by 'DCP administrators' only.
 
-To allow searches for normalization processing by preprocessors, contributor configuration documents are stored in the DCP back-end elasticsearch search index named `dcp_contributors` as type named `contributor`.
-
-Contributor configuration fields:
-
-* `code` - DCP wide unique contributor identifier. It is stored into `dcp_contributors` field in content pushed into DCP and used as project identifier for Search API filters.
-* `email` - array of all email addresses used by this person for community content creation (used for code search during normalization on Content Push API). 
-
-Example of contributor configuration:
-
-```
-{
-  "code" : "John Doe <john@doe.org>",
-  "email" : ["john@doe.org", "john.doe@gmail.com"]
-}
-```
+[Data structure used on this API is documented here](https://github.com/jbossorg/dcp-api/blob/master/documentation/rest-api/management/contributor.md).
 --
 
 Get contributor configuration for given `id`.
@@ -980,8 +819,7 @@ Management API - configuration
 
 This part of the API is used by 'DCP administrators' to manage DCP configuration documents.
 Configuration documents use distinct structures depending on DCP feature they configure. 
-They are referenced from DCP code by defined `id`. For list of supported confioguration document id's and related configuration document structure see DCP documentation.  
-
+They are referenced from DCP code by defined `id`. For list of supported confioguration document id's and related configuration document structure see [DCP documentation](https://github.com/jbossorg/dcp-api/blob/master/documentation/rest-api/management/).  
 --
 
 Get configuration document for given `id`.
