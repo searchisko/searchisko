@@ -406,6 +406,7 @@ public class SearchRestServiceTest {
 	public void handleFulltextSearchSettings() throws IOException {
 		SearchRestService tested = new SearchRestService();
 		tested.log = Logger.getLogger("testlogger");
+		tested.configService = Mockito.mock(ConfigService.class);
 
 		// case - NPE when no settings passed in
 		try {
@@ -419,15 +420,43 @@ public class SearchRestServiceTest {
 
 		// case - no fulltext parameter requested
 		{
+			querySettings.setQuery(null);
 			QueryBuilder qbRes = tested.handleFulltextSearchSettings(querySettings);
 			TestUtils.assertJsonContentFromClasspathFile("/search/query_match_all.json", qbRes.toString());
 		}
 
-		// case - fulltext parameter requested
+		// case - fulltext parameter requested, no fulltext fields configured
 		{
+			Mockito.reset(tested.configService);
+			Mockito.when(tested.configService.get(ConfigService.CFGNAME_SEARCH_FULLTEXT_QUERY_FIELDS)).thenReturn(null);
 			querySettings.setQuery("my query string");
 			QueryBuilder qbRes = tested.handleFulltextSearchSettings(querySettings);
 			TestUtils.assertJsonContentFromClasspathFile("/search/query_fulltext.json", qbRes.toString());
+			Mockito.verify(tested.configService).get(ConfigService.CFGNAME_SEARCH_FULLTEXT_QUERY_FIELDS);
+			Mockito.verifyNoMoreInteractions(tested.configService);
+		}
+
+		// case - fulltext parameter requested, some fulltext fields configured (one with invalid format)
+		{
+			Mockito.reset(tested.configService);
+			Mockito.when(tested.configService.get(ConfigService.CFGNAME_SEARCH_FULLTEXT_QUERY_FIELDS)).thenReturn(
+					TestUtils.loadJSONFromClasspathFile("/search/search_fulltext_query_fields.json"));
+			querySettings.setQuery("my query string");
+			QueryBuilder qbRes = tested.handleFulltextSearchSettings(querySettings);
+			TestUtils.assertJsonContentFromClasspathFile("/search/query_fulltext_fields.json", qbRes.toString());
+			Mockito.verify(tested.configService).get(ConfigService.CFGNAME_SEARCH_FULLTEXT_QUERY_FIELDS);
+			Mockito.verifyNoMoreInteractions(tested.configService);
+		}
+
+		// case - no fulltext parameter requested, some fulltext fields configured which has no effect
+		{
+			querySettings.setQuery(null);
+			Mockito.reset(tested.configService);
+			Mockito.when(tested.configService.get(ConfigService.CFGNAME_SEARCH_FULLTEXT_QUERY_FIELDS)).thenReturn(
+					TestUtils.loadJSONFromClasspathFile("/search/search_fulltext_query_fields.json"));
+			QueryBuilder qbRes = tested.handleFulltextSearchSettings(querySettings);
+			TestUtils.assertJsonContentFromClasspathFile("/search/query_match_all.json", qbRes.toString());
+			Mockito.verifyZeroInteractions(tested.configService);
 		}
 	}
 

@@ -37,6 +37,7 @@ import org.elasticsearch.index.query.FilterBuilder;
 import org.elasticsearch.index.query.FilteredQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.index.query.QueryStringQueryBuilder;
 import org.elasticsearch.index.query.RangeFilterBuilder;
 import org.elasticsearch.index.query.TermsFilterBuilder;
 import org.elasticsearch.indices.IndexMissingException;
@@ -168,9 +169,24 @@ public class SearchRestService extends RestServiceBase {
 	 */
 	protected QueryBuilder handleFulltextSearchSettings(QuerySettings querySettings) {
 		if (querySettings.getQuery() != null) {
-			// TODO _SEARCH load fields used for fulltext query from DCP configuration changeable during runtime.
-			QueryBuilder qb = QueryBuilders.queryString(querySettings.getQuery());
-
+			QueryStringQueryBuilder qb = QueryBuilders.queryString(querySettings.getQuery());
+			Map<String, Object> fields = configService.get(ConfigService.CFGNAME_SEARCH_FULLTEXT_QUERY_FIELDS);
+			if (fields != null) {
+				for (String fieldName : fields.keySet()) {
+					String value = (String) fields.get(fieldName);
+					if (value != null && !value.trim().isEmpty()) {
+						try {
+							qb.field(fieldName, Float.parseFloat(value));
+						} catch (NumberFormatException e) {
+							log.warning("Boost value has not valid float format for fulltext field " + fieldName
+									+ " in DCP configuration document " + ConfigService.CFGNAME_SEARCH_FULLTEXT_QUERY_FIELDS);
+							qb.field(fieldName);
+						}
+					} else {
+						qb.field(fieldName);
+					}
+				}
+			}
 			// TODO _SEARCH perform highlights if param query_highlight=true. Load fields used for highlighting from DCP
 			// configuration changeable on runtime
 			return qb;
@@ -276,7 +292,7 @@ public class SearchRestService extends RestServiceBase {
 			}
 		}
 
-		// pagging of results
+		// paging of results
 		QuerySettings.Filters filters = querySettings.getFilters();
 		if (filters != null) {
 			if (filters.getFrom() != null && filters.getFrom() >= 0) {
