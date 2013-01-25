@@ -9,8 +9,10 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Logger;
 
 import javax.ws.rs.core.UriInfo;
@@ -24,6 +26,7 @@ import org.jboss.dcp.api.model.QuerySettings;
 import org.jboss.dcp.api.model.QuerySettings.Filters;
 import org.jboss.dcp.api.model.QuerySettings.SortByValue;
 import org.jboss.dcp.api.service.ConfigService;
+import org.jboss.dcp.api.service.IndexNamesCacheService;
 import org.jboss.dcp.api.service.ProviderService;
 import org.jboss.dcp.api.testtools.TestUtils;
 import org.jboss.dcp.api.util.QuerySettingsParser.PastIntervalName;
@@ -49,15 +52,18 @@ public class SearchRestServiceTest {
 		SearchRestService tested = new SearchRestService();
 		tested.providerService = Mockito.mock(ProviderService.class);
 		tested.log = Logger.getLogger("testlogger");
+		tested.indexNamesCacheService = Mockito.mock(IndexNamesCacheService.class);
 
 		QuerySettings querySettings = new QuerySettings();
 		SearchRequestBuilder searchRequestBuilderMock = Mockito.mock(SearchRequestBuilder.class);
 
 		// case - searching for all types, no provider defined
 		{
+			Mockito.when(tested.indexNamesCacheService.get(Mockito.anyList())).thenReturn(null);
 			List<Map<String, Object>> mockedProvidersList = new ArrayList<Map<String, Object>>();
 			Mockito.when(tested.providerService.listAllProviders()).thenReturn(mockedProvidersList);
 			tested.handleSearchInicesAndTypes(querySettings, searchRequestBuilderMock);
+			Mockito.verify(tested.indexNamesCacheService).get(null);
 			Mockito.verify(tested.providerService).listAllProviders();
 			Mockito.verify(searchRequestBuilderMock).setIndices(new String[] {});
 			Mockito.verifyNoMoreInteractions(searchRequestBuilderMock);
@@ -68,12 +74,14 @@ public class SearchRestServiceTest {
 
 		// case - searching for all types, some providers defined with all possible combinations of index definitions
 		{
-			Mockito.reset(tested.providerService, searchRequestBuilderMock);
+			Mockito.reset(tested.providerService, searchRequestBuilderMock, tested.indexNamesCacheService);
+			Mockito.when(tested.indexNamesCacheService.get(Mockito.anyList())).thenReturn(null);
 			List<Map<String, Object>> mockedProvidersList = new ArrayList<Map<String, Object>>();
 			mockedProvidersList.add(TestUtils.loadJSONFromClasspathFile("/search/provider_1.json"));
 			mockedProvidersList.add(TestUtils.loadJSONFromClasspathFile("/search/provider_2.json"));
 			Mockito.when(tested.providerService.listAllProviders()).thenReturn(mockedProvidersList);
 			tested.handleSearchInicesAndTypes(querySettings, searchRequestBuilderMock);
+			Mockito.verify(tested.indexNamesCacheService).get(null);
 			Mockito.verify(tested.providerService).listAllProviders();
 			Mockito.verify(searchRequestBuilderMock).setIndices(
 					new String[] { "idx_provider1_issue", "idx_provider1_mailing1", "idx_provider1_mailing2",
@@ -83,13 +91,14 @@ public class SearchRestServiceTest {
 
 		// case - contentType filter used - type with one index
 		{
-			Mockito.reset(tested.providerService, searchRequestBuilderMock);
+			Mockito.reset(tested.providerService, searchRequestBuilderMock, tested.indexNamesCacheService);
 			String testedType = "provider1_issue";
 			filters.setContentType(testedType);
 			Mockito.when(tested.providerService.findContentType(testedType)).thenReturn(
 					((Map<String, Map<String, Object>>) TestUtils.loadJSONFromClasspathFile("/search/provider_1.json").get(
 							ProviderService.TYPE)).get(testedType));
 			tested.handleSearchInicesAndTypes(querySettings, searchRequestBuilderMock);
+			Mockito.verifyZeroInteractions(tested.indexNamesCacheService);
 			Mockito.verify(searchRequestBuilderMock).setIndices(new String[] { "idx_provider1_issue" });
 			Mockito.verify(searchRequestBuilderMock).setTypes(new String[] { "t_provider1_issue" });
 			Mockito.verifyNoMoreInteractions(searchRequestBuilderMock);
@@ -97,13 +106,14 @@ public class SearchRestServiceTest {
 
 		// case - contentType filter used - type with more search indices
 		{
-			Mockito.reset(tested.providerService, searchRequestBuilderMock);
+			Mockito.reset(tested.providerService, searchRequestBuilderMock, tested.indexNamesCacheService);
 			String testedType = "provider1_mailing";
 			filters.setContentType(testedType);
 			Mockito.when(tested.providerService.findContentType(testedType)).thenReturn(
 					((Map<String, Map<String, Object>>) TestUtils.loadJSONFromClasspathFile("/search/provider_1.json").get(
 							ProviderService.TYPE)).get(testedType));
 			tested.handleSearchInicesAndTypes(querySettings, searchRequestBuilderMock);
+			Mockito.verifyZeroInteractions(tested.indexNamesCacheService);
 			Mockito.verify(searchRequestBuilderMock).setIndices(
 					new String[] { "idx_provider1_mailing1", "idx_provider1_mailing2" });
 			Mockito.verify(searchRequestBuilderMock).setTypes(new String[] { "t_provider1_mailing" });
@@ -112,13 +122,14 @@ public class SearchRestServiceTest {
 
 		// case - contentType filter used - type with search_all_excluded=true can be used if named
 		{
-			Mockito.reset(tested.providerService, searchRequestBuilderMock);
+			Mockito.reset(tested.providerService, searchRequestBuilderMock, tested.indexNamesCacheService);
 			String testedType = "provider1_cosi";
 			filters.setContentType(testedType);
 			Mockito.when(tested.providerService.findContentType(testedType)).thenReturn(
 					((Map<String, Map<String, Object>>) TestUtils.loadJSONFromClasspathFile("/search/provider_1.json").get(
 							ProviderService.TYPE)).get(testedType));
 			tested.handleSearchInicesAndTypes(querySettings, searchRequestBuilderMock);
+			Mockito.verifyZeroInteractions(tested.indexNamesCacheService);
 			Mockito.verify(searchRequestBuilderMock)
 					.setIndices(new String[] { "idx_provider1_cosi1", "idx_provider1_cosi2" });
 			Mockito.verify(searchRequestBuilderMock).setTypes(new String[] { "t_provider1_cosi" });
@@ -129,13 +140,18 @@ public class SearchRestServiceTest {
 		querySettings.setFilters(filters);
 		// case - dcp_type filter used
 		{
-			Mockito.reset(tested.providerService, searchRequestBuilderMock);
-			filters.setDcpTypes(Arrays.asList(new String[] { "issue" }));
+			Mockito.reset(tested.providerService, searchRequestBuilderMock, tested.indexNamesCacheService);
+			Mockito.when(tested.indexNamesCacheService.get(Mockito.anyList())).thenReturn(null);
+			List<String> dcpTypesRequested = Arrays.asList(new String[] { "issue" });
+			filters.setDcpTypes(dcpTypesRequested);
 			List<Map<String, Object>> mockedProvidersList = new ArrayList<Map<String, Object>>();
 			mockedProvidersList.add(TestUtils.loadJSONFromClasspathFile("/search/provider_1.json"));
 			mockedProvidersList.add(TestUtils.loadJSONFromClasspathFile("/search/provider_2.json"));
 			Mockito.when(tested.providerService.listAllProviders()).thenReturn(mockedProvidersList);
 			tested.handleSearchInicesAndTypes(querySettings, searchRequestBuilderMock);
+			Mockito.verify(tested.indexNamesCacheService).get(dcpTypesRequested);
+			Mockito.verify(tested.indexNamesCacheService).put(Mockito.eq(dcpTypesRequested), Mockito.anySet());
+			Mockito.verifyNoMoreInteractions(tested.indexNamesCacheService);
 			Mockito.verify(tested.providerService).listAllProviders();
 			Mockito.verify(searchRequestBuilderMock).setIndices(
 					new String[] { "idx_provider1_issue", "idx_provider2_issue1", "idx_provider2_issue2" });
@@ -144,13 +160,18 @@ public class SearchRestServiceTest {
 
 		// case - dcp_type filter used - type with search_all_excluded=true can be used if named
 		{
-			Mockito.reset(tested.providerService, searchRequestBuilderMock);
-			filters.setDcpTypes(Arrays.asList(new String[] { "cosi" }));
+			Mockito.reset(tested.providerService, searchRequestBuilderMock, tested.indexNamesCacheService);
+			Mockito.when(tested.indexNamesCacheService.get(Mockito.anyList())).thenReturn(null);
+			List<String> dcpTypesRequested = Arrays.asList(new String[] { "cosi" });
+			filters.setDcpTypes(dcpTypesRequested);
 			List<Map<String, Object>> mockedProvidersList = new ArrayList<Map<String, Object>>();
 			mockedProvidersList.add(TestUtils.loadJSONFromClasspathFile("/search/provider_1.json"));
 			mockedProvidersList.add(TestUtils.loadJSONFromClasspathFile("/search/provider_2.json"));
 			Mockito.when(tested.providerService.listAllProviders()).thenReturn(mockedProvidersList);
 			tested.handleSearchInicesAndTypes(querySettings, searchRequestBuilderMock);
+			Mockito.verify(tested.indexNamesCacheService).get(dcpTypesRequested);
+			Mockito.verify(tested.indexNamesCacheService).put(Mockito.eq(dcpTypesRequested), Mockito.anySet());
+			Mockito.verifyNoMoreInteractions(tested.indexNamesCacheService);
 			Mockito.verify(tested.providerService).listAllProviders();
 			Mockito.verify(searchRequestBuilderMock).setIndices(
 					new String[] { "idx_provider1_cosi1", "idx_provider1_cosi2", "idx_provider2_cosi1", "idx_provider2_cosi2" });
@@ -159,17 +180,46 @@ public class SearchRestServiceTest {
 
 		// case - dcp_type filter used with multiple values
 		{
-			Mockito.reset(tested.providerService, searchRequestBuilderMock);
-			filters.setDcpTypes(Arrays.asList("issue", "cosi"));
+			Mockito.reset(tested.providerService, searchRequestBuilderMock, tested.indexNamesCacheService);
+			Mockito.when(tested.indexNamesCacheService.get(Mockito.anyList())).thenReturn(null);
+			List<String> dcpTypesRequested = Arrays.asList(new String[] { "issue", "cosi" });
+			filters.setDcpTypes(dcpTypesRequested);
 			List<Map<String, Object>> mockedProvidersList = new ArrayList<Map<String, Object>>();
 			mockedProvidersList.add(TestUtils.loadJSONFromClasspathFile("/search/provider_1.json"));
 			mockedProvidersList.add(TestUtils.loadJSONFromClasspathFile("/search/provider_2.json"));
 			Mockito.when(tested.providerService.listAllProviders()).thenReturn(mockedProvidersList);
 			tested.handleSearchInicesAndTypes(querySettings, searchRequestBuilderMock);
+			Mockito.verify(tested.indexNamesCacheService).get(dcpTypesRequested);
+			Mockito.verify(tested.indexNamesCacheService).put(Mockito.eq(dcpTypesRequested), Mockito.anySet());
+			Mockito.verifyNoMoreInteractions(tested.indexNamesCacheService);
 			Mockito.verify(tested.providerService).listAllProviders();
 			Mockito.verify(searchRequestBuilderMock).setIndices(
 					new String[] { "idx_provider1_cosi1", "idx_provider1_cosi2", "idx_provider1_issue", "idx_provider2_cosi1",
 							"idx_provider2_cosi2", "idx_provider2_issue1", "idx_provider2_issue2" });
+			Mockito.verifyNoMoreInteractions(searchRequestBuilderMock);
+		}
+
+		// case - dcp_type filter used with multiple values - cache hit
+		{
+			Mockito.reset(tested.providerService, searchRequestBuilderMock, tested.indexNamesCacheService);
+			Set<String> cachedIdxNames = new HashSet<String>();
+			cachedIdxNames.add("idx_provider1_cosi1");
+			cachedIdxNames.add("idx_provider1_cosi2");
+			cachedIdxNames.add("idx_provider1_issue");
+			Mockito.when(tested.indexNamesCacheService.get(Mockito.anyList())).thenReturn(cachedIdxNames);
+			List<String> dcpTypesRequested = Arrays.asList(new String[] { "issue", "cosi" });
+			filters.setDcpTypes(dcpTypesRequested);
+			List<Map<String, Object>> mockedProvidersList = new ArrayList<Map<String, Object>>();
+			mockedProvidersList.add(TestUtils.loadJSONFromClasspathFile("/search/provider_1.json"));
+			mockedProvidersList.add(TestUtils.loadJSONFromClasspathFile("/search/provider_2.json"));
+			Mockito.when(tested.providerService.listAllProviders()).thenReturn(mockedProvidersList);
+			tested.handleSearchInicesAndTypes(querySettings, searchRequestBuilderMock);
+
+			Mockito.verify(tested.indexNamesCacheService).get(dcpTypesRequested);
+			Mockito.verifyNoMoreInteractions(tested.indexNamesCacheService);
+			Mockito.verifyZeroInteractions(tested.providerService);
+			Mockito.verify(searchRequestBuilderMock).setIndices(
+					new String[] { "idx_provider1_cosi1", "idx_provider1_cosi2", "idx_provider1_issue" });
 			Mockito.verifyNoMoreInteractions(searchRequestBuilderMock);
 		}
 

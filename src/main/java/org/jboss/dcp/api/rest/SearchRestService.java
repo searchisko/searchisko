@@ -47,6 +47,7 @@ import org.jboss.dcp.api.annotations.security.GuestAllowed;
 import org.jboss.dcp.api.model.QuerySettings;
 import org.jboss.dcp.api.model.QuerySettings.SortByValue;
 import org.jboss.dcp.api.service.ConfigService;
+import org.jboss.dcp.api.service.IndexNamesCacheService;
 import org.jboss.dcp.api.service.ProviderService;
 import org.jboss.dcp.api.service.StatsRecordType;
 import org.jboss.dcp.api.util.QuerySettingsParser;
@@ -68,6 +69,9 @@ public class SearchRestService extends RestServiceBase {
 
 	@Inject
 	protected ConfigService configService;
+
+	@Inject
+	protected IndexNamesCacheService indexNamesCacheService;
 
 	@GET
 	@Path("/")
@@ -138,30 +142,32 @@ public class SearchRestService extends RestServiceBase {
 			if (querySettings.getFilters() != null) {
 				dcpTypesRequested = querySettings.getFilters().getDcpTypes();
 			}
-			Set<String> indexNames = new LinkedHashSet<String>();
-			List<Map<String, Object>> allProviders = providerService.listAllProviders();
-			for (Map<String, Object> providerCfg : allProviders) {
-				try {
-					@SuppressWarnings("unchecked")
-					Map<String, Map<String, Object>> types = (Map<String, Map<String, Object>>) providerCfg
-							.get(ProviderService.TYPE);
-					if (types != null) {
-						for (String typeName : types.keySet()) {
-							Map<String, Object> typeDef = types.get(typeName);
-							if ((dcpTypesRequested == null && !ProviderService.extractSearchAllExcluded(typeDef))
-									|| (dcpTypesRequested != null && dcpTypesRequested.contains(ProviderService.extractDcpType(typeDef,
-											typeName)))) {
-								indexNames.addAll(Arrays.asList(ProviderService.extractSearchIndices(typeDef, typeName)));
+			Set<String> indexNames = indexNamesCacheService.get(dcpTypesRequested);
+			if (indexNames == null) {
+				indexNames = new LinkedHashSet<String>();
+				List<Map<String, Object>> allProviders = providerService.listAllProviders();
+				for (Map<String, Object> providerCfg : allProviders) {
+					try {
+						@SuppressWarnings("unchecked")
+						Map<String, Map<String, Object>> types = (Map<String, Map<String, Object>>) providerCfg
+								.get(ProviderService.TYPE);
+						if (types != null) {
+							for (String typeName : types.keySet()) {
+								Map<String, Object> typeDef = types.get(typeName);
+								if ((dcpTypesRequested == null && !ProviderService.extractSearchAllExcluded(typeDef))
+										|| (dcpTypesRequested != null && dcpTypesRequested.contains(ProviderService.extractDcpType(typeDef,
+												typeName)))) {
+									indexNames.addAll(Arrays.asList(ProviderService.extractSearchIndices(typeDef, typeName)));
+								}
 							}
 						}
+					} catch (ClassCastException e) {
+						throw new SettingsException("Incorrect configuration of 'type' section for dcp_provider="
+								+ providerCfg.get(ProviderService.NAME) + ". Contact administrators please.");
 					}
-				} catch (ClassCastException e) {
-					throw new SettingsException("Incorrect configuration of 'type' section for dcp_provider="
-							+ providerCfg.get(ProviderService.NAME) + ". Contact administrators please.");
 				}
+				indexNamesCacheService.put(dcpTypesRequested, indexNames);
 			}
-
-			// TODO _SEARCH extracted index names should be cached with timeout! dcpType must be used for caching!
 			srb.setIndices(indexNames.toArray(new String[indexNames.size()]));
 		}
 	}
