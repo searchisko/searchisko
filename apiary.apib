@@ -179,7 +179,7 @@ Search contributions based on input parameters
 ##### Request parameters
 
 * `query` full text query string
-* `query_highlight` when set to `true` and full text search is used over `query` param, then results contains data with highlighted query matches.
+* `query_highlight` when set to `true` and full text search is used over `query` param, then results contains data with query matches highlighted by `<span class='hlt'>***</span>`. 
 * `sortBy` sort result. Value can be `old` (to sort content from oldest to newest activity) or `new` (to sort from newest to oldest activity). Sorting by fulltext score is used if param is not provided.
 * `from` start index or returned entries. Default value is 0. Useful together with `size` for results pagination.
 * `size` maximal number of returned entries. Default is 10, maximal value is 500.

@@ -193,6 +193,10 @@ public class QuerySettings {
 
 	public static final String QUERY_KEY = "query";
 
+	private boolean queryHighlight = false;
+
+	public static final String QUERY_HIGHLIGHT_KEY = "query_highlight";
+
 	/**
 	 * List of fields in response
 	 */
@@ -271,9 +275,18 @@ public class QuerySettings {
 		this.fields = fields;
 	}
 
+	public boolean isQueryHighlight() {
+		return queryHighlight;
+	}
+
+	public void setQueryHighlight(boolean queryHighlight) {
+		this.queryHighlight = queryHighlight;
+	}
+
 	@Override
 	public String toString() {
-		return "QuerySettings [filters=" + filters + ", query=" + query + ", fields=" + fields + ", sortBy=" + sortBy + "]";
+		return "QuerySettings [filters=" + filters + ", query=" + query + ", queryHighlight=" + queryHighlight
+				+ ", fields=" + fields + ", sortBy=" + sortBy + "]";
 	}
 
 }

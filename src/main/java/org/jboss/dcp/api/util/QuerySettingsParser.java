@@ -138,6 +138,7 @@ public class QuerySettingsParser {
 		}
 
 		settings.setQuery(normalizeQueryString(params.getFirst(QuerySettings.QUERY_KEY)));
+		settings.setQueryHighlight(readBooleanParam(params, QuerySettings.QUERY_HIGHLIGHT_KEY));
 		settings.setFields(normalizeListParam(params.get(QuerySettings.FIELDS_KEY)));
 
 		filters.setContentType(trimmToNull(params.getFirst(QuerySettings.Filters.CONTENT_TYPE_KEY)));
@@ -219,6 +220,20 @@ public class QuerySettingsParser {
 			}
 		}
 		return null;
+	}
+
+	/**
+	 * Read request param value as boolean.
+	 * 
+	 * @param params to get param from
+	 * @param paramKey key of param
+	 * @return param boolean value
+	 */
+	protected static boolean readBooleanParam(MultivaluedMap<String, String> params, String paramKey) {
+		if (params != null && params.containsKey(paramKey)) {
+			return Boolean.parseBoolean(trimmToNull(params.getFirst(paramKey)));
+		}
+		return false;
 	}
 
 	/**

@@ -86,9 +86,12 @@ public class SearchRestService extends RestServiceBase {
 
 			QueryBuilder qb = handleFulltextSearchSettings(querySettings);
 			qb = handleCommonFiltersSettings(querySettings, qb);
+
 			srb.setQuery(qb);
 
 			handleSortingSettings(querySettings, srb);
+
+			handleHighlightSettings(querySettings, srb);
 
 			// TODO _SEARCH return facets data depending on 'facet' params
 
@@ -187,13 +190,53 @@ public class SearchRestService extends RestServiceBase {
 					}
 				}
 			}
-			// TODO _SEARCH perform highlights if param query_highlight=true. Load fields used for highlighting from DCP
-			// configuration changeable on runtime
 			return qb;
 		} else {
 			return QueryBuilders.matchAllQuery();
 		}
+	}
 
+	protected void handleHighlightSettings(QuerySettings querySettings, SearchRequestBuilder srb) {
+		if (querySettings.getQuery() != null && querySettings.isQueryHighlight()) {
+			Map<String, Object> hf = configService.get(ConfigService.CFGNAME_SEARCH_FULLTEXT_HIGHLIGHT_FIELDS);
+			if (hf != null && !hf.isEmpty()) {
+				srb.setHighlighterPreTags("<span class='hlt'>");
+				srb.setHighlighterPostTags("</span>");
+				for (String fieldName : hf.keySet()) {
+					srb.addHighlightedField(fieldName, parseHighlightSettingIntParam(hf, fieldName, "fragment_size"),
+							parseHighlightSettingIntParam(hf, fieldName, "number_of_fragments"),
+							parseHighlightSettingIntParam(hf, fieldName, "fragment_offset"));
+				}
+			} else {
+				throw new SettingsException(
+						"Fulltext search highlight requested but not configured by DCP configuration document "
+								+ ConfigService.CFGNAME_SEARCH_FULLTEXT_HIGHLIGHT_FIELDS + ". Contact administrators please.");
+			}
+		}
+	}
+
+	@SuppressWarnings("unchecked")
+	protected int parseHighlightSettingIntParam(Map<String, Object> highlightConfigStructure, String fieldName,
+			String paramName) {
+		try {
+			Map<String, Object> fieldConfig = (Map<String, Object>) highlightConfigStructure.get(fieldName);
+			try {
+				Object o = fieldConfig.get(paramName);
+				if (o instanceof Integer) {
+					return ((Integer) o).intValue();
+				} else {
+					return Integer.parseInt(o.toString());
+				}
+			} catch (Exception e) {
+				throw new SettingsException("Missing or incorrect configuration of fulltext search highlight field '"
+						+ fieldName + "' parameter '" + paramName + "' in DCP configuration document "
+						+ ConfigService.CFGNAME_SEARCH_FULLTEXT_HIGHLIGHT_FIELDS + ". Contact administrators please.");
+			}
+		} catch (ClassCastException e) {
+			throw new SettingsException("Incorrect configuration of fulltext search highlight field '" + fieldName
+					+ "' in DCP configuration document " + ConfigService.CFGNAME_SEARCH_FULLTEXT_HIGHLIGHT_FIELDS
+					+ ". Contact administrators please.");
+		}
 	}
 
 	private static final DateTimeFormatter DATE_TIME_FORMATTER_UTC = ISODateTimeFormat.dateTime().withZoneUTC();

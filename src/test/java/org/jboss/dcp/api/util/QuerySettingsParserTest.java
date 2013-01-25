@@ -52,6 +52,7 @@ public class QuerySettingsParserTest {
 			params.add(QuerySettings.Filters.DCP_TYPES_KEY, " ");
 			params.add(QuerySettings.Filters.DCP_CONTENT_PROVIDER, "myprovider ");
 			params.add(QuerySettings.QUERY_KEY, "query ** query2");
+			params.add(QuerySettings.QUERY_HIGHLIGHT_KEY, "true ");
 			params.add(QuerySettings.SORT_BY_KEY, "new");
 			params.add(QuerySettings.FIELDS_KEY, "rf1");
 			params.add(QuerySettings.FIELDS_KEY, "_rf2 ");
@@ -74,20 +75,22 @@ public class QuerySettingsParserTest {
 			// note - we test here query is sanitized in settings!
 			assertQuerySettings(ret, "mytype", "myDcpType,myDcpType2", "query * query2", SortByValue.NEW, "proj1,proj2", 10,
 					20, "tg1,tg2", "myprovider", "John Doe <john@doe.com>,Dan Boo <boo@boo.net>", PastIntervalName.WEEK,
-					1359232356456L, 1359228766456L, "rf1,_rf2");
+					1359232356456L, 1359228766456L, "rf1,_rf2", true);
 		}
 	}
 
 	private void assertQuerySettingsEmpty(QuerySettings qs) {
-		assertQuerySettings(qs, null, null, null, null, null, null, null, null, null, null, null, null, null, null);
+		assertQuerySettings(qs, null, null, null, null, null, null, null, null, null, null, null, null, null, null, false);
 	}
 
 	private void assertQuerySettings(QuerySettings qs, String expectedContentType, String expectedDcpTypes,
 			String expectedQuery, SortByValue expectedSortBy, String expectedFilterProjects, Integer expectedFilterStart,
 			Integer expectedFilterCount, String expectedFilterTags, String expectedDcpProvider, String expectedContributors,
-			PastIntervalName expectedADInterval, Long expectedADFrom, Long expectedADTo, String expectedFields) {
+			PastIntervalName expectedADInterval, Long expectedADFrom, Long expectedADTo, String expectedFields,
+			boolean expectedQueryHighlight) {
 
 		Assert.assertEquals(expectedQuery, qs.getQuery());
+		Assert.assertEquals(expectedQueryHighlight, qs.isQueryHighlight());
 		Assert.assertEquals(expectedSortBy, qs.getSortBy());
 		QuerySettings.Filters filters = qs.getFilters();
 		Assert.assertNotNull("Filters instance expected not null", filters);
@@ -594,6 +597,42 @@ public class QuerySettingsParserTest {
 		} catch (IllegalArgumentException e) {
 			// OK
 		}
+	}
+
+	@Test
+	public void readBooleanParam() {
+		Assert.assertFalse(QuerySettingsParser.readBooleanParam(null, "key"));
+
+		MultivaluedMap<String, String> params = new MultivaluedMapImpl<String, String>();
+		Assert.assertFalse(QuerySettingsParser.readBooleanParam(params, "key"));
+
+		params.clear();
+		params.add("key", "");
+		Assert.assertFalse(QuerySettingsParser.readBooleanParam(params, "key"));
+
+		params.clear();
+		params.add("key", "false");
+		Assert.assertFalse(QuerySettingsParser.readBooleanParam(params, "key"));
+
+		params.clear();
+		params.add("key", "False");
+		Assert.assertFalse(QuerySettingsParser.readBooleanParam(params, "key"));
+
+		params.clear();
+		params.add("key", "nonsense");
+		Assert.assertFalse(QuerySettingsParser.readBooleanParam(params, "key"));
+
+		params.clear();
+		params.add("key", "true");
+		Assert.assertTrue(QuerySettingsParser.readBooleanParam(params, "key"));
+
+		params.clear();
+		params.add("key", " True");
+		Assert.assertTrue(QuerySettingsParser.readBooleanParam(params, "key"));
+
+		params.clear();
+		params.add("key", "TRUE ");
+		Assert.assertTrue(QuerySettingsParser.readBooleanParam(params, "key"));
 	}
 
 	@Test

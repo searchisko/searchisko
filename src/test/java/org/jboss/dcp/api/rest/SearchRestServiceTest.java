@@ -16,6 +16,7 @@ import java.util.logging.Logger;
 import javax.ws.rs.core.UriInfo;
 
 import org.elasticsearch.action.search.SearchRequestBuilder;
+import org.elasticsearch.common.settings.SettingsException;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.sort.SortOrder;
@@ -457,6 +458,153 @@ public class SearchRestServiceTest {
 			QueryBuilder qbRes = tested.handleFulltextSearchSettings(querySettings);
 			TestUtils.assertJsonContentFromClasspathFile("/search/query_match_all.json", qbRes.toString());
 			Mockito.verifyZeroInteractions(tested.configService);
+		}
+	}
+
+	@SuppressWarnings("unchecked")
+	@Test
+	public void handleHighlightSettings() {
+		SearchRestService tested = new SearchRestService();
+		tested.log = Logger.getLogger("testlogger");
+		tested.configService = Mockito.mock(ConfigService.class);
+
+		SearchRequestBuilder srbMock = Mockito.mock(SearchRequestBuilder.class);
+
+		// case - NPE when no settings passed in
+		try {
+			tested.handleHighlightSettings(null, srbMock);
+			Assert.fail("NullPointerException expected");
+		} catch (NullPointerException e) {
+			// OK
+		}
+
+		QuerySettings querySettings = new QuerySettings();
+
+		// case - highlight requested but no fulltext query requested so nothing done
+		{
+			Mockito.reset(srbMock, tested.configService);
+			querySettings.setQuery(null);
+			querySettings.setQueryHighlight(true);
+			tested.handleHighlightSettings(querySettings, srbMock);
+			Mockito.verifyZeroInteractions(srbMock);
+			Mockito.verifyZeroInteractions(tested.configService);
+		}
+
+		// case - highlight requested not requested, fulltext query requested, nothing done
+		{
+			Mockito.reset(srbMock, tested.configService);
+			querySettings.setQuery("query");
+			querySettings.setQueryHighlight(false);
+			tested.handleHighlightSettings(querySettings, srbMock);
+			Mockito.verifyZeroInteractions(srbMock);
+			Mockito.verifyZeroInteractions(tested.configService);
+		}
+
+		// case - highlight and fulltext query requested, configuration OK
+		{
+			Mockito.reset(srbMock, tested.configService);
+			querySettings.setQuery("query");
+			querySettings.setQueryHighlight(true);
+			Map<String, Object> cfg = TestUtils.loadJSONFromClasspathFile("/search/search_fulltext_highlight_fields.json");
+			Mockito.when(tested.configService.get(ConfigService.CFGNAME_SEARCH_FULLTEXT_HIGHLIGHT_FIELDS)).thenReturn(cfg);
+			tested.handleHighlightSettings(querySettings, srbMock);
+			Mockito.verify(srbMock).setHighlighterPreTags("<span class='hlt'>");
+			Mockito.verify(srbMock).setHighlighterPostTags("</span>");
+			Mockito.verify(srbMock).addHighlightedField("dcp_title", -1, 0, 0);
+			Mockito.verify(srbMock).addHighlightedField("dcp_description", 2, 3, 20);
+			Mockito.verify(srbMock).addHighlightedField("dcp_contributors.fulltext", 5, 10, 30);
+			Mockito.verifyNoMoreInteractions(srbMock);
+			Mockito.verify(tested.configService).get(ConfigService.CFGNAME_SEARCH_FULLTEXT_HIGHLIGHT_FIELDS);
+			Mockito.verifyNoMoreInteractions(tested.configService);
+		}
+
+		// cases - highlight and fulltext query requested, distinct configuration errors
+		{
+			Mockito.reset(srbMock, tested.configService);
+			querySettings.setQuery("query");
+			querySettings.setQueryHighlight(true);
+			Mockito.when(tested.configService.get(ConfigService.CFGNAME_SEARCH_FULLTEXT_HIGHLIGHT_FIELDS)).thenReturn(null);
+			try {
+				tested.handleHighlightSettings(querySettings, srbMock);
+				Assert.fail("SettingsException expected");
+			} catch (SettingsException e) {
+				// OK
+			}
+		}
+		{
+			Mockito.reset(srbMock, tested.configService);
+			querySettings.setQuery("query");
+			querySettings.setQueryHighlight(true);
+			Mockito.when(tested.configService.get(ConfigService.CFGNAME_SEARCH_FULLTEXT_HIGHLIGHT_FIELDS)).thenReturn(
+					new HashMap<String, Object>());
+			try {
+				tested.handleHighlightSettings(querySettings, srbMock);
+				Assert.fail("SettingsException expected");
+			} catch (SettingsException e) {
+				// OK
+			}
+		}
+		{
+			Mockito.reset(srbMock, tested.configService);
+			querySettings.setQuery("query");
+			querySettings.setQueryHighlight(true);
+			Map<String, Object> cfg = TestUtils.loadJSONFromClasspathFile("/search/search_fulltext_highlight_fields.json");
+			cfg.put("dcp_title", "badclass");
+			Mockito.when(tested.configService.get(ConfigService.CFGNAME_SEARCH_FULLTEXT_HIGHLIGHT_FIELDS)).thenReturn(cfg);
+			try {
+				tested.handleHighlightSettings(querySettings, srbMock);
+				Assert.fail("SettingsException expected");
+			} catch (SettingsException e) {
+				// OK
+			}
+		}
+		{
+			Mockito.reset(srbMock, tested.configService);
+			querySettings.setQuery("query");
+			querySettings.setQueryHighlight(true);
+			Map<String, Object> cfg = TestUtils.loadJSONFromClasspathFile("/search/search_fulltext_highlight_fields.json");
+			Map<String, String> c = (Map<String, String>) cfg.get("dcp_title");
+			// no integer parameter
+			c.put("fragment_size", "no integer");
+			Mockito.when(tested.configService.get(ConfigService.CFGNAME_SEARCH_FULLTEXT_HIGHLIGHT_FIELDS)).thenReturn(cfg);
+			try {
+				tested.handleHighlightSettings(querySettings, srbMock);
+				Assert.fail("SettingsException expected");
+			} catch (SettingsException e) {
+				// OK
+			}
+		}
+		{
+			Mockito.reset(srbMock, tested.configService);
+			querySettings.setQuery("query");
+			querySettings.setQueryHighlight(true);
+			Map<String, Object> cfg = TestUtils.loadJSONFromClasspathFile("/search/search_fulltext_highlight_fields.json");
+			Map<String, String> c = (Map<String, String>) cfg.get("dcp_title");
+			// empty parameter
+			c.put("number_of_fragments", "");
+			Mockito.when(tested.configService.get(ConfigService.CFGNAME_SEARCH_FULLTEXT_HIGHLIGHT_FIELDS)).thenReturn(cfg);
+			try {
+				tested.handleHighlightSettings(querySettings, srbMock);
+				Assert.fail("SettingsException expected");
+			} catch (SettingsException e) {
+				// OK
+			}
+		}
+		{
+			Mockito.reset(srbMock, tested.configService);
+			querySettings.setQuery("query");
+			querySettings.setQueryHighlight(true);
+			Map<String, Object> cfg = TestUtils.loadJSONFromClasspathFile("/search/search_fulltext_highlight_fields.json");
+			Map<String, String> c = (Map<String, String>) cfg.get("dcp_title");
+			// no integer parameter
+			c.put("fragment_offset", "no integer");
+			Mockito.when(tested.configService.get(ConfigService.CFGNAME_SEARCH_FULLTEXT_HIGHLIGHT_FIELDS)).thenReturn(cfg);
+			try {
+				tested.handleHighlightSettings(querySettings, srbMock);
+				Assert.fail("SettingsException expected");
+			} catch (SettingsException e) {
+				// OK
+			}
 		}
 	}
 
