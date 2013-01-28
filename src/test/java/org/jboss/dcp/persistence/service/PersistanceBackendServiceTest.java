@@ -3,7 +3,7 @@
  * Copyright 2012 Red Hat Inc. and/or its affiliates and other contributors
  * as indicated by the @authors tag. All rights reserved.
  */
-package org.jboss.dcp.api.service;
+package org.jboss.dcp.persistence.service;
 
 import java.util.Map;
 import java.util.logging.Logger;
@@ -12,7 +12,12 @@ import junit.framework.Assert;
 
 import org.elasticsearch.client.Client;
 import org.jboss.dcp.api.model.AppConfiguration;
+import org.jboss.dcp.api.service.AppConfigurationService;
+import org.jboss.dcp.api.service.ProviderService;
 import org.jboss.dcp.api.testtools.ESRealClientTestBase;
+import org.jboss.dcp.persistence.service.ElasticsearchEntityService;
+import org.jboss.dcp.persistence.service.EntityService;
+import org.jboss.dcp.persistence.service.PersistanceBackendService;
 import org.junit.Test;
 import org.mockito.Mockito;
 

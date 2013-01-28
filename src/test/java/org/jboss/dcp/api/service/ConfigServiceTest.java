@@ -15,6 +15,7 @@ import junit.framework.Assert;
 
 import org.jboss.dcp.api.rest.ESDataOnlyResponse;
 import org.jboss.dcp.api.testtools.ESRealClientTestBase;
+import org.jboss.dcp.persistence.service.EntityService;
 import org.junit.Test;
 import org.mockito.Mockito;
 

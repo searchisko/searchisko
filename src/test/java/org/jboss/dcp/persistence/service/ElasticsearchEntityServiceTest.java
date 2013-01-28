@@ -3,7 +3,7 @@
  * Copyright 2012 Red Hat Inc. and/or its affiliates and other contributors
  * as indicated by the @authors tag. All rights reserved.
  */
-package org.jboss.dcp.api.service;
+package org.jboss.dcp.persistence.service;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -18,6 +18,7 @@ import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.client.Client;
 import org.jboss.dcp.api.testtools.ESRealClientTestBase;
 import org.jboss.dcp.api.testtools.TestUtils;
+import org.jboss.dcp.persistence.service.ElasticsearchEntityService;
 import org.junit.Test;
 import org.mockito.Mockito;
 

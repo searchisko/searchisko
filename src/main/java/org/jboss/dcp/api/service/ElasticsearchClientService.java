@@ -44,7 +44,7 @@ public class ElasticsearchClientService {
 	 */
 	protected Node node;
 
-	protected Client client;
+	public Client client;
 
 	@Inject
 	protected AppConfigurationService appConfigurationService;

@@ -19,7 +19,7 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-import org.jboss.dcp.api.service.EntityService;
+import org.jboss.dcp.persistence.service.EntityService;
 
 /**
  * Base class for REST API for entity manipulation, contains basic CRUD operations.
