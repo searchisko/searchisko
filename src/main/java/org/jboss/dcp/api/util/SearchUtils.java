@@ -34,4 +34,19 @@ public class SearchUtils {
 		return prop;
 	}
 
+	/**
+	 * Trim string and return null if empty.
+	 * 
+	 * @param value to trim
+	 * @return trimmed value or null if empty
+	 */
+	public static String trimmToNull(String value) {
+		if (value != null) {
+			value = value.trim();
+			if (value.isEmpty())
+				value = null;
+		}
+		return value;
+	}
+
 }

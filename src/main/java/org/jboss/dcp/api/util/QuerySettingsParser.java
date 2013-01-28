@@ -13,8 +13,10 @@ import java.util.logging.Logger;
 import javax.ws.rs.core.MultivaluedMap;
 
 import org.elasticsearch.common.joda.time.format.ISODateTimeFormat;
+import org.jboss.dcp.api.model.FacetValue;
+import org.jboss.dcp.api.model.PastIntervalValue;
 import org.jboss.dcp.api.model.QuerySettings;
-import org.jboss.dcp.api.model.QuerySettings.SortByValue;
+import org.jboss.dcp.api.model.SortByValue;
 import org.jboss.dcp.api.rest.SearchRestService;
 
 /**
@@ -25,57 +27,6 @@ import org.jboss.dcp.api.rest.SearchRestService;
  * @author Vlastimil Elias (velias at redhat dot com)
  */
 public class QuerySettingsParser {
-
-	public static enum PastIntervalName {
-
-		WEEK("week", 1000L * 60L * 60L * 24L * 7L), MONTH("month", 1000L * 60L * 60L * 24L * 31L), QUARTER("quarter", 1000L
-				* 60L * 60L * 24L * 31L * 3L), YEAR("year", 1000L * 60L * 60L * 24L * 365L), DAY("day", 1000L * 60L * 60L * 24L);
-
-		/**
-		 * Value used in request parameter.
-		 */
-		private String value;
-
-		/**
-		 * Value of timeshift back from current timestamp if this enum item is used. see {@link #getFromTimestamp()}
-		 */
-		private long timeshift;
-
-		private PastIntervalName(String value, long timeshift) {
-			this.value = value;
-			this.timeshift = timeshift;
-		}
-
-		@Override
-		public String toString() {
-			return this.value;
-		}
-
-		/**
-		 * @return long value with timeshift for this enum item
-		 */
-		public long getFromTimestamp() {
-			return System.currentTimeMillis() - timeshift;
-		}
-
-		/**
-		 * Convert request parameter to enum item.
-		 * 
-		 * @param requestVal value from request to parse
-		 * @return enum item for given request value, null if it is empty
-		 * @throws IllegalArgumentException if request value is invalid
-		 */
-		static PastIntervalName parseRequestParameterValue(String requestVal) throws IllegalArgumentException {
-			requestVal = trimmToNull(requestVal);
-			if (requestVal == null)
-				return null;
-			for (PastIntervalName n : PastIntervalName.values()) {
-				if (n.value.equals(requestVal))
-					return n;
-			}
-			throw new IllegalArgumentException(QuerySettings.Filters.ACTIVITY_DATE_INTERVAL_KEY);
-		}
-	}
 
 	private final static Logger log = Logger.getLogger(QuerySettingsParser.class.getName());
 
@@ -104,7 +55,7 @@ public class QuerySettingsParser {
 	 * @return normalized query
 	 */
 	public static String normalizeQueryString(String query) {
-		query = trimmToNull(query);
+		query = SearchUtils.trimmToNull(query);
 		if (query == null) {
 			return null;
 		}
@@ -141,13 +92,13 @@ public class QuerySettingsParser {
 		settings.setQueryHighlight(readBooleanParam(params, QuerySettings.QUERY_HIGHLIGHT_KEY));
 		settings.setFields(normalizeListParam(params.get(QuerySettings.FIELDS_KEY)));
 
-		filters.setContentType(trimmToNull(params.getFirst(QuerySettings.Filters.CONTENT_TYPE_KEY)));
-		filters.setDcpContentProvider(trimmToNull(params.getFirst(QuerySettings.Filters.DCP_CONTENT_PROVIDER)));
+		filters.setContentType(SearchUtils.trimmToNull(params.getFirst(QuerySettings.Filters.CONTENT_TYPE_KEY)));
+		filters.setDcpContentProvider(SearchUtils.trimmToNull(params.getFirst(QuerySettings.Filters.DCP_CONTENT_PROVIDER)));
 		filters.setDcpTypes(normalizeListParam(params.get(QuerySettings.Filters.DCP_TYPES_KEY)));
 		filters.setProjects(normalizeListParam(params.get(QuerySettings.Filters.PROJECTS_KEY)));
 		filters.setTags(normalizeListParam(params.get(QuerySettings.Filters.TAGS_KEY)));
 		filters.setContributors(normalizeListParam(params.get(QuerySettings.Filters.CONTRIBUTORS_KEY)));
-		filters.setActivityDateInterval(PastIntervalName.parseRequestParameterValue(params
+		filters.setActivityDateInterval(PastIntervalValue.parseRequestParameterValue(params
 				.getFirst(QuerySettings.Filters.ACTIVITY_DATE_INTERVAL_KEY)));
 		filters.setActivityDateFrom(readDateParam(params, QuerySettings.Filters.ACTIVITY_DATE_FROM_KEY));
 		filters.setActivityDateTo(readDateParam(params, QuerySettings.Filters.ACTIVITY_DATE_TO_KEY));
@@ -159,14 +110,11 @@ public class QuerySettingsParser {
 		if (filters.getSize() != null && (filters.getSize() < 0 || filters.getSize() > SearchRestService.RESPONSE_MAX_SIZE))
 			throw new IllegalArgumentException(QuerySettings.Filters.SIZE_KEY);
 
-		if (params.containsKey(QuerySettings.SORT_BY_KEY)) {
-			String sortByString = params.getFirst(QuerySettings.SORT_BY_KEY);
-			if (QuerySettings.SortByValue.NEW.name().equalsIgnoreCase(sortByString)) {
-				settings.setSortBy(SortByValue.NEW);
-			} else if (QuerySettings.SortByValue.OLD.name().equalsIgnoreCase(sortByString)) {
-				settings.setSortBy(SortByValue.OLD);
-			} else {
-				throw new IllegalArgumentException(QuerySettings.SORT_BY_KEY);
+		settings.setSortBy(SortByValue.parseRequestParameterValue(params.getFirst(QuerySettings.SORT_BY_KEY)));
+
+		if (params.get(QuerySettings.FACETS_KEY) != null) {
+			for (String fpv : params.get(QuerySettings.FACETS_KEY)) {
+				settings.addFacet(FacetValue.parseRequestParameterValue(fpv));
 			}
 		}
 
@@ -188,7 +136,7 @@ public class QuerySettingsParser {
 			throws IllegalArgumentException {
 		if (params != null && params.containsKey(paramKey)) {
 			try {
-				String s = trimmToNull(params.getFirst(paramKey));
+				String s = SearchUtils.trimmToNull(params.getFirst(paramKey));
 				if (s == null)
 					return null;
 				return new Integer(s);
@@ -211,7 +159,7 @@ public class QuerySettingsParser {
 			throws IllegalArgumentException {
 		if (params != null && params.containsKey(paramKey)) {
 			try {
-				String s = trimmToNull(params.getFirst(paramKey));
+				String s = SearchUtils.trimmToNull(params.getFirst(paramKey));
 				if (s == null)
 					return null;
 				return ISODateTimeFormat.dateTimeParser().parseMillis(s);
@@ -231,7 +179,7 @@ public class QuerySettingsParser {
 	 */
 	protected static boolean readBooleanParam(MultivaluedMap<String, String> params, String paramKey) {
 		if (params != null && params.containsKey(paramKey)) {
-			return Boolean.parseBoolean(trimmToNull(params.getFirst(paramKey)));
+			return Boolean.parseBoolean(SearchUtils.trimmToNull(params.getFirst(paramKey)));
 		}
 		return false;
 	}
@@ -248,7 +196,7 @@ public class QuerySettingsParser {
 		}
 		List<String> ret = new ArrayList<String>();
 		for (String s : paramValue) {
-			s = trimmToNull(s);
+			s = SearchUtils.trimmToNull(s);
 			if (s != null) {
 				ret.add(s);
 			}
@@ -257,21 +205,6 @@ public class QuerySettingsParser {
 			return null;
 		else
 			return ret;
-	}
-
-	/**
-	 * Trim string and return null if empty.
-	 * 
-	 * @param value to trim
-	 * @return trimmed value or null if empty
-	 */
-	public static String trimmToNull(String value) {
-		if (value != null) {
-			value = value.trim();
-			if (value.isEmpty())
-				value = null;
-		}
-		return value;
 	}
 
 }

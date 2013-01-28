@@ -7,14 +7,16 @@ package org.jboss.dcp.api.util;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 import javax.ws.rs.core.MultivaluedMap;
 
+import org.jboss.dcp.api.model.FacetValue;
+import org.jboss.dcp.api.model.PastIntervalValue;
 import org.jboss.dcp.api.model.QuerySettings;
-import org.jboss.dcp.api.model.QuerySettings.SortByValue;
+import org.jboss.dcp.api.model.SortByValue;
 import org.jboss.dcp.api.rest.SearchRestService;
 import org.jboss.dcp.api.testtools.TestUtils;
-import org.jboss.dcp.api.util.QuerySettingsParser.PastIntervalName;
 import org.jboss.resteasy.specimpl.MultivaluedMapImpl;
 import org.junit.Assert;
 import org.junit.Test;
@@ -70,24 +72,27 @@ public class QuerySettingsParserTest {
 			params.add(QuerySettings.Filters.ACTIVITY_DATE_INTERVAL_KEY, "week");
 			params.add(QuerySettings.Filters.ACTIVITY_DATE_FROM_KEY, "2013-01-26T20:32:36.456Z");
 			params.add(QuerySettings.Filters.ACTIVITY_DATE_TO_KEY, "2013-01-26T20:32:46.456+0100");
+			params.add(QuerySettings.FACETS_KEY, "per_project_counts");
+			params.add(QuerySettings.FACETS_KEY, "activity_dates_histogram");
 			QuerySettings ret = QuerySettingsParser.parseUriParams(params);
 			Assert.assertNotNull(ret);
 			// note - we test here query is sanitized in settings!
 			assertQuerySettings(ret, "mytype", "myDcpType,myDcpType2", "query * query2", SortByValue.NEW, "proj1,proj2", 10,
-					20, "tg1,tg2", "myprovider", "John Doe <john@doe.com>,Dan Boo <boo@boo.net>", PastIntervalName.WEEK,
-					1359232356456L, 1359228766456L, "rf1,_rf2", true);
+					20, "tg1,tg2", "myprovider", "John Doe <john@doe.com>,Dan Boo <boo@boo.net>", PastIntervalValue.WEEK,
+					1359232356456L, 1359228766456L, "rf1,_rf2", true, "per_project_counts,activity_dates_histogram");
 		}
 	}
 
 	private void assertQuerySettingsEmpty(QuerySettings qs) {
-		assertQuerySettings(qs, null, null, null, null, null, null, null, null, null, null, null, null, null, null, false);
+		assertQuerySettings(qs, null, null, null, null, null, null, null, null, null, null, null, null, null, null, false,
+				null);
 	}
 
 	private void assertQuerySettings(QuerySettings qs, String expectedContentType, String expectedDcpTypes,
 			String expectedQuery, SortByValue expectedSortBy, String expectedFilterProjects, Integer expectedFilterStart,
 			Integer expectedFilterCount, String expectedFilterTags, String expectedDcpProvider, String expectedContributors,
-			PastIntervalName expectedADInterval, Long expectedADFrom, Long expectedADTo, String expectedFields,
-			boolean expectedQueryHighlight) {
+			PastIntervalValue expectedADInterval, Long expectedADFrom, Long expectedADTo, String expectedFields,
+			boolean expectedQueryHighlight, String expectedFacets) {
 
 		Assert.assertEquals(expectedQuery, qs.getQuery());
 		Assert.assertEquals(expectedQueryHighlight, qs.isQueryHighlight());
@@ -106,6 +111,23 @@ public class QuerySettingsParserTest {
 		Assert.assertEquals(expectedADFrom, filters.getActivityDateFrom());
 		Assert.assertEquals(expectedADTo, filters.getActivityDateTo());
 		TestUtils.assertEqualsListValue(expectedFields, qs.getFields());
+		assertEqualsFacetValueList(expectedFacets, qs.getFacets());
+	}
+
+	private void assertEqualsFacetValueList(String expectedValuesCommaSeparated, List<FacetValue> actualValue) {
+
+		if (expectedValuesCommaSeparated == null) {
+			Assert.assertNull(actualValue);
+			return;
+		}
+
+		List<FacetValue> expected = new ArrayList<FacetValue>();
+		for (String s : expectedValuesCommaSeparated.split(",")) {
+			expected.add(FacetValue.parseRequestParameterValue(s));
+		}
+
+		Assert.assertArrayEquals(expected.toArray(new FacetValue[expected.size()]),
+				actualValue != null ? actualValue.toArray(new FacetValue[] {}) : null);
 	}
 
 	@Test
@@ -331,6 +353,32 @@ public class QuerySettingsParserTest {
 	}
 
 	@Test
+	public void parseUriParams_facet() {
+		{
+			MultivaluedMap<String, String> params = new MultivaluedMapImpl<String, String>();
+			params.add(QuerySettings.FACETS_KEY, FacetValue.ACTIVITY_DATES_HISTOGRAM.toString());
+			QuerySettings ret = QuerySettingsParser.parseUriParams(params);
+			Assert.assertNotNull(ret);
+			Assert.assertEquals(FacetValue.ACTIVITY_DATES_HISTOGRAM, ret.getFacets().get(0));
+		}
+		{
+			MultivaluedMap<String, String> params = new MultivaluedMapImpl<String, String>();
+			params.add(QuerySettings.FACETS_KEY, " ");
+			QuerySettings ret = QuerySettingsParser.parseUriParams(params);
+			Assert.assertNotNull(ret);
+			Assert.assertNull(ret.getFacets());
+		}
+		try {
+			MultivaluedMap<String, String> params = new MultivaluedMapImpl<String, String>();
+			params.add(QuerySettings.FACETS_KEY, "bad");
+			QuerySettingsParser.parseUriParams(params);
+			Assert.fail("IllegalArgumentException expected");
+		} catch (IllegalArgumentException e) {
+			// OK
+		}
+	}
+
+	@Test
 	public void parseUriParams_filter_from() {
 		{
 			MultivaluedMap<String, String> params = new MultivaluedMapImpl<String, String>();
@@ -461,42 +509,6 @@ public class QuerySettingsParserTest {
 	}
 
 	@Test
-	public void PastIntervalName_values() {
-		Assert.assertEquals(5, PastIntervalName.values().length);
-		Assert.assertEquals("day", PastIntervalName.DAY.toString());
-		Assert.assertEquals("week", PastIntervalName.WEEK.toString());
-		Assert.assertEquals("month", PastIntervalName.MONTH.toString());
-		Assert.assertEquals("quarter", PastIntervalName.QUARTER.toString());
-		Assert.assertEquals("year", PastIntervalName.YEAR.toString());
-	}
-
-	@Test
-	public void PastIntervalName_parseRequestParameterValue() {
-		Assert.assertNull(PastIntervalName.parseRequestParameterValue(null));
-		Assert.assertNull(PastIntervalName.parseRequestParameterValue(" "));
-		Assert.assertNull(PastIntervalName.parseRequestParameterValue(" \t\n"));
-		for (PastIntervalName n : PastIntervalName.values()) {
-			Assert.assertEquals(n, PastIntervalName.parseRequestParameterValue(n.toString()));
-		}
-		try {
-			PastIntervalName.parseRequestParameterValue("unknown");
-			Assert.fail("IllegalArgumentException expected");
-		} catch (IllegalArgumentException e) {
-			// OK
-		}
-	}
-
-	@Test
-	public void PastIntervalName_getFromTimestamp() {
-		long check = System.currentTimeMillis() - 1000L * 60L * 60L * 24L;
-		long v = PastIntervalName.DAY.getFromTimestamp();
-
-		Assert.assertTrue((check - 500) < v);
-		Assert.assertTrue(v < (check + 500));
-
-	}
-
-	@Test
 	public void normalizeQueryString() {
 		Assert.assertNull(QuerySettingsParser.normalizeQueryString(null));
 		Assert.assertNull(QuerySettingsParser.normalizeQueryString(""));
@@ -543,19 +555,6 @@ public class QuerySettingsParserTest {
 		settings.setQuery(" test ** ?? * query *? ?* ** ?  ");
 		QuerySettingsParser.sanityQuery(settings);
 		Assert.assertEquals("test * ? * query * * * ?", settings.getQuery());
-	}
-
-	@Test
-	public void trimmToNull() {
-		Assert.assertNull(QuerySettingsParser.trimmToNull(null));
-		Assert.assertNull(QuerySettingsParser.trimmToNull(""));
-		Assert.assertNull(QuerySettingsParser.trimmToNull(" "));
-		Assert.assertNull(QuerySettingsParser.trimmToNull("     \t "));
-
-		Assert.assertEquals("a", QuerySettingsParser.trimmToNull("a"));
-		Assert.assertEquals("a", QuerySettingsParser.trimmToNull("a "));
-		Assert.assertEquals("a", QuerySettingsParser.trimmToNull(" a"));
-		Assert.assertEquals("abcd aaa", QuerySettingsParser.trimmToNull("   abcd aaa \t   "));
 	}
 
 	@Test

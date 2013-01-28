@@ -5,10 +5,10 @@
  */
 package org.jboss.dcp.api.model;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.jboss.dcp.api.util.QuerySettingsParser;
-import org.jboss.dcp.api.util.QuerySettingsParser.PastIntervalName;
 
 /**
  * Search Query settings sent from client to search method.
@@ -63,7 +63,7 @@ public class QuerySettings {
 		/**
 		 * Filtering based on activity dates
 		 */
-		private PastIntervalName activityDateInterval;
+		private PastIntervalValue activityDateInterval;
 
 		public static final String ACTIVITY_DATE_INTERVAL_KEY = "activity_date_interval";
 
@@ -174,11 +174,11 @@ public class QuerySettings {
 			this.contributors = contributors;
 		}
 
-		public PastIntervalName getActivityDateInterval() {
+		public PastIntervalValue getActivityDateInterval() {
 			return activityDateInterval;
 		}
 
-		public void setActivityDateInterval(PastIntervalName activityDateInterval) {
+		public void setActivityDateInterval(PastIntervalValue activityDateInterval) {
 			this.activityDateInterval = activityDateInterval;
 		}
 
@@ -204,38 +204,16 @@ public class QuerySettings {
 
 	public static final String FIELDS_KEY = "field";
 
+	private List<FacetValue> facets;
+
+	public static final String FACETS_KEY = "facet";
+
 	/**
 	 * Sorting of results
 	 */
 	private SortByValue sortBy;
 
 	public static final String SORT_BY_KEY = "sortBy";
-
-	public static enum SortByValue {
-		/**
-		 * Newest first
-		 */
-		NEW("new"),
-		/**
-		 * Oldest first
-		 */
-		OLD("old");
-
-		/**
-		 * Value used in request parameter
-		 */
-		private String value;
-
-		private SortByValue(String value) {
-			this.value = value;
-		}
-
-		@Override
-		public String toString() {
-			return value;
-		}
-
-	}
 
 	public void setFilters(Filters filters) {
 		this.filters = filters;
@@ -283,10 +261,26 @@ public class QuerySettings {
 		this.queryHighlight = queryHighlight;
 	}
 
+	public List<FacetValue> getFacets() {
+		return facets;
+	}
+
+	public void setFacets(List<FacetValue> facets) {
+		this.facets = facets;
+	}
+
+	public void addFacet(FacetValue value) {
+		if (value == null)
+			return;
+		if (facets == null)
+			facets = new ArrayList<FacetValue>();
+		facets.add(value);
+	}
+
 	@Override
 	public String toString() {
-		return "QuerySettings [filters=" + filters + ", query=" + query + ", queryHighlight=" + queryHighlight
-				+ ", fields=" + fields + ", sortBy=" + sortBy + "]";
+		return "QuerySettings [filters=" + filters + ", query=" + query + ", queryHighlight=" + queryHighlight + ", field="
+				+ fields + ", facet=" + facets + ", sortBy=" + sortBy + "]";
 	}
 
 }

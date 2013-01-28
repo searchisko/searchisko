@@ -45,7 +45,7 @@ import org.elasticsearch.search.sort.SortOrder;
 import org.jboss.dcp.api.DcpContentObjectFields;
 import org.jboss.dcp.api.annotations.security.GuestAllowed;
 import org.jboss.dcp.api.model.QuerySettings;
-import org.jboss.dcp.api.model.QuerySettings.SortByValue;
+import org.jboss.dcp.api.model.SortByValue;
 import org.jboss.dcp.api.service.ConfigService;
 import org.jboss.dcp.api.service.IndexNamesCacheService;
 import org.jboss.dcp.api.service.ProviderService;
@@ -97,7 +97,7 @@ public class SearchRestService extends RestServiceBase {
 
 			handleHighlightSettings(querySettings, srb);
 
-			// TODO _SEARCH return facets data depending on 'facet' params
+			handleFacetSettings(querySettings, srb);
 
 			handleResponseContentSettings(querySettings, srb);
 			srb.setTimeout(TimeValue.timeValueSeconds(getTimeout().search()));
@@ -300,6 +300,15 @@ public class SearchRestService extends RestServiceBase {
 		if (filterValue != null && !filterValue.isEmpty()) {
 			searchFilters.add(new TermsFilterBuilder(filterField, filterValue));
 		}
+	}
+
+	/**
+	 * @param querySettings
+	 * @param srb
+	 */
+	protected void handleFacetSettings(QuerySettings querySettings, SearchRequestBuilder srb) {
+		// TODO _SEARCH return facets data depending on 'facet' params
+
 	}
 
 	/**

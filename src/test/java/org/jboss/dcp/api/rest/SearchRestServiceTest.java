@@ -22,14 +22,14 @@ import org.elasticsearch.common.settings.SettingsException;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.sort.SortOrder;
+import org.jboss.dcp.api.model.PastIntervalValue;
 import org.jboss.dcp.api.model.QuerySettings;
 import org.jboss.dcp.api.model.QuerySettings.Filters;
-import org.jboss.dcp.api.model.QuerySettings.SortByValue;
+import org.jboss.dcp.api.model.SortByValue;
 import org.jboss.dcp.api.service.ConfigService;
 import org.jboss.dcp.api.service.IndexNamesCacheService;
 import org.jboss.dcp.api.service.ProviderService;
 import org.jboss.dcp.api.testtools.TestUtils;
-import org.jboss.dcp.api.util.QuerySettingsParser.PastIntervalName;
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -281,7 +281,7 @@ public class SearchRestServiceTest {
 		QuerySettings querySettings = new QuerySettings();
 		Filters filters = new Filters();
 		querySettings.setFilters(filters);
-		filters.setActivityDateInterval(PastIntervalName.DAY);
+		filters.setActivityDateInterval(PastIntervalValue.DAY);
 		// set date_from and date_to to some values to test this is ignored if interval is used
 		filters.setActivityDateTo(1359232366456L);
 		filters.setActivityDateFrom(1359232356456L);
