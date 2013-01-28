@@ -11,6 +11,8 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.ws.rs.core.StreamingOutput;
 
+import org.jboss.dcp.persistence.service.EntityService;
+
 /**
  * Service related to project
  * 

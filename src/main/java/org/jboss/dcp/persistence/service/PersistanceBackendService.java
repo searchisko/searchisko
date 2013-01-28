@@ -3,11 +3,12 @@
  * Copyright 2012 Red Hat Inc. and/or its affiliates and other contributors
  * as indicated by the @authors tag. All rights reserved.
  */
-package org.jboss.dcp.api.service;
+package org.jboss.dcp.persistence.service;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
+import java.util.logging.Logger;
 
 import javax.annotation.PostConstruct;
 import javax.ejb.Singleton;
@@ -17,6 +18,9 @@ import javax.enterprise.inject.Produces;
 import javax.inject.Inject;
 import javax.inject.Named;
 
+import org.jboss.dcp.api.service.AppConfigurationService;
+import org.jboss.dcp.api.service.ElasticsearchClientService;
+import org.jboss.dcp.api.service.ProviderService;
 import org.jboss.dcp.api.util.SearchUtils;
 
 /**
@@ -34,6 +38,9 @@ public class PersistanceBackendService extends ElasticsearchClientService {
 
 	@Inject
 	protected AppConfigurationService appConfigurationService;
+	
+	@Inject
+	protected Logger log;
 
 	// Everything is stored in one index
 	protected static final String INDEX_NAME = "data";

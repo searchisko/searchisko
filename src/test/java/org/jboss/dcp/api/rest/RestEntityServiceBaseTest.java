@@ -12,8 +12,8 @@ import java.util.logging.Logger;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
-import org.jboss.dcp.api.service.EntityService;
 import org.jboss.dcp.api.testtools.TestUtils;
+import org.jboss.dcp.persistence.service.EntityService;
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;

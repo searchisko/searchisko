@@ -22,6 +22,7 @@ import org.elasticsearch.index.query.FilterBuilders;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.indices.IndexMissingException;
 import org.jboss.dcp.api.util.Resources;
+import org.jboss.dcp.persistence.service.EntityService;
 
 /**
  * Service related to Contributor

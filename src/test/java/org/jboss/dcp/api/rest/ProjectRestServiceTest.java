@@ -13,9 +13,9 @@ import javax.ws.rs.core.SecurityContext;
 
 import junit.framework.Assert;
 
-import org.jboss.dcp.api.service.EntityService;
 import org.jboss.dcp.api.service.ProjectService;
 import org.jboss.dcp.api.testtools.TestUtils;
+import org.jboss.dcp.persistence.service.EntityService;
 import org.junit.Test;
 import org.mockito.Mockito;
 

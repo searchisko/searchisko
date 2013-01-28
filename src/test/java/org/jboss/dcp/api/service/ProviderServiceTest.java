@@ -16,6 +16,7 @@ import org.elasticsearch.client.Client;
 import org.elasticsearch.common.settings.SettingsException;
 import org.jboss.dcp.api.testtools.ESRealClientTestBase;
 import org.jboss.dcp.api.testtools.TestUtils;
+import org.jboss.dcp.persistence.service.ElasticsearchEntityService;
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;

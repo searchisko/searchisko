@@ -27,8 +27,8 @@ import javax.ws.rs.core.SecurityContext;
 
 import org.jboss.dcp.api.annotations.security.GuestAllowed;
 import org.jboss.dcp.api.annotations.security.ProviderAllowed;
-import org.jboss.dcp.api.service.EntityService;
 import org.jboss.dcp.api.service.ProjectService;
+import org.jboss.dcp.persistence.service.EntityService;
 
 /**
  * Project REST API
