@@ -8,10 +8,12 @@ package org.jboss.dcp.api.rest;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.logging.Level;
 
 import javax.enterprise.context.RequestScoped;
@@ -37,14 +39,19 @@ import org.elasticsearch.index.query.FilterBuilder;
 import org.elasticsearch.index.query.FilteredQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.index.query.QueryFilterBuilder;
 import org.elasticsearch.index.query.QueryStringQueryBuilder;
 import org.elasticsearch.index.query.RangeFilterBuilder;
 import org.elasticsearch.index.query.TermsFilterBuilder;
 import org.elasticsearch.indices.IndexMissingException;
+import org.elasticsearch.search.facet.datehistogram.DateHistogramFacetBuilder;
+import org.elasticsearch.search.facet.terms.TermsFacetBuilder;
 import org.elasticsearch.search.sort.SortOrder;
 import org.jboss.dcp.api.DcpContentObjectFields;
 import org.jboss.dcp.api.annotations.security.GuestAllowed;
+import org.jboss.dcp.api.model.FacetValue;
 import org.jboss.dcp.api.model.QuerySettings;
+import org.jboss.dcp.api.model.QuerySettings.Filters;
 import org.jboss.dcp.api.model.SortByValue;
 import org.jboss.dcp.api.service.ConfigService;
 import org.jboss.dcp.api.service.IndexNamesCacheService;
@@ -88,16 +95,16 @@ public class SearchRestService extends RestServiceBase {
 
 			handleSearchInicesAndTypes(querySettings, srb);
 
-			QueryBuilder qb = handleFulltextSearchSettings(querySettings);
-			qb = handleCommonFiltersSettings(querySettings, qb);
+			QueryBuilder qb_fulltext = handleFulltextSearchSettings(querySettings);
+			Map<String, FilterBuilder> searchFilters = handleCommonFiltersSettings(querySettings);
+			srb.setQuery(applyCommonFilters(searchFilters, qb_fulltext));
 
-			srb.setQuery(qb);
+			searchFilters.put("fulltext_query", new QueryFilterBuilder(qb_fulltext));
+			handleFacetSettings(querySettings, searchFilters, srb);
 
 			handleSortingSettings(querySettings, srb);
 
 			handleHighlightSettings(querySettings, srb);
-
-			handleFacetSettings(querySettings, srb);
 
 			handleResponseContentSettings(querySettings, srb);
 			srb.setTimeout(TimeValue.timeValueSeconds(getTimeout().search()));
@@ -142,7 +149,10 @@ public class SearchRestService extends RestServiceBase {
 			if (querySettings.getFilters() != null) {
 				dcpTypesRequested = querySettings.getFilters().getDcpTypes();
 			}
-			Set<String> indexNames = indexNamesCacheService.get(dcpTypesRequested);
+			boolean isDcpTypFacet = (querySettings.getFacets() != null && querySettings.getFacets().contains(
+					FacetValue.PER_DCP_TYPE_COUNTS));
+
+			Set<String> indexNames = indexNamesCacheService.get(prepareIndexNamesCacheKey(dcpTypesRequested, isDcpTypFacet));
 			if (indexNames == null) {
 				indexNames = new LinkedHashSet<String>();
 				List<Map<String, Object>> allProviders = providerService.listAllProviders();
@@ -155,8 +165,9 @@ public class SearchRestService extends RestServiceBase {
 							for (String typeName : types.keySet()) {
 								Map<String, Object> typeDef = types.get(typeName);
 								if ((dcpTypesRequested == null && !ProviderService.extractSearchAllExcluded(typeDef))
-										|| (dcpTypesRequested != null && dcpTypesRequested.contains(ProviderService.extractDcpType(typeDef,
-												typeName)))) {
+										|| (dcpTypesRequested != null && ((isDcpTypFacet && !ProviderService
+												.extractSearchAllExcluded(typeDef)) || dcpTypesRequested.contains(ProviderService
+												.extractDcpType(typeDef, typeName))))) {
 									indexNames.addAll(Arrays.asList(ProviderService.extractSearchIndices(typeDef, typeName)));
 								}
 							}
@@ -166,10 +177,33 @@ public class SearchRestService extends RestServiceBase {
 								+ providerCfg.get(ProviderService.NAME) + ". Contact administrators please.");
 					}
 				}
-				indexNamesCacheService.put(dcpTypesRequested, indexNames);
+				indexNamesCacheService.put(prepareIndexNamesCacheKey(dcpTypesRequested, isDcpTypFacet), indexNames);
 			}
 			srb.setIndices(indexNames.toArray(new String[indexNames.size()]));
 		}
+	}
+
+	/**
+	 * Prepare key for indexName cache.
+	 * 
+	 * @param dcpTypesRequested to prepare key for
+	 * @return key value (never null)
+	 */
+	protected static String prepareIndexNamesCacheKey(List<String> dcpTypesRequested, boolean isDcpTypFacet) {
+		if (dcpTypesRequested == null || dcpTypesRequested.isEmpty())
+			return "_all||" + isDcpTypFacet;
+
+		if (dcpTypesRequested.size() == 1) {
+			return dcpTypesRequested.get(0) + "||" + isDcpTypFacet;
+		}
+
+		TreeSet<String> ts = new TreeSet<String>(dcpTypesRequested);
+		StringBuilder sb = new StringBuilder();
+		for (String k : ts) {
+			sb.append(k).append("|");
+		}
+		sb.append("|").append(isDcpTypFacet);
+		return sb.toString();
 	}
 
 	/**
@@ -255,9 +289,9 @@ public class SearchRestService extends RestServiceBase {
 	 * @param querySettings
 	 * @return filter builder if some filters are here, null if not filters necessary
 	 */
-	protected QueryBuilder handleCommonFiltersSettings(QuerySettings querySettings, QueryBuilder qb) {
+	protected Map<String, FilterBuilder> handleCommonFiltersSettings(QuerySettings querySettings) {
 		QuerySettings.Filters filters = querySettings.getFilters();
-		List<FilterBuilder> searchFilters = new ArrayList<FilterBuilder>();
+		Map<String, FilterBuilder> searchFilters = new LinkedHashMap<String, FilterBuilder>();
 
 		if (filters != null) {
 			addFilter(searchFilters, DcpContentObjectFields.DCP_TYPE, filters.getDcpTypes());
@@ -269,7 +303,7 @@ public class SearchRestService extends RestServiceBase {
 				RangeFilterBuilder range = new RangeFilterBuilder(DcpContentObjectFields.DCP_ACTIVITY_DATES);
 				range.from(DATE_TIME_FORMATTER_UTC.print(filters.getActivityDateInterval().getFromTimestamp())).includeLower(
 						true);
-				searchFilters.add(range);
+				searchFilters.put(DcpContentObjectFields.DCP_ACTIVITY_DATES, range);
 			} else if (filters.getActivityDateFrom() != null || filters.getActivityDateTo() != null) {
 				RangeFilterBuilder range = new RangeFilterBuilder(DcpContentObjectFields.DCP_ACTIVITY_DATES);
 				if (filters.getActivityDateFrom() != null) {
@@ -278,27 +312,30 @@ public class SearchRestService extends RestServiceBase {
 				if (filters.getActivityDateTo() != null) {
 					range.to(DATE_TIME_FORMATTER_UTC.print(filters.getActivityDateTo())).includeUpper(true);
 				}
-				searchFilters.add(range);
+				searchFilters.put(DcpContentObjectFields.DCP_ACTIVITY_DATES, range);
 			}
 		}
+		return searchFilters;
+	}
 
+	protected QueryBuilder applyCommonFilters(Map<String, FilterBuilder> searchFilters, QueryBuilder qb) {
 		if (!searchFilters.isEmpty()) {
-			return new FilteredQueryBuilder(qb, new AndFilterBuilder(searchFilters.toArray(new FilterBuilder[searchFilters
-					.size()])));
+			return new FilteredQueryBuilder(qb, new AndFilterBuilder(searchFilters.values().toArray(
+					new FilterBuilder[searchFilters.size()])));
 		} else {
 			return qb;
 		}
 	}
 
-	private void addFilter(List<FilterBuilder> searchFilters, String filterField, List<String> filterValue) {
+	private void addFilter(Map<String, FilterBuilder> searchFilters, String filterField, List<String> filterValue) {
 		if (filterValue != null && !filterValue.isEmpty()) {
-			searchFilters.add(new TermsFilterBuilder(filterField, filterValue));
+			searchFilters.put(filterField, new TermsFilterBuilder(filterField, filterValue));
 		}
 	}
 
-	private void addFilter(List<FilterBuilder> searchFilters, String filterField, String filterValue) {
+	private void addFilter(Map<String, FilterBuilder> searchFilters, String filterField, String filterValue) {
 		if (filterValue != null && !filterValue.isEmpty()) {
-			searchFilters.add(new TermsFilterBuilder(filterField, filterValue));
+			searchFilters.put(filterField, new TermsFilterBuilder(filterField, filterValue));
 		}
 	}
 
@@ -306,9 +343,103 @@ public class SearchRestService extends RestServiceBase {
 	 * @param querySettings
 	 * @param srb
 	 */
-	protected void handleFacetSettings(QuerySettings querySettings, SearchRequestBuilder srb) {
-		// TODO _SEARCH return facets data depending on 'facet' params
+	protected void handleFacetSettings(QuerySettings querySettings, Map<String, FilterBuilder> searchFilters,
+			SearchRequestBuilder srb) {
+		Set<FacetValue> facets = querySettings.getFacets();
+		if (facets != null) {
+			if (facets.contains(FacetValue.PER_PROJECT_COUNTS)) {
+				srb.addFacet(createTermsFacetBuilder(FacetValue.PER_PROJECT_COUNTS, DcpContentObjectFields.DCP_PROJECT, 500,
+						searchFilters));
+			}
+			if (facets.contains(FacetValue.PER_DCP_TYPE_COUNTS)) {
+				srb.addFacet(createTermsFacetBuilder(FacetValue.PER_DCP_TYPE_COUNTS, DcpContentObjectFields.DCP_TYPE, 20,
+						searchFilters));
+			}
+			if (facets.contains(FacetValue.TOP_CONTRIBUTORS)) {
+				srb.addFacet(createTermsFacetBuilder(FacetValue.TOP_CONTRIBUTORS, DcpContentObjectFields.DCP_CONTRIBUTORS, 100,
+						searchFilters));
+				if (searchFilters != null && searchFilters.containsKey(DcpContentObjectFields.DCP_CONTRIBUTORS)) {
+					// we filter over contributors so we have to add second facet which provide numbers for these contributors
+					// because they can be out of normal facet due count limitation
+					TermsFacetBuilder tb = new TermsFacetBuilder(FacetValue.TOP_CONTRIBUTORS + "_filter")
+							.field(DcpContentObjectFields.DCP_CONTRIBUTORS).size(30).global(true)
+							.facetFilter(new AndFilterBuilder(getFilters(searchFilters, null)));
+					srb.addFacet(tb);
+				}
 
+			}
+			if (facets.contains(FacetValue.TAG_CLOUD)) {
+				srb.addFacet(createTermsFacetBuilder(FacetValue.TAG_CLOUD, DcpContentObjectFields.DCP_TAGS, 50, searchFilters));
+			}
+			if (facets.contains(FacetValue.ACTIVITY_DATES_HISTOGRAM)) {
+				srb.addFacet(new DateHistogramFacetBuilder(FacetValue.ACTIVITY_DATES_HISTOGRAM.toString()).field(
+						DcpContentObjectFields.DCP_ACTIVITY_DATES).interval(selectActivityDatesHistogramInterval(querySettings)));
+			}
+		}
+	}
+
+	protected TermsFacetBuilder createTermsFacetBuilder(FacetValue facetName, String facetField, int size,
+			Map<String, FilterBuilder> searchFilters) {
+
+		TermsFacetBuilder tb = new TermsFacetBuilder(facetName.toString()).field(facetField).size(size).global(true);
+		if (searchFilters != null && !searchFilters.isEmpty()) {
+			FilterBuilder[] fb = getFilters(searchFilters, facetField);
+			if (fb != null && fb.length > 0)
+				tb.facetFilter(new AndFilterBuilder(fb));
+		}
+		return tb;
+	}
+
+	protected static String selectActivityDatesHistogramInterval(QuerySettings querySettings) {
+		Filters filters = querySettings.getFilters();
+		if (filters != null) {
+			if (filters.getActivityDateInterval() != null) {
+				switch (filters.getActivityDateInterval()) {
+				case YEAR:
+				case QUARTER:
+					return "week";
+				case MONTH:
+				case WEEK:
+					return "day";
+				case DAY:
+					return "hour";
+				}
+			} else if (filters.getActivityDateFrom() != null || filters.getActivityDateTo() != null) {
+				long from = 0;
+				long to = 0;
+				if (filters.getActivityDateTo() != null) {
+					to = filters.getActivityDateTo().longValue();
+				} else {
+					to = System.currentTimeMillis();
+				}
+				if (filters.getActivityDateFrom() != null) {
+					from = filters.getActivityDateFrom().longValue();
+				}
+				long interval = to - from;
+				if (interval < 1000L * 60L * 60L) {
+					return "minute";
+				} else if (interval < 1000L * 60L * 60L * 24 * 2) {
+					return "hour";
+				} else if (interval < 1000L * 60L * 60L * 24 * 7 * 8) {
+					return "day";
+				} else if (interval < 1000L * 60L * 60L * 24 * 366) {
+					return "week";
+				}
+			}
+		}
+		return "month";
+	}
+
+	protected static FilterBuilder[] getFilters(Map<String, FilterBuilder> filters, String filterToExclude) {
+		List<FilterBuilder> builders = new ArrayList<FilterBuilder>();
+		if (filters != null) {
+			for (String name : filters.keySet()) {
+				if (filterToExclude == null || !filterToExclude.equals(name)) {
+					builders.add(filters.get(name));
+				}
+			}
+		}
+		return builders.toArray(new FilterBuilder[builders.size()]);
 	}
 
 	/**

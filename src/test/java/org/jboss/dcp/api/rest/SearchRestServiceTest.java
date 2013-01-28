@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -19,9 +20,11 @@ import javax.ws.rs.core.UriInfo;
 
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.common.settings.SettingsException;
+import org.elasticsearch.index.query.FilterBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.sort.SortOrder;
+import org.jboss.dcp.api.model.FacetValue;
 import org.jboss.dcp.api.model.PastIntervalValue;
 import org.jboss.dcp.api.model.QuerySettings;
 import org.jboss.dcp.api.model.QuerySettings.Filters;
@@ -46,6 +49,33 @@ public class SearchRestServiceTest {
 		TestUtils.assertPermissionGuest(SearchRestService.class, "search", UriInfo.class);
 	}
 
+	@Test
+	public void prepareIndexNamesCacheKey() {
+
+		Assert.assertEquals("_all||false", SearchRestService.prepareIndexNamesCacheKey(null, false));
+		Assert.assertEquals("_all||true", SearchRestService.prepareIndexNamesCacheKey(null, true));
+		List<String> dcpTypesRequested = new ArrayList<String>();
+		Assert.assertEquals("_all||false", SearchRestService.prepareIndexNamesCacheKey(dcpTypesRequested, false));
+		Assert.assertEquals("_all||true", SearchRestService.prepareIndexNamesCacheKey(dcpTypesRequested, true));
+
+		dcpTypesRequested.add("aaaa");
+		Assert.assertEquals("aaaa||true", SearchRestService.prepareIndexNamesCacheKey(dcpTypesRequested, true));
+		Assert.assertEquals("aaaa||false", SearchRestService.prepareIndexNamesCacheKey(dcpTypesRequested, false));
+
+		dcpTypesRequested.add("bb");
+		Assert.assertEquals("aaaa|bb||true", SearchRestService.prepareIndexNamesCacheKey(dcpTypesRequested, true));
+		Assert.assertEquals("aaaa|bb||false", SearchRestService.prepareIndexNamesCacheKey(dcpTypesRequested, false));
+
+		// check ordering
+		dcpTypesRequested = new ArrayList<String>();
+		dcpTypesRequested.add("bb");
+		dcpTypesRequested.add("zzzzz");
+		dcpTypesRequested.add("aaaa");
+		Assert.assertEquals("aaaa|bb|zzzzz||true", SearchRestService.prepareIndexNamesCacheKey(dcpTypesRequested, true));
+		Assert.assertEquals("aaaa|bb|zzzzz||false", SearchRestService.prepareIndexNamesCacheKey(dcpTypesRequested, false));
+
+	}
+
 	@SuppressWarnings("unchecked")
 	@Test
 	public void handleSearchInicesAndTypes() {
@@ -59,11 +89,11 @@ public class SearchRestServiceTest {
 
 		// case - searching for all types, no provider defined
 		{
-			Mockito.when(tested.indexNamesCacheService.get(Mockito.anyList())).thenReturn(null);
+			Mockito.when(tested.indexNamesCacheService.get(Mockito.anyString())).thenReturn(null);
 			List<Map<String, Object>> mockedProvidersList = new ArrayList<Map<String, Object>>();
 			Mockito.when(tested.providerService.listAllProviders()).thenReturn(mockedProvidersList);
 			tested.handleSearchInicesAndTypes(querySettings, searchRequestBuilderMock);
-			Mockito.verify(tested.indexNamesCacheService).get(null);
+			Mockito.verify(tested.indexNamesCacheService).get("_all||false");
 			Mockito.verify(tested.providerService).listAllProviders();
 			Mockito.verify(searchRequestBuilderMock).setIndices(new String[] {});
 			Mockito.verifyNoMoreInteractions(searchRequestBuilderMock);
@@ -75,13 +105,13 @@ public class SearchRestServiceTest {
 		// case - searching for all types, some providers defined with all possible combinations of index definitions
 		{
 			Mockito.reset(tested.providerService, searchRequestBuilderMock, tested.indexNamesCacheService);
-			Mockito.when(tested.indexNamesCacheService.get(Mockito.anyList())).thenReturn(null);
+			Mockito.when(tested.indexNamesCacheService.get(Mockito.anyString())).thenReturn(null);
 			List<Map<String, Object>> mockedProvidersList = new ArrayList<Map<String, Object>>();
 			mockedProvidersList.add(TestUtils.loadJSONFromClasspathFile("/search/provider_1.json"));
 			mockedProvidersList.add(TestUtils.loadJSONFromClasspathFile("/search/provider_2.json"));
 			Mockito.when(tested.providerService.listAllProviders()).thenReturn(mockedProvidersList);
 			tested.handleSearchInicesAndTypes(querySettings, searchRequestBuilderMock);
-			Mockito.verify(tested.indexNamesCacheService).get(null);
+			Mockito.verify(tested.indexNamesCacheService).get("_all||false");
 			Mockito.verify(tested.providerService).listAllProviders();
 			Mockito.verify(searchRequestBuilderMock).setIndices(
 					new String[] { "idx_provider1_issue", "idx_provider1_mailing1", "idx_provider1_mailing2",
@@ -141,7 +171,7 @@ public class SearchRestServiceTest {
 		// case - dcp_type filter used
 		{
 			Mockito.reset(tested.providerService, searchRequestBuilderMock, tested.indexNamesCacheService);
-			Mockito.when(tested.indexNamesCacheService.get(Mockito.anyList())).thenReturn(null);
+			Mockito.when(tested.indexNamesCacheService.get(Mockito.anyString())).thenReturn(null);
 			List<String> dcpTypesRequested = Arrays.asList(new String[] { "issue" });
 			filters.setDcpTypes(dcpTypesRequested);
 			List<Map<String, Object>> mockedProvidersList = new ArrayList<Map<String, Object>>();
@@ -149,8 +179,10 @@ public class SearchRestServiceTest {
 			mockedProvidersList.add(TestUtils.loadJSONFromClasspathFile("/search/provider_2.json"));
 			Mockito.when(tested.providerService.listAllProviders()).thenReturn(mockedProvidersList);
 			tested.handleSearchInicesAndTypes(querySettings, searchRequestBuilderMock);
-			Mockito.verify(tested.indexNamesCacheService).get(dcpTypesRequested);
-			Mockito.verify(tested.indexNamesCacheService).put(Mockito.eq(dcpTypesRequested), Mockito.anySet());
+			Mockito.verify(tested.indexNamesCacheService).get(
+					SearchRestService.prepareIndexNamesCacheKey(dcpTypesRequested, false));
+			Mockito.verify(tested.indexNamesCacheService).put(
+					Mockito.eq(SearchRestService.prepareIndexNamesCacheKey(dcpTypesRequested, false)), Mockito.anySet());
 			Mockito.verifyNoMoreInteractions(tested.indexNamesCacheService);
 			Mockito.verify(tested.providerService).listAllProviders();
 			Mockito.verify(searchRequestBuilderMock).setIndices(
@@ -161,7 +193,7 @@ public class SearchRestServiceTest {
 		// case - dcp_type filter used - type with search_all_excluded=true can be used if named
 		{
 			Mockito.reset(tested.providerService, searchRequestBuilderMock, tested.indexNamesCacheService);
-			Mockito.when(tested.indexNamesCacheService.get(Mockito.anyList())).thenReturn(null);
+			Mockito.when(tested.indexNamesCacheService.get(Mockito.anyString())).thenReturn(null);
 			List<String> dcpTypesRequested = Arrays.asList(new String[] { "cosi" });
 			filters.setDcpTypes(dcpTypesRequested);
 			List<Map<String, Object>> mockedProvidersList = new ArrayList<Map<String, Object>>();
@@ -169,8 +201,10 @@ public class SearchRestServiceTest {
 			mockedProvidersList.add(TestUtils.loadJSONFromClasspathFile("/search/provider_2.json"));
 			Mockito.when(tested.providerService.listAllProviders()).thenReturn(mockedProvidersList);
 			tested.handleSearchInicesAndTypes(querySettings, searchRequestBuilderMock);
-			Mockito.verify(tested.indexNamesCacheService).get(dcpTypesRequested);
-			Mockito.verify(tested.indexNamesCacheService).put(Mockito.eq(dcpTypesRequested), Mockito.anySet());
+			Mockito.verify(tested.indexNamesCacheService).get(
+					SearchRestService.prepareIndexNamesCacheKey(dcpTypesRequested, false));
+			Mockito.verify(tested.indexNamesCacheService).put(
+					Mockito.eq(SearchRestService.prepareIndexNamesCacheKey(dcpTypesRequested, false)), Mockito.anySet());
 			Mockito.verifyNoMoreInteractions(tested.indexNamesCacheService);
 			Mockito.verify(tested.providerService).listAllProviders();
 			Mockito.verify(searchRequestBuilderMock).setIndices(
@@ -178,10 +212,10 @@ public class SearchRestServiceTest {
 			Mockito.verifyNoMoreInteractions(searchRequestBuilderMock);
 		}
 
-		// case - dcp_type filter used with multiple values
+		// case - dcp_type filter used with multiple values, no facet
 		{
 			Mockito.reset(tested.providerService, searchRequestBuilderMock, tested.indexNamesCacheService);
-			Mockito.when(tested.indexNamesCacheService.get(Mockito.anyList())).thenReturn(null);
+			Mockito.when(tested.indexNamesCacheService.get(Mockito.anyString())).thenReturn(null);
 			List<String> dcpTypesRequested = Arrays.asList(new String[] { "issue", "cosi" });
 			filters.setDcpTypes(dcpTypesRequested);
 			List<Map<String, Object>> mockedProvidersList = new ArrayList<Map<String, Object>>();
@@ -189,14 +223,69 @@ public class SearchRestServiceTest {
 			mockedProvidersList.add(TestUtils.loadJSONFromClasspathFile("/search/provider_2.json"));
 			Mockito.when(tested.providerService.listAllProviders()).thenReturn(mockedProvidersList);
 			tested.handleSearchInicesAndTypes(querySettings, searchRequestBuilderMock);
-			Mockito.verify(tested.indexNamesCacheService).get(dcpTypesRequested);
-			Mockito.verify(tested.indexNamesCacheService).put(Mockito.eq(dcpTypesRequested), Mockito.anySet());
+			Mockito.verify(tested.indexNamesCacheService).get(
+					SearchRestService.prepareIndexNamesCacheKey(dcpTypesRequested, false));
+			Mockito.verify(tested.indexNamesCacheService).put(
+					Mockito.eq(SearchRestService.prepareIndexNamesCacheKey(dcpTypesRequested, false)), Mockito.anySet());
 			Mockito.verifyNoMoreInteractions(tested.indexNamesCacheService);
 			Mockito.verify(tested.providerService).listAllProviders();
 			Mockito.verify(searchRequestBuilderMock).setIndices(
 					new String[] { "idx_provider1_cosi1", "idx_provider1_cosi2", "idx_provider1_issue", "idx_provider2_cosi1",
 							"idx_provider2_cosi2", "idx_provider2_issue1", "idx_provider2_issue2" });
 			Mockito.verifyNoMoreInteractions(searchRequestBuilderMock);
+		}
+
+		// case - dcp_type filter used with PER_DCP_TYPE_COUNTS facet. 'cosi' indexes are not included because
+		// "search_all_excluded" : "true"
+		{
+			Mockito.reset(tested.providerService, searchRequestBuilderMock, tested.indexNamesCacheService);
+			Mockito.when(tested.indexNamesCacheService.get(Mockito.anyString())).thenReturn(null);
+			List<String> dcpTypesRequested = Arrays.asList(new String[] { "issue" });
+			filters.setDcpTypes(dcpTypesRequested);
+			querySettings.addFacet(FacetValue.PER_DCP_TYPE_COUNTS);
+			List<Map<String, Object>> mockedProvidersList = new ArrayList<Map<String, Object>>();
+			mockedProvidersList.add(TestUtils.loadJSONFromClasspathFile("/search/provider_1.json"));
+			mockedProvidersList.add(TestUtils.loadJSONFromClasspathFile("/search/provider_2.json"));
+			Mockito.when(tested.providerService.listAllProviders()).thenReturn(mockedProvidersList);
+			tested.handleSearchInicesAndTypes(querySettings, searchRequestBuilderMock);
+			Mockito.verify(tested.indexNamesCacheService).get(
+					SearchRestService.prepareIndexNamesCacheKey(dcpTypesRequested, true));
+			Mockito.verify(tested.indexNamesCacheService).put(
+					Mockito.eq(SearchRestService.prepareIndexNamesCacheKey(dcpTypesRequested, true)), Mockito.anySet());
+			Mockito.verifyNoMoreInteractions(tested.indexNamesCacheService);
+			Mockito.verify(tested.providerService).listAllProviders();
+			Mockito.verify(searchRequestBuilderMock).setIndices(
+					new String[] { "idx_provider1_issue", "idx_provider1_mailing1", "idx_provider1_mailing2",
+							"idx_provider2_mailing", "idx_provider2_issue1", "idx_provider2_issue2" });
+			Mockito.verifyNoMoreInteractions(searchRequestBuilderMock);
+			querySettings.getFacets().clear();
+		}
+
+		// case - dcp_type filter used with PER_DCP_TYPE_COUNTS facet. 'cosi' indexes included even
+		// "search_all_excluded" : "true" because requested
+		{
+			Mockito.reset(tested.providerService, searchRequestBuilderMock, tested.indexNamesCacheService);
+			Mockito.when(tested.indexNamesCacheService.get(Mockito.anyString())).thenReturn(null);
+			List<String> dcpTypesRequested = Arrays.asList(new String[] { "issue", "cosi" });
+			filters.setDcpTypes(dcpTypesRequested);
+			querySettings.addFacet(FacetValue.PER_DCP_TYPE_COUNTS);
+			List<Map<String, Object>> mockedProvidersList = new ArrayList<Map<String, Object>>();
+			mockedProvidersList.add(TestUtils.loadJSONFromClasspathFile("/search/provider_1.json"));
+			mockedProvidersList.add(TestUtils.loadJSONFromClasspathFile("/search/provider_2.json"));
+			Mockito.when(tested.providerService.listAllProviders()).thenReturn(mockedProvidersList);
+			tested.handleSearchInicesAndTypes(querySettings, searchRequestBuilderMock);
+			Mockito.verify(tested.indexNamesCacheService).get(
+					SearchRestService.prepareIndexNamesCacheKey(dcpTypesRequested, true));
+			Mockito.verify(tested.indexNamesCacheService).put(
+					Mockito.eq(SearchRestService.prepareIndexNamesCacheKey(dcpTypesRequested, true)), Mockito.anySet());
+			Mockito.verifyNoMoreInteractions(tested.indexNamesCacheService);
+			Mockito.verify(tested.providerService).listAllProviders();
+			Mockito.verify(searchRequestBuilderMock).setIndices(
+					new String[] { "idx_provider1_cosi1", "idx_provider1_cosi2", "idx_provider1_issue", "idx_provider1_mailing1",
+							"idx_provider1_mailing2", "idx_provider2_cosi1", "idx_provider2_cosi2", "idx_provider2_mailing",
+							"idx_provider2_issue1", "idx_provider2_issue2" });
+			Mockito.verifyNoMoreInteractions(searchRequestBuilderMock);
+			querySettings.getFacets().clear();
 		}
 
 		// case - dcp_type filter used with multiple values - cache hit
@@ -206,7 +295,7 @@ public class SearchRestServiceTest {
 			cachedIdxNames.add("idx_provider1_cosi1");
 			cachedIdxNames.add("idx_provider1_cosi2");
 			cachedIdxNames.add("idx_provider1_issue");
-			Mockito.when(tested.indexNamesCacheService.get(Mockito.anyList())).thenReturn(cachedIdxNames);
+			Mockito.when(tested.indexNamesCacheService.get(Mockito.anyString())).thenReturn(cachedIdxNames);
 			List<String> dcpTypesRequested = Arrays.asList(new String[] { "issue", "cosi" });
 			filters.setDcpTypes(dcpTypesRequested);
 			List<Map<String, Object>> mockedProvidersList = new ArrayList<Map<String, Object>>();
@@ -215,7 +304,8 @@ public class SearchRestServiceTest {
 			Mockito.when(tested.providerService.listAllProviders()).thenReturn(mockedProvidersList);
 			tested.handleSearchInicesAndTypes(querySettings, searchRequestBuilderMock);
 
-			Mockito.verify(tested.indexNamesCacheService).get(dcpTypesRequested);
+			Mockito.verify(tested.indexNamesCacheService).get(
+					SearchRestService.prepareIndexNamesCacheKey(dcpTypesRequested, false));
 			Mockito.verifyNoMoreInteractions(tested.indexNamesCacheService);
 			Mockito.verifyZeroInteractions(tested.providerService);
 			Mockito.verify(searchRequestBuilderMock).setIndices(
@@ -232,8 +322,7 @@ public class SearchRestServiceTest {
 
 		// case - NPE when no settings passed in
 		try {
-			QueryBuilder qb = QueryBuilders.matchAllQuery();
-			tested.handleCommonFiltersSettings(null, qb);
+			tested.handleCommonFiltersSettings(null);
 			Assert.fail("NullPointerException expected");
 		} catch (NullPointerException e) {
 			// OK
@@ -244,7 +333,7 @@ public class SearchRestServiceTest {
 		// case - no filters object exists
 		{
 			QueryBuilder qb = QueryBuilders.matchAllQuery();
-			QueryBuilder qbRes = tested.handleCommonFiltersSettings(querySettings, qb);
+			QueryBuilder qbRes = tested.applyCommonFilters(tested.handleCommonFiltersSettings(querySettings), qb);
 			TestUtils.assertJsonContentFromClasspathFile("/search/query_match_all.json", qbRes.toString());
 		}
 
@@ -253,7 +342,7 @@ public class SearchRestServiceTest {
 		// case - empty filters object
 		{
 			QueryBuilder qb = QueryBuilders.matchAllQuery();
-			QueryBuilder qbRes = tested.handleCommonFiltersSettings(querySettings, qb);
+			QueryBuilder qbRes = tested.applyCommonFilters(tested.handleCommonFiltersSettings(querySettings), qb);
 			TestUtils.assertJsonContentFromClasspathFile("/search/query_match_all.json", qbRes.toString());
 		}
 
@@ -268,7 +357,7 @@ public class SearchRestServiceTest {
 			filters.setActivityDateFrom(1359232356456L);
 			filters.setActivityDateTo(1359232366456L);
 			QueryBuilder qb = QueryBuilders.matchAllQuery();
-			QueryBuilder qbRes = tested.handleCommonFiltersSettings(querySettings, qb);
+			QueryBuilder qbRes = tested.applyCommonFilters(tested.handleCommonFiltersSettings(querySettings), qb);
 			TestUtils.assertJsonContentFromClasspathFile("/search/query_filters_moreFilters.json", qbRes.toString());
 		}
 	}
@@ -281,18 +370,14 @@ public class SearchRestServiceTest {
 		QuerySettings querySettings = new QuerySettings();
 		Filters filters = new Filters();
 		querySettings.setFilters(filters);
-		filters.setActivityDateInterval(PastIntervalValue.DAY);
+		filters.setActivityDateInterval(PastIntervalValue.TEST);
 		// set date_from and date_to to some values to test this is ignored if interval is used
 		filters.setActivityDateTo(1359232366456L);
 		filters.setActivityDateFrom(1359232356456L);
 		{
 			QueryBuilder qb = QueryBuilders.matchAllQuery();
-			QueryBuilder qbRes = tested.handleCommonFiltersSettings(querySettings, qb);
-			String s = qbRes.toString().replaceAll("[ \\n\\t]", "");
-			Assert.assertTrue(s.contains("\"range\":{\"dcp_activity_dates\":{\"from\":\""));
-			Assert.assertTrue(s.contains("\"to\":null"));
-			Assert.assertFalse(s.contains("2013-01-26T20:32:46.456Z"));
-			Assert.assertFalse(s.contains("2013-01-26T20:32:36.456Z"));
+			QueryBuilder qbRes = tested.applyCommonFilters(tested.handleCommonFiltersSettings(querySettings), qb);
+			TestUtils.assertJsonContentFromClasspathFile("/search/query_filters_activityDateInterval.json", qbRes.toString());
 		}
 	}
 
@@ -310,7 +395,7 @@ public class SearchRestServiceTest {
 		filters.setActivityDateTo(null);
 		{
 			QueryBuilder qb = QueryBuilders.matchAllQuery();
-			QueryBuilder qbRes = tested.handleCommonFiltersSettings(querySettings, qb);
+			QueryBuilder qbRes = tested.applyCommonFilters(tested.handleCommonFiltersSettings(querySettings), qb);
 			TestUtils.assertJsonContentFromClasspathFile("/search/query_filters_activityDateFrom.json", qbRes.toString());
 		}
 
@@ -319,7 +404,7 @@ public class SearchRestServiceTest {
 		filters.setActivityDateTo(1359232366456L);
 		{
 			QueryBuilder qb = QueryBuilders.matchAllQuery();
-			QueryBuilder qbRes = tested.handleCommonFiltersSettings(querySettings, qb);
+			QueryBuilder qbRes = tested.applyCommonFilters(tested.handleCommonFiltersSettings(querySettings), qb);
 			TestUtils.assertJsonContentFromClasspathFile("/search/query_filters_activityDateTo.json", qbRes.toString());
 		}
 
@@ -328,7 +413,7 @@ public class SearchRestServiceTest {
 		filters.setActivityDateTo(1359232366456L);
 		{
 			QueryBuilder qb = QueryBuilders.matchAllQuery();
-			QueryBuilder qbRes = tested.handleCommonFiltersSettings(querySettings, qb);
+			QueryBuilder qbRes = tested.applyCommonFilters(tested.handleCommonFiltersSettings(querySettings), qb);
 			TestUtils.assertJsonContentFromClasspathFile("/search/query_filters_activityDateFromTo.json", qbRes.toString());
 		}
 	}
@@ -344,7 +429,7 @@ public class SearchRestServiceTest {
 		// case - list of projects is null
 		{
 			QueryBuilder qb = QueryBuilders.matchAllQuery();
-			QueryBuilder qbRes = tested.handleCommonFiltersSettings(querySettings, qb);
+			QueryBuilder qbRes = tested.applyCommonFilters(tested.handleCommonFiltersSettings(querySettings), qb);
 			TestUtils.assertJsonContentFromClasspathFile("/search/query_match_all.json", qbRes.toString());
 		}
 
@@ -352,7 +437,7 @@ public class SearchRestServiceTest {
 		{
 			filters.setProjects(Arrays.asList(new String[] {}));
 			QueryBuilder qb = QueryBuilders.matchAllQuery();
-			QueryBuilder qbRes = tested.handleCommonFiltersSettings(querySettings, qb);
+			QueryBuilder qbRes = tested.applyCommonFilters(tested.handleCommonFiltersSettings(querySettings), qb);
 			TestUtils.assertJsonContentFromClasspathFile("/search/query_match_all.json", qbRes.toString());
 		}
 
@@ -360,7 +445,7 @@ public class SearchRestServiceTest {
 		{
 			filters.setProjects(Arrays.asList(new String[] { "pr1" }));
 			QueryBuilder qb = QueryBuilders.matchAllQuery();
-			QueryBuilder qbRes = tested.handleCommonFiltersSettings(querySettings, qb);
+			QueryBuilder qbRes = tested.applyCommonFilters(tested.handleCommonFiltersSettings(querySettings), qb);
 			TestUtils.assertJsonContentFromClasspathFile("/search/query_filters_projects_one.json", qbRes.toString());
 		}
 
@@ -368,7 +453,7 @@ public class SearchRestServiceTest {
 		{
 			filters.setProjects(Arrays.asList(new String[] { "pr1", "pr2", "pr3", "pr4" }));
 			QueryBuilder qb = QueryBuilders.matchAllQuery();
-			QueryBuilder qbRes = tested.handleCommonFiltersSettings(querySettings, qb);
+			QueryBuilder qbRes = tested.applyCommonFilters(tested.handleCommonFiltersSettings(querySettings), qb);
 			TestUtils.assertJsonContentFromClasspathFile("/search/query_filters_projects_more.json", qbRes.toString());
 		}
 	}
@@ -384,7 +469,7 @@ public class SearchRestServiceTest {
 		// case - list of tags is null
 		{
 			QueryBuilder qb = QueryBuilders.matchAllQuery();
-			QueryBuilder qbRes = tested.handleCommonFiltersSettings(querySettings, qb);
+			QueryBuilder qbRes = tested.applyCommonFilters(tested.handleCommonFiltersSettings(querySettings), qb);
 			TestUtils.assertJsonContentFromClasspathFile("/search/query_match_all.json", qbRes.toString());
 		}
 
@@ -392,7 +477,7 @@ public class SearchRestServiceTest {
 		{
 			filters.setTags(Arrays.asList(new String[] {}));
 			QueryBuilder qb = QueryBuilders.matchAllQuery();
-			QueryBuilder qbRes = tested.handleCommonFiltersSettings(querySettings, qb);
+			QueryBuilder qbRes = tested.applyCommonFilters(tested.handleCommonFiltersSettings(querySettings), qb);
 			TestUtils.assertJsonContentFromClasspathFile("/search/query_match_all.json", qbRes.toString());
 		}
 
@@ -400,7 +485,7 @@ public class SearchRestServiceTest {
 		{
 			filters.setTags(Arrays.asList(new String[] { "tg1" }));
 			QueryBuilder qb = QueryBuilders.matchAllQuery();
-			QueryBuilder qbRes = tested.handleCommonFiltersSettings(querySettings, qb);
+			QueryBuilder qbRes = tested.applyCommonFilters(tested.handleCommonFiltersSettings(querySettings), qb);
 			TestUtils.assertJsonContentFromClasspathFile("/search/query_filters_tags_one.json", qbRes.toString());
 		}
 
@@ -408,7 +493,7 @@ public class SearchRestServiceTest {
 		{
 			filters.setTags(Arrays.asList(new String[] { "tg1", "tg2", "tg3", "tg4" }));
 			QueryBuilder qb = QueryBuilders.matchAllQuery();
-			QueryBuilder qbRes = tested.handleCommonFiltersSettings(querySettings, qb);
+			QueryBuilder qbRes = tested.applyCommonFilters(tested.handleCommonFiltersSettings(querySettings), qb);
 			TestUtils.assertJsonContentFromClasspathFile("/search/query_filters_tags_more.json", qbRes.toString());
 		}
 	}
@@ -424,7 +509,7 @@ public class SearchRestServiceTest {
 		// case - list of contributors is null
 		{
 			QueryBuilder qb = QueryBuilders.matchAllQuery();
-			QueryBuilder qbRes = tested.handleCommonFiltersSettings(querySettings, qb);
+			QueryBuilder qbRes = tested.applyCommonFilters(tested.handleCommonFiltersSettings(querySettings), qb);
 			TestUtils.assertJsonContentFromClasspathFile("/search/query_match_all.json", qbRes.toString());
 		}
 
@@ -432,7 +517,7 @@ public class SearchRestServiceTest {
 		{
 			filters.setContributors(Arrays.asList(new String[] {}));
 			QueryBuilder qb = QueryBuilders.matchAllQuery();
-			QueryBuilder qbRes = tested.handleCommonFiltersSettings(querySettings, qb);
+			QueryBuilder qbRes = tested.applyCommonFilters(tested.handleCommonFiltersSettings(querySettings), qb);
 			TestUtils.assertJsonContentFromClasspathFile("/search/query_match_all.json", qbRes.toString());
 		}
 
@@ -440,7 +525,7 @@ public class SearchRestServiceTest {
 		{
 			filters.setContributors(Arrays.asList(new String[] { "tg1" }));
 			QueryBuilder qb = QueryBuilders.matchAllQuery();
-			QueryBuilder qbRes = tested.handleCommonFiltersSettings(querySettings, qb);
+			QueryBuilder qbRes = tested.applyCommonFilters(tested.handleCommonFiltersSettings(querySettings), qb);
 			TestUtils.assertJsonContentFromClasspathFile("/search/query_filters_contributors_one.json", qbRes.toString());
 		}
 
@@ -448,7 +533,7 @@ public class SearchRestServiceTest {
 		{
 			filters.setContributors(Arrays.asList(new String[] { "tg1", "tg2", "tg3", "tg4" }));
 			QueryBuilder qb = QueryBuilders.matchAllQuery();
-			QueryBuilder qbRes = tested.handleCommonFiltersSettings(querySettings, qb);
+			QueryBuilder qbRes = tested.applyCommonFilters(tested.handleCommonFiltersSettings(querySettings), qb);
 			TestUtils.assertJsonContentFromClasspathFile("/search/query_filters_contributors_more.json", qbRes.toString());
 		}
 	}
@@ -909,6 +994,304 @@ public class SearchRestServiceTest {
 			Mockito.verify(srbMock).addSort("dcp_last_activity_date", SortOrder.ASC);
 			Mockito.verifyNoMoreInteractions(srbMock);
 		}
+	}
+
+	@Test
+	public void getFilters() {
+		{
+			FilterBuilder[] ret = SearchRestService.getFilters(null, null);
+			Assert.assertNotNull(ret);
+			Assert.assertEquals(0, ret.length);
+		}
+		{
+			FilterBuilder[] ret = SearchRestService.getFilters(null, "aaa");
+			Assert.assertNotNull(ret);
+			Assert.assertEquals(0, ret.length);
+		}
+
+		Map<String, FilterBuilder> filters = new LinkedHashMap<String, FilterBuilder>();
+		FilterBuilder fb1 = Mockito.mock(FilterBuilder.class);
+		filters.put("f1", fb1);
+		FilterBuilder fb2 = Mockito.mock(FilterBuilder.class);
+		filters.put("f2", fb2);
+		FilterBuilder fb3 = Mockito.mock(FilterBuilder.class);
+		filters.put("f3", fb3);
+		{
+			FilterBuilder[] ret = SearchRestService.getFilters(filters, null);
+			Assert.assertNotNull(ret);
+			Assert.assertEquals(3, ret.length);
+			Assert.assertEquals(fb1, ret[0]);
+			Assert.assertEquals(fb2, ret[1]);
+			Assert.assertEquals(fb3, ret[2]);
+		}
+
+		{
+			FilterBuilder[] ret = SearchRestService.getFilters(filters, "f2");
+			Assert.assertNotNull(ret);
+			Assert.assertEquals(2, ret.length);
+			Assert.assertEquals(fb1, ret[0]);
+			Assert.assertEquals(fb3, ret[1]);
+		}
+	}
+
+	@Test
+	public void handleFacetSettings_common() throws IOException {
+
+		SearchRestService tested = new SearchRestService();
+		tested.log = Logger.getLogger("testlogger");
+
+		// case - no facets requested
+		{
+			SearchRequestBuilder srbMock = new SearchRequestBuilder(null);
+			QuerySettings querySettings = new QuerySettings();
+			tested.handleFacetSettings(querySettings, null, srbMock);
+			Assert.assertEquals("{ }", srbMock.toString());
+		}
+
+		// case - one facet requested without filters
+		{
+			SearchRequestBuilder srbMock = new SearchRequestBuilder(null);
+			QuerySettings querySettings = new QuerySettings();
+			querySettings.addFacet(FacetValue.PER_DCP_TYPE_COUNTS);
+
+			tested.handleFacetSettings(querySettings, null, srbMock);
+			TestUtils.assertJsonContentFromClasspathFile("/search/query_facets_per_dcp_type_counts.json", srbMock.toString());
+		}
+
+		// case - more facets requested without filters
+		{
+			SearchRequestBuilder srbMock = new SearchRequestBuilder(null);
+			QuerySettings querySettings = new QuerySettings();
+			querySettings.addFacet(FacetValue.ACTIVITY_DATES_HISTOGRAM);
+			querySettings.addFacet(FacetValue.PER_PROJECT_COUNTS);
+			querySettings.addFacet(FacetValue.TAG_CLOUD);
+			querySettings.addFacet(FacetValue.TOP_CONTRIBUTORS);
+			tested.handleFacetSettings(querySettings, null, srbMock);
+			TestUtils.assertJsonContentFromClasspathFile("/search/query_facets_moreNoFilter.json", srbMock.toString());
+		}
+
+		// case - more facets requested with more filters
+		{
+			SearchRequestBuilder srbMock = new SearchRequestBuilder(null);
+			QuerySettings querySettings = new QuerySettings();
+			Filters filters = new Filters();
+			filters.setActivityDateFrom(100000l);
+			filters.setActivityDateTo(100200l);
+			filters.setContentType("my_content_type");
+			filters.addContributor("my_contributor_1");
+			filters.addContributor("my_contributor_2");
+			filters.setDcpContentProvider("my_dcp_content_provider");
+			filters.addDcpType("my_dcp_type");
+			filters.addDcpType("my_dcp_type_2");
+			filters.addProject("my_project");
+			filters.addProject("my_project_2");
+			filters.addTag("tag1");
+			filters.addTag("tag2");
+			querySettings.setFilters(filters);
+			querySettings.addFacet(FacetValue.PER_DCP_TYPE_COUNTS);
+			querySettings.addFacet(FacetValue.ACTIVITY_DATES_HISTOGRAM);
+			querySettings.addFacet(FacetValue.PER_PROJECT_COUNTS);
+			querySettings.addFacet(FacetValue.TAG_CLOUD);
+			querySettings.addFacet(FacetValue.TOP_CONTRIBUTORS);
+			tested.handleFacetSettings(querySettings, tested.handleCommonFiltersSettings(querySettings), srbMock);
+			TestUtils.assertJsonContentFromClasspathFile("/search/query_facets_moreWithFilter.json", srbMock.toString());
+		}
+	}
+
+	@Test
+	public void handleFacetSettings_top_contributors() throws IOException {
+
+		SearchRestService tested = new SearchRestService();
+		tested.log = Logger.getLogger("testlogger");
+
+		// case - no contributor filter used, so only one top_contributors facet
+		{
+			SearchRequestBuilder srbMock = new SearchRequestBuilder(null);
+			QuerySettings querySettings = new QuerySettings();
+			querySettings.addFacet(FacetValue.TOP_CONTRIBUTORS);
+			Filters filters = new Filters();
+			filters.addTag("tag1");
+			filters.addTag("tag2");
+			querySettings.setFilters(filters);
+			tested.handleFacetSettings(querySettings, tested.handleCommonFiltersSettings(querySettings), srbMock);
+			TestUtils.assertJsonContentFromClasspathFile("/search/query_facets_top_contributors_1.json", srbMock.toString());
+		}
+
+		// case - contributor filter used, so two top_contributors facets used
+		{
+			SearchRequestBuilder srbMock = new SearchRequestBuilder(null);
+			QuerySettings querySettings = new QuerySettings();
+			querySettings.addFacet(FacetValue.TOP_CONTRIBUTORS);
+			Filters filters = new Filters();
+			filters.addTag("tag1");
+			filters.addTag("tag2");
+			filters.addContributor("John Doe <john@doe.org>");
+			querySettings.setFilters(filters);
+			tested.handleFacetSettings(querySettings, tested.handleCommonFiltersSettings(querySettings), srbMock);
+			TestUtils.assertJsonContentFromClasspathFile("/search/query_facets_top_contributors_2.json", srbMock.toString());
+		}
+	}
+
+	@Test
+	public void handleFacetSettings_activity_dates_histogram() throws IOException {
+
+		SearchRestService tested = new SearchRestService();
+		tested.log = Logger.getLogger("testlogger");
+
+		// case - no activity dates filter used
+		{
+			SearchRequestBuilder srbMock = new SearchRequestBuilder(null);
+			QuerySettings querySettings = new QuerySettings();
+			querySettings.addFacet(FacetValue.ACTIVITY_DATES_HISTOGRAM);
+			Filters filters = new Filters();
+			filters.addTag("tag1");
+			filters.addTag("tag2");
+			querySettings.setFilters(filters);
+			tested.handleFacetSettings(querySettings, tested.handleCommonFiltersSettings(querySettings), srbMock);
+			TestUtils.assertJsonContentFromClasspathFile("/search/query_facets_activity_dates_histogram_1.json",
+					srbMock.toString());
+		}
+
+		// case - activity dates interval filter used (so from/to is ignored)
+		{
+			SearchRequestBuilder srbMock = new SearchRequestBuilder(null);
+			QuerySettings querySettings = new QuerySettings();
+			querySettings.addFacet(FacetValue.ACTIVITY_DATES_HISTOGRAM);
+			Filters filters = new Filters();
+			filters.addTag("tag1");
+			filters.addTag("tag2");
+			filters.setActivityDateInterval(PastIntervalValue.TEST);
+			filters.setActivityDateFrom(1256545l);
+			filters.setActivityDateTo(2256545l);
+			querySettings.setFilters(filters);
+			tested.handleFacetSettings(querySettings, tested.handleCommonFiltersSettings(querySettings), srbMock);
+			TestUtils.assertJsonContentFromClasspathFile("/search/query_facets_activity_dates_histogram_2.json",
+					srbMock.toString());
+		}
+
+		// case - activity dates from/to filter used
+		{
+			SearchRequestBuilder srbMock = new SearchRequestBuilder(null);
+			QuerySettings querySettings = new QuerySettings();
+			querySettings.addFacet(FacetValue.ACTIVITY_DATES_HISTOGRAM);
+			Filters filters = new Filters();
+			filters.addTag("tag1");
+			filters.addTag("tag2");
+			filters.setActivityDateFrom(1256545l);
+			filters.setActivityDateTo(22256545l);
+			querySettings.setFilters(filters);
+			tested.handleFacetSettings(querySettings, tested.handleCommonFiltersSettings(querySettings), srbMock);
+			TestUtils.assertJsonContentFromClasspathFile("/search/query_facets_activity_dates_histogram_3.json",
+					srbMock.toString());
+		}
+	}
+
+	@Test
+	public void selectActivityDatesHistogramInterval_common() {
+
+		// case - no activity dates filter defined
+		QuerySettings qs = new QuerySettings();
+		Assert.assertEquals("month", SearchRestService.selectActivityDatesHistogramInterval(qs));
+
+		Filters filters = new Filters();
+		qs.setFilters(filters);
+		Assert.assertEquals("month", SearchRestService.selectActivityDatesHistogramInterval(qs));
+
+		// case - activity date interval precedence against from/to
+		filters.setActivityDateInterval(PastIntervalValue.YEAR);
+		filters.setActivityDateFrom(System.currentTimeMillis() - 1000000);
+		filters.setActivityDateTo(System.currentTimeMillis());
+		Assert.assertEquals("week", SearchRestService.selectActivityDatesHistogramInterval(qs));
+	}
+
+	@Test
+	public void selectActivityDatesHistogramInterval_intervalFilter() {
+		QuerySettings qs = new QuerySettings();
+		Filters filters = new Filters();
+		qs.setFilters(filters);
+
+		filters.setActivityDateInterval(PastIntervalValue.YEAR);
+		Assert.assertEquals("week", SearchRestService.selectActivityDatesHistogramInterval(qs));
+		filters.setActivityDateInterval(PastIntervalValue.QUARTER);
+		Assert.assertEquals("week", SearchRestService.selectActivityDatesHistogramInterval(qs));
+
+		filters.setActivityDateInterval(PastIntervalValue.MONTH);
+		Assert.assertEquals("day", SearchRestService.selectActivityDatesHistogramInterval(qs));
+
+		filters.setActivityDateInterval(PastIntervalValue.WEEK);
+		Assert.assertEquals("day", SearchRestService.selectActivityDatesHistogramInterval(qs));
+
+		filters.setActivityDateInterval(PastIntervalValue.DAY);
+		Assert.assertEquals("hour", SearchRestService.selectActivityDatesHistogramInterval(qs));
 
 	}
+
+	@Test
+	public void selectActivityDatesHistogramInterval_fromToFilter() {
+		QuerySettings qs = new QuerySettings();
+		Filters filters = new Filters();
+		qs.setFilters(filters);
+
+		// case - no from defined, so allways month
+		filters.setActivityDateFrom(null);
+		filters.setActivityDateTo(System.currentTimeMillis());
+		Assert.assertEquals("month", SearchRestService.selectActivityDatesHistogramInterval(qs));
+
+		filters.setActivityDateTo(System.currentTimeMillis() - 1000 * 60 * 60 * 24 * 365 * 10);
+		Assert.assertEquals("month", SearchRestService.selectActivityDatesHistogramInterval(qs));
+
+		// case - no to defined means current timestamp is used
+		filters.setActivityDateFrom(System.currentTimeMillis());
+		filters.setActivityDateTo(null);
+		Assert.assertEquals("minute", SearchRestService.selectActivityDatesHistogramInterval(qs));
+
+		filters.setActivityDateFrom(System.currentTimeMillis() - 1000L * 60L * 60L + 1);
+		Assert.assertEquals("minute", SearchRestService.selectActivityDatesHistogramInterval(qs));
+		filters.setActivityDateFrom(System.currentTimeMillis() - 1000L * 60L * 60L - 1);
+		Assert.assertEquals("hour", SearchRestService.selectActivityDatesHistogramInterval(qs));
+
+		filters.setActivityDateFrom(System.currentTimeMillis() - 1000L * 60L * 60L * 24 * 2 + 1);
+		Assert.assertEquals("hour", SearchRestService.selectActivityDatesHistogramInterval(qs));
+		filters.setActivityDateFrom(System.currentTimeMillis() - 1000L * 60L * 60L * 24 * 2 - 1);
+		Assert.assertEquals("day", SearchRestService.selectActivityDatesHistogramInterval(qs));
+
+		filters.setActivityDateFrom(System.currentTimeMillis() - 1000L * 60L * 60L * 24 * 7 * 8 + 1);
+		Assert.assertEquals("day", SearchRestService.selectActivityDatesHistogramInterval(qs));
+		filters.setActivityDateFrom(System.currentTimeMillis() - 1000L * 60L * 60L * 24 * 7 * 8 - 1);
+		Assert.assertEquals("week", SearchRestService.selectActivityDatesHistogramInterval(qs));
+
+		filters.setActivityDateFrom(System.currentTimeMillis() - 1000L * 60L * 60L * 24 * 366 + 1);
+		Assert.assertEquals("week", SearchRestService.selectActivityDatesHistogramInterval(qs));
+		filters.setActivityDateFrom(System.currentTimeMillis() - 1000L * 60L * 60L * 24 * 366 - 1);
+		Assert.assertEquals("month", SearchRestService.selectActivityDatesHistogramInterval(qs));
+
+		// case - both from and to defined
+		filters.setActivityDateFrom(1000l);
+		filters.setActivityDateTo(1200l);
+		Assert.assertEquals("minute", SearchRestService.selectActivityDatesHistogramInterval(qs));
+
+		filters.setActivityDateTo(1000l + 1000L * 60L * 60L - 1);
+		Assert.assertEquals("minute", SearchRestService.selectActivityDatesHistogramInterval(qs));
+		filters.setActivityDateTo(1000l + 1000L * 60L * 60L + 1);
+		Assert.assertEquals("hour", SearchRestService.selectActivityDatesHistogramInterval(qs));
+
+		filters.setActivityDateFrom(1000000l);
+		filters.setActivityDateTo(1000000l + 1000L * 60L * 60L * 24 * 2 - 1);
+		Assert.assertEquals("hour", SearchRestService.selectActivityDatesHistogramInterval(qs));
+		filters.setActivityDateTo(1000000l + 1000L * 60L * 60L * 24 * 2 + 1);
+		Assert.assertEquals("day", SearchRestService.selectActivityDatesHistogramInterval(qs));
+
+		filters.setActivityDateFrom(100000000l);
+		filters.setActivityDateTo(100000000l + 1000L * 60L * 60L * 24 * 7 * 8 - 1);
+		Assert.assertEquals("day", SearchRestService.selectActivityDatesHistogramInterval(qs));
+		filters.setActivityDateTo(100000000l + 1000L * 60L * 60L * 24 * 7 * 8 + 1);
+		Assert.assertEquals("week", SearchRestService.selectActivityDatesHistogramInterval(qs));
+
+		filters.setActivityDateFrom(1000000000l);
+		filters.setActivityDateTo(1000000000l + 1000L * 60L * 60L * 24 * 366 - 1);
+		Assert.assertEquals("week", SearchRestService.selectActivityDatesHistogramInterval(qs));
+		filters.setActivityDateTo(1000000000l + 1000L * 60L * 60L * 24 * 366 + 1);
+		Assert.assertEquals("month", SearchRestService.selectActivityDatesHistogramInterval(qs));
+	}
+
 }

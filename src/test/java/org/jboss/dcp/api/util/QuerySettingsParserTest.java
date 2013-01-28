@@ -8,6 +8,7 @@ package org.jboss.dcp.api.util;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 
 import javax.ws.rs.core.MultivaluedMap;
 
@@ -114,7 +115,7 @@ public class QuerySettingsParserTest {
 		assertEqualsFacetValueList(expectedFacets, qs.getFacets());
 	}
 
-	private void assertEqualsFacetValueList(String expectedValuesCommaSeparated, List<FacetValue> actualValue) {
+	private void assertEqualsFacetValueList(String expectedValuesCommaSeparated, Set<FacetValue> actualValue) {
 
 		if (expectedValuesCommaSeparated == null) {
 			Assert.assertNull(actualValue);
@@ -359,7 +360,7 @@ public class QuerySettingsParserTest {
 			params.add(QuerySettings.FACETS_KEY, FacetValue.ACTIVITY_DATES_HISTOGRAM.toString());
 			QuerySettings ret = QuerySettingsParser.parseUriParams(params);
 			Assert.assertNotNull(ret);
-			Assert.assertEquals(FacetValue.ACTIVITY_DATES_HISTOGRAM, ret.getFacets().get(0));
+			Assert.assertTrue(ret.getFacets().contains(FacetValue.ACTIVITY_DATES_HISTOGRAM));
 		}
 		{
 			MultivaluedMap<String, String> params = new MultivaluedMapImpl<String, String>();

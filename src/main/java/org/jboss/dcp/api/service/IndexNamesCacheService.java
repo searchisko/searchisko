@@ -1,10 +1,8 @@
 package org.jboss.dcp.api.service;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeSet;
 
 import javax.ejb.Singleton;
 import javax.enterprise.context.ApplicationScoped;
@@ -35,10 +33,10 @@ public class IndexNamesCacheService {
 	 * @param dcpTypesRequested - can be null
 	 * @return index names from cache or null if not there or timeouted.
 	 */
-	public Set<String> get(List<String> dcpTypesRequested) {
+	public Set<String> get(String key) {
 		CacheItem ci = null;
 		synchronized (cache) {
-			ci = cache.get(prepareKey(dcpTypesRequested));
+			ci = cache.get(key);
 		}
 		if (ci != null && ci.validTo > System.currentTimeMillis()) {
 			return ci.indexNames;
@@ -52,35 +50,13 @@ public class IndexNamesCacheService {
 	 * @param dcpTypesRequested to store index names for (can be null)
 	 * @param indexNames to store into cache
 	 */
-	public void put(List<String> dcpTypesRequested, Set<String> indexNames) {
+	public void put(String key, Set<String> indexNames) {
 		CacheItem ci = new CacheItem();
 		ci.indexNames = indexNames;
 		ci.validTo = System.currentTimeMillis() + ttl;
 		synchronized (cache) {
-			cache.put(prepareKey(dcpTypesRequested), ci);
+			cache.put(key, ci);
 		}
-	}
-
-	/**
-	 * Prepare key for cache.
-	 * 
-	 * @param dcpTypesRequested to prepare key for
-	 * @return key value (never null)
-	 */
-	protected static String prepareKey(List<String> dcpTypesRequested) {
-		if (dcpTypesRequested == null || dcpTypesRequested.isEmpty())
-			return "_all||";
-
-		if (dcpTypesRequested.size() == 1) {
-			return dcpTypesRequested.get(0);
-		}
-
-		TreeSet<String> ts = new TreeSet<String>(dcpTypesRequested);
-		StringBuilder sb = new StringBuilder();
-		for (String k : ts) {
-			sb.append(k).append("|");
-		}
-		return sb.toString();
 	}
 
 	private static class CacheItem {

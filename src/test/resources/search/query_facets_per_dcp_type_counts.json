@@ -1,0 +1,11 @@
+{
+    "facets":{
+        "per_dcp_type_counts":{
+            "terms":{
+                "field":"dcp_type",
+                "size":20
+            },
+            "scope":"_global_"
+        }
+    }
+}

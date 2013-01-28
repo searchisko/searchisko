@@ -11,7 +11,8 @@ import org.jboss.dcp.api.util.SearchUtils;
 public enum PastIntervalValue {
 
 	WEEK("week", 1000L * 60L * 60L * 24L * 7L), MONTH("month", 1000L * 60L * 60L * 24L * 31L), QUARTER("quarter", 1000L
-			* 60L * 60L * 24L * 31L * 3L), YEAR("year", 1000L * 60L * 60L * 24L * 365L), DAY("day", 1000L * 60L * 60L * 24L);
+			* 60L * 60L * 24L * 31L * 3L), YEAR("year", 1000L * 60L * 60L * 24L * 365L), DAY("day", 1000L * 60L * 60L * 24L), TEST(
+			"test_val_eefgdf", 0);
 
 	/**
 	 * Value used in request parameter.
@@ -19,13 +20,14 @@ public enum PastIntervalValue {
 	private String value;
 
 	/**
-	 * Value of timeshift back from current timestamp if this enum item is used. see {@link #getFromTimestamp()}
+	 * Time interval in millis for this value. Used for timeshift back from current timestamp if this enum item is used.
+	 * see {@link #getFromTimestamp()}
 	 */
-	private long timeshift;
+	private long millis;
 
-	private PastIntervalValue(String value, long timeshift) {
+	private PastIntervalValue(String value, long millis) {
 		this.value = value;
-		this.timeshift = timeshift;
+		this.millis = millis;
 	}
 
 	@Override
@@ -34,10 +36,22 @@ public enum PastIntervalValue {
 	}
 
 	/**
+	 * Time interval in millis for this value.
+	 * 
+	 * @return millis
+	 */
+	public long getMillis() {
+		return millis;
+	}
+
+	/**
 	 * @return long value with timeshift for this enum item
 	 */
 	public long getFromTimestamp() {
-		return System.currentTimeMillis() - timeshift;
+		if (millis == 0) {
+			return 125654587545l;
+		}
+		return System.currentTimeMillis() - millis;
 	}
 
 	/**

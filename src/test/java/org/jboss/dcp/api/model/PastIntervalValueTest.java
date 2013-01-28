@@ -17,7 +17,7 @@ public class PastIntervalValueTest {
 
 	@Test
 	public void values() {
-		Assert.assertEquals(5, PastIntervalValue.values().length);
+		Assert.assertEquals(6, PastIntervalValue.values().length);
 		Assert.assertEquals("day", PastIntervalValue.DAY.toString());
 		Assert.assertEquals("week", PastIntervalValue.WEEK.toString());
 		Assert.assertEquals("month", PastIntervalValue.MONTH.toString());

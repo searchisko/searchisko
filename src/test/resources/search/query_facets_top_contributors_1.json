@@ -1,0 +1,25 @@
+{
+    "facets":{
+        "top_contributors":{
+            "terms":{
+                "field":"dcp_contributors",
+                "size":100
+            },
+            "facet_filter":{
+                "and":{
+                    "filters":[
+                        {
+                            "terms":{
+                                "dcp_tags":[
+                                    "tag1",
+                                    "tag2"
+                                ]
+                            }
+                        }
+                    ]
+                }
+            },
+            "scope":"_global_"
+        }
+    }
+}

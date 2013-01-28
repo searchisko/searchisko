@@ -6,7 +6,9 @@
 package org.jboss.dcp.api.model;
 
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.jboss.dcp.api.util.QuerySettingsParser;
 
@@ -122,6 +124,12 @@ public class QuerySettings {
 			return projects;
 		}
 
+		public void addProject(String project) {
+			if (projects == null)
+				projects = new ArrayList<String>();
+			projects.add(project);
+		}
+
 		public Integer getFrom() {
 			return from;
 		}
@@ -142,6 +150,12 @@ public class QuerySettings {
 			this.tags = tags;
 		}
 
+		public void addTag(String tag) {
+			if (tags == null)
+				tags = new ArrayList<String>();
+			tags.add(tag);
+		}
+
 		public String getContentType() {
 			return contentType;
 		}
@@ -158,6 +172,12 @@ public class QuerySettings {
 			this.dcpTypes = dcpTypes;
 		}
 
+		public void addDcpType(String dcpType) {
+			if (dcpTypes == null)
+				dcpTypes = new ArrayList<String>();
+			dcpTypes.add(dcpType);
+		}
+
 		public String getDcpContentProvider() {
 			return dcpContentProvider;
 		}
@@ -172,6 +192,13 @@ public class QuerySettings {
 
 		public void setContributors(List<String> contributors) {
 			this.contributors = contributors;
+		}
+
+		public void addContributor(String contributor) {
+			if (contributors == null) {
+				contributors = new ArrayList<String>();
+			}
+			contributors.add(contributor);
 		}
 
 		public PastIntervalValue getActivityDateInterval() {
@@ -204,7 +231,7 @@ public class QuerySettings {
 
 	public static final String FIELDS_KEY = "field";
 
-	private List<FacetValue> facets;
+	private Set<FacetValue> facets;
 
 	public static final String FACETS_KEY = "facet";
 
@@ -261,19 +288,15 @@ public class QuerySettings {
 		this.queryHighlight = queryHighlight;
 	}
 
-	public List<FacetValue> getFacets() {
+	public Set<FacetValue> getFacets() {
 		return facets;
-	}
-
-	public void setFacets(List<FacetValue> facets) {
-		this.facets = facets;
 	}
 
 	public void addFacet(FacetValue value) {
 		if (value == null)
 			return;
 		if (facets == null)
-			facets = new ArrayList<FacetValue>();
+			facets = new LinkedHashSet<FacetValue>();
 		facets.add(value);
 	}
 
