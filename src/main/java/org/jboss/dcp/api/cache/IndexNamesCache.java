@@ -18,8 +18,8 @@ import org.jboss.dcp.api.rest.SearchRestService;
 @Singleton
 public class IndexNamesCache extends TimedCacheBase<Set<String>> {
 
-	protected IndexNamesCache() {
-		super(20L * 1000L);
+	public IndexNamesCache() {
+		ttl = 20L * 1000L;
 	}
 
 }

@@ -21,8 +21,9 @@ public class TimedCacheBaseTest {
 	@Test
 	public void cacheWorks() throws InterruptedException {
 
-		TimedCacheBase<Set<String>> tested = new TimedCacheBase<Set<String>>(500) {
+		TimedCacheBase<Set<String>> tested = new TimedCacheBase<Set<String>>() {
 		};
+		tested.ttl = 500;
 
 		Set<String> indexNames = new HashSet<String>();
 		Set<String> indexNames2 = new HashSet<String>();
