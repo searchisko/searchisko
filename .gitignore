@@ -6,3 +6,6 @@ target
 *.iml
 data/
 !.settings/.jsdtscope
+/persistance
+/search
+/stats
