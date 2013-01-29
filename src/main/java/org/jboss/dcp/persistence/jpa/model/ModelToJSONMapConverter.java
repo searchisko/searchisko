@@ -1,5 +1,7 @@
-/**
- * 
+/*
+ * JBoss, Home of Professional Open Source
+ * Copyright 2013 Red Hat Inc. and/or its affiliates and other contributors
+ * as indicated by the @authors tag. All rights reserved.
  */
 package org.jboss.dcp.persistence.jpa.model;
 
@@ -10,8 +12,9 @@ import org.codehaus.jackson.JsonParseException;
 import org.codehaus.jackson.map.JsonMappingException;
 
 /**
- * @author Libor Krzyzanek
+ * Converter interface for converting between JPA entity and JSON value
  * 
+ * @author Libor Krzyzanek
  */
 public interface ModelToJSONMapConverter<T> {
 

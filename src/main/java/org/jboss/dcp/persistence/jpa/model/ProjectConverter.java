@@ -1,5 +1,7 @@
-/**
- * 
+/*
+ * JBoss, Home of Professional Open Source
+ * Copyright 2013 Red Hat Inc. and/or its affiliates and other contributors
+ * as indicated by the @authors tag. All rights reserved.
  */
 package org.jboss.dcp.persistence.jpa.model;
 
@@ -7,6 +9,8 @@ import java.io.IOException;
 import java.util.Map;
 
 /**
+ * Converter for {@link Project}
+ * 
  * @author Libor Krzyzanek
  * 
  */
