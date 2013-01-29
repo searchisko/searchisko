@@ -24,13 +24,13 @@ import org.elasticsearch.index.query.FilterBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.sort.SortOrder;
+import org.jboss.dcp.api.cache.IndexNamesCache;
 import org.jboss.dcp.api.model.FacetValue;
 import org.jboss.dcp.api.model.PastIntervalValue;
 import org.jboss.dcp.api.model.QuerySettings;
 import org.jboss.dcp.api.model.QuerySettings.Filters;
 import org.jboss.dcp.api.model.SortByValue;
 import org.jboss.dcp.api.service.ConfigService;
-import org.jboss.dcp.api.service.IndexNamesCacheService;
 import org.jboss.dcp.api.service.ProviderService;
 import org.jboss.dcp.api.testtools.TestUtils;
 import org.junit.Assert;
@@ -82,7 +82,7 @@ public class SearchRestServiceTest {
 		SearchRestService tested = new SearchRestService();
 		tested.providerService = Mockito.mock(ProviderService.class);
 		tested.log = Logger.getLogger("testlogger");
-		tested.indexNamesCacheService = Mockito.mock(IndexNamesCacheService.class);
+		tested.indexNamesCacheService = Mockito.mock(IndexNamesCache.class);
 
 		QuerySettings querySettings = new QuerySettings();
 		SearchRequestBuilder searchRequestBuilderMock = Mockito.mock(SearchRequestBuilder.class);

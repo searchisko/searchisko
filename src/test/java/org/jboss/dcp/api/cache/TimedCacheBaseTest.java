@@ -3,7 +3,7 @@
  * Copyright 2013 Red Hat Inc. and/or its affiliates and other contributors
  * as indicated by the @authors tag. All rights reserved.
  */
-package org.jboss.dcp.api.service;
+package org.jboss.dcp.api.cache;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -12,17 +12,17 @@ import org.junit.Assert;
 import org.junit.Test;
 
 /**
- * Unit test for {@link IndexNamesCacheService}.
+ * Unit test for {@link TimedCacheBase}.
  * 
  * @author Vlastimil Elias (velias at redhat dot com)
  */
-public class IndexNamesCacheServiceTest {
+public class TimedCacheBaseTest {
 
 	@Test
 	public void cacheWorks() throws InterruptedException {
 
-		IndexNamesCacheService tested = new IndexNamesCacheService();
-		tested.ttl = 500;
+		TimedCacheBase<Set<String>> tested = new TimedCacheBase<Set<String>>(500) {
+		};
 
 		Set<String> indexNames = new HashSet<String>();
 		Set<String> indexNames2 = new HashSet<String>();
@@ -49,5 +49,4 @@ public class IndexNamesCacheServiceTest {
 		Assert.assertNull(tested.get(dcpTypesRequested3_1));
 		Assert.assertNull(tested.get(dcpTypesRequested3_2));
 	}
-
 }
