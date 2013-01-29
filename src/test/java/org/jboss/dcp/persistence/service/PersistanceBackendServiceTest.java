@@ -74,13 +74,6 @@ public class PersistanceBackendServiceTest extends ESRealClientTestBase {
 	}
 
 	@Test
-	public void produceProjectService() {
-		PersistanceBackendService tested = getTested();
-		EntityService s = tested.produceProjectService();
-		assertElasticsearchEntityService(s, tested.client, EXPECTED_INDEX_NAME, "project");
-	}
-
-	@Test
 	public void produceContributorService() {
 		PersistanceBackendService tested = getTested();
 		EntityService s = tested.produceContributorService();

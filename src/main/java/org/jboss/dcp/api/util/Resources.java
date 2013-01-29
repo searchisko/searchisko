@@ -17,12 +17,14 @@ import javax.enterprise.inject.Produces;
 import javax.enterprise.inject.spi.InjectionPoint;
 import javax.faces.context.FacesContext;
 import javax.inject.Named;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 
 /**
  * This class uses CDI to alias Java EE resources, such as the persistence context, to CDI beans
  * 
  * <p>
- * Example injection on a managed bean field:
+ * Examples injection on a managed bean field:
  * </p>
  * 
  * <pre>
@@ -30,10 +32,19 @@ import javax.inject.Named;
  * private Logger log;
  * </pre>
  * 
+ * <pre>
+ * &#064;Inject
+ * private EntityManager em;
+ * </pre>
+ * 
  * @author Libor Krzyzanek
  */
 @Singleton
 public class Resources {
+
+	@Produces
+	@PersistenceContext
+	private static EntityManager em;
 
 	@Produces
 	public Logger produceLog(InjectionPoint injectionPoint) {
@@ -54,7 +65,8 @@ public class Resources {
 	/**
 	 * Read file from classpath into String. UTF-8 encoding expected.
 	 * 
-	 * @param filePath in classpath to read data from.
+	 * @param filePath
+	 *            in classpath to read data from.
 	 * @return file content.
 	 * @throws IOException
 	 */

@@ -122,7 +122,13 @@
 			<artifactId>jboss-jaxrs-api_1.1_spec</artifactId>
 			<scope>provided</scope>
 		</dependency>
-
+		
+		<!-- Import the JPA API, we use provided scope as the API is included in JBoss AS 7 -->
+		<dependency>
+			<groupId>org.hibernate.javax.persistence</groupId>
+			<artifactId>hibernate-jpa-2.0-api</artifactId>
+			<scope>provided</scope>
+		</dependency>
 
 		<!-- Import the EJB API, we use provided scope as the API is included in JBoss AS 7 -->
 		<dependency>
@@ -218,18 +224,19 @@
 			<version>1.2.0</version>
 		</dependency>
 
+		<!-- Needed for JSON parsing -->
+		<!-- Consider using bundled jackson in EAP -->
 		<dependency>
 			<groupId>org.codehaus.jackson</groupId>
 			<artifactId>jackson-core-asl</artifactId>
 			<version>1.8.0</version>
-			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.codehaus.jackson</groupId>
 			<artifactId>jackson-mapper-asl</artifactId>
 			<version>1.8.0</version>
-			<scope>test</scope>
 		</dependency>
+
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>

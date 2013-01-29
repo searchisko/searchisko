@@ -139,7 +139,7 @@ public class ESDataOnlyResponse implements StreamingOutput {
 	 * @param fieldsToRemove name of fields to remove (can be null)
 	 * @return data
 	 */
-	protected static Map<String, Object> removeFields(Map<String, Object> data, String[] fieldsToRemove) {
+	public static Map<String, Object> removeFields(Map<String, Object> data, String[] fieldsToRemove) {
 		if (data == null) {
 			return null;
 		}

@@ -6,7 +6,7 @@ package org.jboss.dcp.api.service;
 import java.util.Map;
 import java.util.logging.Logger;
 
-import javax.enterprise.context.ApplicationScoped;
+import javax.ejb.Stateless;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.ws.rs.core.StreamingOutput;
@@ -20,7 +20,7 @@ import org.jboss.dcp.persistence.service.EntityService;
  * 
  */
 @Named
-@ApplicationScoped
+@Stateless
 public class ProjectService implements EntityService {
 
 	/**
@@ -59,8 +59,8 @@ public class ProjectService implements EntityService {
 	 * @param entity
 	 */
 	private void updateSearchIndex(String id, Map<String, Object> entity) {
-		searchClientService.getClient().prepareIndex(SEARCH_INDEX_NAME, SEARCH_INDEX_TYPE, id).setSource(entity).execute()
-				.actionGet();
+		searchClientService.getClient().prepareIndex(SEARCH_INDEX_NAME, SEARCH_INDEX_TYPE, id).setSource(entity)
+				.execute().actionGet();
 	}
 
 	@Override

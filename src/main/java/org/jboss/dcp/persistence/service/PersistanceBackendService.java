@@ -17,11 +17,14 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Produces;
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.persistence.EntityManager;
 
 import org.jboss.dcp.api.service.AppConfigurationService;
 import org.jboss.dcp.api.service.ElasticsearchClientService;
 import org.jboss.dcp.api.service.ProviderService;
 import org.jboss.dcp.api.util.SearchUtils;
+import org.jboss.dcp.persistence.jpa.model.Project;
+import org.jboss.dcp.persistence.jpa.model.ProjectConverter;
 
 /**
  * Service for persistence backend.<br/>
@@ -38,9 +41,12 @@ public class PersistanceBackendService extends ElasticsearchClientService {
 
 	@Inject
 	protected AppConfigurationService appConfigurationService;
-	
+
 	@Inject
 	protected Logger log;
+
+	@Inject
+	protected EntityManager em;
 
 	// Everything is stored in one index
 	protected static final String INDEX_NAME = "data";
@@ -81,7 +87,7 @@ public class PersistanceBackendService extends ElasticsearchClientService {
 	@Produces
 	@Named("projectServiceBackend")
 	public EntityService produceProjectService() {
-		return new ElasticsearchEntityService(client, INDEX_NAME, "project", false);
+		return new JpaEntityService<Project>(em, new ProjectConverter(), Project.class);
 	}
 
 	@Produces
