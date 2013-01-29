@@ -5,6 +5,8 @@
  */
 package org.jboss.dcp.persistence.service;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import javax.ws.rs.core.StreamingOutput;
@@ -14,7 +16,9 @@ import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.Client;
+import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.indices.IndexMissingException;
+import org.elasticsearch.search.SearchHit;
 import org.jboss.dcp.api.rest.ESDataOnlyResponse;
 
 /**
@@ -71,6 +75,7 @@ public class ElasticsearchEntityService implements EntityService {
 	@Override
 	public StreamingOutput getAll(Integer from, Integer size, String[] fieldsToRemove) {
 		SearchRequestBuilder srb = new SearchRequestBuilder(client);
+		srb.setQuery(QueryBuilders.matchAllQuery());
 		srb.setIndices(indexName);
 		srb.setTypes(indexType);
 
@@ -88,6 +93,28 @@ public class ElasticsearchEntityService implements EntityService {
 			return new ESDataOnlyResponse(null);
 		}
 
+	}
+
+	@Override
+	public List<Map<String, Object>> getAll() {
+		SearchRequestBuilder srb = new SearchRequestBuilder(client);
+		srb.setQuery(QueryBuilders.matchAllQuery());
+		srb.setIndices(indexName);
+		srb.setTypes(indexType);
+		srb.setSize(1000000);
+
+		List<Map<String, Object>> ret = new ArrayList<Map<String, Object>>();
+		try {
+			final SearchResponse response = srb.execute().actionGet();
+			if (response.getHits().getTotalHits() > 0) {
+				for (SearchHit hit : response.getHits().getHits()) {
+					ret.add(hit.getSource());
+				}
+			}
+			return ret;
+		} catch (IndexMissingException e) {
+			return ret;
+		}
 	}
 
 	@Override

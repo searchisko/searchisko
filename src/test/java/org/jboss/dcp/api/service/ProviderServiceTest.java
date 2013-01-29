@@ -456,9 +456,9 @@ public class ProviderServiceTest extends ESRealClientTestBase {
 			// case - empty index
 			Assert.assertNull(tested.findContentType("unknown"));
 
-			indexInsertDocument(INDEX_NAME, INDEX_TYPE, "provider_1",
+			indexInsertDocument(INDEX_NAME, INDEX_TYPE, "provider1",
 					TestUtils.readStringFromClasspathFile("/provider/provider_1.json"));
-			indexInsertDocument(INDEX_NAME, INDEX_TYPE, "provider_2",
+			indexInsertDocument(INDEX_NAME, INDEX_TYPE, "provider2",
 					TestUtils.readStringFromClasspathFile("/provider/provider_2.json"));
 			indexFlush(INDEX_NAME);
 
@@ -481,17 +481,6 @@ public class ProviderServiceTest extends ESRealClientTestBase {
 				Assert.assertNotNull(ret);
 				Assert.assertEquals("mailing2", ret.get(ProviderService.DCP_TYPE));
 			}
-
-			// case - exception if type name is not unique
-			indexInsertDocument(INDEX_NAME, INDEX_TYPE, "provider_3",
-					TestUtils.readStringFromClasspathFile("/provider/provider_1.json"));
-			indexFlush(INDEX_NAME);
-			try {
-				tested.findContentType("provider1_mailing");
-				Assert.fail("SettingsException expected");
-			} catch (SettingsException e) {
-				// OK
-			}
 		} finally {
 			indexDelete(INDEX_NAME);
 			finalizeESClientForUnitTest();
@@ -510,9 +499,9 @@ public class ProviderServiceTest extends ESRealClientTestBase {
 			// case - empty index
 			Assert.assertNull(tested.findProvider("provider1"));
 
-			indexInsertDocument(INDEX_NAME, INDEX_TYPE, "provider_1",
+			indexInsertDocument(INDEX_NAME, INDEX_TYPE, "provider1",
 					TestUtils.readStringFromClasspathFile("/provider/provider_1.json"));
-			indexInsertDocument(INDEX_NAME, INDEX_TYPE, "provider_2",
+			indexInsertDocument(INDEX_NAME, INDEX_TYPE, "provider2",
 					TestUtils.readStringFromClasspathFile("/provider/provider_2.json"));
 			indexFlush(INDEX_NAME);
 
@@ -531,16 +520,6 @@ public class ProviderServiceTest extends ESRealClientTestBase {
 				Assert.assertEquals("provider2", ret.get(ProviderService.NAME));
 			}
 
-			// case - exception if provider name is not unique
-			indexInsertDocument(INDEX_NAME, INDEX_TYPE, "provider_3",
-					TestUtils.readStringFromClasspathFile("/provider/provider_1.json"));
-			indexFlush(INDEX_NAME);
-			try {
-				tested.findProvider("provider1");
-				Assert.fail("SettingsException expected");
-			} catch (SettingsException e) {
-				// OK
-			}
 		} finally {
 			indexDelete(INDEX_NAME);
 			finalizeESClientForUnitTest();
@@ -559,9 +538,9 @@ public class ProviderServiceTest extends ESRealClientTestBase {
 			// case - empty index
 			Assert.assertFalse(tested.isSuperProvider("provider1"));
 
-			indexInsertDocument(INDEX_NAME, INDEX_TYPE, "provider_1",
+			indexInsertDocument(INDEX_NAME, INDEX_TYPE, "provider1",
 					TestUtils.readStringFromClasspathFile("/provider/provider_1.json"));
-			indexInsertDocument(INDEX_NAME, INDEX_TYPE, "provider_2",
+			indexInsertDocument(INDEX_NAME, INDEX_TYPE, "provider2",
 					TestUtils.readStringFromClasspathFile("/provider/provider_2.json"));
 			indexFlush(INDEX_NAME);
 
@@ -576,16 +555,6 @@ public class ProviderServiceTest extends ESRealClientTestBase {
 				Assert.assertTrue(tested.isSuperProvider("provider2"));
 			}
 
-			// case - exception if provider name is not unique
-			indexInsertDocument(INDEX_NAME, INDEX_TYPE, "provider_3",
-					TestUtils.readStringFromClasspathFile("/provider/provider_1.json"));
-			indexFlush(INDEX_NAME);
-			try {
-				tested.isSuperProvider("provider1");
-				Assert.fail("SettingsException expected");
-			} catch (SettingsException e) {
-				// OK
-			}
 		} finally {
 			indexDelete(INDEX_NAME);
 			finalizeESClientForUnitTest();
@@ -604,9 +573,9 @@ public class ProviderServiceTest extends ESRealClientTestBase {
 			// case - empty index
 			Assert.assertFalse(tested.authenticate("provider1", "pwd"));
 
-			indexInsertDocument(INDEX_NAME, INDEX_TYPE, "provider_1",
+			indexInsertDocument(INDEX_NAME, INDEX_TYPE, "provider1",
 					TestUtils.readStringFromClasspathFile("/provider/provider_1.json"));
-			indexInsertDocument(INDEX_NAME, INDEX_TYPE, "provider_2",
+			indexInsertDocument(INDEX_NAME, INDEX_TYPE, "provider2",
 					TestUtils.readStringFromClasspathFile("/provider/provider_2.json"));
 			indexFlush(INDEX_NAME);
 
@@ -621,16 +590,6 @@ public class ProviderServiceTest extends ESRealClientTestBase {
 				Assert.assertTrue(tested.authenticate("provider1", "pwd"));
 			}
 
-			// case - exception if provider name is not unique
-			indexInsertDocument(INDEX_NAME, INDEX_TYPE, "provider_3",
-					TestUtils.readStringFromClasspathFile("/provider/provider_1.json"));
-			indexFlush(INDEX_NAME);
-			try {
-				tested.authenticate("provider1", "pwd");
-				Assert.fail("SettingsException expected");
-			} catch (SettingsException e) {
-				// OK
-			}
 		} finally {
 			indexDelete(INDEX_NAME);
 			finalizeESClientForUnitTest();

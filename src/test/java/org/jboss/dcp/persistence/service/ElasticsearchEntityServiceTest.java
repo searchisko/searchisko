@@ -7,6 +7,7 @@ package org.jboss.dcp.persistence.service;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.ws.rs.core.StreamingOutput;
@@ -18,7 +19,6 @@ import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.client.Client;
 import org.jboss.dcp.api.testtools.ESRealClientTestBase;
 import org.jboss.dcp.api.testtools.TestUtils;
-import org.jboss.dcp.persistence.service.ElasticsearchEntityService;
 import org.junit.Test;
 import org.mockito.Mockito;
 
@@ -128,6 +128,50 @@ public class ElasticsearchEntityServiceTest extends ESRealClientTestBase {
 						.assetStreamingOutputContent(
 								"{\"total\":4,\"hits\":[{\"id\":\"known-1\",\"data\":{}},{\"id\":\"known-2\",\"data\":{}},{\"id\":\"known-3\",\"data\":{}},{\"id\":\"known-4\",\"data\":{}}]}",
 								out);
+			}
+
+		} finally {
+			indexDelete(INDEX_NAME);
+			finalizeESClientForUnitTest();
+		}
+	}
+
+	@Test
+	public void getAll_raw() throws IOException, InterruptedException {
+		Client client = prepareESClientForUnitTest();
+		ElasticsearchEntityService tested = getTested(client);
+		try {
+
+			// case - index doesn't exists
+			{
+				List<Map<String, Object>> out = tested.getAll();
+				Assert.assertNotNull(out);
+				Assert.assertEquals(0, out.size());
+			}
+
+			indexCreate(INDEX_NAME);
+			// case - index exists empty
+			{
+				List<Map<String, Object>> out = tested.getAll();
+				Assert.assertNotNull(out);
+				Assert.assertEquals(0, out.size());
+			}
+
+			indexInsertDocument(INDEX_NAME, INDEX_TYPE, "known-1", "{\"name\":\"test1\",\"idx\":\"1\"}");
+			indexInsertDocument(INDEX_NAME, INDEX_TYPE, "known-2", "{\"name\":\"test2\",\"idx\":\"2\"}");
+			indexInsertDocument(INDEX_NAME, INDEX_TYPE, "known-3", "{\"name\":\"test3\",\"idx\":\"3\"}");
+			indexInsertDocument(INDEX_NAME, INDEX_TYPE, "known-4", "{\"name\":\"test4\",\"idx\":\"4\"}");
+			indexFlush(INDEX_NAME);
+
+			// case - no paging nor filtering
+			{
+				List<Map<String, Object>> out = tested.getAll();
+				Assert.assertNotNull(out);
+				Assert.assertEquals(4, out.size());
+				Assert.assertEquals("1", out.get(0).get("idx"));
+				Assert.assertEquals("2", out.get(1).get("idx"));
+				Assert.assertEquals("3", out.get(2).get("idx"));
+				Assert.assertEquals("4", out.get(3).get("idx"));
 			}
 
 		} finally {

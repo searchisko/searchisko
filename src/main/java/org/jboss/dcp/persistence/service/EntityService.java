@@ -5,6 +5,7 @@
  */
 package org.jboss.dcp.persistence.service;
 
+import java.util.List;
 import java.util.Map;
 
 import javax.ws.rs.core.StreamingOutput;
@@ -19,7 +20,7 @@ import javax.ws.rs.core.StreamingOutput;
 public interface EntityService {
 
 	/**
-	 * Get All entities
+	 * Get All entities with pagination support.
 	 * 
 	 * @param from from index. Can be null
 	 * @param size size to return. If null then default length is returned
@@ -27,6 +28,13 @@ public interface EntityService {
 	 * @return output with entities
 	 */
 	public StreamingOutput getAll(Integer from, Integer size, String[] fieldsToRemove);
+
+	/**
+	 * Get All entities.
+	 * 
+	 * @return output with entities
+	 */
+	public List<Map<String, Object>> getAll();
 
 	/**
 	 * Get entity with specified id

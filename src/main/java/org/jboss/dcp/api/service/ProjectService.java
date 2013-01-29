@@ -3,6 +3,7 @@
  */
 package org.jboss.dcp.api.service;
 
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
@@ -48,6 +49,11 @@ public class ProjectService implements EntityService {
 	}
 
 	@Override
+	public List<Map<String, Object>> getAll() {
+		return entityService.getAll();
+	}
+
+	@Override
 	public Map<String, Object> get(String id) {
 		return entityService.get(id);
 	}
@@ -59,8 +65,8 @@ public class ProjectService implements EntityService {
 	 * @param entity
 	 */
 	private void updateSearchIndex(String id, Map<String, Object> entity) {
-		searchClientService.getClient().prepareIndex(SEARCH_INDEX_NAME, SEARCH_INDEX_TYPE, id).setSource(entity)
-				.execute().actionGet();
+		searchClientService.getClient().prepareIndex(SEARCH_INDEX_NAME, SEARCH_INDEX_TYPE, id).setSource(entity).execute()
+				.actionGet();
 	}
 
 	@Override

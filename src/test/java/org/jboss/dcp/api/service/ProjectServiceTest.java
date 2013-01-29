@@ -5,7 +5,9 @@
  */
 package org.jboss.dcp.api.service;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
@@ -66,6 +68,35 @@ public class ProjectServiceTest extends ESRealClientTestBase {
 			// OK
 		}
 		Mockito.verify(tested.entityService).getAll(10, 20, ff);
+		Mockito.verifyNoMoreInteractions(tested.entityService);
+	}
+
+	@Test
+	public void getAll_raw() {
+		ProjectService tested = getTested(null);
+
+		// case - value is returned
+		List<Map<String, Object>> value = new ArrayList<Map<String, Object>>();
+		Mockito.when(tested.entityService.getAll()).thenReturn(value);
+		Assert.assertEquals(value, tested.getAll());
+
+		// case - null is returned
+		Mockito.reset(tested.entityService);
+		Mockito.when(tested.entityService.getAll()).thenReturn(null);
+		Assert.assertEquals(null, tested.getAll());
+		Mockito.verify(tested.entityService).getAll();
+		Mockito.verifyNoMoreInteractions(tested.entityService);
+
+		// case - exception is passed
+		Mockito.reset(tested.entityService);
+		Mockito.when(tested.entityService.getAll()).thenThrow(new RuntimeException("testex"));
+		try {
+			tested.getAll();
+			Assert.fail("RuntimeException expected");
+		} catch (RuntimeException e) {
+			// OK
+		}
+		Mockito.verify(tested.entityService).getAll();
 		Mockito.verifyNoMoreInteractions(tested.entityService);
 	}
 

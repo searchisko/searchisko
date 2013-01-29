@@ -5,6 +5,7 @@
  */
 package org.jboss.dcp.api.service;
 
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
@@ -39,6 +40,11 @@ public class ConfigService implements EntityService {
 	@Override
 	public StreamingOutput getAll(Integer from, Integer size, String[] fieldsToRemove) {
 		return entityService.getAll(from, size, fieldsToRemove);
+	}
+
+	@Override
+	public List<Map<String, Object>> getAll() {
+		return entityService.getAll();
 	}
 
 	@Override

@@ -5,6 +5,7 @@ package org.jboss.dcp.persistence.service;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -80,6 +81,25 @@ public class JpaEntityService<T> implements EntityService {
 			}
 		};
 
+	}
+
+	@Override
+	public List<Map<String, Object>> getAll() {
+		CriteriaBuilder cb = em.getCriteriaBuilder();
+		CriteriaQuery<T> criteria = cb.createQuery(entityType);
+		Root<T> root = criteria.from(entityType);
+		criteria.select(root);
+		final List<T> result = em.createQuery(criteria).getResultList();
+
+		List<Map<String, Object>> ret = new ArrayList<Map<String, Object>>();
+		try {
+			for (T row : result) {
+				ret.add(converter.convertToJsonMap(row));
+			}
+			return ret;
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
 	}
 
 	@Override

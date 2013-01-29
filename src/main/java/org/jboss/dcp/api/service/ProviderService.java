@@ -5,7 +5,6 @@
  */
 package org.jboss.dcp.api.service;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
@@ -15,14 +14,7 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 
-import org.elasticsearch.action.search.SearchRequestBuilder;
-import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.common.settings.SettingsException;
-import org.elasticsearch.index.query.FilterBuilders;
-import org.elasticsearch.index.query.QueryBuilders;
-import org.elasticsearch.indices.IndexMissingException;
-import org.elasticsearch.search.SearchHit;
-import org.jboss.dcp.persistence.service.ElasticsearchEntityService;
 import org.jboss.dcp.persistence.service.EntityService;
 import org.jboss.elasticsearch.tools.content.StructuredContentPreprocessor;
 import org.jboss.elasticsearch.tools.content.StructuredContentPreprocessorFactory;
@@ -41,7 +33,7 @@ public class ProviderService {
 	/**
 	 * Key for provider's name which is unique identifier - can be same as provdier's ID. Also used during Configuration
 	 * read to get index name.
-	 **/
+	 */
 	public static final String NAME = "name";
 
 	/** Configuration file Key for password hash **/
@@ -66,7 +58,7 @@ public class ProviderService {
 
 	@Inject
 	@Named("providerServiceBackend")
-	protected ElasticsearchEntityService entityService;
+	protected EntityService entityService;
 
 	@Inject
 	protected SecurityService securityService;
@@ -123,53 +115,28 @@ public class ProviderService {
 	 * @return provider configuration
 	 */
 	public Map<String, Object> findProvider(String providerName) {
-		SearchRequestBuilder searchBuilder = entityService.createSearchRequestBuilder();
-		searchBuilder.setFilter(FilterBuilders.queryFilter(QueryBuilders.matchQuery(NAME, providerName)));
-		searchBuilder.setQuery(QueryBuilders.matchAllQuery());
-
-		try {
-			SearchResponse response = entityService.search(searchBuilder);
-			if (response.getHits().getTotalHits() == 1) {
-				return response.getHits().getHits()[0].getSource();
-			} else if (response.getHits().getTotalHits() == 0) {
-				return null;
-			} else {
-				throw new SettingsException("More than one configurations found for content provider name '" + providerName
-						+ "'. Contact administrators please.");
-			}
-		} catch (IndexMissingException e) {
-			log.warning("Missing search index for providers configurations: " + e.getMessage());
-			return null;
-		}
+		return getEntityService().get(providerName);
 	}
 
 	/**
 	 * Find 'provider content type' configuration based on its identifier (called <code>dcp_content_type</code>). Each
-	 * 'provider content type' identifier have to be DCP wide unique!
+	 * 'provider content type' identifier have to be DCP wide unique (so must be defined only for one provider)!
 	 * 
-	 * @param typeId <code>dcp_content_type</code> to look for
-	 * @return content type configuration structure
+	 * @param typeName <code>dcp_content_type</code> to look for
+	 * @return content type configuration structure or <code>null</code> if not found
 	 */
-	public Map<String, Object> findContentType(String typeId) {
-		SearchRequestBuilder searchBuilder = entityService.createSearchRequestBuilder();
-		searchBuilder.setFilter(FilterBuilders.existsFilter(TYPE + "." + typeId + "." + DCP_TYPE));
-		searchBuilder.setQuery(QueryBuilders.matchAllQuery());
-		searchBuilder.addField(TYPE + "." + typeId);
-
-		try {
-			SearchResponse response = entityService.search(searchBuilder);
-			if (response.getHits().getTotalHits() == 1) {
-				return response.getHits().getHits()[0].getFields().get(TYPE + "." + typeId).getValue();
-			} else if (response.getHits().getTotalHits() == 0) {
-				return null;
-			} else {
-				throw new SettingsException("More than one configurations found for dcp_content_type=" + typeId
-						+ ". Contact administrators please.");
+	public Map<String, Object> findContentType(String typeName) {
+		List<Map<String, Object>> allProviders = listAllProviders();
+		if (allProviders != null) {
+			for (Map<String, Object> providerDef : allProviders) {
+				Map<String, Object> ct = extractContentType(providerDef, typeName);
+				if (ct != null) {
+					// TODO PROVIDERSERVICE cache
+					return ct;
+				}
 			}
-		} catch (IndexMissingException e) {
-			log.warning("Missing search index for providers configurations: " + e.getMessage());
-			return null;
 		}
+		return null;
 	}
 
 	/**
@@ -178,22 +145,7 @@ public class ProviderService {
 	 * @return list with configurations for all providers
 	 */
 	public List<Map<String, Object>> listAllProviders() {
-		// TODO _SEARCH VEL unit test
-		List<Map<String, Object>> ret = new ArrayList<Map<String, Object>>();
-		SearchRequestBuilder searchBuilder = entityService.createSearchRequestBuilder();
-		searchBuilder.setQuery(QueryBuilders.matchAllQuery());
-		searchBuilder.setSize(1000);
-		try {
-			SearchResponse response = entityService.search(searchBuilder);
-			if (response.getHits().getTotalHits() > 0) {
-				for (SearchHit hit : response.getHits().getHits()) {
-					ret.add(hit.getSource());
-				}
-			}
-		} catch (IndexMissingException e) {
-			log.warning("Missing search index for providers configurations: " + e.getMessage());
-		}
-		return ret;
+		return entityService.getAll();
 	}
 
 	/**
