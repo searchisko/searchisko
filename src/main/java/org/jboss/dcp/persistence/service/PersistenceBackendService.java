@@ -40,7 +40,7 @@ import org.jboss.dcp.persistence.jpa.model.ProviderConverter;
 @Singleton
 @ApplicationScoped
 @Startup
-public class PersistanceBackendService {
+public class PersistenceBackendService {
 
 	@Inject
 	protected AppConfigurationService appConfigurationService;
