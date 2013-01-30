@@ -167,6 +167,22 @@ public abstract class TestUtils {
 				JsonNode.class);
 		Assert.assertEquals(expectedRootNode, actualRootNode);
 	}
+	
+	/**
+	 * Assert passed in JSON string is same as JSON content of given file loaded from classpath.
+	 * 
+	 * @param expectedJsonString expected JSON content to assert for equality
+	 * @param actualJsonString JSON content to assert for equality
+	 * @throws IOException
+	 */
+	public static void assertJsonContent(String expectedJsonString, String actualJsonString)
+			throws IOException {
+		JsonNode actualRootNode = getMapper().readValue(new ByteArrayInputStream(actualJsonString.getBytes()),
+				JsonNode.class);
+		JsonNode expectedRootNode = getMapper().readValue(new ByteArrayInputStream(expectedJsonString.getBytes()),
+				JsonNode.class);
+		Assert.assertEquals(expectedRootNode, actualRootNode);
+	}
 
 	private static ObjectMapper getMapper() {
 		ObjectMapper mapper = new ObjectMapper();

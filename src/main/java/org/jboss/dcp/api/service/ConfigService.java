@@ -9,7 +9,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
-import javax.enterprise.context.ApplicationScoped;
+import javax.ejb.LocalBean;
+import javax.ejb.Stateless;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.ws.rs.core.StreamingOutput;
@@ -20,10 +21,12 @@ import org.jboss.dcp.persistence.service.EntityService;
  * Service related to DCP Config documents store handling
  * 
  * @author Vlastimil Elias (velias at redhat dot com)
+ * @author Libor Krzyzanek
  * 
  */
 @Named
-@ApplicationScoped
+@Stateless
+@LocalBean
 public class ConfigService implements EntityService {
 
 	public static final String CFGNAME_SEARCH_RESPONSE_FIELDS = "search_response_fields";

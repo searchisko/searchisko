@@ -23,6 +23,8 @@ import org.jboss.dcp.api.service.AppConfigurationService;
 import org.jboss.dcp.api.service.ElasticsearchClientService;
 import org.jboss.dcp.api.service.ProviderService;
 import org.jboss.dcp.api.util.SearchUtils;
+import org.jboss.dcp.persistence.jpa.model.Config;
+import org.jboss.dcp.persistence.jpa.model.ConfigConverter;
 import org.jboss.dcp.persistence.jpa.model.Project;
 import org.jboss.dcp.persistence.jpa.model.ProjectConverter;
 import org.jboss.dcp.persistence.jpa.model.Provider;
@@ -100,7 +102,9 @@ public class PersistanceBackendService extends ElasticsearchClientService {
 	@Produces
 	@Named("configServiceBackend")
 	public EntityService produceConfigService() {
-		return new ElasticsearchEntityService(client, INDEX_NAME, "config", false);
+		// return new ElasticsearchEntityService(client, INDEX_NAME, "config", false);
+		return new JpaEntityService<Config>(em, new ConfigConverter(), Config.class);
+
 	}
 
 }

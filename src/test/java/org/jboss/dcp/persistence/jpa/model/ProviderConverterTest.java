@@ -27,7 +27,7 @@ public class ProviderConverterTest {
 		data.put(ProviderService.NAME, "jbossorg");
 		data.put(ProviderService.SUPER_PROVIDER, true);
 
-		Provider p = converter.convertToModel(data);
+		Provider p = converter.convertToModel("jbossorg", data);
 
 		assertEquals("jbossorg", p.getName());
 		assertEquals("{\"" + ProviderService.NAME + "\":\"jbossorg\",\"" + ProviderService.SUPER_PROVIDER + "\":true}",

@@ -134,7 +134,7 @@ public class JpaEntityService<T> implements EntityService {
 	@TransactionAttribute(TransactionAttributeType.REQUIRED)
 	public void create(String id, Map<String, Object> entity) {
 		try {
-			Object jpaEntity = converter.convertToModel(entity);
+			Object jpaEntity = converter.convertToModel(id, entity);
 			em.persist(jpaEntity);
 			em.flush();
 		} catch (Exception e) {
