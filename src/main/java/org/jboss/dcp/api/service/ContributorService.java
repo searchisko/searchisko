@@ -10,7 +10,8 @@ import java.util.Map;
 import java.util.logging.Logger;
 
 import javax.annotation.PostConstruct;
-import javax.enterprise.context.ApplicationScoped;
+import javax.ejb.LocalBean;
+import javax.ejb.Stateless;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.ws.rs.core.StreamingOutput;
@@ -33,7 +34,8 @@ import org.jboss.dcp.persistence.service.EntityService;
  * 
  */
 @Named
-@ApplicationScoped
+@Stateless
+@LocalBean
 public class ContributorService implements EntityService {
 
 	@Inject

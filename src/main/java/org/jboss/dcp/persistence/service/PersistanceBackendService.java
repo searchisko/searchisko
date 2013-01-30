@@ -25,6 +25,8 @@ import org.jboss.dcp.api.service.ProviderService;
 import org.jboss.dcp.api.util.SearchUtils;
 import org.jboss.dcp.persistence.jpa.model.Config;
 import org.jboss.dcp.persistence.jpa.model.ConfigConverter;
+import org.jboss.dcp.persistence.jpa.model.Contributor;
+import org.jboss.dcp.persistence.jpa.model.ContributorConverter;
 import org.jboss.dcp.persistence.jpa.model.Project;
 import org.jboss.dcp.persistence.jpa.model.ProjectConverter;
 import org.jboss.dcp.persistence.jpa.model.Provider;
@@ -96,7 +98,9 @@ public class PersistanceBackendService extends ElasticsearchClientService {
 	@Produces
 	@Named("contributorServiceBackend")
 	public EntityService produceContributorService() {
-		return new ElasticsearchEntityService(client, INDEX_NAME, "contributor", false);
+		// return new ElasticsearchEntityService(client, INDEX_NAME, "contributor", false);
+		return new JpaEntityService<Contributor>(em, new ContributorConverter(), Contributor.class);
+
 	}
 
 	@Produces
