@@ -7,10 +7,8 @@ package org.jboss.dcp.persistence.service;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Properties;
 import java.util.logging.Logger;
 
-import javax.annotation.PostConstruct;
 import javax.ejb.Singleton;
 import javax.ejb.Startup;
 import javax.enterprise.context.ApplicationScoped;
@@ -20,9 +18,7 @@ import javax.inject.Named;
 import javax.persistence.EntityManager;
 
 import org.jboss.dcp.api.service.AppConfigurationService;
-import org.jboss.dcp.api.service.ElasticsearchClientService;
 import org.jboss.dcp.api.service.ProviderService;
-import org.jboss.dcp.api.util.SearchUtils;
 import org.jboss.dcp.persistence.jpa.model.Config;
 import org.jboss.dcp.persistence.jpa.model.ConfigConverter;
 import org.jboss.dcp.persistence.jpa.model.Contributor;
@@ -34,16 +30,17 @@ import org.jboss.dcp.persistence.jpa.model.ProviderConverter;
 
 /**
  * Service for persistence backend.<br/>
- * Now persistence storage is implemented as embedded elasticsearch node
+ * Persistence storage is implemented via JPA
  * 
  * @author Libor Krzyzanek
+ * @see JpaEntityService
  * 
  */
 @Named
 @Singleton
 @ApplicationScoped
 @Startup
-public class PersistanceBackendService extends ElasticsearchClientService {
+public class PersistanceBackendService {
 
 	@Inject
 	protected AppConfigurationService appConfigurationService;
@@ -53,18 +50,6 @@ public class PersistanceBackendService extends ElasticsearchClientService {
 
 	@Inject
 	protected EntityManager em;
-
-	// Everything is stored in one index
-	protected static final String INDEX_NAME = "data";
-	protected static final String INDEX_TYPE_PROVIDER = "provider";
-
-	@PostConstruct
-	public void init() throws Exception {
-		Properties settings = SearchUtils.loadProperties("/persistance_settings.properties");
-
-		node = createEmbeddedNode("persistance", settings);
-		client = node.client();
-	}
 
 	@Produces
 	@Named("providerServiceBackend")
@@ -98,7 +83,6 @@ public class PersistanceBackendService extends ElasticsearchClientService {
 	@Produces
 	@Named("contributorServiceBackend")
 	public EntityService produceContributorService() {
-		// return new ElasticsearchEntityService(client, INDEX_NAME, "contributor", false);
 		return new JpaEntityService<Contributor>(em, new ContributorConverter(), Contributor.class);
 
 	}
@@ -106,7 +90,6 @@ public class PersistanceBackendService extends ElasticsearchClientService {
 	@Produces
 	@Named("configServiceBackend")
 	public EntityService produceConfigService() {
-		// return new ElasticsearchEntityService(client, INDEX_NAME, "config", false);
 		return new JpaEntityService<Config>(em, new ConfigConverter(), Config.class);
 
 	}
