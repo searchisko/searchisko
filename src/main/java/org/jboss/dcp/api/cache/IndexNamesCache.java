@@ -2,9 +2,9 @@ package org.jboss.dcp.api.cache;
 
 import java.util.Set;
 
+import javax.ejb.Singleton;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Named;
-import javax.inject.Singleton;
 
 import org.jboss.dcp.api.rest.SearchRestService;
 
@@ -13,7 +13,7 @@ import org.jboss.dcp.api.rest.SearchRestService;
  * 
  * @author Vlastimil Elias (velias at redhat dot com)
  */
-@Named("indexNamesCache")
+@Named
 @ApplicationScoped
 @Singleton
 public class IndexNamesCache extends TimedCacheBase<Set<String>> {

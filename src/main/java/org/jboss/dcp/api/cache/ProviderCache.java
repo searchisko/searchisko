@@ -2,9 +2,9 @@ package org.jboss.dcp.api.cache;
 
 import java.util.Map;
 
+import javax.ejb.Singleton;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Named;
-import javax.inject.Singleton;
 
 import org.jboss.dcp.api.service.ProviderService;
 
@@ -13,7 +13,7 @@ import org.jboss.dcp.api.service.ProviderService;
  * 
  * @author Vlastimil Elias (velias at redhat dot com)
  */
-@Named("providerCache")
+@Named
 @ApplicationScoped
 @Singleton
 public class ProviderCache extends TimedCacheBase<Map<String, Object>> {
