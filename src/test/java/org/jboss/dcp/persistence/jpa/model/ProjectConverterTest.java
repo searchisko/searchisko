@@ -1,5 +1,7 @@
-/**
- * 
+/*
+ * JBoss, Home of Professional Open Source
+ * Copyright 2012 Red Hat Inc. and/or its affiliates and other contributors
+ * as indicated by the @authors tag. All rights reserved.
  */
 package org.jboss.dcp.persistence.jpa.model;
 
