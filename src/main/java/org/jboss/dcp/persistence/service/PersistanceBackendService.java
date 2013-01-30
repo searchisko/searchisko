@@ -25,6 +25,8 @@ import org.jboss.dcp.api.service.ProviderService;
 import org.jboss.dcp.api.util.SearchUtils;
 import org.jboss.dcp.persistence.jpa.model.Project;
 import org.jboss.dcp.persistence.jpa.model.ProjectConverter;
+import org.jboss.dcp.persistence.jpa.model.Provider;
+import org.jboss.dcp.persistence.jpa.model.ProviderConverter;
 
 /**
  * Service for persistence backend.<br/>
@@ -62,22 +64,21 @@ public class PersistanceBackendService extends ElasticsearchClientService {
 
 	@Produces
 	@Named("providerServiceBackend")
-	public ElasticsearchEntityService produceProviderService() {
-		ElasticsearchEntityService serv = new ElasticsearchEntityService(client, INDEX_NAME, INDEX_TYPE_PROVIDER, false);
+	public EntityService produceProviderService() {
+		JpaEntityService<Provider> serv = new JpaEntityService<Provider>(em, new ProviderConverter(), Provider.class);
 
 		if (appConfigurationService.getAppConfiguration().isProviderCreateInitData()) {
-
-			if (!client.admin().indices().prepareExists(INDEX_NAME).execute().actionGet().exists()) {
+			final String initialProviderName = "jbossorg";
+			Map<String, Object> initialProvider = serv.get(initialProviderName);
+			if (initialProvider == null) {
 				log.info("Provider entity doesn't exists. Creating initial entity for first authentication.");
-
-				client.admin().indices().prepareCreate(INDEX_NAME).execute().actionGet();
 				Map<String, Object> jbossorgEntity = new HashMap<String, Object>();
-				jbossorgEntity.put(ProviderService.NAME, "jbossorg");
+				jbossorgEntity.put(ProviderService.NAME, initialProviderName);
 				// initial password: jbossorgjbossorg
 				jbossorgEntity.put(ProviderService.PASSWORD_HASH, "47dc8a4d65fe0cd5b1236b7e8612634e604a0c2f");
 				jbossorgEntity.put(ProviderService.SUPER_PROVIDER, true);
 
-				serv.create("jbossorg", jbossorgEntity);
+				serv.create(initialProviderName, jbossorgEntity);
 			}
 		}
 

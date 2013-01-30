@@ -10,7 +10,8 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.enterprise.context.ApplicationScoped;
+import javax.ejb.Startup;
+import javax.ejb.Stateless;
 import javax.inject.Inject;
 import javax.inject.Named;
 
@@ -27,7 +28,7 @@ import org.jboss.elasticsearch.tools.content.StructuredContentPreprocessorFactor
  * 
  */
 @Named
-@ApplicationScoped
+@Stateless
 public class ProviderService {
 
 	/**
