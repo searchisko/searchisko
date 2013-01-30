@@ -34,10 +34,10 @@ public class ProviderRestServiceTest {
 		tested.log = Logger.getLogger("testlogger");
 		Assert.assertNull(tested.entityService);
 		tested.providerService = Mockito.mock(ProviderService.class);
-//		EntityService es = Mockito.mock(ProviderService.class);
+		// EntityService es = Mockito.mock(ProviderService.class);
 		Assert.assertNull(tested.entityService);
 		tested.init();
-//		Assert.assertEquals(es, tested.entityService);
+		// Assert.assertEquals(es, tested.entityService);
 	}
 
 	@Test
@@ -369,7 +369,6 @@ public class ProviderRestServiceTest {
 			Assert.assertEquals("myname", m.get(ProviderService.NAME));
 			Mockito.verify(tested.providerService).create("myname", m);
 			Mockito.verify(tested.providerService).get("myname");
-			Mockito.verify(tested.providerService).flushCaches();
 			Mockito.verifyNoMoreInteractions(tested.providerService);
 		}
 

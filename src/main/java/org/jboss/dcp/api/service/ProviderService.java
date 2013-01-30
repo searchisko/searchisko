@@ -82,10 +82,8 @@ public class ProviderService implements EntityService {
 	/**
 	 * Check if password matches for given provider.
 	 * 
-	 * @param providerName
-	 *            name of provider
-	 * @param password
-	 *            password to check
+	 * @param providerName name of provider
+	 * @param password password to check
 	 * @return true if provider name and password matches so it's authenticated
 	 */
 	public boolean authenticate(String providerName, String password) {
@@ -109,8 +107,7 @@ public class ProviderService implements EntityService {
 	/**
 	 * Check if requested provider is superprovider.
 	 * 
-	 * @param providerName
-	 *            name of provider to check
+	 * @param providerName name of provider to check
 	 * @return true if it is superprovider
 	 */
 	public boolean isSuperProvider(String providerName) {
@@ -128,8 +125,7 @@ public class ProviderService implements EntityService {
 	 * Find 'provider content type' configuration based on its identifier (called <code>dcp_content_type</code>). Each
 	 * 'provider content type' identifier have to be DCP wide unique (so must be defined only for one provider)!
 	 * 
-	 * @param typeName
-	 *            <code>dcp_content_type</code> to look for
+	 * @param typeName <code>dcp_content_type</code> to look for
 	 * @return content type configuration structure or <code>null</code> if not found
 	 */
 	public Map<String, Object> findContentType(String typeName) {
@@ -147,19 +143,21 @@ public class ProviderService implements EntityService {
 	}
 
 	/**
-	 * Find provider based on its name (called <code>dcp_content_provider</code>). Values are cached here with timeout
-	 * so may provide rather obsolote data sometimes!
+	 * Find provider based on its name (called <code>dcp_content_provider</code>). Values are cached here with timeout so
+	 * may provide rather obsolote data sometimes!
 	 * 
-	 * @param providerName
-	 *            of provider - DCP wide unique
+	 * @param providerName of provider - DCP wide unique
 	 * @return provider configuration
 	 */
 	public Map<String, Object> findProvider(String providerName) {
 		if (providerName == null)
 			return null;
 		Map<String, Object> ret = providerCache.get(providerName);
-		if (ret == null)
+		if (ret == null) {
 			ret = get(providerName);
+			if (ret != null)
+				providerCache.put(providerName, ret);
+		}
 		return ret;
 	}
 
@@ -250,28 +248,23 @@ public class ProviderService implements EntityService {
 	/**
 	 * Run defined content preprocessors on passed in content.
 	 * 
-	 * @param typeName
-	 *            <code>dcp_content_type</code> name we run preprocessors for to be used for error messages
-	 * @param preprocessorsDef
-	 *            definition of preprocessors - see {@link #getPreprocessors(Map)}
-	 * @param content
-	 *            to run preprocessors on
+	 * @param typeName <code>dcp_content_type</code> name we run preprocessors for to be used for error messages
+	 * @param preprocessorsDef definition of preprocessors - see {@link #getPreprocessors(Map)}
+	 * @param content to run preprocessors on
 	 */
-	public void runPreprocessors(String typeName, List<Map<String, Object>> preprocessorsDef,
-			Map<String, Object> content) {
+	public void runPreprocessors(String typeName, List<Map<String, Object>> preprocessorsDef, Map<String, Object> content) {
 		try {
-			List<StructuredContentPreprocessor> preprocessors = StructuredContentPreprocessorFactory
-					.createPreprocessors(preprocessorsDef, searchClientService.getClient());
+			List<StructuredContentPreprocessor> preprocessors = StructuredContentPreprocessorFactory.createPreprocessors(
+					preprocessorsDef, searchClientService.getClient());
 			for (StructuredContentPreprocessor preprocessor : preprocessors) {
 				content = preprocessor.preprocessData(content);
 			}
 		} catch (IllegalArgumentException e) {
-			throw new SettingsException("Bad configuration of some 'input_preprocessors' for dcp_content_type="
-					+ typeName + ". Contact administrators please. Cause: " + e.getMessage(), e);
+			throw new SettingsException("Bad configuration of some 'input_preprocessors' for dcp_content_type=" + typeName
+					+ ". Contact administrators please. Cause: " + e.getMessage(), e);
 		} catch (ClassCastException e) {
-			throw new SettingsException(
-					"Bad configuration structure of some 'input_preprocessors' for dcp_content_type=" + typeName
-							+ ". Contact administrators please. Cause: " + e.getMessage(), e);
+			throw new SettingsException("Bad configuration structure of some 'input_preprocessors' for dcp_content_type="
+					+ typeName + ". Contact administrators please. Cause: " + e.getMessage(), e);
 		}
 	}
 
@@ -279,10 +272,8 @@ public class ProviderService implements EntityService {
 	 * Generate DCP wide unique <code>dcp_id</code> value from <code>dcp_content_type</code> and
 	 * <code>dcp_content_id</code>.
 	 * 
-	 * @param type
-	 *            <code>dcp_content_type</code> value which is DCP wide unique
-	 * @param contentId
-	 *            <code>dcp_content_id</code> value which is unique for <code>dcp_content_type</code>
+	 * @param type <code>dcp_content_type</code> value which is DCP wide unique
+	 * @param contentId <code>dcp_content_id</code> value which is unique for <code>dcp_content_type</code>
 	 * @return DCP wide unique <code>dcp_id</code> value
 	 */
 	public String generateDcpId(String type, String contentId) {
@@ -292,13 +283,10 @@ public class ProviderService implements EntityService {
 	/**
 	 * Get configuration for one <code>dcp_content_type</code> from provider configuration.
 	 * 
-	 * @param providerDef
-	 *            provider configuration structure
-	 * @param typeName
-	 *            name of <code>dcp_content_type</code> to get configuration for
+	 * @param providerDef provider configuration structure
+	 * @param typeName name of <code>dcp_content_type</code> to get configuration for
 	 * @return type configuration or null if doesn't exist
-	 * @throws SettingsException
-	 *             for incorrect configuration structure
+	 * @throws SettingsException for incorrect configuration structure
 	 */
 	@SuppressWarnings("unchecked")
 	public static Map<String, Object> extractContentType(Map<String, Object> providerDef, String typeName) {
@@ -319,10 +307,8 @@ public class ProviderService implements EntityService {
 	/**
 	 * Get preprocessors configuration from one <code>dcp_content_type</code> configuration structure.
 	 * 
-	 * @param typeDef
-	 *            <code>dcp_content_type</code> configuration structure
-	 * @param typeName
-	 *            <code>dcp_content_type</code> name to be used for error messages
+	 * @param typeDef <code>dcp_content_type</code> configuration structure
+	 * @param typeName <code>dcp_content_type</code> name to be used for error messages
 	 * @return list of preprocessor configurations
 	 */
 	@SuppressWarnings("unchecked")
@@ -330,18 +316,16 @@ public class ProviderService implements EntityService {
 		try {
 			return (List<Map<String, Object>>) typeDef.get("input_preprocessors");
 		} catch (ClassCastException e) {
-			throw new SettingsException("Incorrect configuration of 'input_preprocessors' for dcp_provider_type="
-					+ typeName + ". Contact administrators please.");
+			throw new SettingsException("Incorrect configuration of 'input_preprocessors' for dcp_provider_type=" + typeName
+					+ ". Contact administrators please.");
 		}
 	}
 
 	/**
 	 * Get search subsystem index name from one <code>dcp_content_type</code> configuration structure.
 	 * 
-	 * @param typeDef
-	 *            <code>dcp_content_type</code> configuration structure
-	 * @param typeName
-	 *            <code>dcp_content_type</code> name to be used for error messages
+	 * @param typeDef <code>dcp_content_type</code> configuration structure
+	 * @param typeName <code>dcp_content_type</code> name to be used for error messages
 	 * @return search index name
 	 */
 	@SuppressWarnings("unchecked")
@@ -352,13 +336,13 @@ public class ProviderService implements EntityService {
 				ret = (String) ((Map<String, Object>) typeDef.get(INDEX)).get(NAME);
 
 			if (ret == null || ret.trim().isEmpty())
-				throw new SettingsException("Incorrect configuration of 'index.name' for dcp_provider_type='"
-						+ typeName + "'. SearchBackend index name is not defined. Contact administrators please.");
+				throw new SettingsException("Incorrect configuration of 'index.name' for dcp_provider_type='" + typeName
+						+ "'. SearchBackend index name is not defined. Contact administrators please.");
 			return ret;
 
 		} catch (ClassCastException e) {
-			throw new SettingsException("Incorrect structure of 'index' configuration for dcp_provider_type='"
-					+ typeName + "'. Contact administrators please.");
+			throw new SettingsException("Incorrect structure of 'index' configuration for dcp_provider_type='" + typeName
+					+ "'. Contact administrators please.");
 		}
 	}
 
@@ -368,18 +352,16 @@ public class ProviderService implements EntityService {
 	 * {@value ProviderService#SEARCH_INDICES} config value if exists, if not then main index name is used, see
 	 * {@link #extractIndexName(Map, String)}.
 	 * 
-	 * @param typeDef
-	 *            <code>dcp_content_type</code> configuration structure
-	 * @param typeName
-	 *            <code>dcp_content_type</code> name to be used for error messages
+	 * @param typeDef <code>dcp_content_type</code> configuration structure
+	 * @param typeName <code>dcp_content_type</code> name to be used for error messages
 	 * @return search index name
 	 */
 	@SuppressWarnings("unchecked")
 	public static String[] extractSearchIndices(Map<String, Object> typeDef, String typeName) {
 		try {
 			if (typeDef.get(INDEX) == null) {
-				throw new SettingsException("Missing 'index' section in configuration for dcp_provider_type='"
-						+ typeName + "'. Contact administrators please.");
+				throw new SettingsException("Missing 'index' section in configuration for dcp_provider_type='" + typeName
+						+ "'. Contact administrators please.");
 			}
 			Object val = ((Map<String, Object>) typeDef.get(INDEX)).get(SEARCH_INDICES);
 			if (val == null) {
@@ -396,18 +378,16 @@ public class ProviderService implements EntityService {
 				}
 			}
 		} catch (ClassCastException e) {
-			throw new SettingsException("Incorrect structure of 'index' configuration for dcp_provider_type='"
-					+ typeName + "'. Contact administrators please.");
+			throw new SettingsException("Incorrect structure of 'index' configuration for dcp_provider_type='" + typeName
+					+ "'. Contact administrators please.");
 		}
 	}
 
 	/**
 	 * Get search subsystem type name from one <code>dcp_content_type</code> configuration structure.
 	 * 
-	 * @param typeDef
-	 *            <code>dcp_content_type</code> configuration structure
-	 * @param typeName
-	 *            <code>dcp_content_type</code> name to be used for error messages
+	 * @param typeDef <code>dcp_content_type</code> configuration structure
+	 * @param typeName <code>dcp_content_type</code> name to be used for error messages
 	 * @return search type name
 	 */
 	@SuppressWarnings("unchecked")
@@ -418,26 +398,23 @@ public class ProviderService implements EntityService {
 				ret = (String) ((Map<String, Object>) typeDef.get(INDEX)).get(TYPE);
 
 			if (ret == null || ret.trim().isEmpty())
-				throw new SettingsException("Incorrect configuration of 'index.type' for dcp_provider_type='"
-						+ typeName + "'. SearchBackend index type is not defined. Contact administrators please.");
+				throw new SettingsException("Incorrect configuration of 'index.type' for dcp_provider_type='" + typeName
+						+ "'. SearchBackend index type is not defined. Contact administrators please.");
 			return ret;
 
 		} catch (ClassCastException e) {
-			throw new SettingsException("Incorrect structure of 'index' configuration for dcp_provider_type='"
-					+ typeName + "'. Contact administrators please.");
+			throw new SettingsException("Incorrect structure of 'index' configuration for dcp_provider_type='" + typeName
+					+ "'. Contact administrators please.");
 		}
 	}
 
 	/**
 	 * Get <code>dcp_type</code> value from one <code>dcp_content_type</code> configuration structure.
 	 * 
-	 * @param typeDef
-	 *            <code>dcp_content_type</code> configuration structure
-	 * @param typeName
-	 *            <code>dcp_content_type</code> name to be used for error messages
+	 * @param typeDef <code>dcp_content_type</code> configuration structure
+	 * @param typeName <code>dcp_content_type</code> name to be used for error messages
 	 * @return <code>dcp_type</code> value
-	 * @throws SettingsException
-	 *             if value is not present in configuration or is invalid
+	 * @throws SettingsException if value is not present in configuration or is invalid
 	 */
 	public static String extractDcpType(Map<String, Object> typeDef, String typeName) {
 		String ret = null;
@@ -455,11 +432,9 @@ public class ProviderService implements EntityService {
 	 * Get {@value ProviderService#SEARCH_ALL_EXCLUDED} value from one <code>dcp_content_type</code> configuration
 	 * structure. Handle all cases if not in structure etc.
 	 * 
-	 * @param typeDef
-	 *            <code>dcp_content_type</code> configuration structure
+	 * @param typeDef <code>dcp_content_type</code> configuration structure
 	 * @return SEARCH_ALL_EXCLUDED value from configuration
-	 * @throws SettingsException
-	 *             if value is not present in configuration or is invalid
+	 * @throws SettingsException if value is not present in configuration or is invalid
 	 */
 	public static boolean extractSearchAllExcluded(Map<String, Object> typeDef) {
 		if (typeDef.containsKey(SEARCH_ALL_EXCLUDED))

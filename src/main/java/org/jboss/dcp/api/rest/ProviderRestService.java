@@ -11,7 +11,6 @@ import javax.annotation.PostConstruct;
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
 import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -138,7 +137,6 @@ public class ProviderRestService extends RestEntityServiceBase {
 					data.put(ProviderService.PASSWORD_HASH, pwdhash);
 			}
 			providerService.create(id, data);
-			providerService.flushCaches();
 			return createResponseWithId(id);
 		} catch (Exception e) {
 			return createErrorResponse(e);
@@ -178,12 +176,4 @@ public class ProviderRestService extends RestEntityServiceBase {
 		return Response.ok().build();
 	}
 
-	@Override
-	@DELETE
-	@Path("/{id}")
-	public Object delete(@PathParam("id") String id) {
-		Object ret = super.delete(id);
-		providerService.flushCaches();
-		return ret;
-	}
 }

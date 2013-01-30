@@ -12,6 +12,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
+import javax.ws.rs.core.StreamingOutput;
+
 import org.elasticsearch.client.Client;
 import org.elasticsearch.common.settings.SettingsException;
 import org.jboss.dcp.api.cache.IndexNamesCache;
@@ -438,11 +440,8 @@ public class ProviderServiceTest extends ESRealClientTestBase {
 
 	@Test
 	public void findContentType() throws IOException {
-
-		ProviderService tested = new ProviderService();
-		tested.entityService = Mockito.mock(EntityService.class);
+		ProviderService tested = getTested();
 		tested.providerCache = Mockito.mock(ProviderCache.class);
-		tested.log = Logger.getLogger("testlogger");
 
 		List<Map<String, Object>> all = new ArrayList<Map<String, Object>>();
 		all.add(TestUtils.loadJSONFromClasspathFile("/provider/provider_1.json"));
@@ -473,9 +472,7 @@ public class ProviderServiceTest extends ESRealClientTestBase {
 
 	@Test
 	public void flushCaches() {
-		ProviderService tested = new ProviderService();
-		tested.entityService = Mockito.mock(EntityService.class);
-		tested.log = Logger.getLogger("testlogger");
+		ProviderService tested = getTested();
 		tested.cacheAllProvidersTTL = 200000;
 
 		// case - tested.indexNamesCache is null
@@ -501,9 +498,7 @@ public class ProviderServiceTest extends ESRealClientTestBase {
 
 	@Test
 	public void getAll() throws InterruptedException {
-		ProviderService tested = new ProviderService();
-		tested.entityService = Mockito.mock(EntityService.class);
-		tested.log = Logger.getLogger("testlogger");
+		ProviderService tested = getTested();
 
 		// case - return value is propagated, cache works
 		tested.cacheAllProvidersTTL = 400L;
@@ -527,17 +522,17 @@ public class ProviderServiceTest extends ESRealClientTestBase {
 
 	@Test
 	public void findProvider() throws IOException {
-		ProviderService tested = new ProviderService();
-		tested.entityService = Mockito.mock(EntityService.class);
+		ProviderService tested = getTested();
 		tested.providerCache = Mockito.mock(ProviderCache.class);
-		tested.log = Logger.getLogger("testlogger");
 
 		// case - unknown
 		Mockito.when(tested.entityService.get("unknown")).thenReturn(null);
 		Mockito.when(tested.providerCache.get("unknown")).thenReturn(null);
 		Assert.assertNull(tested.findProvider("unknown"));
 		Mockito.verify(tested.entityService).get("unknown");
+		Mockito.verifyNoMoreInteractions(tested.entityService);
 		Mockito.verify(tested.providerCache).get("unknown");
+		Mockito.verifyNoMoreInteractions(tested.providerCache);
 
 		// case - existing but not in cache
 		Mockito.reset(tested.entityService, tested.providerCache);
@@ -546,7 +541,10 @@ public class ProviderServiceTest extends ESRealClientTestBase {
 		Mockito.when(tested.providerCache.get("aa")).thenReturn(null);
 		Assert.assertEquals(providerLoaded, tested.findProvider("aa"));
 		Mockito.verify(tested.entityService).get("aa");
+		Mockito.verifyNoMoreInteractions(tested.entityService);
 		Mockito.verify(tested.providerCache).get("aa");
+		Mockito.verify(tested.providerCache).put("aa", providerLoaded);
+		Mockito.verifyNoMoreInteractions(tested.providerCache);
 
 		// case - existing in cache
 		Mockito.reset(tested.entityService, tested.providerCache);
@@ -556,15 +554,14 @@ public class ProviderServiceTest extends ESRealClientTestBase {
 		Assert.assertEquals(providerCached, tested.findProvider("aa"));
 		Mockito.verifyNoMoreInteractions(tested.entityService);
 		Mockito.verify(tested.providerCache).get("aa");
+		Mockito.verifyNoMoreInteractions(tested.providerCache);
 
 	}
 
 	@Test
 	public void isSuperProvider() throws IOException {
-		ProviderService tested = new ProviderService();
-		tested.entityService = Mockito.mock(EntityService.class);
+		ProviderService tested = getTested();
 		tested.providerCache = Mockito.mock(ProviderCache.class);
-		tested.log = Logger.getLogger("testlogger");
 
 		Mockito.when(tested.providerCache.get(Mockito.anyString())).thenReturn(null);
 		Mockito.when(tested.entityService.get("provider1")).thenReturn(
@@ -587,11 +584,8 @@ public class ProviderServiceTest extends ESRealClientTestBase {
 
 	@Test
 	public void authenticate() throws IOException {
-		ProviderService tested = new ProviderService();
-		tested.securityService = new SecurityService();
-		tested.entityService = Mockito.mock(EntityService.class);
+		ProviderService tested = getTested();
 		tested.providerCache = Mockito.mock(ProviderCache.class);
-		tested.log = Logger.getLogger("testlogger");
 
 		Mockito.when(tested.providerCache.get(Mockito.anyString())).thenReturn(null);
 		Mockito.when(tested.entityService.get("provider1")).thenReturn(
@@ -609,7 +603,90 @@ public class ProviderServiceTest extends ESRealClientTestBase {
 		{
 			Assert.assertTrue(tested.authenticate("provider1", "pwd"));
 		}
+	}
 
+	@Test
+	public void get() {
+		ProviderService tested = getTested();
+
+		Map<String, Object> expected = new HashMap<String, Object>();
+		Mockito.when(tested.entityService.get("aaa")).thenReturn(expected);
+		Assert.assertEquals(expected, tested.get("aaa"));
+		Mockito.verify(tested.entityService).get("aaa");
+		Mockito.verifyNoMoreInteractions(tested.entityService);
+	}
+
+	@Test
+	public void getAll_paged() {
+		ProviderService tested = getTested();
+
+		String[] str = new String[] {};
+		StreamingOutput ret = Mockito.mock(StreamingOutput.class);
+		Mockito.when(tested.entityService.getAll(10, 20, str)).thenReturn(ret);
+		Assert.assertEquals(ret, tested.getAll(10, 20, str));
+		Mockito.verify(tested.entityService).getAll(10, 20, str);
+		Mockito.verifyNoMoreInteractions(tested.entityService);
+	}
+
+	@Test
+	public void create() {
+		ProviderService tested = getTested();
+
+		tested.cacheAllProvidersValidTo = 1000;
+		Map<String, Object> value = new HashMap<String, Object>();
+		tested.create("aaa", value);
+		// test cache was flushed!
+		Assert.assertEquals(0, tested.cacheAllProvidersValidTo);
+		Mockito.verify(tested.entityService).create("aaa", value);
+		Mockito.verifyNoMoreInteractions(tested.entityService);
+	}
+
+	@Test
+	public void create_noid() {
+		ProviderService tested = getTested();
+
+		tested.cacheAllProvidersValidTo = 1000;
+		String id = "aaa";
+		Map<String, Object> value = new HashMap<String, Object>();
+		Mockito.when(tested.entityService.create(value)).thenReturn(id);
+		Assert.assertEquals(id, tested.create(value));
+		// test cache was flushed!
+		Assert.assertEquals(0, tested.cacheAllProvidersValidTo);
+		Mockito.verify(tested.entityService).create(value);
+		Mockito.verifyNoMoreInteractions(tested.entityService);
+	}
+
+	@Test
+	public void update() {
+		ProviderService tested = getTested();
+
+		tested.cacheAllProvidersValidTo = 1000;
+		Map<String, Object> value = new HashMap<String, Object>();
+		tested.update("aaa", value);
+		// test cache was flushed!
+		Assert.assertEquals(0, tested.cacheAllProvidersValidTo);
+		Mockito.verify(tested.entityService).update("aaa", value);
+		Mockito.verifyNoMoreInteractions(tested.entityService);
+	}
+
+	@Test
+	public void delete() {
+		ProviderService tested = getTested();
+
+		tested.cacheAllProvidersValidTo = 1000;
+		tested.delete("aaa");
+		// test cache was flushed!
+		Assert.assertEquals(0, tested.cacheAllProvidersValidTo);
+		Mockito.verify(tested.entityService).delete("aaa");
+		Mockito.verifyNoMoreInteractions(tested.entityService);
+	}
+
+	private ProviderService getTested() {
+		ProviderService tested = new ProviderService();
+		tested.securityService = new SecurityService();
+		tested.entityService = Mockito.mock(EntityService.class);
+		tested.log = Logger.getLogger("testlogger");
+		return tested;
 	}
 
 }
