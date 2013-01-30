@@ -18,7 +18,6 @@ import org.jboss.dcp.api.cache.IndexNamesCache;
 import org.jboss.dcp.api.cache.ProviderCache;
 import org.jboss.dcp.api.testtools.ESRealClientTestBase;
 import org.jboss.dcp.api.testtools.TestUtils;
-import org.jboss.dcp.persistence.service.ElasticsearchEntityService;
 import org.jboss.dcp.persistence.service.EntityService;
 import org.junit.Assert;
 import org.junit.Test;
@@ -30,13 +29,6 @@ import org.mockito.Mockito;
  * @author Vlastimil Elias (velias at redhat dot com)
  */
 public class ProviderServiceTest extends ESRealClientTestBase {
-
-	@Test
-	public void getEntityService() {
-		ProviderService tested = new ProviderService();
-		tested.entityService = Mockito.mock(ElasticsearchEntityService.class);
-		Assert.assertEquals(tested.entityService, tested.getEntityService());
-	}
 
 	@Test
 	public void generateDcpId() {
@@ -489,9 +481,9 @@ public class ProviderServiceTest extends ESRealClientTestBase {
 		// case - tested.indexNamesCache is null
 		List<Map<String, Object>> allList = new ArrayList<Map<String, Object>>();
 		Mockito.when(tested.entityService.getAll()).thenReturn(allList);
-		Assert.assertEquals(allList, tested.listAllProviders());
+		Assert.assertEquals(allList, tested.getAll());
 		tested.flushCaches();
-		Assert.assertEquals(allList, tested.listAllProviders());
+		Assert.assertEquals(allList, tested.getAll());
 		Mockito.verify(tested.entityService, Mockito.times(2)).getAll();
 
 		// case - tested.indexNamesCache is not null so mut be flushed too
@@ -500,15 +492,15 @@ public class ProviderServiceTest extends ESRealClientTestBase {
 		tested.indexNamesCache = Mockito.mock(IndexNamesCache.class);
 		tested.providerCache = Mockito.mock(ProviderCache.class);
 		Mockito.when(tested.entityService.getAll()).thenReturn(allList);
-		Assert.assertEquals(allList, tested.listAllProviders());
+		Assert.assertEquals(allList, tested.getAll());
 		tested.flushCaches();
-		Assert.assertEquals(allList, tested.listAllProviders());
+		Assert.assertEquals(allList, tested.getAll());
 		Mockito.verify(tested.entityService, Mockito.times(2)).getAll();
 		Mockito.verify(tested.indexNamesCache).flush();
 	}
 
 	@Test
-	public void listAllProviders() throws InterruptedException {
+	public void getAll() throws InterruptedException {
 		ProviderService tested = new ProviderService();
 		tested.entityService = Mockito.mock(EntityService.class);
 		tested.log = Logger.getLogger("testlogger");
@@ -517,9 +509,9 @@ public class ProviderServiceTest extends ESRealClientTestBase {
 		tested.cacheAllProvidersTTL = 400L;
 		List<Map<String, Object>> allList = new ArrayList<Map<String, Object>>();
 		Mockito.when(tested.entityService.getAll()).thenReturn(allList);
-		Assert.assertEquals(allList, tested.listAllProviders());
-		Assert.assertEquals(allList, tested.listAllProviders());
-		Assert.assertEquals(allList, tested.listAllProviders());
+		Assert.assertEquals(allList, tested.getAll());
+		Assert.assertEquals(allList, tested.getAll());
+		Assert.assertEquals(allList, tested.getAll());
 		Mockito.verify(tested.entityService, Mockito.times(1)).getAll();
 		// cache timeout
 		Thread.sleep(500);
@@ -527,8 +519,8 @@ public class ProviderServiceTest extends ESRealClientTestBase {
 		Mockito.reset(tested.entityService);
 		List<Map<String, Object>> allList2 = new ArrayList<Map<String, Object>>();
 		Mockito.when(tested.entityService.getAll()).thenReturn(allList2);
-		Assert.assertEquals(allList2, tested.listAllProviders());
-		Assert.assertEquals(allList2, tested.listAllProviders());
+		Assert.assertEquals(allList2, tested.getAll());
+		Assert.assertEquals(allList2, tested.getAll());
 		Mockito.verify(tested.entityService, Mockito.times(1)).getAll();
 
 	}

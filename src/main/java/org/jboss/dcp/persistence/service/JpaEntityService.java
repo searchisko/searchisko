@@ -134,8 +134,16 @@ public class JpaEntityService<T> implements EntityService {
 	@TransactionAttribute(TransactionAttributeType.REQUIRED)
 	public void create(String id, Map<String, Object> entity) {
 		try {
-			Object jpaEntity = converter.convertToModel(id, entity);
-			em.persist(jpaEntity);
+			T jpaEntity = em.find(entityType, id);
+			if (jpaEntity != null) {
+				// Entity exists. Only update the value
+				converter.updateValue(jpaEntity, entity);
+				em.merge(jpaEntity);
+			} else {
+				jpaEntity = converter.convertToModel(id, entity);
+				em.persist(jpaEntity);
+			}
+
 			em.flush();
 		} catch (Exception e) {
 			throw new RuntimeException(e);

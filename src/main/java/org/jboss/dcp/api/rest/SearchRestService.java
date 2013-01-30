@@ -157,7 +157,7 @@ public class SearchRestService extends RestServiceBase {
 			Set<String> indexNames = indexNamesCache.get(prepareIndexNamesCacheKey(dcpTypesRequested, isDcpTypeFacet));
 			if (indexNames == null) {
 				indexNames = new LinkedHashSet<String>();
-				List<Map<String, Object>> allProviders = providerService.listAllProviders();
+				List<Map<String, Object>> allProviders = providerService.getAll();
 				for (Map<String, Object> providerCfg : allProviders) {
 					try {
 						@SuppressWarnings("unchecked")

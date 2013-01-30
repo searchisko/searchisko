@@ -51,7 +51,7 @@ public class ProviderRestService extends RestEntityServiceBase {
 
 	@PostConstruct
 	public void init() {
-		setEntityService(providerService.getEntityService());
+		setEntityService(providerService);
 	}
 
 	protected static final String[] FIELDS_TO_REMOVE = new String[] { ProviderService.PASSWORD_HASH };
@@ -131,13 +131,13 @@ public class ProviderRestService extends RestEntityServiceBase {
 
 		try {
 			// do not update password hash if entity exists already!
-			Map<String, Object> entity = entityService.get(id);
+			Map<String, Object> entity = providerService.get(id);
 			if (entity != null) {
 				Object pwdhash = entity.get(ProviderService.PASSWORD_HASH);
 				if (pwdhash != null)
 					data.put(ProviderService.PASSWORD_HASH, pwdhash);
 			}
-			entityService.create(id, data);
+			providerService.create(id, data);
 			providerService.flushCaches();
 			return createResponseWithId(id);
 		} catch (Exception e) {

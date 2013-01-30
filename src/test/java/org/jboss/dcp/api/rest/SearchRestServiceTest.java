@@ -91,10 +91,10 @@ public class SearchRestServiceTest {
 		{
 			Mockito.when(tested.indexNamesCache.get(Mockito.anyString())).thenReturn(null);
 			List<Map<String, Object>> mockedProvidersList = new ArrayList<Map<String, Object>>();
-			Mockito.when(tested.providerService.listAllProviders()).thenReturn(mockedProvidersList);
+			Mockito.when(tested.providerService.getAll()).thenReturn(mockedProvidersList);
 			tested.handleSearchInicesAndTypes(querySettings, searchRequestBuilderMock);
 			Mockito.verify(tested.indexNamesCache).get("_all||false");
-			Mockito.verify(tested.providerService).listAllProviders();
+			Mockito.verify(tested.providerService).getAll();
 			Mockito.verify(searchRequestBuilderMock).setIndices(new String[] {});
 			Mockito.verifyNoMoreInteractions(searchRequestBuilderMock);
 		}
@@ -109,10 +109,10 @@ public class SearchRestServiceTest {
 			List<Map<String, Object>> mockedProvidersList = new ArrayList<Map<String, Object>>();
 			mockedProvidersList.add(TestUtils.loadJSONFromClasspathFile("/search/provider_1.json"));
 			mockedProvidersList.add(TestUtils.loadJSONFromClasspathFile("/search/provider_2.json"));
-			Mockito.when(tested.providerService.listAllProviders()).thenReturn(mockedProvidersList);
+			Mockito.when(tested.providerService.getAll()).thenReturn(mockedProvidersList);
 			tested.handleSearchInicesAndTypes(querySettings, searchRequestBuilderMock);
 			Mockito.verify(tested.indexNamesCache).get("_all||false");
-			Mockito.verify(tested.providerService).listAllProviders();
+			Mockito.verify(tested.providerService).getAll();
 			Mockito.verify(searchRequestBuilderMock).setIndices(
 					new String[] { "idx_provider1_issue", "idx_provider1_mailing1", "idx_provider1_mailing2",
 							"idx_provider2_mailing", "idx_provider2_issue1", "idx_provider2_issue2" });
@@ -177,14 +177,14 @@ public class SearchRestServiceTest {
 			List<Map<String, Object>> mockedProvidersList = new ArrayList<Map<String, Object>>();
 			mockedProvidersList.add(TestUtils.loadJSONFromClasspathFile("/search/provider_1.json"));
 			mockedProvidersList.add(TestUtils.loadJSONFromClasspathFile("/search/provider_2.json"));
-			Mockito.when(tested.providerService.listAllProviders()).thenReturn(mockedProvidersList);
+			Mockito.when(tested.providerService.getAll()).thenReturn(mockedProvidersList);
 			tested.handleSearchInicesAndTypes(querySettings, searchRequestBuilderMock);
 			Mockito.verify(tested.indexNamesCache).get(
 					SearchRestService.prepareIndexNamesCacheKey(dcpTypesRequested, false));
 			Mockito.verify(tested.indexNamesCache).put(
 					Mockito.eq(SearchRestService.prepareIndexNamesCacheKey(dcpTypesRequested, false)), Mockito.anySet());
 			Mockito.verifyNoMoreInteractions(tested.indexNamesCache);
-			Mockito.verify(tested.providerService).listAllProviders();
+			Mockito.verify(tested.providerService).getAll();
 			Mockito.verify(searchRequestBuilderMock).setIndices(
 					new String[] { "idx_provider1_issue", "idx_provider2_issue1", "idx_provider2_issue2" });
 			Mockito.verifyNoMoreInteractions(searchRequestBuilderMock);
@@ -199,14 +199,14 @@ public class SearchRestServiceTest {
 			List<Map<String, Object>> mockedProvidersList = new ArrayList<Map<String, Object>>();
 			mockedProvidersList.add(TestUtils.loadJSONFromClasspathFile("/search/provider_1.json"));
 			mockedProvidersList.add(TestUtils.loadJSONFromClasspathFile("/search/provider_2.json"));
-			Mockito.when(tested.providerService.listAllProviders()).thenReturn(mockedProvidersList);
+			Mockito.when(tested.providerService.getAll()).thenReturn(mockedProvidersList);
 			tested.handleSearchInicesAndTypes(querySettings, searchRequestBuilderMock);
 			Mockito.verify(tested.indexNamesCache).get(
 					SearchRestService.prepareIndexNamesCacheKey(dcpTypesRequested, false));
 			Mockito.verify(tested.indexNamesCache).put(
 					Mockito.eq(SearchRestService.prepareIndexNamesCacheKey(dcpTypesRequested, false)), Mockito.anySet());
 			Mockito.verifyNoMoreInteractions(tested.indexNamesCache);
-			Mockito.verify(tested.providerService).listAllProviders();
+			Mockito.verify(tested.providerService).getAll();
 			Mockito.verify(searchRequestBuilderMock).setIndices(
 					new String[] { "idx_provider1_cosi1", "idx_provider1_cosi2", "idx_provider2_cosi1", "idx_provider2_cosi2" });
 			Mockito.verifyNoMoreInteractions(searchRequestBuilderMock);
@@ -221,14 +221,14 @@ public class SearchRestServiceTest {
 			List<Map<String, Object>> mockedProvidersList = new ArrayList<Map<String, Object>>();
 			mockedProvidersList.add(TestUtils.loadJSONFromClasspathFile("/search/provider_1.json"));
 			mockedProvidersList.add(TestUtils.loadJSONFromClasspathFile("/search/provider_2.json"));
-			Mockito.when(tested.providerService.listAllProviders()).thenReturn(mockedProvidersList);
+			Mockito.when(tested.providerService.getAll()).thenReturn(mockedProvidersList);
 			tested.handleSearchInicesAndTypes(querySettings, searchRequestBuilderMock);
 			Mockito.verify(tested.indexNamesCache).get(
 					SearchRestService.prepareIndexNamesCacheKey(dcpTypesRequested, false));
 			Mockito.verify(tested.indexNamesCache).put(
 					Mockito.eq(SearchRestService.prepareIndexNamesCacheKey(dcpTypesRequested, false)), Mockito.anySet());
 			Mockito.verifyNoMoreInteractions(tested.indexNamesCache);
-			Mockito.verify(tested.providerService).listAllProviders();
+			Mockito.verify(tested.providerService).getAll();
 			Mockito.verify(searchRequestBuilderMock).setIndices(
 					new String[] { "idx_provider1_cosi1", "idx_provider1_cosi2", "idx_provider1_issue", "idx_provider2_cosi1",
 							"idx_provider2_cosi2", "idx_provider2_issue1", "idx_provider2_issue2" });
@@ -246,14 +246,14 @@ public class SearchRestServiceTest {
 			List<Map<String, Object>> mockedProvidersList = new ArrayList<Map<String, Object>>();
 			mockedProvidersList.add(TestUtils.loadJSONFromClasspathFile("/search/provider_1.json"));
 			mockedProvidersList.add(TestUtils.loadJSONFromClasspathFile("/search/provider_2.json"));
-			Mockito.when(tested.providerService.listAllProviders()).thenReturn(mockedProvidersList);
+			Mockito.when(tested.providerService.getAll()).thenReturn(mockedProvidersList);
 			tested.handleSearchInicesAndTypes(querySettings, searchRequestBuilderMock);
 			Mockito.verify(tested.indexNamesCache).get(
 					SearchRestService.prepareIndexNamesCacheKey(dcpTypesRequested, true));
 			Mockito.verify(tested.indexNamesCache).put(
 					Mockito.eq(SearchRestService.prepareIndexNamesCacheKey(dcpTypesRequested, true)), Mockito.anySet());
 			Mockito.verifyNoMoreInteractions(tested.indexNamesCache);
-			Mockito.verify(tested.providerService).listAllProviders();
+			Mockito.verify(tested.providerService).getAll();
 			Mockito.verify(searchRequestBuilderMock).setIndices(
 					new String[] { "idx_provider1_issue", "idx_provider1_mailing1", "idx_provider1_mailing2",
 							"idx_provider2_mailing", "idx_provider2_issue1", "idx_provider2_issue2" });
@@ -272,14 +272,14 @@ public class SearchRestServiceTest {
 			List<Map<String, Object>> mockedProvidersList = new ArrayList<Map<String, Object>>();
 			mockedProvidersList.add(TestUtils.loadJSONFromClasspathFile("/search/provider_1.json"));
 			mockedProvidersList.add(TestUtils.loadJSONFromClasspathFile("/search/provider_2.json"));
-			Mockito.when(tested.providerService.listAllProviders()).thenReturn(mockedProvidersList);
+			Mockito.when(tested.providerService.getAll()).thenReturn(mockedProvidersList);
 			tested.handleSearchInicesAndTypes(querySettings, searchRequestBuilderMock);
 			Mockito.verify(tested.indexNamesCache).get(
 					SearchRestService.prepareIndexNamesCacheKey(dcpTypesRequested, true));
 			Mockito.verify(tested.indexNamesCache).put(
 					Mockito.eq(SearchRestService.prepareIndexNamesCacheKey(dcpTypesRequested, true)), Mockito.anySet());
 			Mockito.verifyNoMoreInteractions(tested.indexNamesCache);
-			Mockito.verify(tested.providerService).listAllProviders();
+			Mockito.verify(tested.providerService).getAll();
 			Mockito.verify(searchRequestBuilderMock).setIndices(
 					new String[] { "idx_provider1_cosi1", "idx_provider1_cosi2", "idx_provider1_issue", "idx_provider1_mailing1",
 							"idx_provider1_mailing2", "idx_provider2_cosi1", "idx_provider2_cosi2", "idx_provider2_mailing",
@@ -301,7 +301,7 @@ public class SearchRestServiceTest {
 			List<Map<String, Object>> mockedProvidersList = new ArrayList<Map<String, Object>>();
 			mockedProvidersList.add(TestUtils.loadJSONFromClasspathFile("/search/provider_1.json"));
 			mockedProvidersList.add(TestUtils.loadJSONFromClasspathFile("/search/provider_2.json"));
-			Mockito.when(tested.providerService.listAllProviders()).thenReturn(mockedProvidersList);
+			Mockito.when(tested.providerService.getAll()).thenReturn(mockedProvidersList);
 			tested.handleSearchInicesAndTypes(querySettings, searchRequestBuilderMock);
 
 			Mockito.verify(tested.indexNamesCache).get(
