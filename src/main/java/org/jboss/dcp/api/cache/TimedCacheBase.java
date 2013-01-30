@@ -6,8 +6,7 @@ import java.util.Map;
 /**
  * Base for simple cache with timeout and <code>String</code> keys.
  * 
- * @param <T>
- *            the type of value stored in the cache
+ * @param <T> the type of value stored in the cache
  * 
  * @author Vlastimil Elias (velias at redhat dot com)
  */
@@ -21,13 +20,7 @@ public abstract class TimedCacheBase<T> implements ICache<T> {
 
 	private Map<String, CacheItem<T>> cache = new HashMap<String, CacheItem<T>>();
 
-	/**
-	 * Get value from cache for requested key.
-	 * 
-	 * @param key
-	 *            to get value for
-	 * @return value for key or null if not there or timeouted
-	 */
+	@Override
 	public T get(String key) {
 		CacheItem<T> ci = null;
 		synchronized (cache) {
@@ -39,20 +32,20 @@ public abstract class TimedCacheBase<T> implements ICache<T> {
 		return null;
 	}
 
-	/**
-	 * Put value into cache.
-	 * 
-	 * @param key
-	 *            to put value for
-	 * @param value
-	 *            to put into cache
-	 */
+	@Override
 	public void put(String key, T value) {
 		CacheItem<T> ci = new CacheItem<T>();
 		ci.value = value;
 		ci.validTo = System.currentTimeMillis() + ttl;
 		synchronized (cache) {
 			cache.put(key, ci);
+		}
+	}
+
+	@Override
+	public void flush() {
+		synchronized (cache) {
+			cache.clear();
 		}
 	}
 

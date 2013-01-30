@@ -25,29 +25,63 @@ public class TimedCacheBaseTest {
 		};
 		tested.ttl = 500;
 
-		Set<String> indexNames = new HashSet<String>();
-		Set<String> indexNames2 = new HashSet<String>();
-		Set<String> indexNames3 = new HashSet<String>();
-		String dcpTypesRequested = "a";
-		String dcpTypesRequested2_1 = "aaa";
-		String dcpTypesRequested2_2 = "aaa";
+		Set<String> value = new HashSet<String>();
+		Set<String> value2 = new HashSet<String>();
+		Set<String> value3 = new HashSet<String>();
+		String key = "a";
+		String key2_1 = "aaa";
+		String key2_2 = "aaa";
 
-		String dcpTypesRequested3_1 = "aaa|zzzzz";
-		String dcpTypesRequested3_2 = "aaa|zzzzz";
+		String key3_1 = "aaa|zzzzz";
+		String key3_2 = "aaa|zzzzz";
 
-		tested.put(dcpTypesRequested, indexNames);
-		tested.put(dcpTypesRequested2_1, indexNames2);
-		tested.put(dcpTypesRequested3_1, indexNames3);
-		Assert.assertEquals(indexNames, tested.get(dcpTypesRequested));
-		Assert.assertEquals(indexNames2, tested.get(dcpTypesRequested2_1));
-		Assert.assertEquals(indexNames2, tested.get(dcpTypesRequested2_2));
-		Assert.assertEquals(indexNames3, tested.get(dcpTypesRequested3_1));
-		Assert.assertEquals(indexNames3, tested.get(dcpTypesRequested3_2));
+		tested.put(key, value);
+		tested.put(key2_1, value2);
+		tested.put(key3_1, value3);
+		Assert.assertEquals(value, tested.get(key));
+		Assert.assertEquals(value2, tested.get(key2_1));
+		Assert.assertEquals(value2, tested.get(key2_2));
+		Assert.assertEquals(value3, tested.get(key3_1));
+		Assert.assertEquals(value3, tested.get(key3_2));
 		Thread.sleep(600);
-		Assert.assertNull(tested.get(dcpTypesRequested));
-		Assert.assertNull(tested.get(dcpTypesRequested2_1));
-		Assert.assertNull(tested.get(dcpTypesRequested2_2));
-		Assert.assertNull(tested.get(dcpTypesRequested3_1));
-		Assert.assertNull(tested.get(dcpTypesRequested3_2));
+		Assert.assertNull(tested.get(key));
+		Assert.assertNull(tested.get(key2_1));
+		Assert.assertNull(tested.get(key2_2));
+		Assert.assertNull(tested.get(key3_1));
+		Assert.assertNull(tested.get(key3_2));
+	}
+
+	@Test
+	public void flush() {
+		TimedCacheBase<Set<String>> tested = new TimedCacheBase<Set<String>>() {
+		};
+		tested.ttl = 50000;
+
+		Set<String> value = new HashSet<String>();
+		Set<String> value2 = new HashSet<String>();
+		Set<String> value3 = new HashSet<String>();
+		String key = "a";
+		String key2_1 = "aaa";
+		String key2_2 = "aaa";
+
+		String key3_1 = "aaa|zzzzz";
+		String key3_2 = "aaa|zzzzz";
+
+		tested.put(key, value);
+		tested.put(key2_1, value2);
+		tested.put(key3_1, value3);
+		Assert.assertEquals(value, tested.get(key));
+		Assert.assertEquals(value2, tested.get(key2_1));
+		Assert.assertEquals(value2, tested.get(key2_2));
+		Assert.assertEquals(value3, tested.get(key3_1));
+		Assert.assertEquals(value3, tested.get(key3_2));
+
+		tested.flush();
+		Assert.assertNull(tested.get(key));
+		Assert.assertNull(tested.get(key2_1));
+		Assert.assertNull(tested.get(key2_2));
+		Assert.assertNull(tested.get(key3_1));
+		Assert.assertNull(tested.get(key3_2));
+
 	}
 }

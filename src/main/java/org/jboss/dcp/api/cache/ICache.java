@@ -29,4 +29,9 @@ public interface ICache<T> {
 	 * @param value to put into cache
 	 */
 	public void put(String key, T value);
+
+	/**
+	 * Flush cache
+	 */
+	public void flush();
 }

@@ -7,14 +7,17 @@ package org.jboss.dcp.api.service;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.inject.Singleton;
 
 import org.elasticsearch.common.settings.SettingsException;
+import org.jboss.dcp.api.cache.ICache;
 import org.jboss.dcp.persistence.service.EntityService;
 import org.jboss.elasticsearch.tools.content.StructuredContentPreprocessor;
 import org.jboss.elasticsearch.tools.content.StructuredContentPreprocessorFactory;
@@ -28,6 +31,7 @@ import org.jboss.elasticsearch.tools.content.StructuredContentPreprocessorFactor
  */
 @Named
 @ApplicationScoped
+@Singleton
 public class ProviderService {
 
 	/**
@@ -65,6 +69,14 @@ public class ProviderService {
 
 	@Inject
 	protected SearchClientService searchClientService;
+
+	@Inject
+	@Named("indexNamesCache")
+	protected ICache<Set<String>> indexNamesCache;
+
+	@Inject
+	@Named("providerCache")
+	protected ICache<Map<String, Object>> providerCache;
 
 	/**
 	 * Check if password matches for given provider.
@@ -109,16 +121,6 @@ public class ProviderService {
 	}
 
 	/**
-	 * Find provider based on its name (called <code>dcp_content_provider</code>).
-	 * 
-	 * @param providerName of provider - DCP wide unique
-	 * @return provider configuration
-	 */
-	public Map<String, Object> findProvider(String providerName) {
-		return getEntityService().get(providerName);
-	}
-
-	/**
 	 * Find 'provider content type' configuration based on its identifier (called <code>dcp_content_type</code>). Each
 	 * 'provider content type' identifier have to be DCP wide unique (so must be defined only for one provider)!
 	 * 
@@ -126,12 +128,12 @@ public class ProviderService {
 	 * @return content type configuration structure or <code>null</code> if not found
 	 */
 	public Map<String, Object> findContentType(String typeName) {
+		// we do not cache here because listAllProviders() caches.
 		List<Map<String, Object>> allProviders = listAllProviders();
 		if (allProviders != null) {
 			for (Map<String, Object> providerDef : allProviders) {
 				Map<String, Object> ct = extractContentType(providerDef, typeName);
 				if (ct != null) {
-					// TODO PROVIDERSERVICE cache
 					return ct;
 				}
 			}
@@ -140,12 +142,65 @@ public class ProviderService {
 	}
 
 	/**
-	 * List configuration for all providers.
+	 * Find provider based on its name (called <code>dcp_content_provider</code>). Values are cached here with timeout so
+	 * may provide rather obsolote data sometimes!
+	 * 
+	 * @param providerName of provider - DCP wide unique
+	 * @return provider configuration
+	 */
+	public Map<String, Object> findProvider(String providerName) {
+		if (providerName == null)
+			return null;
+		Map<String, Object> ret = providerCache.get(providerName);
+		if (ret == null)
+			ret = getEntityService().get(providerName);
+		return ret;
+	}
+
+	/**
+	 * Cache of all providers list.
+	 * 
+	 * @see #listAllProviders()
+	 */
+	protected List<Map<String, Object>> cacheAllProviders;
+	/**
+	 * validity timestamp for cache of all providers list.
+	 * 
+	 * @see #listAllProviders()
+	 */
+	protected long cacheAllProvidersValidTo = 0;
+	/**
+	 * Time to live to compute validity timestamp for cache of all providers list.
+	 * 
+	 * @see #listAllProviders()
+	 */
+	protected long cacheAllProvidersTTL = 10000;
+
+	/**
+	 * List configuration for all providers. Value is cached here with timeout so may provide rather obsolote data
+	 * sometimes!
 	 * 
 	 * @return list with configurations for all providers
+	 * @see ProviderService#cacheAllProvidersTTL
+	 * 
 	 */
 	public List<Map<String, Object>> listAllProviders() {
-		return entityService.getAll();
+		if (cacheAllProviders == null || cacheAllProvidersValidTo < System.currentTimeMillis()) {
+			cacheAllProviders = entityService.getAll();
+			cacheAllProvidersValidTo = System.currentTimeMillis() + cacheAllProvidersTTL;
+		}
+		return cacheAllProviders;
+	}
+
+	/**
+	 * Flush all caches containing data extracted from Provider definitions.
+	 */
+	public void flushCaches() {
+		cacheAllProvidersValidTo = 0;
+		if (indexNamesCache != null)
+			indexNamesCache.flush();
+		if (providerCache != null)
+			providerCache.flush();
 	}
 
 	/**

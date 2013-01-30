@@ -14,9 +14,12 @@ import java.util.logging.Logger;
 
 import org.elasticsearch.client.Client;
 import org.elasticsearch.common.settings.SettingsException;
+import org.jboss.dcp.api.cache.IndexNamesCache;
+import org.jboss.dcp.api.cache.ProviderCache;
 import org.jboss.dcp.api.testtools.ESRealClientTestBase;
 import org.jboss.dcp.api.testtools.TestUtils;
 import org.jboss.dcp.persistence.service.ElasticsearchEntityService;
+import org.jboss.dcp.persistence.service.EntityService;
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -27,9 +30,6 @@ import org.mockito.Mockito;
  * @author Vlastimil Elias (velias at redhat dot com)
  */
 public class ProviderServiceTest extends ESRealClientTestBase {
-
-	private static final String INDEX_TYPE = "index_type";
-	private static final String INDEX_NAME = "index_name";
 
 	@Test
 	public void getEntityService() {
@@ -446,165 +446,178 @@ public class ProviderServiceTest extends ESRealClientTestBase {
 
 	@Test
 	public void findContentType() throws IOException {
-		ProviderService tested = getTestedWithEmbeddedClient();
-		try {
 
-			// case - missing index
-			Assert.assertNull(tested.findContentType("unknown"));
+		ProviderService tested = new ProviderService();
+		tested.entityService = Mockito.mock(EntityService.class);
+		tested.providerCache = Mockito.mock(ProviderCache.class);
+		tested.log = Logger.getLogger("testlogger");
 
-			indexCreate(INDEX_NAME);
-			// case - empty index
-			Assert.assertNull(tested.findContentType("unknown"));
+		List<Map<String, Object>> all = new ArrayList<Map<String, Object>>();
+		all.add(TestUtils.loadJSONFromClasspathFile("/provider/provider_1.json"));
+		all.add(TestUtils.loadJSONFromClasspathFile("/provider/provider_2.json"));
+		Mockito.when(tested.entityService.getAll()).thenReturn(all);
 
-			indexInsertDocument(INDEX_NAME, INDEX_TYPE, "provider1",
-					TestUtils.readStringFromClasspathFile("/provider/provider_1.json"));
-			indexInsertDocument(INDEX_NAME, INDEX_TYPE, "provider2",
-					TestUtils.readStringFromClasspathFile("/provider/provider_2.json"));
-			indexFlush(INDEX_NAME);
+		// case - unknown type
+		Assert.assertNull(tested.findContentType("unknown"));
+		tested.flushCaches();
 
-			// case - unknown type
-			Assert.assertNull(tested.findContentType("unknown"));
-
-			// case - found type
-			{
-				Map<String, Object> ret = tested.findContentType("provider1_mailing");
-				Assert.assertNotNull(ret);
-				Assert.assertEquals("mailing", ret.get(ProviderService.DCP_TYPE));
-			}
-			{
-				Map<String, Object> ret = tested.findContentType("provider1_issue");
-				Assert.assertNotNull(ret);
-				Assert.assertEquals("issue", ret.get(ProviderService.DCP_TYPE));
-			}
-			{
-				Map<String, Object> ret = tested.findContentType("provider2_mailing");
-				Assert.assertNotNull(ret);
-				Assert.assertEquals("mailing2", ret.get(ProviderService.DCP_TYPE));
-			}
-		} finally {
-			indexDelete(INDEX_NAME);
-			finalizeESClientForUnitTest();
+		// case - found type
+		{
+			Map<String, Object> ret = tested.findContentType("provider1_mailing");
+			Assert.assertNotNull(ret);
+			Assert.assertEquals("mailing", ret.get(ProviderService.DCP_TYPE));
 		}
+		{
+			Map<String, Object> ret = tested.findContentType("provider1_issue");
+			Assert.assertNotNull(ret);
+			Assert.assertEquals("issue", ret.get(ProviderService.DCP_TYPE));
+		}
+		{
+			Map<String, Object> ret = tested.findContentType("provider2_mailing");
+			Assert.assertNotNull(ret);
+			Assert.assertEquals("mailing2", ret.get(ProviderService.DCP_TYPE));
+		}
+	}
+
+	@Test
+	public void flushCaches() {
+		ProviderService tested = new ProviderService();
+		tested.entityService = Mockito.mock(EntityService.class);
+		tested.log = Logger.getLogger("testlogger");
+		tested.cacheAllProvidersTTL = 200000;
+
+		// case - tested.indexNamesCache is null
+		List<Map<String, Object>> allList = new ArrayList<Map<String, Object>>();
+		Mockito.when(tested.entityService.getAll()).thenReturn(allList);
+		Assert.assertEquals(allList, tested.listAllProviders());
+		tested.flushCaches();
+		Assert.assertEquals(allList, tested.listAllProviders());
+		Mockito.verify(tested.entityService, Mockito.times(2)).getAll();
+
+		// case - tested.indexNamesCache is not null so mut be flushed too
+		tested.flushCaches();
+		Mockito.reset(tested.entityService);
+		tested.indexNamesCache = Mockito.mock(IndexNamesCache.class);
+		tested.providerCache = Mockito.mock(ProviderCache.class);
+		Mockito.when(tested.entityService.getAll()).thenReturn(allList);
+		Assert.assertEquals(allList, tested.listAllProviders());
+		tested.flushCaches();
+		Assert.assertEquals(allList, tested.listAllProviders());
+		Mockito.verify(tested.entityService, Mockito.times(2)).getAll();
+		Mockito.verify(tested.indexNamesCache).flush();
+	}
+
+	@Test
+	public void listAllProviders() throws InterruptedException {
+		ProviderService tested = new ProviderService();
+		tested.entityService = Mockito.mock(EntityService.class);
+		tested.log = Logger.getLogger("testlogger");
+
+		// case - return value is propagated, cache works
+		tested.cacheAllProvidersTTL = 400L;
+		List<Map<String, Object>> allList = new ArrayList<Map<String, Object>>();
+		Mockito.when(tested.entityService.getAll()).thenReturn(allList);
+		Assert.assertEquals(allList, tested.listAllProviders());
+		Assert.assertEquals(allList, tested.listAllProviders());
+		Assert.assertEquals(allList, tested.listAllProviders());
+		Mockito.verify(tested.entityService, Mockito.times(1)).getAll();
+		// cache timeout
+		Thread.sleep(500);
+		tested.cacheAllProvidersTTL = 50000L;
+		Mockito.reset(tested.entityService);
+		List<Map<String, Object>> allList2 = new ArrayList<Map<String, Object>>();
+		Mockito.when(tested.entityService.getAll()).thenReturn(allList2);
+		Assert.assertEquals(allList2, tested.listAllProviders());
+		Assert.assertEquals(allList2, tested.listAllProviders());
+		Mockito.verify(tested.entityService, Mockito.times(1)).getAll();
+
 	}
 
 	@Test
 	public void findProvider() throws IOException {
-		ProviderService tested = getTestedWithEmbeddedClient();
-		try {
+		ProviderService tested = new ProviderService();
+		tested.entityService = Mockito.mock(EntityService.class);
+		tested.providerCache = Mockito.mock(ProviderCache.class);
+		tested.log = Logger.getLogger("testlogger");
 
-			// case - missing index
-			Assert.assertNull(tested.findProvider("unknown"));
+		// case - unknown
+		Mockito.when(tested.entityService.get("unknown")).thenReturn(null);
+		Mockito.when(tested.providerCache.get("unknown")).thenReturn(null);
+		Assert.assertNull(tested.findProvider("unknown"));
+		Mockito.verify(tested.entityService).get("unknown");
+		Mockito.verify(tested.providerCache).get("unknown");
 
-			indexCreate(INDEX_NAME);
-			// case - empty index
-			Assert.assertNull(tested.findProvider("provider1"));
+		// case - existing but not in cache
+		Mockito.reset(tested.entityService, tested.providerCache);
+		Map<String, Object> providerLoaded = new HashMap<String, Object>();
+		Mockito.when(tested.entityService.get("aa")).thenReturn(providerLoaded);
+		Mockito.when(tested.providerCache.get("aa")).thenReturn(null);
+		Assert.assertEquals(providerLoaded, tested.findProvider("aa"));
+		Mockito.verify(tested.entityService).get("aa");
+		Mockito.verify(tested.providerCache).get("aa");
 
-			indexInsertDocument(INDEX_NAME, INDEX_TYPE, "provider1",
-					TestUtils.readStringFromClasspathFile("/provider/provider_1.json"));
-			indexInsertDocument(INDEX_NAME, INDEX_TYPE, "provider2",
-					TestUtils.readStringFromClasspathFile("/provider/provider_2.json"));
-			indexFlush(INDEX_NAME);
+		// case - existing in cache
+		Mockito.reset(tested.entityService, tested.providerCache);
+		Map<String, Object> providerCached = new HashMap<String, Object>();
+		Mockito.when(tested.entityService.get("aa")).thenReturn(providerLoaded);
+		Mockito.when(tested.providerCache.get("aa")).thenReturn(providerCached);
+		Assert.assertEquals(providerCached, tested.findProvider("aa"));
+		Mockito.verifyNoMoreInteractions(tested.entityService);
+		Mockito.verify(tested.providerCache).get("aa");
 
-			// case - unknown type
-			Assert.assertNull(tested.findProvider("unknown"));
-
-			// case - found type
-			{
-				Map<String, Object> ret = tested.findProvider("provider1");
-				Assert.assertNotNull(ret);
-				Assert.assertEquals("provider1", ret.get(ProviderService.NAME));
-			}
-			{
-				Map<String, Object> ret = tested.findProvider("provider2");
-				Assert.assertNotNull(ret);
-				Assert.assertEquals("provider2", ret.get(ProviderService.NAME));
-			}
-
-		} finally {
-			indexDelete(INDEX_NAME);
-			finalizeESClientForUnitTest();
-		}
 	}
 
 	@Test
 	public void isSuperProvider() throws IOException {
-		ProviderService tested = getTestedWithEmbeddedClient();
-		try {
+		ProviderService tested = new ProviderService();
+		tested.entityService = Mockito.mock(EntityService.class);
+		tested.providerCache = Mockito.mock(ProviderCache.class);
+		tested.log = Logger.getLogger("testlogger");
 
-			// case - missing index
-			Assert.assertFalse(tested.isSuperProvider("unknown"));
+		Mockito.when(tested.providerCache.get(Mockito.anyString())).thenReturn(null);
+		Mockito.when(tested.entityService.get("provider1")).thenReturn(
+				TestUtils.loadJSONFromClasspathFile("/provider/provider_1.json"));
+		Mockito.when(tested.entityService.get("provider2")).thenReturn(
+				TestUtils.loadJSONFromClasspathFile("/provider/provider_2.json"));
 
-			indexCreate(INDEX_NAME);
-			// case - empty index
+		// case - unknown provider
+		Assert.assertFalse(tested.isSuperProvider("unknown"));
+
+		// case - found provider
+		{
 			Assert.assertFalse(tested.isSuperProvider("provider1"));
-
-			indexInsertDocument(INDEX_NAME, INDEX_TYPE, "provider1",
-					TestUtils.readStringFromClasspathFile("/provider/provider_1.json"));
-			indexInsertDocument(INDEX_NAME, INDEX_TYPE, "provider2",
-					TestUtils.readStringFromClasspathFile("/provider/provider_2.json"));
-			indexFlush(INDEX_NAME);
-
-			// case - unknown type
-			Assert.assertFalse(tested.isSuperProvider("unknown"));
-
-			// case - found type
-			{
-				Assert.assertFalse(tested.isSuperProvider("provider1"));
-			}
-			{
-				Assert.assertTrue(tested.isSuperProvider("provider2"));
-			}
-
-		} finally {
-			indexDelete(INDEX_NAME);
-			finalizeESClientForUnitTest();
 		}
+		{
+			Assert.assertTrue(tested.isSuperProvider("provider2"));
+		}
+
 	}
 
 	@Test
 	public void authenticate() throws IOException {
-		ProviderService tested = getTestedWithEmbeddedClient();
-		try {
-
-			// case - missing index
-			Assert.assertFalse(tested.authenticate("unknown", "pwd"));
-
-			indexCreate(INDEX_NAME);
-			// case - empty index
-			Assert.assertFalse(tested.authenticate("provider1", "pwd"));
-
-			indexInsertDocument(INDEX_NAME, INDEX_TYPE, "provider1",
-					TestUtils.readStringFromClasspathFile("/provider/provider_1.json"));
-			indexInsertDocument(INDEX_NAME, INDEX_TYPE, "provider2",
-					TestUtils.readStringFromClasspathFile("/provider/provider_2.json"));
-			indexFlush(INDEX_NAME);
-
-			// case - unknown type
-			Assert.assertFalse(tested.authenticate("unknown", "pwd"));
-
-			// case - found type
-			{
-				Assert.assertFalse(tested.authenticate("provider1", "badpwd"));
-			}
-			{
-				Assert.assertTrue(tested.authenticate("provider1", "pwd"));
-			}
-
-		} finally {
-			indexDelete(INDEX_NAME);
-			finalizeESClientForUnitTest();
-		}
-	}
-
-	private ProviderService getTestedWithEmbeddedClient() {
-		SearchClientService scs = new SearchClientService();
-		scs.client = prepareESClientForUnitTest();
 		ProviderService tested = new ProviderService();
-		tested.searchClientService = scs;
 		tested.securityService = new SecurityService();
-		tested.entityService = new ElasticsearchEntityService(scs.client, INDEX_NAME, INDEX_TYPE, false);
+		tested.entityService = Mockito.mock(EntityService.class);
+		tested.providerCache = Mockito.mock(ProviderCache.class);
 		tested.log = Logger.getLogger("testlogger");
-		return tested;
+
+		Mockito.when(tested.providerCache.get(Mockito.anyString())).thenReturn(null);
+		Mockito.when(tested.entityService.get("provider1")).thenReturn(
+				TestUtils.loadJSONFromClasspathFile("/provider/provider_1.json"));
+		Mockito.when(tested.entityService.get("provider2")).thenReturn(
+				TestUtils.loadJSONFromClasspathFile("/provider/provider_2.json"));
+
+		// case - unknown type
+		Assert.assertFalse(tested.authenticate("unknown", "pwd"));
+
+		// case - found type
+		{
+			Assert.assertFalse(tested.authenticate("provider1", "badpwd"));
+		}
+		{
+			Assert.assertTrue(tested.authenticate("provider1", "pwd"));
+		}
+
 	}
 
 }

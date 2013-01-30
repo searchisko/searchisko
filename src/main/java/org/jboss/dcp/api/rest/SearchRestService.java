@@ -80,7 +80,7 @@ public class SearchRestService extends RestServiceBase {
 
 	@Inject
 	@Named("indexNamesCache")
-	protected ICache<Set<String>> indexNamesCacheService;
+	protected ICache<Set<String>> indexNamesCache;
 
 	@GET
 	@Path("/")
@@ -151,10 +151,10 @@ public class SearchRestService extends RestServiceBase {
 			if (querySettings.getFilters() != null) {
 				dcpTypesRequested = querySettings.getFilters().getDcpTypes();
 			}
-			boolean isDcpTypFacet = (querySettings.getFacets() != null && querySettings.getFacets().contains(
+			boolean isDcpTypeFacet = (querySettings.getFacets() != null && querySettings.getFacets().contains(
 					FacetValue.PER_DCP_TYPE_COUNTS));
 
-			Set<String> indexNames = indexNamesCacheService.get(prepareIndexNamesCacheKey(dcpTypesRequested, isDcpTypFacet));
+			Set<String> indexNames = indexNamesCache.get(prepareIndexNamesCacheKey(dcpTypesRequested, isDcpTypeFacet));
 			if (indexNames == null) {
 				indexNames = new LinkedHashSet<String>();
 				List<Map<String, Object>> allProviders = providerService.listAllProviders();
@@ -167,7 +167,7 @@ public class SearchRestService extends RestServiceBase {
 							for (String typeName : types.keySet()) {
 								Map<String, Object> typeDef = types.get(typeName);
 								if ((dcpTypesRequested == null && !ProviderService.extractSearchAllExcluded(typeDef))
-										|| (dcpTypesRequested != null && ((isDcpTypFacet && !ProviderService
+										|| (dcpTypesRequested != null && ((isDcpTypeFacet && !ProviderService
 												.extractSearchAllExcluded(typeDef)) || dcpTypesRequested.contains(ProviderService
 												.extractDcpType(typeDef, typeName))))) {
 									indexNames.addAll(Arrays.asList(ProviderService.extractSearchIndices(typeDef, typeName)));
@@ -179,7 +179,7 @@ public class SearchRestService extends RestServiceBase {
 								+ providerCfg.get(ProviderService.NAME) + ". Contact administrators please.");
 					}
 				}
-				indexNamesCacheService.put(prepareIndexNamesCacheKey(dcpTypesRequested, isDcpTypFacet), indexNames);
+				indexNamesCache.put(prepareIndexNamesCacheKey(dcpTypesRequested, isDcpTypeFacet), indexNames);
 			}
 			srb.setIndices(indexNames.toArray(new String[indexNames.size()]));
 		}
