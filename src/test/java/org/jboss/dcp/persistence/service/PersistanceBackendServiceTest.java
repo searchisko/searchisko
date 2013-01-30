@@ -36,55 +36,10 @@ public class PersistanceBackendServiceTest extends ESRealClientTestBase {
 	}
 
 	@Test
-	public void produceProviderService_doNotCreateProvider() {
-		PersistanceBackendService tested = getTested();
-
-		Mockito.reset(tested.appConfigurationService);
-		AppConfiguration ac = new AppConfiguration();
-		ac.setProviderCreateInitData(false);
-		Mockito.when(tested.appConfigurationService.getAppConfiguration()).thenReturn(ac);
-		EntityService s = tested.produceProviderService();
-		assertElasticsearchEntityService(s, tested.client, EXPECTED_INDEX_NAME, "provider");
-
-	}
-
-	@Test
-	public void produceProviderService_createProvider() {
-		PersistanceBackendService tested = getTested();
-		tested.client = prepareESClientForUnitTest();
-		try {
-			Mockito.reset(tested.appConfigurationService);
-			AppConfiguration ac = new AppConfiguration();
-			ac.setProviderCreateInitData(true);
-			Mockito.when(tested.appConfigurationService.getAppConfiguration()).thenReturn(ac);
-			EntityService s = tested.produceProviderService();
-
-			assertElasticsearchEntityService(s, tested.client, EXPECTED_INDEX_NAME, "provider");
-			indexFlush(PersistanceBackendService.INDEX_NAME);
-			Map<String, Object> jborg = indexGetDocument(PersistanceBackendService.INDEX_NAME,
-					PersistanceBackendService.INDEX_TYPE_PROVIDER, "jbossorg");
-			Assert.assertNotNull(jborg);
-			Assert.assertNotNull(jborg.get(ProviderService.PASSWORD_HASH));
-			Assert.assertEquals(true, jborg.get(ProviderService.SUPER_PROVIDER));
-			Assert.assertEquals("jbossorg", jborg.get(ProviderService.NAME));
-		} finally {
-			indexDelete(PersistanceBackendService.INDEX_NAME);
-			finalizeESClientForUnitTest();
-		}
-	}
-
-	@Test
 	public void produceContributorService() {
 		PersistanceBackendService tested = getTested();
 		EntityService s = tested.produceContributorService();
 		assertElasticsearchEntityService(s, tested.client, EXPECTED_INDEX_NAME, "contributor");
-	}
-
-	@Test
-	public void produceConfigService() {
-		PersistanceBackendService tested = getTested();
-		EntityService s = tested.produceConfigService();
-		assertElasticsearchEntityService(s, tested.client, EXPECTED_INDEX_NAME, "config");
 	}
 
 	private void assertElasticsearchEntityService(EntityService actualService, Client expectedClient,

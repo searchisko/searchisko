@@ -27,7 +27,7 @@ public class ProviderConverter extends StringValueConverter<Provider> {
 	}
 
 	@Override
-	public Provider convertToModel(Map<String, Object> jsonMap) throws IOException {
+	public Provider convertToModel(String id, Map<String, Object> jsonMap) throws IOException {
 		Provider p = new Provider();
 		p.setName(jsonMap.get("name").toString());
 		updateValue(p, jsonMap);

@@ -9,28 +9,29 @@ import java.io.IOException;
 import java.util.Map;
 
 /**
- * Converter for {@link Project}
+ * Converter for {@link Config}
  * 
  * @author Libor Krzyzanek
  * 
  */
-public class ProjectConverter extends StringValueConverter<Project> {
+public class ConfigConverter extends StringValueConverter<Config> {
 
 	@Override
-	public String getValue(Project jpaEntity) {
+	public String getValue(Config jpaEntity) {
 		return jpaEntity.getValue();
 	}
 
 	@Override
-	public void setValue(Project jpaEntity, String value) {
+	public void setValue(Config jpaEntity, String value) {
 		jpaEntity.setValue(value);
 	}
 
 	@Override
-	public Project convertToModel(String id, Map<String, Object> jsonMap) throws IOException {
-		Project p = new Project();
-		p.setCode(jsonMap.get("code").toString());
-		updateValue(p, jsonMap);
-		return p;
+	public Config convertToModel(String id, Map<String, Object> jsonMap) throws IOException {
+		Config c = new Config();
+		c.setName(id);
+		updateValue(c, jsonMap);
+		return c;
 	}
+
 }

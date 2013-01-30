@@ -18,7 +18,7 @@ import org.codehaus.jackson.map.JsonMappingException;
  */
 public interface ModelToJSONMapConverter<T> {
 
-	public T convertToModel(Map<String, Object> jsonMap) throws IOException;
+	public T convertToModel(String id, Map<String, Object> jsonMap) throws IOException;
 
 	public Map<String, Object> convertToJsonMap(T jpaEntity) throws JsonParseException, JsonMappingException,
 			IOException;

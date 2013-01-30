@@ -26,7 +26,7 @@ public class ProjectConverterTest {
 		data.put("code", "as7");
 		data.put("name", "AS 7");
 
-		Project p = converter.convertToModel(data);
+		Project p = converter.convertToModel("as7", data);
 
 		assertEquals("as7", p.getCode());
 		assertEquals("{\"name\":\"AS 7\",\"code\":\"as7\"}", p.getValue());
