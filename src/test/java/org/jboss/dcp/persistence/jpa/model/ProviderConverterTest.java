@@ -11,25 +11,26 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.jboss.dcp.api.service.ProviderService;
 import org.junit.Test;
 
 /**
  * @author Libor Krzyzanek
  * 
  */
-public class ProjectConverterTest {
+public class ProviderConverterTest {
 
 	@Test
 	public void testConvertToModel() throws IOException {
-		ProjectConverter converter = new ProjectConverter();
+		ProviderConverter converter = new ProviderConverter();
 		Map<String, Object> data = new HashMap<String, Object>();
-		data.put("code", "as7");
-		data.put("name", "AS 7");
+		data.put(ProviderService.NAME, "jbossorg");
+		data.put(ProviderService.SUPER_PROVIDER, true);
 
-		Project p = converter.convertToModel(data);
+		Provider p = converter.convertToModel(data);
 
-		assertEquals("as7", p.getCode());
-		assertEquals("{\"name\":\"AS 7\",\"code\":\"as7\"}", p.getValue());
+		assertEquals("jbossorg", p.getName());
+		assertEquals("{\"" + ProviderService.NAME + "\":\"jbossorg\",\"" + ProviderService.SUPER_PROVIDER + "\":true}",
+				p.getValue());
 	}
-
 }
