@@ -392,6 +392,7 @@ public class SearchRestService extends RestServiceBase {
 		return tb;
 	}
 
+	@SuppressWarnings("incomplete-switch")
 	protected static String selectActivityDatesHistogramInterval(QuerySettings querySettings) {
 		Filters filters = querySettings.getFilters();
 		if (filters != null) {
