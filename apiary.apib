@@ -41,6 +41,13 @@ Some operation calls on REST API need to be authenticated by the provider. The c
 * __403 ("Forbidden")__ - user doesn't have permissions for the requested operation.
 * __404 ("Not Found")__ - resource was not found.
 * __500 ("Internal error")__ - internal application error or misconfiguration, it should be reported to administrators. The body of the HTTP response contains the description of problem.
+
+# Cross Domain Policy
+
+DCP provides JSONP technique. If you want to use JSONP just add `callback` parameter to your request.
+
+On Search API it's not needed to use JSONP and client can use search API directly because response contains `Access-Control-Allow-Origin` HTTP header. 
+
 ---
 
 --
