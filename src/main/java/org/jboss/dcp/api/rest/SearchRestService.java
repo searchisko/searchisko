@@ -18,7 +18,6 @@ import java.util.logging.Level;
 
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
-import javax.inject.Named;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
@@ -50,7 +49,7 @@ import org.elasticsearch.search.facet.terms.TermsFacetBuilder;
 import org.elasticsearch.search.sort.SortOrder;
 import org.jboss.dcp.api.DcpContentObjectFields;
 import org.jboss.dcp.api.annotations.security.GuestAllowed;
-import org.jboss.dcp.api.cache.ICache;
+import org.jboss.dcp.api.cache.IndexNamesCache;
 import org.jboss.dcp.api.model.FacetValue;
 import org.jboss.dcp.api.model.QuerySettings;
 import org.jboss.dcp.api.model.QuerySettings.Filters;
@@ -79,8 +78,7 @@ public class SearchRestService extends RestServiceBase {
 	protected ConfigService configService;
 
 	@Inject
-	@Named("indexNamesCache")
-	protected ICache<Set<String>> indexNamesCache;
+	protected IndexNamesCache indexNamesCache;
 
 	@GET
 	@Path("/")

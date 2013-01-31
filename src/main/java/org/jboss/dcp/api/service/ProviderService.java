@@ -7,7 +7,6 @@ package org.jboss.dcp.api.service;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -18,7 +17,8 @@ import javax.inject.Named;
 import javax.ws.rs.core.StreamingOutput;
 
 import org.elasticsearch.common.settings.SettingsException;
-import org.jboss.dcp.api.cache.ICache;
+import org.jboss.dcp.api.cache.IndexNamesCache;
+import org.jboss.dcp.api.cache.ProviderCache;
 import org.jboss.dcp.persistence.service.EntityService;
 import org.jboss.elasticsearch.tools.content.StructuredContentPreprocessor;
 import org.jboss.elasticsearch.tools.content.StructuredContentPreprocessorFactory;
@@ -72,12 +72,10 @@ public class ProviderService implements EntityService {
 	protected SearchClientService searchClientService;
 
 	@Inject
-	@Named("indexNamesCache")
-	protected ICache<Set<String>> indexNamesCache;
+	protected IndexNamesCache indexNamesCache;
 
 	@Inject
-	@Named("providerCache")
-	protected ICache<Map<String, Object>> providerCache;
+	protected ProviderCache providerCache;
 
 	/**
 	 * Check if password matches for given provider.
