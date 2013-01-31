@@ -53,6 +53,7 @@ public class PersistenceBackendService {
 
 	@Produces
 	@Named("providerServiceBackend")
+	@ApplicationScoped
 	public EntityService produceProviderService() {
 		JpaEntityService<Provider> serv = new JpaEntityService<Provider>(em, new ProviderConverter(), Provider.class);
 
@@ -76,12 +77,14 @@ public class PersistenceBackendService {
 
 	@Produces
 	@Named("projectServiceBackend")
+	@ApplicationScoped
 	public EntityService produceProjectService() {
 		return new JpaEntityService<Project>(em, new ProjectConverter(), Project.class);
 	}
 
 	@Produces
 	@Named("contributorServiceBackend")
+	@ApplicationScoped
 	public EntityService produceContributorService() {
 		return new JpaEntityService<Contributor>(em, new ContributorConverter(), Contributor.class);
 
@@ -89,6 +92,7 @@ public class PersistenceBackendService {
 
 	@Produces
 	@Named("configServiceBackend")
+	@ApplicationScoped
 	public EntityService produceConfigService() {
 		return new JpaEntityService<Config>(em, new ConfigConverter(), Config.class);
 
