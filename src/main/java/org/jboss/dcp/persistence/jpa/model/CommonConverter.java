@@ -16,17 +16,36 @@ import org.codehaus.jackson.type.TypeReference;
 /**
  * Common converter class from/to JSON
  * 
+ * @param <T> type of JPA entity
+ * 
  * @author Libor Krzyzanek
+ * @author Vlastimil Elias (velias at redhat dot com)
  * 
  */
 public abstract class CommonConverter<T> implements ModelToJSONMapConverter<T> {
 
+	/**
+	 * Convert JSON Map structure into String with JSON content.
+	 * 
+	 * @param jsonMapValue to convert
+	 * @return
+	 * @throws IOException
+	 */
 	public String convertJsonMapToString(Map<String, Object> jsonMapValue) throws IOException {
 		ObjectMapper mapper = new ObjectMapper();
 		return mapper.writeValueAsString(jsonMapValue);
 	}
 
-	public Map<String, Object> convertToJsonMap(byte[] jsonData) throws JsonParseException, JsonMappingException,
+	/**
+	 * Convert String with JSON content into JSON Map structure.
+	 * 
+	 * @param jsonData string to convert
+	 * @return JSON MAP structure
+	 * @throws JsonParseException
+	 * @throws JsonMappingException
+	 * @throws IOException
+	 */
+	public Map<String, Object> convertToJsonMap(String jsonData) throws JsonParseException, JsonMappingException,
 			IOException {
 		ObjectMapper mapper = new ObjectMapper();
 		return mapper.readValue(jsonData, new TypeReference<Map<String, Object>>() {

@@ -17,10 +17,10 @@ import java.util.Map;
 public class ConfigConverter extends StringValueConverter<Config> {
 
 	@Override
-	public Object getId(Config jpaEntity) {
+	public String getId(Config jpaEntity) {
 		return jpaEntity.getName();
 	}
-	
+
 	@Override
 	public String getValue(Config jpaEntity) {
 		return jpaEntity.getValue();

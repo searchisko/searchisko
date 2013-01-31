@@ -17,10 +17,10 @@ import java.util.Map;
 public class ContributorConverter extends StringValueConverter<Contributor> {
 
 	@Override
-	public Object getId(Contributor jpaEntity) {
+	public String getId(Contributor jpaEntity) {
 		return jpaEntity.getId();
 	}
-	
+
 	@Override
 	public String getValue(Contributor jpaEntity) {
 		return jpaEntity.getValue();

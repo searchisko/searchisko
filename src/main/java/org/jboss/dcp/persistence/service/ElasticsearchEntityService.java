@@ -79,7 +79,7 @@ public class ElasticsearchEntityService implements EntityService {
 		srb.setIndices(indexName);
 		srb.setTypes(indexType);
 
-		if (from != null) {
+		if (from != null && from >= 0) {
 			srb.setFrom(from);
 		}
 		if (size != null) {

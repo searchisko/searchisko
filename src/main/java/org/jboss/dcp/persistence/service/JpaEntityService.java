@@ -10,9 +10,9 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 
 import javax.persistence.EntityManager;
+import javax.persistence.EntityNotFoundException;
 import javax.persistence.TypedQuery;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
@@ -20,15 +20,18 @@ import javax.persistence.criteria.Root;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.StreamingOutput;
 
+import org.elasticsearch.common.UUID;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentFactory;
 import org.jboss.dcp.api.rest.ESDataOnlyResponse;
 import org.jboss.dcp.persistence.jpa.model.ModelToJSONMapConverter;
 
 /**
- * JPA implementation of entity service. It's not session bean because type is unknown.
+ * JPA implementation of entity service. It's not session bean because type is unknown, so must be called from Session
+ * bean to work with transactions.
  * 
  * @author Libor Krzyzanek
+ * @author Vlastimil Elias (velias at redhat dot com)
  * 
  */
 public class JpaEntityService<T> implements EntityService {
@@ -48,24 +51,27 @@ public class JpaEntityService<T> implements EntityService {
 	@Override
 	public StreamingOutput getAll(Integer from, Integer size, final String[] fieldsToRemove) {
 		CriteriaBuilder cb = em.getCriteriaBuilder();
-		CriteriaQuery<T> criteria = cb.createQuery(entityType);
-		Root<T> root = criteria.from(entityType);
-		criteria.select(root);
-		TypedQuery<T> q = em.createQuery(criteria);
-		q.setFirstResult(from);
-		q.setMaxResults(size);
+		CriteriaQuery<T> queryList = cb.createQuery(entityType);
+		queryList.select(queryList.from(entityType));
+		TypedQuery<T> q = em.createQuery(queryList);
+		if (from != null && from >= 0)
+			q.setFirstResult(from);
+		if (size != null && size > 0)
+			q.setMaxResults(size);
 		final List<T> result = q.getResultList();
+
+		CriteriaQuery<Long> queryCount = cb.createQuery(Long.class);
+		queryCount.select(cb.count(queryCount.from(entityType)));
+		final long count = em.createQuery(queryCount).getSingleResult();
 
 		return new StreamingOutput() {
 
 			@Override
 			public void write(OutputStream output) throws IOException, WebApplicationException {
 				XContentBuilder builder = XContentFactory.jsonBuilder(output);
-				// shows only hits
 				builder.startObject();
 				if (result != null) {
-					// TODO: PERSISTENCE - total should be count of all rows
-					builder.field("total", result.size());
+					builder.field("total", count);
 					builder.startArray("hits");
 					for (T t : result) {
 						Map<String, Object> jsonData = converter.convertToJsonMap(t);
@@ -120,14 +126,9 @@ public class JpaEntityService<T> implements EntityService {
 
 	@Override
 	public String create(Map<String, Object> entity) {
-		Random randomGenerator = new Random();
-		randomGenerator.nextLong();
-
-		String generatedId = Long.toString(randomGenerator.nextLong());
-
-		create(generatedId, entity);
-
-		return generatedId;
+		String id = UUID.randomBase64UUID();
+		create(id, entity);
+		return id;
 	}
 
 	@Override
@@ -137,13 +138,10 @@ public class JpaEntityService<T> implements EntityService {
 			if (jpaEntity != null) {
 				// Entity exists. Only update the value
 				converter.updateValue(jpaEntity, entity);
-				em.merge(jpaEntity);
 			} else {
 				jpaEntity = converter.convertToModel(id, entity);
 				em.persist(jpaEntity);
 			}
-
-			em.flush();
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
@@ -151,22 +149,17 @@ public class JpaEntityService<T> implements EntityService {
 
 	@Override
 	public void update(String id, Map<String, Object> entity) {
-		T jpaEntity = em.find(entityType, id);
-
-		try {
-			converter.updateValue(jpaEntity, entity);
-		} catch (Exception e) {
-			throw new RuntimeException(e);
-		}
-
-		em.merge(jpaEntity);
-		em.flush();
+		create(id, entity);
 	}
 
 	@Override
 	public void delete(String id) {
-		T reference = em.getReference(entityType, id);
-		em.remove(reference);
+		try {
+			T reference = em.getReference(entityType, id);
+			em.remove(reference);
+		} catch (EntityNotFoundException e) {
+			// OK
+		}
 	}
 
 }
