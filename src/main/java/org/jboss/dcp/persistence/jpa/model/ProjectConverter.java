@@ -29,7 +29,7 @@ public class ProjectConverter extends StringValueConverter<Project> {
 	@Override
 	public Project convertToModel(String id, Map<String, Object> jsonMap) throws IOException {
 		Project p = new Project();
-		p.setCode(jsonMap.get("code").toString());
+		p.setCode(id);
 		updateValue(p, jsonMap);
 		return p;
 	}

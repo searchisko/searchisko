@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.jboss.dcp.api.service.ProjectService;
 import org.junit.Test;
 
 /**
@@ -23,13 +24,13 @@ public class ProjectConverterTest {
 	public void testConvertToModel() throws IOException {
 		ProjectConverter converter = new ProjectConverter();
 		Map<String, Object> data = new HashMap<String, Object>();
-		data.put("code", "as7");
+		data.put(ProjectService.CODE, "as7");
 		data.put("name", "AS 7");
 
 		Project p = converter.convertToModel("as7", data);
 
 		assertEquals("as7", p.getCode());
-		assertEquals("{\"name\":\"AS 7\",\"code\":\"as7\"}", p.getValue());
+		assertEquals("{\"name\":\"AS 7\",\"" + ProjectService.CODE + "\":\"as7\"}", p.getValue());
 	}
 
 }
