@@ -42,6 +42,7 @@ import javax.persistence.PersistenceContext;
 @Singleton
 public class Resources {
 
+	@SuppressWarnings("unused")
 	@Produces
 	@PersistenceContext
 	private static EntityManager em;
@@ -65,8 +66,7 @@ public class Resources {
 	/**
 	 * Read file from classpath into String. UTF-8 encoding expected.
 	 * 
-	 * @param filePath
-	 *            in classpath to read data from.
+	 * @param filePath in classpath to read data from.
 	 * @return file content.
 	 * @throws IOException
 	 */

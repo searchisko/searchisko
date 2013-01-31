@@ -25,6 +25,7 @@ public class SearchRestServiceTest_ESRealClient extends ESRealClientTestBase {
 	public void filterContributor() {
 		Client client = prepareESClientForUnitTest();
 		try {
+			@SuppressWarnings("unused")
 			SearchRestService tested = getTested(client);
 			prepareTestData(client);
 
