@@ -12,9 +12,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
 import javax.persistence.EntityManager;
+import javax.persistence.TypedQuery;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
@@ -52,7 +51,10 @@ public class JpaEntityService<T> implements EntityService {
 		CriteriaQuery<T> criteria = cb.createQuery(entityType);
 		Root<T> root = criteria.from(entityType);
 		criteria.select(root);
-		final List<T> result = em.createQuery(criteria).getResultList();
+		TypedQuery<T> q = em.createQuery(criteria);
+		q.setFirstResult(from);
+		q.setMaxResults(size);
+		final List<T> result = q.getResultList();
 
 		return new StreamingOutput() {
 
@@ -117,7 +119,6 @@ public class JpaEntityService<T> implements EntityService {
 	}
 
 	@Override
-	@TransactionAttribute(TransactionAttributeType.REQUIRED)
 	public String create(Map<String, Object> entity) {
 		Random randomGenerator = new Random();
 		randomGenerator.nextLong();
@@ -130,7 +131,6 @@ public class JpaEntityService<T> implements EntityService {
 	}
 
 	@Override
-	@TransactionAttribute(TransactionAttributeType.REQUIRED)
 	public void create(String id, Map<String, Object> entity) {
 		try {
 			T jpaEntity = em.find(entityType, id);
@@ -150,7 +150,6 @@ public class JpaEntityService<T> implements EntityService {
 	}
 
 	@Override
-	@TransactionAttribute(TransactionAttributeType.REQUIRED)
 	public void update(String id, Map<String, Object> entity) {
 		T jpaEntity = em.find(entityType, id);
 
@@ -165,7 +164,6 @@ public class JpaEntityService<T> implements EntityService {
 	}
 
 	@Override
-	@TransactionAttribute(TransactionAttributeType.REQUIRED)
 	public void delete(String id) {
 		T reference = em.getReference(entityType, id);
 		em.remove(reference);
