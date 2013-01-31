@@ -67,9 +67,8 @@ public class JpaEntityService<T> implements EntityService {
 					builder.startArray("hits");
 					for (T t : result) {
 						Map<String, Object> jsonData = converter.convertToJsonMap(t);
-						// TODO: PERSISTENCE - Add ID of entity
 						builder.startObject();
-						builder.field("id", "TODO");
+						builder.field("id", converter.getId(t));
 						builder.field("data", ESDataOnlyResponse.removeFields(jsonData, fieldsToRemove));
 						builder.endObject();
 					}

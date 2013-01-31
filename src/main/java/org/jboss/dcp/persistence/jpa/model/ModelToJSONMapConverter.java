@@ -25,4 +25,5 @@ public interface ModelToJSONMapConverter<T> {
 
 	public void updateValue(T jpaEntity, Map<String, Object> jsonMapValue) throws IOException;
 
+	public Object getId(T jpaEntity);
 }

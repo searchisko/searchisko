@@ -17,6 +17,11 @@ import java.util.Map;
 public class ProjectConverter extends StringValueConverter<Project> {
 
 	@Override
+	public Object getId(Project jpaEntity) {
+		return jpaEntity.getCode();
+	}
+	
+	@Override
 	public String getValue(Project jpaEntity) {
 		return jpaEntity.getValue();
 	}
