@@ -72,6 +72,8 @@
 		<richfaces.bom.version>4.2.2.Final-redhat-1</richfaces.bom.version>
 		<filter.name>localhost</filter.name>
 		<resteasy.version>2.3.3.Final-redhat-1</resteasy.version>
+    <structured-content-tools.version>1.2.0</structured-content-tools.version>
+    <elasticsearch-river-jira.version>1.2.2</elasticsearch-river-jira.version>
 	</properties>
 
 	<dependencyManagement>
@@ -221,7 +223,7 @@
 		<dependency>
 			<groupId>org.jboss.elasticsearch</groupId>
 			<artifactId>structured-content-tools</artifactId>
-			<version>1.2.0</version>
+			<version>${structured-content-tools.version}</version>
 		</dependency>
 
 		<!-- Needed for JSON parsing -->
@@ -458,6 +460,13 @@
 				<es.client.embedded.data.path>${OPENSHIFT_DATA_DIR}</es.client.embedded.data.path>
 				<es.network.host>${OPENSHIFT_INTERNAL_IP}</es.network.host>
 			</properties>
+      <dependencies>
+        <dependency>
+          <groupId>org.jboss.elasticsearch</groupId>
+          <artifactId>elasticsearch-river-jira</artifactId>
+          <version>${elasticsearch-river-jira.version}</version>
+        </dependency>
+      </dependencies>
 			<build>
 				<finalName>dcp-frontend</finalName>
 				<resources>
@@ -478,8 +487,8 @@
 				</plugins>
 			</build>
 		</profile>
-	</profiles>
-
+  </profiles>
+  
 	<repositories>
 		<!-- ElasticSearch official mvn repo -->
 		<repository>
