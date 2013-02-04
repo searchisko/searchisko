@@ -73,7 +73,7 @@
 		<filter.name>localhost</filter.name>
 		<resteasy.version>2.3.3.Final-redhat-1</resteasy.version>
     <structured-content-tools.version>1.2.0</structured-content-tools.version>
-    <elasticsearch-river-jira.version>1.2.2</elasticsearch-river-jira.version>
+    <elasticsearch-river-jira.version>1.2.3</elasticsearch-river-jira.version>
 	</properties>
 
 	<dependencyManagement>
