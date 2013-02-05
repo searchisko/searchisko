@@ -72,8 +72,8 @@
 		<richfaces.bom.version>4.2.2.Final-redhat-1</richfaces.bom.version>
 		<filter.name>localhost</filter.name>
 		<resteasy.version>2.3.3.Final-redhat-1</resteasy.version>
-    <structured-content-tools.version>1.2.0</structured-content-tools.version>
-    <elasticsearch-river-jira.version>1.2.3</elasticsearch-river-jira.version>
+		<structured-content-tools.version>1.2.0</structured-content-tools.version>
+		<elasticsearch-river-jira.version>1.2.3</elasticsearch-river-jira.version>
 	</properties>
 
 	<dependencyManagement>
@@ -124,7 +124,7 @@
 			<artifactId>jboss-jaxrs-api_1.1_spec</artifactId>
 			<scope>provided</scope>
 		</dependency>
-		
+
 		<!-- Import the JPA API, we use provided scope as the API is included in JBoss AS 7 -->
 		<dependency>
 			<groupId>org.hibernate.javax.persistence</groupId>
@@ -183,6 +183,17 @@
 			<artifactId>resteasy-jaxrs</artifactId>
 			<version>${resteasy.version}</version>
 			<scope>provided</scope>
+			<!-- Excluded because of dependency in elasticsearch-river-jira -->
+			<exclusions>
+				<exclusion>
+					<artifactId>httpcore</artifactId>
+					<groupId>org.apache.httpcomponents</groupId>
+				</exclusion>
+				<exclusion>
+					<artifactId>httpclient</artifactId>
+					<groupId>org.apache.httpcomponents</groupId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 
 		<!-- Resteasy using common-codes (as module) which is needed by app as well. Therefore there is no need to add dependency 
@@ -195,6 +206,12 @@
 			<scope>provided</scope>
 		</dependency>
 
+		<!-- Needed for DigestUtils but it's bundled in httpclient anyway -->
+		<dependency>
+			<groupId>commons-codec</groupId>
+			<artifactId>commons-codec</artifactId>
+			<version>1.6</version>
+		</dependency>
 
 		<dependency>
 			<groupId>org.elasticsearch</groupId>
@@ -256,19 +273,19 @@
 			<version>2.1</version>
 			<scope>test</scope>
 		</dependency>
-    
-    <!-- dependencies necessary for JPA code unit tests -->
-    <dependency>
-      <groupId>org.hsqldb</groupId>
-      <artifactId>hsqldb</artifactId>
-      <version>2.2.9</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.hibernate</groupId>
-      <artifactId>hibernate-entitymanager</artifactId>
-      <scope>test</scope>
-    </dependency>
+
+		<!-- dependencies necessary for JPA code unit tests -->
+		<dependency>
+			<groupId>org.hsqldb</groupId>
+			<artifactId>hsqldb</artifactId>
+			<version>2.2.9</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.hibernate</groupId>
+			<artifactId>hibernate-entitymanager</artifactId>
+			<scope>test</scope>
+		</dependency>
 
 	</dependencies>
 
@@ -460,13 +477,13 @@
 				<es.client.embedded.data.path>${OPENSHIFT_DATA_DIR}</es.client.embedded.data.path>
 				<es.network.host>${OPENSHIFT_INTERNAL_IP}</es.network.host>
 			</properties>
-      <dependencies>
-        <dependency>
-          <groupId>org.jboss.elasticsearch</groupId>
-          <artifactId>elasticsearch-river-jira</artifactId>
-          <version>${elasticsearch-river-jira.version}</version>
-        </dependency>
-      </dependencies>
+			<dependencies>
+				<dependency>
+					<groupId>org.jboss.elasticsearch</groupId>
+					<artifactId>elasticsearch-river-jira</artifactId>
+					<version>${elasticsearch-river-jira.version}</version>
+				</dependency>
+			</dependencies>
 			<build>
 				<finalName>dcp-frontend</finalName>
 				<resources>
@@ -487,8 +504,8 @@
 				</plugins>
 			</build>
 		</profile>
-  </profiles>
-  
+	</profiles>
+
 	<repositories>
 		<!-- ElasticSearch official mvn repo -->
 		<repository>
