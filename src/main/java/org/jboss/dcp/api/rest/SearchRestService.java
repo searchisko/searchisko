@@ -242,6 +242,7 @@ public class SearchRestService extends RestServiceBase {
 			if (hf != null && !hf.isEmpty()) {
 				srb.setHighlighterPreTags("<span class='hlt'>");
 				srb.setHighlighterPostTags("</span>");
+				srb.setHighlighterEncoder("html");
 				for (String fieldName : hf.keySet()) {
 					srb.addHighlightedField(fieldName, parseHighlightSettingIntParam(hf, fieldName, "fragment_size"),
 							parseHighlightSettingIntParam(hf, fieldName, "number_of_fragments"),
