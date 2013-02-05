@@ -154,12 +154,6 @@
 			<groupId>org.hibernate</groupId>
 			<artifactId>hibernate-validator</artifactId>
 			<scope>provided</scope>
-			<exclusions>
-				<exclusion>
-					<groupId>org.slf4j</groupId>
-					<artifactId>slf4j-api</artifactId>
-				</exclusion>
-			</exclusions>
 		</dependency>
 
 		<!-- Import the JSF API, we use provided scope as the API is included in JBoss AS 7 -->
@@ -286,13 +280,6 @@
 			<artifactId>hibernate-entitymanager</artifactId>
 			<scope>test</scope>
 		</dependency>
-		<dependency>
-			<groupId>org.hibernate</groupId>
-			<artifactId>hibernate-validator</artifactId>
-			<scope>test</scope>
-		</dependency>
-
-
 	</dependencies>
 
 	<build>
