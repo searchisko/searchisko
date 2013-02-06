@@ -17,10 +17,12 @@ Some system data fields are defined by DCP, some are added into the content insi
 * `dcp_contributors` - array of contributing persons, no duplicities in array, persons identifiers normalized during push into DCP - each person represented as string `Name Surname <primaryemail@email.com>` - in Search API used for persons facet and filter
 * `dcp_activity_dates` - array of timestamps representing some activity on the content (when the content was created or changed etc. in source system) - in the Search API used for the time facet and filter
 * `dcp_last_activity_date` - timestamp representing last activity on the content (it's max value from `dcp_activity_dates`), used for sorting on search API.
-* `dcp_tags` - array of tags (Strings) - in the Search API used for facet (tag cloud) and filter - it is not directly pushed by the content provider because we plan a mechanism for additional user defined tags, so we need to rewrite this field internally. The content provider should use `tags` field instead.
 * `dcp_title` - content title - used to present the document in the basic search GUI - it can be directly set by the content provider during the push operation.
 * `dcp_url_view` - URL where the document can be viewed in its original system in human readable form - used to open the document from the basic search GUI - can be directly set by the content provider during the push
-* `dcp_description` - short text representing the content - used to show the content in the basic search GUI for queries that do not produce highlights - it can be directly set by the content provider during the push
+* `dcp_description` - short text representing the content - used to show the content in the basic search GUI for queries that do not produce highlights - it can be directly set by the content provider during the push, no html formatting
+* `content` - text representing whole content - fulltext search runs on top of it - it can be directly set by the content provider during the push, may contain html formatting
+* `dcp_tags` - array of tags (Strings) - in the Search API used for facet (tag cloud) and filter - it is not directly pushed by the content provider because we plan a mechanism for additional user defined tags, so we need to rewrite this field internally. The content provider should use `tags` field instead.
+* `tags` - tags provided by content provider
 
 
 DCP Content described by example:
@@ -30,6 +32,7 @@ DCP Content described by example:
 	    It's defined only by content provider and must contain mandatory fields defined for given 'dcp_type'.
 	
 	    "tags": ["Content_tag1", "tag2", "tag3"],
+	    "content" : "main content of record used for fulltext search"
 	
 	    "dcp_content_provider": "jbossorg",
 	    "dcp_content_type": "jbossorg_jira_issue",
