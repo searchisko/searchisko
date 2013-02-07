@@ -75,7 +75,7 @@ public class ElasticsearchClientService {
 			String pathFolderName = pathFolder.getCanonicalPath();
 
 			if (!pathFolder.exists()) {
-				if (!pathFolder.mkdir()) {
+				if (!pathFolder.mkdirs()) {
 					throw new IOException("Could not create a folder for ES [" + pathFolderName + "]");
 				}
 			}
@@ -85,8 +85,8 @@ public class ElasticsearchClientService {
 					.put("path.data", pathFolderName).build();
 
 			node = NodeBuilder.nodeBuilder().settings(s).local(true).node();
-			log.log(Level.INFO, "New Embedded Node instance created, {0}, location: {1}", new Object[] { node,
-					pathFolderName });
+			log.log(Level.INFO, "New Embedded Node instance created, {0}, location: {1}",
+					new Object[] { node, pathFolderName });
 			return node;
 		} catch (Exception e) {
 			if (node != null) {
@@ -136,8 +136,8 @@ public class ElasticsearchClientService {
 					&& appConfigurationService.getAppConfiguration().getClientType()
 							.compareTo(AppConfiguration.ClientType.EMBEDDED) != 0) {
 				log.fine("== Cluster health response ==");
-				ClusterHealthResponse healthResponse = client.admin().cluster()
-						.health(Requests.clusterHealthRequest("_all")).actionGet(TimeValue.timeValueSeconds(10));
+				ClusterHealthResponse healthResponse = client.admin().cluster().health(Requests.clusterHealthRequest("_all"))
+						.actionGet(TimeValue.timeValueSeconds(10));
 				log.log(Level.FINE, "number of nodes: {0}", healthResponse.getNumberOfNodes());
 				log.log(Level.FINE, "number of data nodes: {0}", healthResponse.getNumberOfDataNodes());
 				log.log(Level.FINE, "active shards: {0}", healthResponse.getActiveShards());
