@@ -206,6 +206,7 @@ Search contributions based on input parameters
 
 ```
 {
+  "uuid" : "f87e7875-85a1-42e3-a39e-e64d3f0e155d",
   "took":3,
   "timed_out":false,
   "_shards":{
@@ -223,16 +224,30 @@ Search contributions based on input parameters
          ...
        }
      ]
+   },
+   "facets": {
+     ...
    }
 }
 ```
 
+Description of important response fields:  
+
+* `uuid` field holds unique identifier of search response (also written into search statistics record)
+* `hits` object containing info about search hits
+* `hits/total` total number of documents matching search request - search hits
+* `hits/hits` array with documents forming part of search hits matching `from` and `size` request parameters
+* `hits/hits/_id` unique identifier of document in DCP
+* `hits/hits/fields` document fields, see `field` request parameter
+* `hits/hits/highlight` highlights of fulltext matching in given document, see `query_highlight` request parameter
+* `facets` values from facets, see `facet` request parameter
 
 GET /rest/search?{query,sortBy,start,count,content_provider,type,dcp_type,tag,project,activity_date_from,activity_date_to,contributor,facets}
 < 200
 < Content-Type: application/json
 < Access-Control-Allow-Origin: *
 {
+  "uuid" : "f87e7875-85a1-42e3-a39e-e64d3f0e155d",
   "took":3,
   "timed_out":false,
   "_shards":{
