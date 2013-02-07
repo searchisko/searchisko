@@ -280,6 +280,14 @@ public class QuerySettings {
 		this.fields = fields;
 	}
 
+	public void addField(String value) {
+		if (value == null)
+			return;
+		if (fields == null)
+			fields = new ArrayList<String>();
+		fields.add(value);
+	}
+
 	public boolean isQueryHighlight() {
 		return queryHighlight;
 	}

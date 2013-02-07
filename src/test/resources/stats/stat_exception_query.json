@@ -1,0 +1,42 @@
+{
+    "filters_activity_date_from":"1990-09-30T00:07:45.465Z",
+    "query_facets":[
+        "activity_dates_histogram",
+        "tag_cloud"
+    ],
+    "query_sortBy":"new",
+    "filters_contributors":[
+        "John Doe <john@doe.org>",
+        "Bill Hur <bill@hur.eu>"
+    ],
+    "status":"INTERNAL_SERVER_ERROR",
+    "exception":true,
+    "filters_activity_date_interval":"quarter",
+    "filters_projects":[
+        "jbossas7",
+        "jbpm"
+    ],
+    "filters_dcp_types":[
+        "issue",
+        "blogpost"
+    ],
+    "type":"document_detail",
+    "date":1356091932121,
+    "query_string":"my query",
+    "filters_size":12,
+    "filters_activity_date_to":"1990-09-30T00:09:25.465Z",
+    "filters_tags":[
+        "tag1",
+        "tag2"
+    ],
+    "filters_content_type":"jbossorg_jira_issue",
+    "exception_detailed_message":"org.elasticsearch.ElasticSearchException: Test exception",
+    "query_fields":[
+        "_id",
+        "_source"
+    ],
+    "query_highlight":true,
+    "filters_dcp_content_provider":"jbossorg",
+    "filters_from":128,
+    "exception_most_specific_cause":"org.elasticsearch.ElasticSearchException: Test exception"
+}

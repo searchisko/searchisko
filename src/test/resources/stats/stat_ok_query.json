@@ -1,0 +1,55 @@
+{
+    "query_facets":[
+        "activity_dates_histogram",
+        "tag_cloud"
+    ],
+    "query_sortBy":"new",
+    "timed_out":false,
+    "shards_successful":2,
+    "took":456,
+    "filters_activity_date_interval":"quarter",
+    "filters_dcp_types":[
+        "issue",
+        "blogpost"
+    ],
+    "query_string":"my query",
+    "shards_failed":1,
+    "date":"2012-12-21T12:12:12.121Z",
+    "type":"document_detail",
+    "returned_hits":5,
+    "total_hits":129,
+    "filters_activity_date_to":"1990-09-30T00:09:25.465Z",
+    "filters_tags":[
+        "tag1",
+        "tag2"
+    ],
+    "max_score":29.3,
+    "shard_failure":"test reason",
+    "filters_activity_date_from":"1990-09-30T00:07:45.465Z",
+    "filters_contributors":[
+        "John Doe <john@doe.org>",
+        "Bill Hur <bill@hur.eu>"
+    ],
+    "status":"OK",
+    "filters_projects":[
+        "jbossas7",
+        "jbpm"
+    ],
+    "filters_size":12,
+    "filters_content_type":"jbossorg_jira_issue",
+    "query_fields":[
+        "_id",
+        "_source"
+    ],
+    "query_highlight":true,
+    "response_uuid":"uuid",
+    "filters_dcp_content_provider":"jbossorg",
+    "hits_id":[
+        "idx0",
+        "idx1",
+        "idx2",
+        "idx3",
+        "idx4"
+    ],
+    "filters_from":128
+}

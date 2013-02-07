@@ -26,6 +26,8 @@ import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.search.ShardSearchFailure;
 import org.elasticsearch.client.Requests;
+import org.elasticsearch.common.joda.time.format.DateTimeFormatter;
+import org.elasticsearch.common.joda.time.format.ISODateTimeFormat;
 import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.search.SearchHit;
 import org.jboss.dcp.api.config.StatsConfiguration;
@@ -112,10 +114,7 @@ public class StatsClientService extends ElasticsearchClientService {
 		source.put("exception_most_specific_cause", ex.getMostSpecificCause());
 		source.put("status", ex.status());
 
-		if (querySettings != null) {
-			source.put("query_string", querySettings.getQuery());
-			addFilters(source, querySettings.getFilters());
-		}
+		addQuery(source, querySettings);
 
 		try {
 			IndexRequest ir = Requests.indexRequest().index(INDEX_NAME).type(INDEX_TYPE)
@@ -150,7 +149,7 @@ public class StatsClientService extends ElasticsearchClientService {
 		Map<String, Object> source = new HashMap<String, Object>();
 
 		source.put("type", type.name().toLowerCase());
-		source.put("date", dateInMillis);
+		source.put("date", DATE_TIME_FORMATTER_UTC.print(dateInMillis));
 		source.put("response_uuid", responseUuid);
 		source.put("took", resp.tookInMillis());
 		source.put("timed_out", resp.timedOut());
@@ -165,17 +164,16 @@ public class StatsClientService extends ElasticsearchClientService {
 			}
 		}
 
-		if (querySettings != null) {
-			source.put("query_string", querySettings.getQuery());
-			addFilters(source, querySettings.getFilters());
-		}
+		addQuery(source, querySettings);
 
 		if (resp.hits().totalHits() > 0) {
 			List<String> hitIds = new ArrayList<String>();
 			for (SearchHit hit : resp.hits().hits()) {
 				hitIds.add(hit.getId());
 			}
+			source.put("returned_hits", hitIds.size());
 			source.put("hits_id", hitIds);
+
 		}
 
 		try {
@@ -187,6 +185,28 @@ public class StatsClientService extends ElasticsearchClientService {
 			log.log(Level.FINEST, "Error writing into stats server: " + e.getMessage(), e);
 		}
 	}
+
+	/**
+	 * @param source
+	 * @param querySettings
+	 */
+	protected void addQuery(Map<String, Object> source, QuerySettings querySettings) {
+		if (querySettings != null) {
+			if (querySettings.getQuery() != null) {
+				source.put("query_string", querySettings.getQuery());
+				source.put("query_highlight", querySettings.isQueryHighlight());
+			}
+			if (querySettings.getFields() != null && !querySettings.getFields().isEmpty())
+				source.put("query_fields", querySettings.getFields());
+			if (querySettings.getFacets() != null && !querySettings.getFacets().isEmpty())
+				source.put("query_facets", querySettings.getFacets());
+			if (querySettings.getSortBy() != null)
+				source.put("query_sortBy", querySettings.getSortBy().toString());
+			addFilters(source, querySettings.getFilters());
+		}
+	}
+
+	private static final DateTimeFormatter DATE_TIME_FORMATTER_UTC = ISODateTimeFormat.dateTime().withZoneUTC();
 
 	/**
 	 * @param source
@@ -203,13 +223,30 @@ public class StatsClientService extends ElasticsearchClientService {
 			if (filters.getTags() != null && !filters.getTags().isEmpty()) {
 				source.put("filters_tags", filters.getTags());
 			}
+			if (filters.getContributors() != null && !filters.getContributors().isEmpty()) {
+				source.put("filters_contributors", filters.getContributors());
+			}
+			if (filters.getDcpTypes() != null && !filters.getDcpTypes().isEmpty()) {
+				source.put("filters_dcp_types", filters.getDcpTypes());
+			}
+			if (filters.getActivityDateFrom() != null) {
+				source.put("filters_activity_date_from", DATE_TIME_FORMATTER_UTC.print(filters.getActivityDateFrom()));
+			}
+			if (filters.getActivityDateTo() != null) {
+				source.put("filters_activity_date_to", DATE_TIME_FORMATTER_UTC.print(filters.getActivityDateTo()));
+			}
+			if (filters.getActivityDateInterval() != null) {
+				source.put("filters_activity_date_interval", filters.getActivityDateInterval().toString());
+			}
+			if (filters.getDcpContentProvider() != null) {
+				source.put("filters_dcp_content_provider", filters.getDcpContentProvider());
+			}
 			if (filters.getFrom() != null) {
-				source.put("filters_start", filters.getFrom());
+				source.put("filters_from", filters.getFrom());
 			}
 			if (filters.getSize() != null) {
-				source.put("filters_count", filters.getSize());
+				source.put("filters_size", filters.getSize());
 			}
-
 		}
 	}
 
