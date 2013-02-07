@@ -5,7 +5,9 @@
  */
 package org.jboss.dcp.api.service;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.logging.Level;
@@ -25,6 +27,7 @@ import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.search.ShardSearchFailure;
 import org.elasticsearch.client.Requests;
 import org.elasticsearch.common.unit.TimeValue;
+import org.elasticsearch.search.SearchHit;
 import org.jboss.dcp.api.config.StatsConfiguration;
 import org.jboss.dcp.api.config.TimeoutConfiguration;
 import org.jboss.dcp.api.model.AppConfiguration.ClientType;
@@ -60,14 +63,14 @@ public class StatsClientService extends ElasticsearchClientService {
 			@Override
 			public void onResponse(IndexResponse indexResponse) {
 				if (log.isLoggable(Level.FINEST)) {
-					log.log(Level.FINEST, "stats: {0}", indexResponse);
+					log.log(Level.FINEST, "stats write response: {0}", indexResponse);
 				}
 			}
 
 			@Override
 			public void onFailure(Throwable e) {
-				if (log.isLoggable(Level.FINEST)) {
-					log.log(Level.FINEST, "stats: ", e);
+				if (log.isLoggable(Level.WARNING)) {
+					log.log(Level.WARNING, "stats write failed: " + e.getMessage(), e);
 				}
 			}
 		};
@@ -93,8 +96,8 @@ public class StatsClientService extends ElasticsearchClientService {
 	 * @param query search query performed
 	 * @param filters used for search - optional
 	 */
-	public void writeStatistics(StatsRecordType type, ElasticSearchException ex, long dateInMillis, String query,
-			QuerySettings.Filters filters) {
+	public void writeStatistics(StatsRecordType type, ElasticSearchException ex, long dateInMillis,
+			QuerySettings querySettings) {
 
 		if (!statsConfiguration.enabled()) {
 			return;
@@ -104,13 +107,15 @@ public class StatsClientService extends ElasticsearchClientService {
 
 		source.put("type", type.name().toLowerCase());
 		source.put("date", dateInMillis);
-		source.put("query_string", query);
 		source.put("exception", true);
 		source.put("exception_detailed_message", ex.getDetailedMessage());
 		source.put("exception_most_specific_cause", ex.getMostSpecificCause());
 		source.put("status", ex.status());
 
-		addFilters(source, filters);
+		if (querySettings != null) {
+			source.put("query_string", querySettings.getQuery());
+			addFilters(source, querySettings.getFilters());
+		}
 
 		try {
 			IndexRequest ir = Requests.indexRequest().index(INDEX_NAME).type(INDEX_TYPE)
@@ -126,13 +131,13 @@ public class StatsClientService extends ElasticsearchClientService {
 	 * Write ES search statistics record about successful search.
 	 * 
 	 * @param type of search performed
+	 * @param responseUuid UUID of response (also returned over search REST API)
 	 * @param resp response from search attempt
 	 * @param dateInMillis timestamp when search was performed
-	 * @param query search query performed
-	 * @param filters used for search
+	 * @param querySettings performed
 	 */
-	public void writeStatistics(StatsRecordType type, SearchResponse resp, long dateInMillis, String query,
-			QuerySettings.Filters filters) {
+	public void writeStatistics(StatsRecordType type, String responseUuid, SearchResponse resp, long dateInMillis,
+			QuerySettings querySettings) {
 
 		if (!statsConfiguration.enabled()) {
 			return;
@@ -146,7 +151,7 @@ public class StatsClientService extends ElasticsearchClientService {
 
 		source.put("type", type.name().toLowerCase());
 		source.put("date", dateInMillis);
-		source.put("query_string", query);
+		source.put("response_uuid", responseUuid);
 		source.put("took", resp.tookInMillis());
 		source.put("timed_out", resp.timedOut());
 		source.put("total_hits", resp.hits().totalHits());
@@ -160,7 +165,18 @@ public class StatsClientService extends ElasticsearchClientService {
 			}
 		}
 
-		addFilters(source, filters);
+		if (querySettings != null) {
+			source.put("query_string", querySettings.getQuery());
+			addFilters(source, querySettings.getFilters());
+		}
+
+		if (resp.hits().totalHits() > 0) {
+			List<String> hitIds = new ArrayList<String>();
+			for (SearchHit hit : resp.hits().hits()) {
+				hitIds.add(hit.getId());
+			}
+			source.put("hits_id", hitIds);
+		}
 
 		try {
 			IndexRequest ir = Requests.indexRequest().index(INDEX_NAME).type(INDEX_TYPE)

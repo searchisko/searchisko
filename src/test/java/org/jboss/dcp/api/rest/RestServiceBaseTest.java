@@ -5,7 +5,6 @@
  */
 package org.jboss.dcp.api.rest;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.security.Principal;
 import java.util.HashMap;
@@ -84,10 +83,11 @@ public class RestServiceBaseTest {
 			}
 		}).when(srMock).toXContent(Mockito.any(XContentBuilder.class), Mockito.eq(ToXContent.EMPTY_PARAMS));
 
-		StreamingOutput so = tested.createResponse(srMock);
-		ByteArrayOutputStream bos = new ByteArrayOutputStream();
-		so.write(bos);
-		Assert.assertEquals("{\"testfield\":\"testvalue\"}", bos.toString());
+		StreamingOutput so = tested.createResponse(srMock, "myid");
+		TestUtils.assetStreamingOutputContent("{\"uuid\":\"myid\",\"testfield\":\"testvalue\"}", so);
+
+		TestUtils.assetStreamingOutputContent("{\"testfield\":\"testvalue\"}", tested.createResponse(srMock, null));
+
 	}
 
 	@Test

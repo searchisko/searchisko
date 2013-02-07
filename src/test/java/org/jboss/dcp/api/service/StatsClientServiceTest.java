@@ -5,6 +5,7 @@
  */
 package org.jboss.dcp.api.service;
 
+import java.io.IOException;
 import java.text.ParseException;
 import java.util.logging.Logger;
 
@@ -16,11 +17,16 @@ import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.search.ShardSearchFailure;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.rest.RestStatus;
+import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
+import org.elasticsearch.search.internal.InternalSearchHit;
 import org.jboss.dcp.api.config.StatsConfiguration;
 import org.jboss.dcp.api.config.TimeoutConfiguration;
 import org.jboss.dcp.api.model.AppConfiguration;
 import org.jboss.dcp.api.model.AppConfiguration.ClientType;
+import org.jboss.dcp.api.model.QuerySettings;
+import org.jboss.dcp.api.model.QuerySettings.Filters;
+import org.jboss.dcp.api.testtools.TestUtils;
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -75,12 +81,15 @@ public class StatsClientServiceTest {
 		Mockito.when(tested.timeout.stats()).thenReturn(256);
 
 		// case - statistics disabled
+		QuerySettings qs = new QuerySettings();
+		qs.setQuery("my query");
 		tested.statsConfiguration = new StatsConfiguration(false);
 		tested.writeStatistics(StatsRecordType.DOCUMENT_DETAIL, new ElasticSearchException("Test exception"),
-				DateTools.stringToTime("20121221121212121"), "my query", null);
+				DateTools.stringToTime("20121221121212121"), qs);
 		Mockito.verifyZeroInteractions(tested.client);
 
 		// case - statistics enabled, no filter defined
+		qs.setFilters(new Filters());
 		Mockito.reset(tested.client);
 		tested.statsConfiguration = new StatsConfiguration(true);
 		TestIndexingAnswer answ = new TestIndexingAnswer(
@@ -90,7 +99,7 @@ public class StatsClientServiceTest {
 				.index(Mockito.any(IndexRequest.class), Mockito.any(ActionListener.class));
 
 		tested.writeStatistics(StatsRecordType.DOCUMENT_DETAIL, new ElasticSearchException("Test exception"),
-				DateTools.stringToTime("20121221121212121"), "my query", null);
+				DateTools.stringToTime("20121221121212121"), qs);
 
 		Mockito.verify(tested.client).index(Mockito.any(IndexRequest.class), Mockito.any(ActionListener.class));
 		answ.assertError();
@@ -105,7 +114,7 @@ public class StatsClientServiceTest {
 				.index(Mockito.any(IndexRequest.class), Mockito.any(ActionListener.class));
 
 		tested.writeStatistics(StatsRecordType.DOCUMENT_DETAIL, new ElasticSearchException("Test exception"),
-				DateTools.stringToTime("20121221121212121"), "my query", null);
+				DateTools.stringToTime("20121221121212121"), qs);
 
 		Mockito.verify(tested.client).index(Mockito.any(IndexRequest.class), Mockito.any(ActionListener.class));
 		Mockito.verifyNoMoreInteractions(tested.client);
@@ -113,7 +122,7 @@ public class StatsClientServiceTest {
 
 	@SuppressWarnings("unchecked")
 	@Test
-	public void writeStatistics_OK() throws ParseException {
+	public void writeStatistics_OK() throws ParseException, IOException {
 		final StatsClientService tested = new StatsClientService();
 		tested.client = Mockito.mock(Client.class);
 		tested.log = Logger.getLogger("testlogger");
@@ -124,23 +133,31 @@ public class StatsClientServiceTest {
 		SearchResponse searchResponseMock = Mockito.mock(SearchResponse.class);
 
 		// case - statistics disabled
+		QuerySettings qs = new QuerySettings();
+		qs.setQuery("my query");
+
 		tested.statsConfiguration = new StatsConfiguration(false);
-		tested.writeStatistics(StatsRecordType.DOCUMENT_DETAIL, searchResponseMock,
-				DateTools.stringToTime("20121221121212121"), "my query", null);
+		tested.writeStatistics(StatsRecordType.DOCUMENT_DETAIL, "uuid", searchResponseMock,
+				DateTools.stringToTime("20121221121212121"), qs);
 		Mockito.verifyZeroInteractions(tested.client);
 
 		// case - search response null
 		tested.statsConfiguration = new StatsConfiguration(true);
-		tested.writeStatistics(StatsRecordType.DOCUMENT_DETAIL, (SearchResponse) null,
-				DateTools.stringToTime("20121221121212121"), "my query", null);
+		tested.writeStatistics(StatsRecordType.DOCUMENT_DETAIL, "uuid", (SearchResponse) null,
+				DateTools.stringToTime("20121221121212121"), qs);
 		Mockito.verifyZeroInteractions(tested.client);
 
 		// case - statistics enabled
 		Mockito.reset(tested.client);
 		tested.statsConfiguration = new StatsConfiguration(true);
 		SearchHits hitsMock = Mockito.mock(SearchHits.class);
-		Mockito.when(hitsMock.totalHits()).thenReturn(129l);
+		SearchHit[] hitsValues = new SearchHit[5];
+		for (int i = 0; i < hitsValues.length; i++) {
+			hitsValues[i] = new InternalSearchHit(i, "idx" + i, "type", null, null);
+		}
+		Mockito.when(hitsMock.totalHits()).thenReturn(new Long(hitsValues.length));
 		Mockito.when(hitsMock.maxScore()).thenReturn(29.3f);
+		Mockito.when(hitsMock.hits()).thenReturn(hitsValues);
 		Mockito.when(searchResponseMock.hits()).thenReturn(hitsMock);
 		Mockito.when(searchResponseMock.status()).thenReturn(RestStatus.OK);
 		Mockito.when(searchResponseMock.tookInMillis()).thenReturn(456l);
@@ -149,14 +166,13 @@ public class StatsClientServiceTest {
 		Mockito.when(searchResponseMock.getShardFailures()).thenReturn(
 				new ShardSearchFailure[] { new ShardSearchFailure("test reason", null) });
 
-		TestIndexingAnswer answ = new TestIndexingAnswer(
-				tested,
-				"{\"total_hits\":129,\"timed_out\":false,\"status\":\"OK\",\"shards_successful\":2,\"took\":456,\"max_score\":29.3,\"shard_failure\":\"test reason\",\"shards_failed\":1,\"query_string\":\"my query\",\"date\":1356091932121,\"type\":\"document_detail\"}");
+		TestIndexingAnswer answ = new TestIndexingAnswer(tested,
+				TestUtils.readStringFromClasspathFile("/stats/stat_ok.json"));
 		Mockito.doAnswer(answ).when(tested.client)
 				.index(Mockito.any(IndexRequest.class), Mockito.any(ActionListener.class));
 
-		tested.writeStatistics(StatsRecordType.DOCUMENT_DETAIL, searchResponseMock,
-				DateTools.stringToTime("20121221121212121"), "my query", null);
+		tested.writeStatistics(StatsRecordType.DOCUMENT_DETAIL, "uuid", searchResponseMock,
+				DateTools.stringToTime("20121221121212121"), qs);
 
 		Mockito.verify(tested.client).index(Mockito.any(IndexRequest.class), Mockito.any(ActionListener.class));
 		answ.assertError();
@@ -170,8 +186,8 @@ public class StatsClientServiceTest {
 		Mockito.doThrow(new RuntimeException("testException")).when(tested.client)
 				.index(Mockito.any(IndexRequest.class), Mockito.any(ActionListener.class));
 
-		tested.writeStatistics(StatsRecordType.DOCUMENT_DETAIL, searchResponseMock,
-				DateTools.stringToTime("20121221121212121"), "my query", null);
+		tested.writeStatistics(StatsRecordType.DOCUMENT_DETAIL, "uuid", searchResponseMock,
+				DateTools.stringToTime("20121221121212121"), qs);
 
 		Mockito.verify(tested.client).index(Mockito.any(IndexRequest.class), Mockito.any(ActionListener.class));
 		Mockito.verifyNoMoreInteractions(tested.client);
@@ -199,7 +215,7 @@ public class StatsClientServiceTest {
 				Assert.assertEquals(StatsClientService.INDEX_NAME, ir.index());
 				Assert.assertEquals(StatsClientService.INDEX_TYPE, ir.type());
 				Assert.assertEquals(256, ir.timeout().getSeconds());
-				Assert.assertEquals(expectedSource, ir.source().toUtf8());
+				TestUtils.assertJsonContent(expectedSource, ir.source().toUtf8());
 			} catch (AssertionError e) {
 				err = e;
 			}

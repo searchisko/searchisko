@@ -78,16 +78,19 @@ public class RestServiceBase {
 	/**
 	 * Create response based on elastic search response
 	 * 
-	 * @param response
+	 * @param response elastic search response to return
+	 * @param responseUuid UUID of response
 	 * @return
 	 * @throws IOException
 	 */
-	public StreamingOutput createResponse(final SearchResponse response) {
+	public StreamingOutput createResponse(final SearchResponse response, final String responseUuid) {
 		return new StreamingOutput() {
 			@Override
 			public void write(OutputStream output) throws IOException, WebApplicationException {
 				XContentBuilder builder = XContentFactory.jsonBuilder(output);
 				builder.startObject();
+				if (responseUuid != null)
+					builder.field("uuid", responseUuid);
 				response.toXContent(builder, ToXContent.EMPTY_PARAMS);
 				builder.endObject();
 				builder.close();

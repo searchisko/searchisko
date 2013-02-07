@@ -1,0 +1,21 @@
+{
+    "timed_out":false,
+    "shards_successful":2,
+    "status":"OK",
+    "took":456,
+    "type":"document_detail",
+    "date":1356091932121,
+    "shards_failed":1,
+    "query_string":"my query",
+    "total_hits":5,
+    "max_score":29.3,
+    "response_uuid":"uuid",
+    "shard_failure":"test reason",
+    "hits_id":[
+        "idx0",
+        "idx1",
+        "idx2",
+        "idx3",
+        "idx4"
+    ]
+}

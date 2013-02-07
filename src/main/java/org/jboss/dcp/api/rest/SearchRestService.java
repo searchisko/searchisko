@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.UUID;
 import java.util.logging.Level;
 
 import javax.enterprise.context.RequestScoped;
@@ -113,18 +114,19 @@ public class SearchRestService extends RestServiceBase {
 
 			final SearchResponse searchResponse = srb.execute().actionGet();
 
-			getStatsClientService().writeStatistics(StatsRecordType.SEARCH, searchResponse, System.currentTimeMillis(),
-					querySettings.getQuery(), querySettings.getFilters());
+			String responseUuid = UUID.randomUUID().toString();
+
+			getStatsClientService().writeStatistics(StatsRecordType.SEARCH, responseUuid, searchResponse,
+					System.currentTimeMillis(), querySettings);
 
 			addSimpleCORSSourceResponseHeader();
-			return createResponse(searchResponse);
+			return createResponse(searchResponse, responseUuid);
 		} catch (IllegalArgumentException e) {
 			return createBadFieldDataResponse(e.getMessage());
 		} catch (IndexMissingException e) {
 			return Response.status(Response.Status.NOT_FOUND).build();
 		} catch (ElasticSearchException e) {
-			getStatsClientService().writeStatistics(StatsRecordType.SEARCH, e, System.currentTimeMillis(),
-					querySettings.getQuery(), querySettings.getFilters());
+			getStatsClientService().writeStatistics(StatsRecordType.SEARCH, e, System.currentTimeMillis(), querySettings);
 			return createErrorResponse(e);
 		} catch (Exception e) {
 			return createErrorResponse(e);
