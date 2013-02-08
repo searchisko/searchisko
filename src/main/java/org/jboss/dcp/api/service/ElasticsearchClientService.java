@@ -61,8 +61,6 @@ public class ElasticsearchClientService {
 	public Node createEmbeddedNode(String name, Properties settings) throws Exception {
 		Node node = null;
 		try {
-			// path.data location
-			// TODO: get full path from appConfigurationService.getAppConfiguration().getAppDataPath();
 			String nodePath = appConfigurationService.getAppConfiguration().getAppDataPath();
 
 			if (nodePath != null) {
@@ -76,7 +74,7 @@ public class ElasticsearchClientService {
 
 			if (!pathFolder.exists()) {
 				if (!pathFolder.mkdirs()) {
-					throw new IOException("Could not create a folder for ES [" + pathFolderName + "]");
+					throw new IOException("Could not create a folder for ES node [" + pathFolderName + "]");
 				}
 			}
 

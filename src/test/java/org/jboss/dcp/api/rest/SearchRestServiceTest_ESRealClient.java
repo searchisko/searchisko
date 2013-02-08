@@ -37,8 +37,7 @@ public class SearchRestServiceTest_ESRealClient extends ESRealClientTestBase {
 	}
 
 	private void prepareTestData(Client client) {
-		// TODO Auto-generated method stub
-
+		// TODO _SEARCH unit test against real embedded ElasticSearch client.
 	}
 
 	private SearchRestService getTested(Client client) {
