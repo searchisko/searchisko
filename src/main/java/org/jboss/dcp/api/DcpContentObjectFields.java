@@ -21,13 +21,13 @@ public final class DcpContentObjectFields {
 	public static final String DCP_CONTENT_PROVIDER = "dcp_content_provider";
 	public static final String DCP_UPDATED = "dcp_updated";
 	public static final String DCP_LAST_ACTIVITY_DATE = "dcp_last_activity_date";
-	public static final String DCP_TAGS = "dcp_tags";
 	public static final String DCP_CONTRIBUTORS = "dcp_contributors";
 	public static final String DCP_ACTIVITY_DATES = "dcp_activity_dates";
 	public static final String DCP_TITLE = "dcp_title";
 	public static final String DCP_URL_VIEW = "dcp_url_view";
 	public static final String DCP_DESCRIPTION = "dcp_description";
+	public static final String DCP_CONTENT = "dcp_content";
+	public static final String DCP_TAGS = "dcp_tags";
 	public static final String TAGS = "tags";
-	public static final String CONTENT = "content";
 
 }

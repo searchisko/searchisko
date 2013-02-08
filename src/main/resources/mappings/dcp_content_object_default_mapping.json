@@ -11,7 +11,7 @@
             "dcp_title" : {"type" : "string", "store":"yes"},
             "dcp_url_view" : {"type" : "string", "store":"yes"},
             "dcp_description" : {"type" : "string", "store":"yes"},
-            "content" : {"type" : "string", "store":"yes"},
+            "dcp_content" : {"type" : "string"},
             "dcp_updated" : {"type" : "date"},
             "dcp_project" : {"type" : "string", "analyzer" : "keyword", "store":"yes"},
             "dcp_project_name" : {"type" : "string", "store":"yes"},
