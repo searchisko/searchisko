@@ -4,12 +4,8 @@ Distributed Contribution Platform API
 This project contains implementation of API for Distributed Contribution Platform (DCP).
 
 REST API on-line Documentation & Server Mock are available at <http://docs.jbossorg.apiary.io/>
-	
-Description of types of data stored in the DCP can be found in this repo in the `documentation` subfolder.
 
+Documentation for development and configuration is placed in this repo in the `documentation` subfolder.
+Description of types of data stored in the DCP is placed in this repo in the `documentation/rest-api` subfolder.
 
-Development
------------
-
-* Use Maven 3 to build this project
-* Deploy it to the EAP 6
+DCP API is JEE 6 application intended to run in the JBoss EAP 6 application server.

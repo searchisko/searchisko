@@ -5,13 +5,13 @@
         http://java.sun.com/xml/ns/persistence/persistence_2_0.xsd">
 	<persistence-unit name="primary">
 		<!-- In OpenShift it's standard name for myslq cartridge and it's already configured in standalone.xml -->
-		<jta-data-source>java:jboss/datasources/MysqlDS</jta-data-source>
+		<jta-data-source>${persistence.xml.jta-data-source}</jta-data-source>
 
 		<properties>
 			<!-- Bean validation is used for validation and DDL as well -->
 			<property name="javax.persistence.validation.mode" value="callback, ddl" />
 			<!-- Properties for Hibernate -->
-			<property name="hibernate.dialect" value="org.hibernate.dialect.MySQLDialect" />
+			<property name="hibernate.dialect" value="${persistence.xml.hibernate.dialect}" />
 			<property name="hibernate.hbm2ddl.auto" value="update" />
 			<property name="hibernate.show_sql" value="false" />
 			<property name="hibernate.format_sql" value="false" />

@@ -283,11 +283,10 @@
 	</dependencies>
 
 	<build>
-
-		<finalName>dcp-frontend</finalName>
+		<finalName>ROOT</finalName>
 		<resources>
 			<resource>
-				<filtering>false</filtering>
+				<filtering>true</filtering>
 				<directory>src/main/resources</directory>
 			</resource>
 		</resources>
@@ -314,6 +313,15 @@
 				</configuration>
 			</plugin>
 
+      <plugin>
+        <artifactId>maven-war-plugin</artifactId>
+        <version>2.1.1</version>
+        <configuration>
+          <outputDirectory>deployments</outputDirectory>
+          <warName>ROOT</warName>
+        </configuration>
+      </plugin>
+          
 			<!-- Prepare exploded WAR content so that we can replace tokens in html files during prepare-package phase -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -420,6 +428,8 @@
 			</activation>
 			<properties>
 				<es.client.embedded.data.path>${PWD}/.dcp_data</es.client.embedded.data.path>
+        <persistence.xml.jta-data-source>java:jboss/datasources/ExampleDS</persistence.xml.jta-data-source>
+        <persistence.xml.hibernate.dialect>org.hibernate.dialect.H2Dialect</persistence.xml.hibernate.dialect>
 			</properties>
       <dependencies>
         <dependency>
@@ -433,26 +443,6 @@
 					<resource>
 						<filtering>true</filtering>
 						<directory>src/main/profiles/localhost</directory>
-					</resource>
-				</resources>
-			</build>
-		</profile>
-		<profile>
-			<id>development</id>
-			<build>
-				<resources>
-					<resource>
-						<directory>src/main/profiles/development</directory>
-					</resource>
-				</resources>
-			</build>
-		</profile>
-		<profile>
-			<id>staging</id>
-			<build>
-				<resources>
-					<resource>
-						<directory>src/main/profiles/staging</directory>
 					</resource>
 				</resources>
 			</build>
@@ -476,6 +466,8 @@
 			<properties>
 				<es.client.embedded.data.path>${OPENSHIFT_DATA_DIR}</es.client.embedded.data.path>
 				<es.network.host>${OPENSHIFT_INTERNAL_IP}</es.network.host>
+        <persistence.xml.jta-data-source>java:jboss/datasources/MysqlDS</persistence.xml.jta-data-source>
+        <persistence.xml.hibernate.dialect>org.hibernate.dialect.MySQLDialect</persistence.xml.hibernate.dialect>
 			</properties>
 			<dependencies>
 				<dependency>
@@ -485,23 +477,12 @@
 				</dependency>
 			</dependencies>
 			<build>
-				<finalName>dcp-frontend</finalName>
 				<resources>
 					<resource>
 						<filtering>true</filtering>
 						<directory>src/main/profiles/openshift</directory>
 					</resource>
 				</resources>
-				<plugins>
-					<plugin>
-						<artifactId>maven-war-plugin</artifactId>
-						<version>2.1.1</version>
-						<configuration>
-							<outputDirectory>deployments</outputDirectory>
-							<warName>ROOT</warName>
-						</configuration>
-					</plugin>
-				</plugins>
 			</build>
 		</profile>
 	</profiles>
