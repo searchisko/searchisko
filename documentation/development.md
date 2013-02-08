@@ -53,7 +53,7 @@ ElasticSearch search node REST API is available at the `http://localhost:15000/`
 **Note**: When you use standard configuration of embedded h2 database from JBoss EAP 6 then data are lost 
 when EAP is shutdown/restarted. To keep data simply open `standalone.xml` EAP configuration file, locate 
 `<connection-url>jdbc:h2:mem:test;DB_CLOSE_DELAY=-1</connection-url>` and change it to 
-the `<connection-url>jdbc:h2:test</connection-url>`.
+the `<connection-url>jdbc:h2:test</connection-url>`. Data are then persisted in `$EAP6HOME/bin/test.h2.db` file so you can delete them manually if necessary.
 
 #### OpenShift
 
@@ -66,7 +66,7 @@ you have to use port forwarding to access it from outside.
 
 #### staging/production
 
-TODO  
+TODO
 
 ## Initialization
 
