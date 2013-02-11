@@ -55,6 +55,19 @@ when EAP is shutdown/restarted. To keep data simply open `standalone.xml` EAP co
 `<connection-url>jdbc:h2:mem:test;DB_CLOSE_DELAY=-1</connection-url>` and change it to 
 the `<connection-url>jdbc:h2:test</connection-url>`. Data are then persisted in `$EAP6HOME/bin/test.h2.db` file so you can delete them manually if necessary.
 
+**Note#2**: You might get the following exception when ROOT.war is deployed:
+```
+JBAS018038: Root contexts can not be deployed when the virtual host configuration has the welcome root enabled, disable it and redeploy
+```
+In this case you need to change `standalone.xml` configuration. Navigate to line:
+```
+<virtual-server name="default-host" enable-welcome-root="true">
+```
+and change it to
+```
+<virtual-server name="default-host" enable-welcome-root="false">
+```
+
 #### OpenShift
 
 Simply instruct OpenShift to use MySQL and JBoss EAP 6 cartridge and this git repo. 
