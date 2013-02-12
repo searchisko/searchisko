@@ -58,6 +58,8 @@ public class ProviderService implements EntityService {
 
 	public static final String SEARCH_ALL_EXCLUDED = "search_all_excluded";
 
+	public static final String PERSIST = "persist";
+
 	@Inject
 	protected Logger log;
 
@@ -432,13 +434,32 @@ public class ProviderService implements EntityService {
 	 * 
 	 * @param typeDef <code>dcp_content_type</code> configuration structure
 	 * @return SEARCH_ALL_EXCLUDED value from configuration
-	 * @throws SettingsException if value is not present in configuration or is invalid
 	 */
 	public static boolean extractSearchAllExcluded(Map<String, Object> typeDef) {
-		if (typeDef.containsKey(SEARCH_ALL_EXCLUDED))
-			return Boolean.parseBoolean(typeDef.get(SEARCH_ALL_EXCLUDED).toString());
-		else
+		return extractBoolean(typeDef, SEARCH_ALL_EXCLUDED);
+	}
+
+	/**
+	 * Get {@value ProviderService#PERSIST} value from one <code>dcp_content_type</code> configuration structure. Handle
+	 * all cases if not in structure etc.
+	 * 
+	 * @param typeDef <code>dcp_content_type</code> configuration structure
+	 * @return PERSIST value from configuration
+	 */
+	public static boolean extractPersist(Map<String, Object> typeDef) {
+		return extractBoolean(typeDef, PERSIST);
+	}
+
+	private static boolean extractBoolean(Map<String, Object> typeDef, String fieldName) {
+		Object p = typeDef.get(fieldName);
+		if (p != null) {
+			if (p instanceof Boolean)
+				return (Boolean) p;
+			else
+				return Boolean.parseBoolean(p.toString());
+		} else {
 			return false;
+		}
 	}
 
 }

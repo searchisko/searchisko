@@ -10,8 +10,7 @@ import java.util.Map;
 
 import org.codehaus.jackson.JsonParseException;
 import org.codehaus.jackson.map.JsonMappingException;
-import org.codehaus.jackson.map.ObjectMapper;
-import org.codehaus.jackson.type.TypeReference;
+import org.jboss.dcp.api.util.SearchUtils;
 
 /**
  * Common converter class from/to JSON
@@ -32,8 +31,7 @@ public abstract class CommonConverter<T> implements ModelToJSONMapConverter<T> {
 	 * @throws IOException
 	 */
 	public String convertJsonMapToString(Map<String, Object> jsonMapValue) throws IOException {
-		ObjectMapper mapper = new ObjectMapper();
-		return mapper.writeValueAsString(jsonMapValue);
+		return SearchUtils.convertJsonMapToString(jsonMapValue);
 	}
 
 	/**
@@ -47,9 +45,6 @@ public abstract class CommonConverter<T> implements ModelToJSONMapConverter<T> {
 	 */
 	public Map<String, Object> convertToJsonMap(String jsonData) throws JsonParseException, JsonMappingException,
 			IOException {
-		ObjectMapper mapper = new ObjectMapper();
-		return mapper.readValue(jsonData, new TypeReference<Map<String, Object>>() {
-		});
-
+		return SearchUtils.convertToJsonMap(jsonData);
 	}
 }

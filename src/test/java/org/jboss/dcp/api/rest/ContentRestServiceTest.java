@@ -20,6 +20,7 @@ import org.jboss.dcp.api.DcpContentObjectFields;
 import org.jboss.dcp.api.service.ProviderService;
 import org.jboss.dcp.api.testtools.ESRealClientTestBase;
 import org.jboss.dcp.api.testtools.TestUtils;
+import org.jboss.dcp.persistence.service.ContentPersistenceService;
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -40,14 +41,14 @@ public class ContentRestServiceTest extends ESRealClientTestBase {
 		TestUtils.assertPermissionProvider(ContentRestService.class, "pushContent", String.class, String.class, Map.class);
 	}
 
-	@SuppressWarnings("unchecked")
 	@Test
-	public void pushContent() throws Exception {
+	public void pushContent_invalidParams() throws Exception {
 		ContentRestService tested = getTested(false);
 
 		Map<String, Object> content = new HashMap<String, Object>();
 		content.put("test", "test");
 		// case - invalid input parameters
+		Mockito.reset(tested.contentPersistenceService);
 		TestUtils.assertResponseStatus(tested.pushContent(null, "1", content), Response.Status.BAD_REQUEST);
 		TestUtils.assertResponseStatus(tested.pushContent("", "1", content), Response.Status.BAD_REQUEST);
 		TestUtils.assertResponseStatus(tested.pushContent("known", null, content), Response.Status.BAD_REQUEST);
@@ -55,89 +56,215 @@ public class ContentRestServiceTest extends ESRealClientTestBase {
 		TestUtils.assertResponseStatus(tested.pushContent("known", "1", null), Response.Status.BAD_REQUEST);
 		content.clear();
 		TestUtils.assertResponseStatus(tested.pushContent("known", "1", content), Response.Status.BAD_REQUEST);
+		Mockito.verifyNoMoreInteractions(tested.contentPersistenceService);
 
 		// case - type is unknown
+		Mockito.reset(tested.contentPersistenceService);
 		content.put("test", "test");
 		TestUtils.assertResponseStatus(tested.pushContent("unknown", "1", content), Response.Status.BAD_REQUEST);
+		Mockito.verifyNoMoreInteractions(tested.contentPersistenceService);
 
 		// case - type configuration is invalid - do not contains index name and/or index type
+		Mockito.reset(tested.contentPersistenceService);
 		TestUtils.assertResponseStatus(tested.pushContent("invalid", "1", content), Response.Status.INTERNAL_SERVER_ERROR);
+		Mockito.verifyNoMoreInteractions(tested.contentPersistenceService);
 
 		// case - type configuration is invalid - do not contains dcp_type definition
+		Mockito.reset(tested.contentPersistenceService);
 		TestUtils
 				.assertResponseStatus(tested.pushContent("invalid_2", "1", content), Response.Status.INTERNAL_SERVER_ERROR);
+		Mockito.verifyNoMoreInteractions(tested.contentPersistenceService);
 
+	}
+
+	@SuppressWarnings("unchecked")
+	@Test
+	public void pushContent_noPersistence() throws Exception {
 		try {
-			tested = getTested(true);
+			ContentRestService tested = getTested(true);
+			Map<String, Object> content = new HashMap<String, Object>();
 
 			// case - insert when index is not found
+			String dcp_content_type = "known";
 			{
+				Mockito.reset(tested.contentPersistenceService);
 				indexDelete(INDEX_NAME);
 				content.clear();
 				content.put("test", "testvalue");
-				Response r = TestUtils.assertResponseStatus(tested.pushContent("known", "1", content), Response.Status.OK);
+				Response r = TestUtils.assertResponseStatus(tested.pushContent(dcp_content_type, "1", content),
+						Response.Status.OK);
 				Assert.assertEquals("insert", ((Map<String, String>) r.getEntity()).get("status"));
-				Mockito.verify(tested.providerService).runPreprocessors("known", PREPROCESSORS, content);
+				Mockito.verify(tested.providerService).runPreprocessors(dcp_content_type, PREPROCESSORS, content);
 				indexFlush(INDEX_NAME);
-				Map<String, Object> doc = indexGetDocument(INDEX_NAME, INDEX_TYPE, "known-1");
+				Map<String, Object> doc = indexGetDocument(INDEX_NAME, INDEX_TYPE,
+						tested.providerService.generateDcpId(dcp_content_type, "1"));
 				Assert.assertNotNull(doc);
 				Assert.assertEquals("testvalue", doc.get("test"));
 				Assert.assertEquals("jbossorg", doc.get(DcpContentObjectFields.DCP_CONTENT_PROVIDER));
 				Assert.assertEquals("1", doc.get(DcpContentObjectFields.DCP_CONTENT_ID));
-				Assert.assertEquals("known", doc.get(DcpContentObjectFields.DCP_CONTENT_TYPE));
+				Assert.assertEquals(dcp_content_type, doc.get(DcpContentObjectFields.DCP_CONTENT_TYPE));
 				Assert.assertEquals("my_dcp_type", doc.get(DcpContentObjectFields.DCP_TYPE));
-				Assert.assertEquals("known-1", doc.get(DcpContentObjectFields.DCP_ID));
+				Assert.assertEquals(tested.providerService.generateDcpId(dcp_content_type, "1"),
+						doc.get(DcpContentObjectFields.DCP_ID));
 				Assert.assertNotNull(doc.get(DcpContentObjectFields.DCP_UPDATED));
 				Assert.assertEquals(null, doc.get(DcpContentObjectFields.DCP_TAGS));
+				Mockito.verifyNoMoreInteractions(tested.contentPersistenceService);
 			}
 
 			// case - insert when index is found, fill dcp_updated if not provided in content, process tags provided in
 			// content
 			{
-				Mockito.reset(tested.providerService);
+				Mockito.reset(tested.providerService, tested.contentPersistenceService);
 				setupProviderServiceMock(tested);
 				content.put("test2", "testvalue2");
 				content.remove(DcpContentObjectFields.DCP_UPDATED);
 				String[] tags = new String[] { "tag_value" };
 				content.put("tags", tags);
-				Response r = TestUtils.assertResponseStatus(tested.pushContent("known", "2", content), Response.Status.OK);
+				Response r = TestUtils.assertResponseStatus(tested.pushContent(dcp_content_type, "2", content),
+						Response.Status.OK);
 				Assert.assertEquals("insert", ((Map<String, String>) r.getEntity()).get("status"));
-				Mockito.verify(tested.providerService).runPreprocessors("known", PREPROCESSORS, content);
+				Mockito.verify(tested.providerService).runPreprocessors(dcp_content_type, PREPROCESSORS, content);
 				indexFlush(INDEX_NAME);
-				Map<String, Object> doc = indexGetDocument(INDEX_NAME, INDEX_TYPE, "known-2");
+				Map<String, Object> doc = indexGetDocument(INDEX_NAME, INDEX_TYPE,
+						tested.providerService.generateDcpId(dcp_content_type, "2"));
 				Assert.assertNotNull(doc);
 				Assert.assertEquals("testvalue", doc.get("test"));
 				Assert.assertEquals("testvalue2", doc.get("test2"));
 				Assert.assertEquals("jbossorg", doc.get(DcpContentObjectFields.DCP_CONTENT_PROVIDER));
 				Assert.assertEquals("2", doc.get(DcpContentObjectFields.DCP_CONTENT_ID));
-				Assert.assertEquals("known", doc.get(DcpContentObjectFields.DCP_CONTENT_TYPE));
+				Assert.assertEquals(dcp_content_type, doc.get(DcpContentObjectFields.DCP_CONTENT_TYPE));
 				Assert.assertEquals("my_dcp_type", doc.get(DcpContentObjectFields.DCP_TYPE));
-				Assert.assertEquals("known-2", doc.get(DcpContentObjectFields.DCP_ID));
+				Assert.assertEquals(tested.providerService.generateDcpId(dcp_content_type, "2"),
+						doc.get(DcpContentObjectFields.DCP_ID));
 				Assert.assertNotNull(doc.get(DcpContentObjectFields.DCP_UPDATED));
 				Assert.assertEquals("tag_value", ((List<String>) doc.get(DcpContentObjectFields.DCP_TAGS)).get(0));
+				Mockito.verifyNoMoreInteractions(tested.contentPersistenceService);
 			}
 
 			// case - rewrite document in index
 			{
-				Mockito.reset(tested.providerService);
+				Mockito.reset(tested.providerService, tested.contentPersistenceService);
 				setupProviderServiceMock(tested);
 				content.clear();
 				content.put("test3", "testvalue3");
-				Response r = TestUtils.assertResponseStatus(tested.pushContent("known", "1", content), Response.Status.OK);
+				Response r = TestUtils.assertResponseStatus(tested.pushContent(dcp_content_type, "1", content),
+						Response.Status.OK);
 				Assert.assertEquals("update", ((Map<String, String>) r.getEntity()).get("status"));
-				Mockito.verify(tested.providerService).runPreprocessors("known", PREPROCESSORS, content);
+				Mockito.verify(tested.providerService).runPreprocessors(dcp_content_type, PREPROCESSORS, content);
 				indexFlush(INDEX_NAME);
-				Map<String, Object> doc = indexGetDocument(INDEX_NAME, INDEX_TYPE, "known-1");
+				Map<String, Object> doc = indexGetDocument(INDEX_NAME, INDEX_TYPE,
+						tested.providerService.generateDcpId(dcp_content_type, "1"));
 				Assert.assertNotNull(doc);
 				Assert.assertEquals(null, doc.get("test"));
 				Assert.assertEquals("testvalue3", doc.get("test3"));
 				Assert.assertEquals("jbossorg", doc.get(DcpContentObjectFields.DCP_CONTENT_PROVIDER));
 				Assert.assertEquals("1", doc.get(DcpContentObjectFields.DCP_CONTENT_ID));
-				Assert.assertEquals("known", doc.get(DcpContentObjectFields.DCP_CONTENT_TYPE));
+				Assert.assertEquals(dcp_content_type, doc.get(DcpContentObjectFields.DCP_CONTENT_TYPE));
 				Assert.assertEquals("my_dcp_type", doc.get(DcpContentObjectFields.DCP_TYPE));
-				Assert.assertEquals("known-1", doc.get(DcpContentObjectFields.DCP_ID));
+				Assert.assertEquals(tested.providerService.generateDcpId(dcp_content_type, "1"),
+						doc.get(DcpContentObjectFields.DCP_ID));
 				Assert.assertNotNull(doc.get(DcpContentObjectFields.DCP_UPDATED));
 				Assert.assertEquals(null, doc.get(DcpContentObjectFields.DCP_TAGS));
+				Mockito.verifyNoMoreInteractions(tested.contentPersistenceService);
+			}
+		} finally {
+			indexDelete(INDEX_NAME);
+			finalizeESClientForUnitTest();
+		}
+	}
+
+	@SuppressWarnings("unchecked")
+	@Test
+	public void pushContent_persistence() throws Exception {
+		try {
+			ContentRestService tested = getTested(true);
+			Map<String, Object> content = new HashMap<String, Object>();
+
+			// case - insert when index is not found
+			String dcp_content_type = "persist";
+			{
+				Mockito.reset(tested.contentPersistenceService);
+				indexDelete(INDEX_NAME);
+				content.clear();
+				content.put("test", "testvalue");
+				Response r = TestUtils.assertResponseStatus(tested.pushContent(dcp_content_type, "1", content),
+						Response.Status.OK);
+				Assert.assertEquals("insert", ((Map<String, String>) r.getEntity()).get("status"));
+				indexFlush(INDEX_NAME);
+				Map<String, Object> doc = indexGetDocument(INDEX_NAME, INDEX_TYPE,
+						tested.providerService.generateDcpId(dcp_content_type, "1"));
+				Assert.assertNotNull(doc);
+				Assert.assertEquals("testvalue", doc.get("test"));
+				Assert.assertEquals("jbossorg", doc.get(DcpContentObjectFields.DCP_CONTENT_PROVIDER));
+				Assert.assertEquals("1", doc.get(DcpContentObjectFields.DCP_CONTENT_ID));
+				Assert.assertEquals(dcp_content_type, doc.get(DcpContentObjectFields.DCP_CONTENT_TYPE));
+				Assert.assertEquals("my_dcp_type", doc.get(DcpContentObjectFields.DCP_TYPE));
+				Assert.assertEquals(tested.providerService.generateDcpId(dcp_content_type, "1"),
+						doc.get(DcpContentObjectFields.DCP_ID));
+				Assert.assertNotNull(doc.get(DcpContentObjectFields.DCP_UPDATED));
+				Assert.assertEquals(null, doc.get(DcpContentObjectFields.DCP_TAGS));
+				Mockito.verify(tested.contentPersistenceService).store(
+						tested.providerService.generateDcpId(dcp_content_type, "1"), dcp_content_type, content);
+				Mockito.verifyNoMoreInteractions(tested.contentPersistenceService);
+			}
+
+			// case - insert when index is found, fill dcp_updated if not provided in content, process tags provided in
+			// content
+			{
+				Mockito.reset(tested.providerService, tested.contentPersistenceService);
+				setupProviderServiceMock(tested);
+				content.put("test2", "testvalue2");
+				content.remove(DcpContentObjectFields.DCP_UPDATED);
+				String[] tags = new String[] { "tag_value" };
+				content.put("tags", tags);
+				Response r = TestUtils.assertResponseStatus(tested.pushContent(dcp_content_type, "2", content),
+						Response.Status.OK);
+				Assert.assertEquals("insert", ((Map<String, String>) r.getEntity()).get("status"));
+				indexFlush(INDEX_NAME);
+				Map<String, Object> doc = indexGetDocument(INDEX_NAME, INDEX_TYPE,
+						tested.providerService.generateDcpId(dcp_content_type, "2"));
+				Assert.assertNotNull(doc);
+				Assert.assertEquals("testvalue", doc.get("test"));
+				Assert.assertEquals("testvalue2", doc.get("test2"));
+				Assert.assertEquals("jbossorg", doc.get(DcpContentObjectFields.DCP_CONTENT_PROVIDER));
+				Assert.assertEquals("2", doc.get(DcpContentObjectFields.DCP_CONTENT_ID));
+				Assert.assertEquals(dcp_content_type, doc.get(DcpContentObjectFields.DCP_CONTENT_TYPE));
+				Assert.assertEquals("my_dcp_type", doc.get(DcpContentObjectFields.DCP_TYPE));
+				Assert.assertEquals(tested.providerService.generateDcpId(dcp_content_type, "2"),
+						doc.get(DcpContentObjectFields.DCP_ID));
+				Assert.assertNotNull(doc.get(DcpContentObjectFields.DCP_UPDATED));
+				Assert.assertEquals("tag_value", ((List<String>) doc.get(DcpContentObjectFields.DCP_TAGS)).get(0));
+				Mockito.verify(tested.contentPersistenceService).store(
+						tested.providerService.generateDcpId(dcp_content_type, "2"), dcp_content_type, content);
+				Mockito.verifyNoMoreInteractions(tested.contentPersistenceService);
+			}
+
+			// case - rewrite document in index
+			{
+				Mockito.reset(tested.providerService, tested.contentPersistenceService);
+				setupProviderServiceMock(tested);
+				content.clear();
+				content.put("test3", "testvalue3");
+				Response r = TestUtils.assertResponseStatus(tested.pushContent(dcp_content_type, "1", content),
+						Response.Status.OK);
+				Assert.assertEquals("update", ((Map<String, String>) r.getEntity()).get("status"));
+				indexFlush(INDEX_NAME);
+				Map<String, Object> doc = indexGetDocument(INDEX_NAME, INDEX_TYPE,
+						tested.providerService.generateDcpId(dcp_content_type, "1"));
+				Assert.assertNotNull(doc);
+				Assert.assertEquals(null, doc.get("test"));
+				Assert.assertEquals("testvalue3", doc.get("test3"));
+				Assert.assertEquals("jbossorg", doc.get(DcpContentObjectFields.DCP_CONTENT_PROVIDER));
+				Assert.assertEquals("1", doc.get(DcpContentObjectFields.DCP_CONTENT_ID));
+				Assert.assertEquals(dcp_content_type, doc.get(DcpContentObjectFields.DCP_CONTENT_TYPE));
+				Assert.assertEquals("my_dcp_type", doc.get(DcpContentObjectFields.DCP_TYPE));
+				Assert.assertEquals(tested.providerService.generateDcpId(dcp_content_type, "1"),
+						doc.get(DcpContentObjectFields.DCP_ID));
+				Assert.assertNotNull(doc.get(DcpContentObjectFields.DCP_UPDATED));
+				Assert.assertEquals(null, doc.get(DcpContentObjectFields.DCP_TAGS));
+				Mockito.verify(tested.contentPersistenceService).store(
+						tested.providerService.generateDcpId(dcp_content_type, "1"), dcp_content_type, content);
+				Mockito.verifyNoMoreInteractions(tested.contentPersistenceService);
 			}
 		} finally {
 			indexDelete(INDEX_NAME);
@@ -160,40 +287,59 @@ public class ContentRestServiceTest extends ESRealClientTestBase {
 		TestUtils.assertResponseStatus(tested.deleteContent("", "1", null), Response.Status.BAD_REQUEST);
 		TestUtils.assertResponseStatus(tested.deleteContent("known", null, null), Response.Status.BAD_REQUEST);
 		TestUtils.assertResponseStatus(tested.deleteContent("known", "", null), Response.Status.BAD_REQUEST);
+		Mockito.verifyNoMoreInteractions(tested.contentPersistenceService);
 
 		// case - type is unknown
 		TestUtils.assertResponseStatus(tested.deleteContent("unknown", "1", null), Response.Status.BAD_REQUEST);
+		Mockito.verifyNoMoreInteractions(tested.contentPersistenceService);
 
 		// case - type configuration is invalid - do not contains index name and/or index type
 		TestUtils.assertResponseStatus(tested.deleteContent("invalid", "1", null), Response.Status.INTERNAL_SERVER_ERROR);
+		Mockito.verifyNoMoreInteractions(tested.contentPersistenceService);
+
 		try {
 			tested = getTested(true);
 
 			// case - delete when index is not found
 			{
+				Mockito.reset(tested.contentPersistenceService);
 				indexDelete(INDEX_NAME);
 				TestUtils.assertResponseStatus(tested.deleteContent("known", "1", null), Response.Status.NOT_FOUND);
+				TestUtils.assertResponseStatus(tested.deleteContent("persist", "1", null), Response.Status.NOT_FOUND);
+				Mockito.verify(tested.contentPersistenceService).delete(tested.providerService.generateDcpId("persist", "1"),
+						"persist");
+				Mockito.verifyNoMoreInteractions(tested.contentPersistenceService);
 			}
 
 			// case - delete when document doesn't exist in index
 			{
+				Mockito.reset(tested.contentPersistenceService);
 				indexDelete(INDEX_NAME);
 				indexCreate(INDEX_NAME);
 				indexInsertDocument(INDEX_NAME, INDEX_TYPE, "known-2", "{\"test2\":\"test2\"}");
 				indexFlush(INDEX_NAME);
 				TestUtils.assertResponseStatus(tested.deleteContent("known", "1", null), Response.Status.NOT_FOUND);
+				TestUtils.assertResponseStatus(tested.deleteContent("persist", "1", null), Response.Status.NOT_FOUND);
 				Assert.assertNotNull(indexGetDocument(INDEX_NAME, INDEX_TYPE, "known-2"));
+				Mockito.verify(tested.contentPersistenceService).delete(tested.providerService.generateDcpId("persist", "1"),
+						"persist");
+				Mockito.verifyNoMoreInteractions(tested.contentPersistenceService);
 			}
 
 			// case - delete when document exist in index
 			{
+				Mockito.reset(tested.contentPersistenceService);
 				indexInsertDocument(INDEX_NAME, INDEX_TYPE, "known-1", "{\"test1\":\"test1\"}");
+				indexInsertDocument(INDEX_NAME, INDEX_TYPE, "persist-1", "{\"test1\":\"testper1\"}");
 				indexFlush(INDEX_NAME);
 				TestUtils.assertResponseStatus(tested.deleteContent("known", "1", null), Response.Status.OK);
 				Assert.assertNull(indexGetDocument(INDEX_NAME, INDEX_TYPE, "known-1"));
+				TestUtils.assertResponseStatus(tested.deleteContent("persist", "1", null), Response.Status.OK);
+				Assert.assertNull(indexGetDocument(INDEX_NAME, INDEX_TYPE, "persist-1"));
 				Assert.assertNotNull(indexGetDocument(INDEX_NAME, INDEX_TYPE, "known-2"));
 				// another subsequent deletes
 				TestUtils.assertResponseStatus(tested.deleteContent("known", "1", null), Response.Status.NOT_FOUND);
+				TestUtils.assertResponseStatus(tested.deleteContent("persist", "1", null), Response.Status.NOT_FOUND);
 				TestUtils.assertResponseStatus(tested.deleteContent("known", "2", null), Response.Status.OK);
 				Assert.assertNull(indexGetDocument(INDEX_NAME, INDEX_TYPE, "known-1"));
 				Assert.assertNull(indexGetDocument(INDEX_NAME, INDEX_TYPE, "known-2"));
@@ -202,6 +348,11 @@ public class ContentRestServiceTest extends ESRealClientTestBase {
 				TestUtils.assertResponseStatus(tested.deleteContent("known", "1", null), Response.Status.NOT_FOUND);
 				TestUtils.assertResponseStatus(tested.deleteContent("known", "1", "false"), Response.Status.NOT_FOUND);
 				TestUtils.assertResponseStatus(tested.deleteContent("known", "1", "true"), Response.Status.OK);
+
+				Mockito.verify(tested.contentPersistenceService, Mockito.times(2)).delete(
+						tested.providerService.generateDcpId("persist", "1"), "persist");
+				Mockito.verifyNoMoreInteractions(tested.contentPersistenceService);
+
 			}
 
 		} finally {
@@ -340,6 +491,8 @@ public class ContentRestServiceTest extends ESRealClientTestBase {
 
 		tested.providerService = Mockito.mock(ProviderService.class);
 		setupProviderServiceMock(tested);
+
+		tested.contentPersistenceService = Mockito.mock(ContentPersistenceService.class);
 		tested.log = Logger.getLogger("testlogger");
 		tested.securityContext = Mockito.mock(SecurityContext.class);
 		Mockito.when(tested.securityContext.getUserPrincipal()).thenReturn(new Principal() {
@@ -369,6 +522,15 @@ public class ContentRestServiceTest extends ESRealClientTestBase {
 		typeDefKnown.put(ProviderService.DCP_TYPE, "my_dcp_type");
 		Mockito.when(tested.providerService.findContentType("known")).thenReturn(typeDefKnown);
 
+		Map<String, Object> typeDefPersist = new HashMap<String, Object>();
+		Map<String, Object> typeDefPersistIndex = new HashMap<String, Object>();
+		typeDefPersist.put(ProviderService.INDEX, typeDefPersistIndex);
+		typeDefPersistIndex.put("name", INDEX_NAME);
+		typeDefPersistIndex.put("type", INDEX_TYPE);
+		typeDefPersist.put(ProviderService.DCP_TYPE, "my_dcp_type");
+		typeDefPersist.put(ProviderService.PERSIST, "true");
+		Mockito.when(tested.providerService.findContentType("persist")).thenReturn(typeDefPersist);
+
 		Map<String, Object> providerDef = new HashMap<String, Object>();
 		Mockito.when(tested.providerService.findProvider("jbossorg")).thenReturn(providerDef);
 		Map<String, Object> typesDef = new HashMap<String, Object>();
@@ -378,5 +540,6 @@ public class ContentRestServiceTest extends ESRealClientTestBase {
 		typeDefInvalid2.put(ProviderService.INDEX, typeDefKnownIndex);
 		typesDef.put("invalid_2", typeDefInvalid2);
 		typesDef.put("known", typeDefKnown);
+		typesDef.put("persist", typeDefPersist);
 	}
 }

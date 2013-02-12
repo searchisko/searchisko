@@ -5,23 +5,15 @@
  */
 package org.jboss.dcp.persistence.service;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
-import javax.persistence.EntityManager;
-import javax.persistence.EntityManagerFactory;
-import javax.persistence.Persistence;
-
 import org.jboss.dcp.api.testtools.TestUtils;
 import org.jboss.dcp.persistence.jpa.model.Contributor;
 import org.jboss.dcp.persistence.jpa.model.ContributorConverter;
-import org.junit.After;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 
 /**
@@ -29,50 +21,10 @@ import org.junit.Test;
  * 
  * @author Vlastimil Elias (velias at redhat dot com)
  */
-public class JpaEntityServiceTest {
+public class JpaEntityServiceTest extends JpaTestBase {
 
-	private static Logger logger = Logger.getLogger(JpaEntityServiceTest.class.getName());
-
-	private EntityManagerFactory emFactory;
-
-	private EntityManager em;
-
-	private Connection connection;
-
-	@Before
-	public void setUp() throws Exception {
-		try {
-			logger.info("Starting in-memory HSQL database for unit tests");
-			Class.forName("org.hsqldb.jdbcDriver");
-			connection = DriverManager.getConnection("jdbc:hsqldb:mem:unit-testing-jpa", "sa", "");
-		} catch (Exception ex) {
-			ex.printStackTrace();
-			Assert.fail("Exception during HSQL database startup.");
-		}
-		try {
-			logger.info("Building JPA EntityManager for unit tests");
-			emFactory = Persistence.createEntityManagerFactory("testPU");
-			em = emFactory.createEntityManager();
-		} catch (Exception ex) {
-			ex.printStackTrace();
-			Assert.fail("Exception during JPA EntityManager instanciation.");
-		}
-	}
-
-	@After
-	public void tearDown() throws Exception {
-		logger.info("Shuting down Hibernate JPA layer.");
-		if (em != null) {
-			em.close();
-		}
-		if (emFactory != null) {
-			emFactory.close();
-		}
-		logger.info("Stopping in-memory HSQL database.");
-		try {
-			connection.createStatement().execute("SHUTDOWN");
-		} catch (Exception ex) {
-		}
+	{
+		logger = Logger.getLogger(JpaEntityServiceTest.class.getName());
 	}
 
 	@Test

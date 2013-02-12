@@ -35,6 +35,7 @@ import org.jboss.dcp.api.DcpContentObjectFields;
 import org.jboss.dcp.api.annotations.security.GuestAllowed;
 import org.jboss.dcp.api.annotations.security.ProviderAllowed;
 import org.jboss.dcp.api.service.ProviderService;
+import org.jboss.dcp.persistence.service.ContentPersistenceService;
 
 /**
  * REST API for Content
@@ -52,6 +53,9 @@ public class ContentRestService extends RestServiceBase {
 
 	@Inject
 	protected ProviderService providerService;
+
+	@Inject
+	protected ContentPersistenceService contentPersistenceService;
 
 	@GET
 	@Path("/")
@@ -179,12 +183,15 @@ public class ContentRestService extends RestServiceBase {
 			content.put(DcpContentObjectFields.DCP_UPDATED, new Date());
 			// Copy distinct data from content to normalized fields
 			content.put(DcpContentObjectFields.DCP_TAGS, content.get("tags"));
-			// TODO EXTERNAL_TAGS - add external tags for this document into dcp_tags field
 
 			// Run preprocessors to manipulate other fields
 			providerService.runPreprocessors(type, ProviderService.extractPreprocessors(typeDef, type), content);
 
-			// TODO PERSISTENCE - Store to Persistence
+			if (ProviderService.extractPersist(typeDef)) {
+				contentPersistenceService.store(dcpContentId, type, content);
+			}
+
+			// TODO EXTERNAL_TAGS - add external tags for this document into dcp_tags field
 
 			// Push to search subsystem
 			IndexResponse ir = getSearchClientService().getClient().prepareIndex(indexName, indexType, dcpContentId)
@@ -225,7 +232,9 @@ public class ContentRestService extends RestServiceBase {
 
 			String dcpContentId = providerService.generateDcpId(type, contentId);
 
-			// TODO PERSISTENCE - Remove from persistence if exists
+			if (ProviderService.extractPersist(typeDef)) {
+				contentPersistenceService.delete(dcpContentId, type);
+			}
 
 			String indexName = ProviderService.extractIndexName(typeDef, type);
 			String indexType = ProviderService.extractIndexType(typeDef, type);

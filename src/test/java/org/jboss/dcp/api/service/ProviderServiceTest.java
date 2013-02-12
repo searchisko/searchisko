@@ -265,7 +265,7 @@ public class ProviderServiceTest extends ESRealClientTestBase {
 		typeDef.put(ProviderService.SEARCH_ALL_EXCLUDED, "");
 		Assert.assertFalse(ProviderService.extractSearchAllExcluded(typeDef));
 
-		// case - dcp_type field defined but invalid data type
+		// case - search_all_excluded field defined but invalid data type
 		typeDef.put(ProviderService.SEARCH_ALL_EXCLUDED, new Integer(10));
 		Assert.assertFalse(ProviderService.extractSearchAllExcluded(typeDef));
 
@@ -279,6 +279,38 @@ public class ProviderServiceTest extends ESRealClientTestBase {
 		Assert.assertTrue(ProviderService.extractSearchAllExcluded(typeDef));
 		typeDef.put(ProviderService.SEARCH_ALL_EXCLUDED, "True");
 		Assert.assertTrue(ProviderService.extractSearchAllExcluded(typeDef));
+	}
+
+	@Test
+	public void extractPersist() {
+		Map<String, Object> typeDef = new HashMap<String, Object>();
+
+		// case - persist field not defined
+		Assert.assertFalse(ProviderService.extractPersist(typeDef));
+
+		// case - persist field defined but empty
+		typeDef.put(ProviderService.PERSIST, "");
+		Assert.assertFalse(ProviderService.extractPersist(typeDef));
+
+		// case - persist field defined but invalid data type
+		typeDef.put(ProviderService.PERSIST, new Integer(10));
+		Assert.assertFalse(ProviderService.extractPersist(typeDef));
+
+		typeDef.put(ProviderService.PERSIST, new Boolean(true));
+		Assert.assertTrue(ProviderService.extractPersist(typeDef));
+		typeDef.put(ProviderService.PERSIST, new Boolean(false));
+		Assert.assertFalse(ProviderService.extractPersist(typeDef));
+
+		// case - persist correct found
+		typeDef.put(ProviderService.PERSIST, "false");
+		Assert.assertFalse(ProviderService.extractPersist(typeDef));
+		typeDef.put(ProviderService.PERSIST, "False");
+		Assert.assertFalse(ProviderService.extractPersist(typeDef));
+
+		typeDef.put(ProviderService.PERSIST, "true");
+		Assert.assertTrue(ProviderService.extractPersist(typeDef));
+		typeDef.put(ProviderService.PERSIST, "True");
+		Assert.assertTrue(ProviderService.extractPersist(typeDef));
 	}
 
 	@Test

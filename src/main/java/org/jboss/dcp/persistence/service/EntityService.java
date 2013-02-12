@@ -11,7 +11,7 @@ import java.util.Map;
 import javax.ws.rs.core.StreamingOutput;
 
 /**
- * Base interface for entity service
+ * Base interface for entity service used to persistently store DCP entities.
  * 
  * @author Libor Krzyzanek
  * @author Vlastimil Elias (velias at redhat dot com)

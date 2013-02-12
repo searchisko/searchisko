@@ -7,7 +7,16 @@ package org.jboss.dcp.api.util;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Map;
 import java.util.Properties;
+import java.util.TimeZone;
+
+import org.codehaus.jackson.JsonParseException;
+import org.codehaus.jackson.map.JsonMappingException;
+import org.codehaus.jackson.map.ObjectMapper;
+import org.codehaus.jackson.type.TypeReference;
 
 /**
  * Utility class for search
@@ -47,6 +56,52 @@ public class SearchUtils {
 				value = null;
 		}
 		return value;
+	}
+
+	/**
+	 * Convert JSON Map structure into String with JSON content.
+	 * 
+	 * @param jsonMapValue to convert
+	 * @return
+	 * @throws IOException
+	 */
+	public static String convertJsonMapToString(Map<String, Object> jsonMapValue) throws IOException {
+		if (jsonMapValue == null)
+			return null;
+		ObjectMapper mapper = new ObjectMapper();
+		mapper.setDateFormat(getISODateFormat());
+		return mapper.writeValueAsString(jsonMapValue);
+	}
+
+	/**
+	 * Get ISO date time formatter.
+	 * 
+	 * @return DateFormat instance for ISO format
+	 */
+	public static DateFormat getISODateFormat() {
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
+		sdf.setTimeZone(TimeZone.getTimeZone("GMT"));
+		sdf.setLenient(false);
+		return sdf;
+	}
+
+	/**
+	 * Convert String with JSON content into JSON Map structure.
+	 * 
+	 * @param jsonData string to convert
+	 * @return JSON MAP structure
+	 * @throws JsonParseException
+	 * @throws JsonMappingException
+	 * @throws IOException
+	 */
+	public static Map<String, Object> convertToJsonMap(String jsonData) throws JsonParseException, JsonMappingException,
+			IOException {
+		if (jsonData == null)
+			return null;
+		ObjectMapper mapper = new ObjectMapper();
+		return mapper.readValue(jsonData, new TypeReference<Map<String, Object>>() {
+		});
+
 	}
 
 }
