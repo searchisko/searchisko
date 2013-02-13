@@ -242,7 +242,7 @@ Description of important response fields:
 * `hits/hits/highlight` highlights of fulltext matching in given document, see `query_highlight` request parameter
 * `facets` values from facets, see `facet` request parameter
 
-GET /rest/search?{query,sortBy,start,count,content_provider,type,dcp_type,tag,project,activity_date_from,activity_date_to,contributor,facets}
+GET /rest/search?{query,query_highlight,sortBy,from,size,facet,field,content_provider,type,dcp_type,tag,project,activity_date_interval,activity_date_from,activity_date_to,contributor}
 < 200
 < Content-Type: application/json
 < Access-Control-Allow-Origin: *
