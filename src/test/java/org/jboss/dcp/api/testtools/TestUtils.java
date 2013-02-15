@@ -61,7 +61,7 @@ public abstract class TestUtils {
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
-		ProviderAllowed pa = SecurityPreProcessInterceptor.getProviderAlowedAnnotation(testedClass, method);
+		ProviderAllowed pa = SecurityPreProcessInterceptor.getProviderAllowedAnnotation(testedClass, method);
 		if (pa != null && !SecurityPreProcessInterceptor.isGuestAllowed(method)) {
 			Assert.fail("Method must be GuestAllowed too");
 		}
@@ -81,7 +81,7 @@ public abstract class TestUtils {
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
-		ProviderAllowed pa = SecurityPreProcessInterceptor.getProviderAlowedAnnotation(testedClass, method);
+		ProviderAllowed pa = SecurityPreProcessInterceptor.getProviderAllowedAnnotation(testedClass, method);
 		if (pa == null || SecurityPreProcessInterceptor.isGuestAllowed(method)) {
 			Assert.fail("Method must be ProviderAllowed only");
 		}
@@ -102,7 +102,7 @@ public abstract class TestUtils {
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
-		ProviderAllowed pa = SecurityPreProcessInterceptor.getProviderAlowedAnnotation(testedClass, method);
+		ProviderAllowed pa = SecurityPreProcessInterceptor.getProviderAllowedAnnotation(testedClass, method);
 		if (pa == null || !pa.superProviderOnly() || SecurityPreProcessInterceptor.isGuestAllowed(method)) {
 			Assert.fail("Method must be ProviderAllowed.superProviderOnly");
 		}

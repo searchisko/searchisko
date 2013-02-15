@@ -100,19 +100,19 @@ public class SecurityPreProcessInterceptorTest {
 	}
 
 	@Test
-	public void getProviderAlowedAnnotationTest() throws SecurityException, NoSuchMethodException {
+	public void getProviderAllowedAnnotationTest() throws SecurityException, NoSuchMethodException {
 
-		Assert.assertNull(SecurityPreProcessInterceptor.getProviderAlowedAnnotation(MethodAnnotationsMock.class,
-				MethodAnnotationsMock.class.getMethod("methodNotAnnotated")));
-		Assert.assertNull(SecurityPreProcessInterceptor.getProviderAlowedAnnotation(MethodAnnotationsMock.class,
-				MethodAnnotationsMock.class.getMethod("methodGuestAllowed")));
+		Assert.assertNull(SecurityPreProcessInterceptor.getProviderAllowedAnnotation(MethodAnnotationsMock.class,
+                MethodAnnotationsMock.class.getMethod("methodNotAnnotated")));
+		Assert.assertNull(SecurityPreProcessInterceptor.getProviderAllowedAnnotation(MethodAnnotationsMock.class,
+                MethodAnnotationsMock.class.getMethod("methodGuestAllowed")));
 
-		Assert.assertNotNull(SecurityPreProcessInterceptor.getProviderAlowedAnnotation(MethodAnnotationsMock.class,
-				MethodAnnotationsMock.class.getMethod("methodProviderAllowed")));
-		Assert.assertNotNull(SecurityPreProcessInterceptor.getProviderAlowedAnnotation(ClassProviderAllowedMock.class,
-				ClassProviderAllowedMock.class.getMethod("methodNotAnnotated")));
-		Assert.assertNotNull(SecurityPreProcessInterceptor.getProviderAlowedAnnotation(SubclassProviderAllowedMock.class,
-				SubclassProviderAllowedMock.class.getMethod("methodNotAnnotated")));
+		Assert.assertNotNull(SecurityPreProcessInterceptor.getProviderAllowedAnnotation(MethodAnnotationsMock.class,
+                MethodAnnotationsMock.class.getMethod("methodProviderAllowed")));
+		Assert.assertNotNull(SecurityPreProcessInterceptor.getProviderAllowedAnnotation(ClassProviderAllowedMock.class,
+                ClassProviderAllowedMock.class.getMethod("methodNotAnnotated")));
+		Assert.assertNotNull(SecurityPreProcessInterceptor.getProviderAllowedAnnotation(SubclassProviderAllowedMock.class,
+                SubclassProviderAllowedMock.class.getMethod("methodNotAnnotated")));
 	}
 
 	@Test

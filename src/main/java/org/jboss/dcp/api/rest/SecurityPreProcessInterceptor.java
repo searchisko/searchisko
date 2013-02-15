@@ -62,7 +62,7 @@ public class SecurityPreProcessInterceptor implements PreProcessInterceptor, Acc
 			return false;
 		}
 
-		ProviderAllowed providerAllowedAnnotation = getProviderAlowedAnnotation(declaring, method);
+		ProviderAllowed providerAllowedAnnotation = getProviderAllowedAnnotation(declaring, method);
 
 		if (providerAllowedAnnotation != null) {
 			log.fine("REST Security, method allowed only for "
@@ -97,7 +97,7 @@ public class SecurityPreProcessInterceptor implements PreProcessInterceptor, Acc
 	 * @return
 	 */
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	public static ProviderAllowed getProviderAlowedAnnotation(Class declaring, Method method) {
+	public static ProviderAllowed getProviderAllowedAnnotation(Class declaring, Method method) {
 		if (method.isAnnotationPresent(ProviderAllowed.class)) {
 			return method.getAnnotation(ProviderAllowed.class);
 		} else {
@@ -134,7 +134,7 @@ public class SecurityPreProcessInterceptor implements PreProcessInterceptor, Acc
 		// Because of that providerService.authenticate also check that it's provider who is trying to do operation
 
 		// Check if provider must be super provider
-		ProviderAllowed providerAllowed = getProviderAlowedAnnotation(method.getResourceClass(), method.getMethod());
+		ProviderAllowed providerAllowed = getProviderAllowedAnnotation(method.getResourceClass(), method.getMethod());
 
 		// Check roles
 		if (providerAllowed.superProviderOnly() && !securityContext.isUserInRole(CustomSecurityContext.SUPER_ADMIN_ROLE)) {
