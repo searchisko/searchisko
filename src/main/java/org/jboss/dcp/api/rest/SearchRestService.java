@@ -94,7 +94,7 @@ public class SearchRestService extends RestServiceBase {
 
 			SearchRequestBuilder srb = new SearchRequestBuilder(getSearchClientService().getClient());
 
-			handleSearchInicesAndTypes(querySettings, srb);
+			handleSearchIndicesAndTypes(querySettings, srb);
 
 			QueryBuilder qb_fulltext = handleFulltextSearchSettings(querySettings);
 			Map<String, FilterBuilder> searchFilters = handleCommonFiltersSettings(querySettings);
@@ -134,10 +134,10 @@ public class SearchRestService extends RestServiceBase {
 	}
 
 	/**
-	 * @param querySettings
-	 * @param srb
-	 */
-	protected void handleSearchInicesAndTypes(QuerySettings querySettings, SearchRequestBuilder srb) {
+     * @param querySettings
+     * @param srb
+     */
+	protected void handleSearchIndicesAndTypes(QuerySettings querySettings, SearchRequestBuilder srb) {
 		if (querySettings.getFilters() != null && querySettings.getFilters().getContentType() != null) {
 			String type = querySettings.getFilters().getContentType();
 			Map<String, Object> typeDef = providerService.findContentType(type);
