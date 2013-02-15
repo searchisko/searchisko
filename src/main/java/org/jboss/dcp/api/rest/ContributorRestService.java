@@ -5,6 +5,12 @@
  */
 package org.jboss.dcp.api.rest;
 
+import org.elasticsearch.action.search.SearchResponse;
+import org.jboss.dcp.api.annotations.header.AccessControlAllowOrigin;
+import org.jboss.dcp.api.annotations.security.GuestAllowed;
+import org.jboss.dcp.api.annotations.security.ProviderAllowed;
+import org.jboss.dcp.api.service.ContributorService;
+
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
@@ -13,11 +19,6 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
-
-import org.elasticsearch.action.search.SearchResponse;
-import org.jboss.dcp.api.annotations.security.GuestAllowed;
-import org.jboss.dcp.api.annotations.security.ProviderAllowed;
-import org.jboss.dcp.api.service.ContributorService;
 
 /**
  * Contributor REST API
@@ -42,6 +43,7 @@ public class ContributorRestService extends RestEntityServiceBase {
 	@Path("/search")
 	@Produces(MediaType.APPLICATION_JSON)
 	@GuestAllowed
+    @AccessControlAllowOrigin
 	public Object search(@QueryParam("email") String email) {
 		try {
 			SearchResponse response = contributorService.search(email);

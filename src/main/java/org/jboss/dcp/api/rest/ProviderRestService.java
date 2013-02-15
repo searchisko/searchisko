@@ -5,27 +5,21 @@
  */
 package org.jboss.dcp.api.rest;
 
-import java.util.Map;
+import org.jboss.dcp.api.annotations.header.AccessControlAllowOrigin;
+import org.jboss.dcp.api.annotations.security.ProviderAllowed;
+import org.jboss.dcp.api.service.ProviderService;
+import org.jboss.dcp.api.service.SecurityService;
 
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
+import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.SecurityContext;
-
-import org.jboss.dcp.api.annotations.security.ProviderAllowed;
-import org.jboss.dcp.api.service.ProviderService;
-import org.jboss.dcp.api.service.SecurityService;
+import java.util.Map;
 
 /**
  * Provider REST API
@@ -58,6 +52,7 @@ public class ProviderRestService extends RestEntityServiceBase {
 	@GET
 	@Path("/")
 	@Produces(MediaType.APPLICATION_JSON)
+    @AccessControlAllowOrigin
 	public Object getAll(@QueryParam("from") Integer from, @QueryParam("size") Integer size) {
 		try {
 			return entityService.getAll(from, size, FIELDS_TO_REMOVE);
@@ -71,6 +66,7 @@ public class ProviderRestService extends RestEntityServiceBase {
 	@Produces(MediaType.APPLICATION_JSON)
 	@ProviderAllowed
 	@Override
+    @AccessControlAllowOrigin
 	public Object get(@PathParam("id") String id) {
 
 		if (id == null || id.isEmpty()) {

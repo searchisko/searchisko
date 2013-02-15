@@ -5,11 +5,14 @@
  */
 package org.jboss.dcp.api.rest;
 
-import java.io.IOException;
-import java.io.OutputStream;
-import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.elasticsearch.action.get.GetResponse;
+import org.elasticsearch.action.search.SearchResponse;
+import org.elasticsearch.common.xcontent.ToXContent;
+import org.elasticsearch.common.xcontent.XContentBuilder;
+import org.elasticsearch.common.xcontent.XContentFactory;
+import org.jboss.dcp.api.config.TimeoutConfiguration;
+import org.jboss.dcp.api.service.SearchClientService;
+import org.jboss.dcp.api.service.StatsClientService;
 
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletResponse;
@@ -19,15 +22,11 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.core.StreamingOutput;
-
-import org.elasticsearch.action.get.GetResponse;
-import org.elasticsearch.action.search.SearchResponse;
-import org.elasticsearch.common.xcontent.ToXContent;
-import org.elasticsearch.common.xcontent.XContentBuilder;
-import org.elasticsearch.common.xcontent.XContentFactory;
-import org.jboss.dcp.api.config.TimeoutConfiguration;
-import org.jboss.dcp.api.service.SearchClientService;
-import org.jboss.dcp.api.service.StatsClientService;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Base service for Rest Services
@@ -130,12 +129,5 @@ public class RestServiceBase {
 
 	public TimeoutConfiguration getTimeout() {
 		return timeout;
-	}
-
-	/**
-	 * Adds HTTP header to response to allow access rest resources from different domain
-	 */
-	public void addSimpleCORSSourceResponseHeader() {
-		response.setHeader("Access-Control-Allow-Origin", "*");
 	}
 }
