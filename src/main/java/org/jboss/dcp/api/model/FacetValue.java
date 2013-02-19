@@ -40,7 +40,7 @@ public enum FacetValue {
 	 * @throws IllegalArgumentException if request value is invalid
 	 */
 	public static FacetValue parseRequestParameterValue(String requestVal) throws IllegalArgumentException {
-		requestVal = SearchUtils.trimmToNull(requestVal);
+		requestVal = SearchUtils.trimToNull(requestVal);
 		if (requestVal == null)
 			return null;
 		for (FacetValue n : FacetValue.values()) {

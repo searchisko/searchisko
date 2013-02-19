@@ -26,16 +26,16 @@ import org.junit.Test;
 public class SearchUtilsTest {
 
 	@Test
-	public void trimmToNull() {
-		Assert.assertNull(SearchUtils.trimmToNull(null));
-		Assert.assertNull(SearchUtils.trimmToNull(""));
-		Assert.assertNull(SearchUtils.trimmToNull(" "));
-		Assert.assertNull(SearchUtils.trimmToNull("     \t "));
+	public void trimToNull() {
+		Assert.assertNull(SearchUtils.trimToNull(null));
+		Assert.assertNull(SearchUtils.trimToNull(""));
+		Assert.assertNull(SearchUtils.trimToNull(" "));
+		Assert.assertNull(SearchUtils.trimToNull("     \t "));
 
-		Assert.assertEquals("a", SearchUtils.trimmToNull("a"));
-		Assert.assertEquals("a", SearchUtils.trimmToNull("a "));
-		Assert.assertEquals("a", SearchUtils.trimmToNull(" a"));
-		Assert.assertEquals("abcd aaa", SearchUtils.trimmToNull("   abcd aaa \t   "));
+		Assert.assertEquals("a", SearchUtils.trimToNull("a"));
+		Assert.assertEquals("a", SearchUtils.trimToNull("a "));
+		Assert.assertEquals("a", SearchUtils.trimToNull(" a"));
+		Assert.assertEquals("abcd aaa", SearchUtils.trimToNull("   abcd aaa \t   "));
 	}
 
 	@Test

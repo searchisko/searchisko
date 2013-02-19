@@ -49,7 +49,7 @@ public class SearchUtils {
 	 * @param value to trim
 	 * @return trimmed value or null if empty
 	 */
-	public static String trimmToNull(String value) {
+	public static String trimToNull(String value) {
 		if (value != null) {
 			value = value.trim();
 			if (value.isEmpty())

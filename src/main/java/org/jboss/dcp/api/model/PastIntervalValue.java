@@ -62,7 +62,7 @@ public enum PastIntervalValue {
 	 * @throws IllegalArgumentException if request value is invalid
 	 */
 	public static PastIntervalValue parseRequestParameterValue(String requestVal) throws IllegalArgumentException {
-		requestVal = SearchUtils.trimmToNull(requestVal);
+		requestVal = SearchUtils.trimToNull(requestVal);
 		if (requestVal == null)
 			return null;
 		for (PastIntervalValue n : PastIntervalValue.values()) {

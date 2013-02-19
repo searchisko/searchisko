@@ -40,7 +40,7 @@ public enum SortByValue {
 	 * @throws IllegalArgumentException if request value is invalid
 	 */
 	public static SortByValue parseRequestParameterValue(String requestVal) throws IllegalArgumentException {
-		requestVal = SearchUtils.trimmToNull(requestVal);
+		requestVal = SearchUtils.trimToNull(requestVal);
 		if (requestVal == null)
 			return null;
 		for (SortByValue n : SortByValue.values()) {

@@ -144,7 +144,7 @@ public class ProviderService implements EntityService {
 
 	/**
 	 * Find provider based on its name (called <code>dcp_content_provider</code>). Values are cached here with timeout so
-	 * may provide rather obsolote data sometimes!
+	 * may provide rather obsolete data sometimes!
 	 * 
 	 * @param providerName of provider - DCP wide unique
 	 * @return provider configuration
@@ -196,7 +196,7 @@ public class ProviderService implements EntityService {
 	}
 
 	/**
-	 * List configuration for all providers. Value is cached here with timeout so may provide rather obsolote data
+	 * List configuration for all providers. Value is cached here with timeout so may provide rather obsolete data
 	 * sometimes!
 	 * 
 	 * @return list with configurations for all providers

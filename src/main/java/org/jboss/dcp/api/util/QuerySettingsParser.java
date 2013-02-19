@@ -55,7 +55,7 @@ public class QuerySettingsParser {
 	 * @return normalized query
 	 */
 	public static String normalizeQueryString(String query) {
-		query = SearchUtils.trimmToNull(query);
+		query = SearchUtils.trimToNull(query);
 		if (query == null) {
 			return null;
 		}
@@ -92,8 +92,8 @@ public class QuerySettingsParser {
 		settings.setQueryHighlight(readBooleanParam(params, QuerySettings.QUERY_HIGHLIGHT_KEY));
 		settings.setFields(normalizeListParam(params.get(QuerySettings.FIELDS_KEY)));
 
-		filters.setContentType(SearchUtils.trimmToNull(params.getFirst(QuerySettings.Filters.CONTENT_TYPE_KEY)));
-		filters.setDcpContentProvider(SearchUtils.trimmToNull(params.getFirst(QuerySettings.Filters.DCP_CONTENT_PROVIDER)));
+		filters.setContentType(SearchUtils.trimToNull(params.getFirst(QuerySettings.Filters.CONTENT_TYPE_KEY)));
+		filters.setDcpContentProvider(SearchUtils.trimToNull(params.getFirst(QuerySettings.Filters.DCP_CONTENT_PROVIDER)));
 		filters.setDcpTypes(normalizeListParam(params.get(QuerySettings.Filters.DCP_TYPES_KEY)));
 		filters.setProjects(normalizeListParam(params.get(QuerySettings.Filters.PROJECTS_KEY)));
 		filters.setTags(normalizeListParam(params.get(QuerySettings.Filters.TAGS_KEY)));
@@ -136,7 +136,7 @@ public class QuerySettingsParser {
 			throws IllegalArgumentException {
 		if (params != null && params.containsKey(paramKey)) {
 			try {
-				String s = SearchUtils.trimmToNull(params.getFirst(paramKey));
+				String s = SearchUtils.trimToNull(params.getFirst(paramKey));
 				if (s == null)
 					return null;
 				return new Integer(s);
@@ -159,7 +159,7 @@ public class QuerySettingsParser {
 			throws IllegalArgumentException {
 		if (params != null && params.containsKey(paramKey)) {
 			try {
-				String s = SearchUtils.trimmToNull(params.getFirst(paramKey));
+				String s = SearchUtils.trimToNull(params.getFirst(paramKey));
 				if (s == null)
 					return null;
 				return ISODateTimeFormat.dateTimeParser().parseMillis(s);
@@ -179,7 +179,7 @@ public class QuerySettingsParser {
 	 */
 	protected static boolean readBooleanParam(MultivaluedMap<String, String> params, String paramKey) {
 		if (params != null && params.containsKey(paramKey)) {
-			return Boolean.parseBoolean(SearchUtils.trimmToNull(params.getFirst(paramKey)));
+			return Boolean.parseBoolean(SearchUtils.trimToNull(params.getFirst(paramKey)));
 		}
 		return false;
 	}
@@ -196,7 +196,7 @@ public class QuerySettingsParser {
 		}
 		List<String> ret = new ArrayList<String>();
 		for (String s : paramValue) {
-			s = SearchUtils.trimmToNull(s);
+			s = SearchUtils.trimToNull(s);
 			if (s != null) {
 				ret.add(s);
 			}

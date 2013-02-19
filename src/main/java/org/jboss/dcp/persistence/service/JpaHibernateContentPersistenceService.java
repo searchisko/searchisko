@@ -61,7 +61,7 @@ public class JpaHibernateContentPersistenceService implements ContentPersistence
 		if (!checkTableExists(tableName))
 			return null;
 		String jsonData = doDatabaseReturningWork(new GetWork(tableName, id));
-		if (SearchUtils.trimmToNull(jsonData) != null) {
+		if (SearchUtils.trimToNull(jsonData) != null) {
 			try {
 				return SearchUtils.convertToJsonMap(jsonData);
 			} catch (Exception e) {
