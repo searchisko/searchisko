@@ -78,7 +78,7 @@ public class SearchRestServiceTest {
 
 	@SuppressWarnings("unchecked")
 	@Test
-	public void handleSearchInicesAndTypes() {
+	public void handleSearchIndicesAndTypes() {
 		SearchRestService tested = new SearchRestService();
 		tested.providerService = Mockito.mock(ProviderService.class);
 		tested.log = Logger.getLogger("testlogger");
