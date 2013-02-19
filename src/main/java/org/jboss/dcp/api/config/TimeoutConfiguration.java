@@ -19,7 +19,7 @@ import org.jboss.dcp.api.util.SearchUtils;
 /**
  * Configuration object for individual servlet search timeouts.
  * 
- * @author Lukas Vlcek (lvlcek@redhat.com)
+ * @author Lukas Vlcek
  * @author Libor Krzyzanek
  */
 @Named
