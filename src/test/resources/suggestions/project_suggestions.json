@@ -1,0 +1,8 @@
+{
+    "query" : {
+        "field" : {
+            "data.name" : "test"
+        }
+    },
+    "fields" : [ "data.name", "data.code" ]
+}

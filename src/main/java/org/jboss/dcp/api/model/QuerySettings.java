@@ -15,7 +15,7 @@ import org.jboss.dcp.api.util.QuerySettingsParser;
 /**
  * Search Query settings sent from client to search method.
  * 
- * @author lvlcek@redhat.com
+ * @author Lukas Vlcek
  * @author Libor Krzyzanek
  * @author Vlastimil Elias (velias at redhat dot com)
  */
