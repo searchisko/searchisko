@@ -42,7 +42,7 @@ public class QuerySettingsParser {
 		}
 		if (settings.getQuery() != null) {
 			settings.setQuery(settings.getQuery().trim());
-			settings.setQuery(patchhWildchars(settings.getQuery()));
+			settings.setQuery(patchWildchars(settings.getQuery()));
 		} else {
 			settings.setQuery("match_all:{}");
 		}
@@ -59,10 +59,10 @@ public class QuerySettingsParser {
 		if (query == null) {
 			return null;
 		}
-		return patchhWildchars(query);
+		return patchWildchars(query);
 	}
 
-	private static String patchhWildchars(String q) {
+	private static String patchWildchars(String q) {
 		if (q != null) {
 			q = q.replaceAll("\\*\\?", "*");
 			q = q.replaceAll("\\?\\*", "*");
