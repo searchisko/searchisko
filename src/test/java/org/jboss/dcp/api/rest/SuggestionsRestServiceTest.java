@@ -7,7 +7,7 @@ package org.jboss.dcp.api.rest;
 
 import junit.framework.Assert;
 import org.elasticsearch.action.search.SearchRequestBuilder;
-import org.jboss.dcp.api.service.ProjectService;
+import org.jboss.dcp.api.service.SearchClientService;
 import org.jboss.dcp.api.testtools.TestUtils;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -25,13 +25,13 @@ public class SuggestionsRestServiceTest {
     @Test
     public void handleSuggestionsProject() throws IOException {
         SuggestionsRestService tested = new SuggestionsRestService();
-        tested.projectService = Mockito.mock(ProjectService.class);
+        tested.searchClientService = Mockito.mock(SearchClientService.class);
         tested.log = Logger.getLogger("testlogger");
 
         Assert.assertTrue(true);
 
         SearchRequestBuilder srbMock = new SearchRequestBuilder(null);
-        srbMock = tested.getProjectSearchRequestBuilder(srbMock, "test");
+        srbMock = tested.getProjectSearchRequestBuilder(srbMock, "JBoss");
 
         TestUtils.assertJsonContentFromClasspathFile("/suggestions/project_suggestions.json", srbMock.toString());
     }
