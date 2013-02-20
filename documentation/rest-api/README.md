@@ -1,7 +1,7 @@
 DCP REST API documentation
 ==========================
 
-DCP REST API on-line Documentation & Server Mock are available at <http://docs.jbossorg.apiary.io/>
+DCP REST API on-line documentation & Server Mock are available at [http://docs.jbossorg.apiary.io](http://docs.jbossorg.apiary.io/)
 
 ##DCP Content objects
 DCP content is the main reason why DCP exists. It can be pushed into DCP by the 
@@ -34,8 +34,8 @@ distinct parts of 'Management API'.
 [`management`](management) subfolder in this directory contains files with 
 description of document structures for management API:
 
-+ content provider - document type used by 'Management API - content providers'
-+ project - document type used by 'Management API - projects'
-+ contributor - document type used by 'Management API - contributors'
-+ config_*  - document types used by 'Management API - configuration'
++ [content provider](management/content_provider.md) - document type used by 'Management API - content providers'
++ [project](management/project.md) - document type used by 'Management API - projects'
++ [contributor](management/contributor.md) - document type used by 'Management API - contributors'
++ [config_*](management)  - document types used by 'Management API - configuration' to configure DCP
 

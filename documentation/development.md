@@ -4,7 +4,7 @@ DCP development guide
 ## Used technologies
 
 * ElaticSearch fulltext search engine
-* JBoss EAP 6 Application server - Java EE 6 - CDI, EJB Session beans, JPA Hibernate, JAX-RS RestEasy
+* JBoss EAP 6 Application server - Java EE 6 - JAX-RS RestEasy, CDI, EJB Session beans, Hibernate JPA
 * Jackson for JSON processing
 * JUnit, Mockito for unit tests
 

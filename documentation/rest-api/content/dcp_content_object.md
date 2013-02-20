@@ -3,8 +3,10 @@ DCP Content object
 
 This document describes main content object which can be pushed to and retrieved or searched from DCP.
  
-DCP Content object is a JSON document with a free structure. There is no restriction how many key value pairs must be defined or in what structure.
-Some system data fields are defined by DCP, some are added into the content inside DCP during push. Those data fields are prefixed by `dcp_`:
+DCP Content object is a JSON document with a free structure. There is no 
+restriction how many key value pairs must be defined or in what structure.
+Some system data fields are defined by DCP, some are added into the content
+inside DCP during push. Those data fields are prefixed by `dcp_`:
 
 * `dcp_type` - DCP wide normalized content type - eg. mailing-list email, issue, blogpost, IRC post, commit, discussion thread - system field, always necessary.
 * `dcp_id` - content id unique in the whole DCP platform - system field, always necessary. It is constructed during the 'Content Push API' operation from `dcp_content_type` and `dcp_content_id`.

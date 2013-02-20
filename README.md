@@ -3,9 +3,7 @@ Distributed Contribution Platform API
 
 This project contains implementation of API for Distributed Contribution Platform (DCP) and main DCP documentation.
 
-Documentation for DCP is placed in this repo in the [`documentation`](documentation) folder.
-
-DCP API is Java EE 6 application intended to run in the JBoss EAP 6 application server.
+Documentation for DCP is placed in this repo in the [`documentation`](documentation/README.md) folder.
 
 ## DCP Overview
 
@@ -13,7 +11,7 @@ DCP API is Java EE 6 application intended to run in the JBoss EAP 6 application 
 search/retrieve information related to distinct JBoss Community OSS projects, 
 aggregated from various source systems. 
 This system is necessary to support/extend synergy of JBoss Community in the 
-era of more distributed development environment, when project teams tends to 
+era of more distributed environment, when project teams tends to 
 use third party systems instead of systems provided and maintained by JBoss 
 Community Team.
 
@@ -33,4 +31,6 @@ To support synergy, informations stored into DCP will be normalized in these are
 * tags - so you can obtain all pieces of informations tagged with same value
 * activity date - so you can filter/analyze informations/contributions by dates when they was created/updated   
 
-**Distributed Contribution Platform** provides **REST API** for informations manipulation and search/retrieve, see [`documentation`](documentation).
+DCP provides **REST API** for informations manipulation and search/retrieve, see [`documentation`](documentation/README.md).
+
+DCP API is Java EE 6 application intended to run in the JBoss EAP 6 application server.
