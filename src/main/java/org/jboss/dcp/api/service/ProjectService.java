@@ -97,12 +97,4 @@ public class ProjectService implements EntityService {
 		entityService.delete(id);
 		searchClientService.getClient().prepareDelete(SEARCH_INDEX_NAME, SEARCH_INDEX_TYPE, id).execute().actionGet();
 	}
-
-    /**
-     * Prepare a new SearchRequestBuilder on top of index {@link #SEARCH_INDEX_NAME} and type {@link #SEARCH_INDEX_TYPE}.
-     * @return SearchRequestBuilder
-     */
-    public SearchRequestBuilder getSearchRequestBuilder() {
-        return searchClientService.getClient().prepareSearch(SEARCH_INDEX_NAME, SEARCH_INDEX_TYPE);
-    }
 }

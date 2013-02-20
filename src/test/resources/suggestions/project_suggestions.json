@@ -1,8 +1,8 @@
 {
     "query" : {
         "field" : {
-            "data.name" : "test"
+            "dcp_project_name" : "JBoss"
         }
     },
-    "fields" : [ "data.name", "data.code" ]
+    "fields" : [ "dcp_project", "dcp_project_name" ]
 }

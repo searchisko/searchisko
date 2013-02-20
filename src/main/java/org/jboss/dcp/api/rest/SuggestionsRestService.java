@@ -12,7 +12,7 @@ import org.elasticsearch.index.query.QueryBuilders;
 import org.jboss.dcp.api.annotations.header.AccessControlAllowOrigin;
 import org.jboss.dcp.api.annotations.security.GuestAllowed;
 import org.jboss.dcp.api.model.QuerySettings;
-import org.jboss.dcp.api.service.ProjectService;
+import org.jboss.dcp.api.service.SearchClientService;
 import org.jboss.dcp.api.util.SearchUtils;
 
 import javax.enterprise.context.RequestScoped;
@@ -36,11 +36,15 @@ import java.util.logging.Logger;
 @Produces(MediaType.APPLICATION_JSON)
 public class SuggestionsRestService extends RestServiceBase {
 
+    public static final String SEARCH_INDEX_NAME = "data_projects_info";
+
+    public static final String SEARCH_INDEX_TYPE = "jbossorg_project_info";
+
     @Inject
     protected Logger log;
 
     @Inject
-    protected ProjectService projectService;
+    protected SearchClientService searchClientService;
 
     @GET
     @Path("/query_string")
@@ -79,7 +83,9 @@ public class SuggestionsRestService extends RestServiceBase {
                 throw new IllegalArgumentException(QuerySettings.QUERY_KEY);
             }
 
-            final SearchRequestBuilder srb = getProjectSearchRequestBuilder(projectService.getSearchRequestBuilder(), query);
+            final SearchRequestBuilder srb = getProjectSearchRequestBuilder(
+                    searchClientService.getClient().prepareSearch(SEARCH_INDEX_NAME, SEARCH_INDEX_TYPE),
+                    query);
 
             final SearchResponse searchResponse = srb.execute().actionGet();
 
@@ -97,8 +103,8 @@ public class SuggestionsRestService extends RestServiceBase {
      * @return
      */
     protected SearchRequestBuilder getProjectSearchRequestBuilder(SearchRequestBuilder srb, String query) {
-        return srb.addFields("data.name","data.code")
-           .setQuery(QueryBuilders.fieldQuery("data.name",query))
+        return srb.addFields("dcp_project","dcp_project_name")
+           .setQuery(QueryBuilders.fieldQuery("dcp_project_name",query))
            .setSearchType(SearchType.QUERY_AND_FETCH);
     }
 
