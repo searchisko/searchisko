@@ -4,24 +4,24 @@ DCP basic principles and architecture
 ## DCP Overview
 
 **Distributed Contribution Platform** is a system intended to store and 
-search/retrieve information related to distinct JBoss Community OSS projects, 
+search/retrieve information related to OSS projects, 
 aggregated from various source systems. 
-This system is necessary to support/extend synergy of JBoss Community in the 
-era of more distributed environment, when project teams tends to 
-use third party systems instead of systems provided and maintained by JBoss 
-Community Team.
+This system is necessary to support/extend synergy of community formed by 
+more projects in the era of more distributed environment, when distinct project 
+teams tends to use distinct services available across internet instead of some 
+centralized solution.
 
 Distributed Contribution Platform main design attributes:
 
-* high availability of services (both for common runtime and platform upgrade time)
+* openness and easy of use
+* high flexibility of stored information structures
 * simple, quick and flexible search of stored informations
 * possibility to store informations with guaranteed long term persistence for 
-  data sources where it is hard or impossible to obtain informations again (eg. blog 
-  posts obtained over RSS protocol)
-* high flexibility of stored information structures
-* openness and easy use by other community members
+  data sources where it is hard or impossible to obtain informations again in 
+  the future (eg. blog posts obtained over RSS protocol)
+* high availability of services (both for common runtime and platform upgrade time)
 
-To support synergy, informations stored into DCP will be normalized in these areas:
+To support multiple projects synergy, informations stored into DCP will be normalized in these areas:
 
 * information type - so all pieces of informations of same type (blog post, 
   issue, source code commit, mailing list email) originated from distinct 
@@ -29,13 +29,33 @@ To support synergy, informations stored into DCP will be normalized in these are
 * project - so all informations/contributions related to one project can be 
   obtained by one search request
 * contributor - so all informations/contributions performed by one contributor 
-  can be simply obtained by one search request
+  across distinct projects can be simply obtained by one search request
 * tags - so you can obtain all pieces of informations tagged with same value
 * activity date - so you can filter/analyze informations/contributions by dates
   when they was created/updated   
 
 DCP provides **REST API** for informations manipulation and search/retrieve, 
-see [`REST API documentation`](rest-api/README.md).
+see [`REST API documentation`](rest-api/README.md). 
+This allows simple integration with other systems and modern AJAX and HTML 5 
+based frontends. 
+
+Possible use cases for "project pages" maintained by project teams:
+
+* Unified fulltext search across different project related content
+* Staff rooster for project - info about project team members, contributors, 
+  details about who contributed what 
+* Planet blog aggregator for project related blogposts
+* Project tag cloud - hot topics around project during last week, month, quarter, year
+* Project activity graph - overall or per activity type (commits, blogposts)
+
+Possible use cases for general community pages:
+
+* Unified fulltext search across all community project's content
+* List of all community projects
+* Planet - whole community blog aggregator
+* Who is Who in the community - info about community contributors, which 
+  projects they contribute, all activities over all projects etc.
+* Community tag cloud - hot topics in the community during last week, month, quarter, year
 
 ## Basic principles
 
@@ -52,9 +72,8 @@ but we define new system fields for them with normalized values, such as
 "issue type" (bug, feature request), "issue status" (new, in progress, resolved, closed) etc.
 
 Documents without "system data fields" can be stored into platform, but will not 
-be visible/searchable over basic search GUI at search.jboss.org. 
-They will be available over search API to be used by users who need them.
-
+be visible/searchable over basic search GUI. They will be available over search 
+API to be used by users who need them.
  
 ### Flexible normalization process
 Normalization of the values for `dcp_contributors` and `dcp_project` field must be 
