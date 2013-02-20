@@ -22,10 +22,20 @@ as an inspiration. You will have your own content.
 
 ###List of available *dcp_type*s
 
-+ [blogpost](content/blogpost.md) the data about blog posts related to the community projects.
-+ [issue](content/issue.md) the data from community project's issue 
-  trackers (JIRA, Bugzilla, etc.) about project bugs, feature requests etc.
-+ [project_info](content/project_info.md) the data about the [JBoss community projects](https://www.jboss.org/projects.html). 
++ [project_info](content/project_info.md) the basic data about the [community project](https://www.jboss.org/projects.html). 
++ [blogpost](content/blogpost.md) the data about blog posts related to the project
++ [issue](content/issue.md) the data from project's issue tracker (JIRA, Bugzilla, 
+  etc.) about project bugs, feature requests etc.
+
+Other data types considered in the future:
+
++ maillist email
++ discussion forum topic
++ wiki page
++ documentation page
++ source code repository commit
++ IRC/IM conversation
++ maven repository artifact
 
 ##Data structures for Management API
 Bunch of other informations is necessary to run DCP. They are managed over 
