@@ -58,7 +58,7 @@
 
 	<properties>
 		<compileSource>1.6</compileSource>
-		<org.elasticsearch.version>0.19.9</org.elasticsearch.version>
+		<org.elasticsearch.version>0.19.12</org.elasticsearch.version>
 		<maven.build.timestamp.format>yyyyMMddHHmm</maven.build.timestamp.format>
 		<!-- Explicitly declaring the source encoding eliminates the following message: -->
 		<!-- [WARNING] Using platform encoding (UTF-8 actually) to copy filtered resources, i.e. build is platform dependent! -->
@@ -72,8 +72,8 @@
 		<richfaces.bom.version>4.2.2.Final-redhat-1</richfaces.bom.version>
 		<filter.name>localhost</filter.name>
 		<resteasy.version>2.3.3.Final-redhat-1</resteasy.version>
-		<structured-content-tools.version>1.2.1</structured-content-tools.version>
-		<elasticsearch-river-jira.version>1.2.4</elasticsearch-river-jira.version>
+		<structured-content-tools.version>1.2.2</structured-content-tools.version>
+		<elasticsearch-river-jira.version>1.2.5</elasticsearch-river-jira.version>
 	</properties>
 
 	<dependencyManagement>
