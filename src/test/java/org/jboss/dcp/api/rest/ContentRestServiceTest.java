@@ -75,6 +75,13 @@ public class ContentRestServiceTest extends ESRealClientTestBase {
 				.assertResponseStatus(tested.pushContent("invalid_2", "1", content), Response.Status.INTERNAL_SERVER_ERROR);
 		Mockito.verifyNoMoreInteractions(tested.contentPersistenceService);
 
+		// case - dcp_content_content-type not defined if input value contains dcp_content
+		Mockito.reset(tested.contentPersistenceService);
+		content.put(DcpContentObjectFields.DCP_CONTENT, "some content");
+		TestUtils.assertResponseStatus(tested.pushContent("invalid-content-type", "1", content),
+				Response.Status.INTERNAL_SERVER_ERROR);
+		Mockito.verifyNoMoreInteractions(tested.contentPersistenceService);
+
 	}
 
 	@SuppressWarnings("unchecked")
@@ -104,6 +111,7 @@ public class ContentRestServiceTest extends ESRealClientTestBase {
 				Assert.assertEquals("1", doc.get(DcpContentObjectFields.DCP_CONTENT_ID));
 				Assert.assertEquals(dcp_content_type, doc.get(DcpContentObjectFields.DCP_CONTENT_TYPE));
 				Assert.assertEquals("my_dcp_type", doc.get(DcpContentObjectFields.DCP_TYPE));
+				Assert.assertEquals(null, doc.get(DcpContentObjectFields.DCP_CONTENT_CONTENT_TYPE));
 				Assert.assertEquals(tested.providerService.generateDcpId(dcp_content_type, "1"),
 						doc.get(DcpContentObjectFields.DCP_ID));
 				Assert.assertNotNull(doc.get(DcpContentObjectFields.DCP_UPDATED));
@@ -112,11 +120,12 @@ public class ContentRestServiceTest extends ESRealClientTestBase {
 			}
 
 			// case - insert when index is found, fill dcp_updated if not provided in content, process tags provided in
-			// content
+			// content, fill dcp_content_content-type because dcp_content is present
 			{
 				Mockito.reset(tested.providerService, tested.contentPersistenceService);
 				setupProviderServiceMock(tested);
 				content.put("test2", "testvalue2");
+				content.put(DcpContentObjectFields.DCP_CONTENT, "dcp content");
 				content.remove(DcpContentObjectFields.DCP_UPDATED);
 				String[] tags = new String[] { "tag_value" };
 				content.put("tags", tags);
@@ -134,6 +143,7 @@ public class ContentRestServiceTest extends ESRealClientTestBase {
 				Assert.assertEquals("2", doc.get(DcpContentObjectFields.DCP_CONTENT_ID));
 				Assert.assertEquals(dcp_content_type, doc.get(DcpContentObjectFields.DCP_CONTENT_TYPE));
 				Assert.assertEquals("my_dcp_type", doc.get(DcpContentObjectFields.DCP_TYPE));
+				Assert.assertEquals("text/plain", doc.get(DcpContentObjectFields.DCP_CONTENT_CONTENT_TYPE));
 				Assert.assertEquals(tested.providerService.generateDcpId(dcp_content_type, "2"),
 						doc.get(DcpContentObjectFields.DCP_ID));
 				Assert.assertNotNull(doc.get(DcpContentObjectFields.DCP_UPDATED));
@@ -161,6 +171,7 @@ public class ContentRestServiceTest extends ESRealClientTestBase {
 				Assert.assertEquals("1", doc.get(DcpContentObjectFields.DCP_CONTENT_ID));
 				Assert.assertEquals(dcp_content_type, doc.get(DcpContentObjectFields.DCP_CONTENT_TYPE));
 				Assert.assertEquals("my_dcp_type", doc.get(DcpContentObjectFields.DCP_TYPE));
+				Assert.assertEquals(null, doc.get(DcpContentObjectFields.DCP_CONTENT_CONTENT_TYPE));
 				Assert.assertEquals(tested.providerService.generateDcpId(dcp_content_type, "1"),
 						doc.get(DcpContentObjectFields.DCP_ID));
 				Assert.assertNotNull(doc.get(DcpContentObjectFields.DCP_UPDATED));
@@ -180,13 +191,14 @@ public class ContentRestServiceTest extends ESRealClientTestBase {
 			ContentRestService tested = getTested(true);
 			Map<String, Object> content = new HashMap<String, Object>();
 
-			// case - insert when index is not found
+			// case - insert when index is not found, remove dcp_content_content-type because dcp_content not present
 			String dcp_content_type = "persist";
 			{
 				Mockito.reset(tested.contentPersistenceService);
 				indexDelete(INDEX_NAME);
 				content.clear();
 				content.put("test", "testvalue");
+				content.put(DcpContentObjectFields.DCP_CONTENT_CONTENT_TYPE, "text/html");
 				Response r = TestUtils.assertResponseStatus(tested.pushContent(dcp_content_type, "1", content),
 						Response.Status.OK);
 				Assert.assertEquals("insert", ((Map<String, String>) r.getEntity()).get("status"));
@@ -199,6 +211,7 @@ public class ContentRestServiceTest extends ESRealClientTestBase {
 				Assert.assertEquals("1", doc.get(DcpContentObjectFields.DCP_CONTENT_ID));
 				Assert.assertEquals(dcp_content_type, doc.get(DcpContentObjectFields.DCP_CONTENT_TYPE));
 				Assert.assertEquals("my_dcp_type", doc.get(DcpContentObjectFields.DCP_TYPE));
+				Assert.assertEquals(null, doc.get(DcpContentObjectFields.DCP_CONTENT_CONTENT_TYPE));
 				Assert.assertEquals(tested.providerService.generateDcpId(dcp_content_type, "1"),
 						doc.get(DcpContentObjectFields.DCP_ID));
 				Assert.assertNotNull(doc.get(DcpContentObjectFields.DCP_UPDATED));
@@ -209,11 +222,13 @@ public class ContentRestServiceTest extends ESRealClientTestBase {
 			}
 
 			// case - insert when index is found, fill dcp_updated if not provided in content, process tags provided in
-			// content
+			// content, rewrite dcp_content_content-type because dcp_content is present
 			{
 				Mockito.reset(tested.providerService, tested.contentPersistenceService);
 				setupProviderServiceMock(tested);
 				content.put("test2", "testvalue2");
+				content.put(DcpContentObjectFields.DCP_CONTENT, "dcp content");
+				content.put(DcpContentObjectFields.DCP_CONTENT_CONTENT_TYPE, "text/html");
 				content.remove(DcpContentObjectFields.DCP_UPDATED);
 				String[] tags = new String[] { "tag_value" };
 				content.put("tags", tags);
@@ -230,6 +245,7 @@ public class ContentRestServiceTest extends ESRealClientTestBase {
 				Assert.assertEquals("2", doc.get(DcpContentObjectFields.DCP_CONTENT_ID));
 				Assert.assertEquals(dcp_content_type, doc.get(DcpContentObjectFields.DCP_CONTENT_TYPE));
 				Assert.assertEquals("my_dcp_type", doc.get(DcpContentObjectFields.DCP_TYPE));
+				Assert.assertEquals("text/plain", doc.get(DcpContentObjectFields.DCP_CONTENT_CONTENT_TYPE));
 				Assert.assertEquals(tested.providerService.generateDcpId(dcp_content_type, "2"),
 						doc.get(DcpContentObjectFields.DCP_ID));
 				Assert.assertNotNull(doc.get(DcpContentObjectFields.DCP_UPDATED));
@@ -258,6 +274,7 @@ public class ContentRestServiceTest extends ESRealClientTestBase {
 				Assert.assertEquals("1", doc.get(DcpContentObjectFields.DCP_CONTENT_ID));
 				Assert.assertEquals(dcp_content_type, doc.get(DcpContentObjectFields.DCP_CONTENT_TYPE));
 				Assert.assertEquals("my_dcp_type", doc.get(DcpContentObjectFields.DCP_TYPE));
+				Assert.assertEquals(null, doc.get(DcpContentObjectFields.DCP_CONTENT_CONTENT_TYPE));
 				Assert.assertEquals(tested.providerService.generateDcpId(dcp_content_type, "1"),
 						doc.get(DcpContentObjectFields.DCP_ID));
 				Assert.assertNotNull(doc.get(DcpContentObjectFields.DCP_UPDATED));
@@ -520,6 +537,7 @@ public class ContentRestServiceTest extends ESRealClientTestBase {
 		typeDefKnownIndex.put("type", INDEX_TYPE);
 		typeDefKnown.put("input_preprocessors", PREPROCESSORS);
 		typeDefKnown.put(ProviderService.DCP_TYPE, "my_dcp_type");
+		typeDefKnown.put(ProviderService.DCP_CONTENT_CONTENT_TYPE, "text/plain");
 		Mockito.when(tested.providerService.findContentType("known")).thenReturn(typeDefKnown);
 
 		Map<String, Object> typeDefPersist = new HashMap<String, Object>();
@@ -529,7 +547,16 @@ public class ContentRestServiceTest extends ESRealClientTestBase {
 		typeDefPersistIndex.put("type", INDEX_TYPE);
 		typeDefPersist.put(ProviderService.DCP_TYPE, "my_dcp_type");
 		typeDefPersist.put(ProviderService.PERSIST, "true");
+		typeDefPersist.put(ProviderService.DCP_CONTENT_CONTENT_TYPE, "text/plain");
 		Mockito.when(tested.providerService.findContentType("persist")).thenReturn(typeDefPersist);
+
+		Map<String, Object> typeDefDcpContent = new HashMap<String, Object>();
+		Map<String, Object> typeDefDcpContentIndex = new HashMap<String, Object>();
+		typeDefDcpContent.put(ProviderService.INDEX, typeDefPersistIndex);
+		typeDefDcpContentIndex.put("name", INDEX_NAME);
+		typeDefDcpContentIndex.put("type", INDEX_TYPE);
+		typeDefDcpContent.put(ProviderService.DCP_TYPE, "my_dcp_type");
+		Mockito.when(tested.providerService.findContentType("invalid-content-type")).thenReturn(typeDefDcpContent);
 
 		Map<String, Object> providerDef = new HashMap<String, Object>();
 		Mockito.when(tested.providerService.findProvider("jbossorg")).thenReturn(providerDef);
@@ -541,5 +568,6 @@ public class ContentRestServiceTest extends ESRealClientTestBase {
 		typesDef.put("invalid_2", typeDefInvalid2);
 		typesDef.put("known", typeDefKnown);
 		typesDef.put("persist", typeDefPersist);
+		typesDef.put("invalid-content-type", typeDefDcpContent);
 	}
 }

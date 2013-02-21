@@ -22,7 +22,8 @@ inside DCP during push. Those data fields are prefixed by `dcp_`:
 * `dcp_title` - content title - used to present the document in the basic search GUI results - it can be directly set by the content provider during the push operation.
 * `dcp_url_view` - URL where the document can be viewed in its original system in human readable form - used to open the document from the basic search GUI - can be directly set by the content provider during the push.
 * `dcp_description` - short text representing the content - used to show the content in the basic search GUI results for queries that do not produce highlights - it can be directly set by the content provider during the push, no html formatting.
-* `dcp_content` - text representing whole content - Search API fulltext search runs against it - it can be directly set by the content provider during the push, may contain html formatting. Basic search GUI may use it in search result detail view. 
+* `dcp_content` - complete text representing whole content - Search API fulltext search runs against it - it can be directly set by the content provider during the push, may contain html formatting. Basic search GUI may use it in search result detail view.
+* `dcp_content_content-type` - MIME identifier of content type stored in the `dcp_content` field eg. `text/plain`, `text/html`, `text/x-markdown`. Must be negotiated with DCP Admins so fulltext search analyzer for `dcp_content` is set correctly.
 * `dcp_tags` - array of tags (Strings) - in the Search API used for facet (tag cloud) and filter - it is not directly pushed by the content provider because we plan a mechanism for additional user defined tags, so we need to rewrite this field internally. The content provider should use `tags` field instead.
 * `tags` - tags provided by content provider
 
@@ -43,7 +44,8 @@ DCP Content described by example:
 	    "dcp_title": "AS7-1254 - Set the port_range on JGroups stacks to 1",
 	    "dcp_url_view": "https://issues.jboss.org/browse/AS7-1254",
 	    "dcp_description": "Set the port_range on JGroups stacks to 1 to lock down the ports.",
-	    "dcp_content" : "Set the port_range on JGroups stacks to 1 to lock down the ports."
+	    "dcp_content" : "Set the <code>port_range</code> on JGroups stacks to <code>1</code> to lock down the ports.",
+	    "dcp_content_content-type" : "text/html",
 	    "dcp_updated": "2012-12-06T06:34:55.000Z",
 	    "dcp_project": "as7",
 	    "dcp_project_name": "JBoss AS7",

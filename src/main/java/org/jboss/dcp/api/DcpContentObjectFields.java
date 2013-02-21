@@ -27,6 +27,7 @@ public final class DcpContentObjectFields {
 	public static final String DCP_URL_VIEW = "dcp_url_view";
 	public static final String DCP_DESCRIPTION = "dcp_description";
 	public static final String DCP_CONTENT = "dcp_content";
+	public static final String DCP_CONTENT_CONTENT_TYPE = "dcp_content_content-type";
 	public static final String DCP_TAGS = "dcp_tags";
 	public static final String TAGS = "tags";
 

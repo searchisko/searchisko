@@ -15,6 +15,7 @@ Content provider configuration fields:
 * `type` - structure with configuration of content types pushed into DCP by this provider. Key in the structure is type name, which must be DCP wide unique (typically starts with content provider `name`). It is used on the 'Content Push API' and stored into `dcp_content_type` field of content pushed into DCP by this provider. Configuration of each type contains these fields:
  * `description` - description of this type, what contains, which system produces it etc.
  * `dcp_type` - value stored into `dcp_type` field of pushed content (see description in the [DCP Content object](../content/dcp_content_object.md) chapter).
+ * `dcp_content_content-type` - MIME identifier of content type stored in the `dcp_content` field if it is used. Eg. `text/plain`, `text/html`, `text/x-markdown`. Fulltext search analyzer for `dcp_content` field must be set correctly in ElasticSearch mapping regarding this type (eg. use of html stripping etc.).
  * `search_all_excluded` - optional, if `true` then documents with this type are excluded from searchings targeted to all documents (so can be searched only by explicit requests for this type)
  * `persist` - optional, if `true` then documents with this type are stored into DCP persistent store during push. Search index can be rebuilt from this persistent store. Used for content which is hard or expensive to obtain again in the future.
  * `input_preprocessors` - array of preprocessors applied on content of this type while pushed over 'Content Push API'. Typically used to normalize values into other `dcp_` fields as `dcp_project`, `dcp_contributors`, `dcp_activity_dates` etc. [structured-content-tools](https://github.com/jbossorg/structured-content-tools) framework is used here.
@@ -34,6 +35,7 @@ Example of content provider configuration:
 	    "jbossorg_blog": {
 	      "description" : "Blog posts pushed into DCP by Borg system - planet.jboss.org",
 	      "dcp_type": "blogpost",
+	      "dcp_content_content-type" : "text/html",
 	      "search_all_excluded" : "false",
 	      "persist" : true,
 	      "input_preprocessors": [
@@ -60,6 +62,7 @@ Example of content provider configuration:
 	    "jbossorg_project_info": {
 	      "description" : "Informations about projects (name, links, icons, licenses used etc) pushed into DCP by Magnolia CMS",
 	      "dcp_type": "project_info",
+	      "dcp_content_content-type" : "text/plain",
 	      "input_preprocessors": [
 	        {
 	          "name": "DCP project mapper - nodePath to dcp_project mapping",

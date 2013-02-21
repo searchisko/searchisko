@@ -5,6 +5,24 @@
  */
 package org.jboss.dcp.api.rest;
 
+import java.util.Date;
+import java.util.LinkedHashMap;
+import java.util.Map;
+
+import javax.enterprise.context.RequestScoped;
+import javax.inject.Inject;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
+
 import org.elasticsearch.action.delete.DeleteResponse;
 import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.index.IndexResponse;
@@ -19,16 +37,6 @@ import org.jboss.dcp.api.annotations.security.GuestAllowed;
 import org.jboss.dcp.api.annotations.security.ProviderAllowed;
 import org.jboss.dcp.api.service.ProviderService;
 import org.jboss.dcp.persistence.service.ContentPersistenceService;
-
-import javax.enterprise.context.RequestScoped;
-import javax.inject.Inject;
-import javax.ws.rs.*;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
-import java.util.Date;
-import java.util.LinkedHashMap;
-import java.util.Map;
 
 /**
  * REST API for Content
@@ -54,7 +62,7 @@ public class ContentRestService extends RestServiceBase {
 	@Path("/")
 	@Produces(MediaType.APPLICATION_JSON)
 	@GuestAllowed
-    @AccessControlAllowOrigin
+	@AccessControlAllowOrigin
 	public Object getAllContent(@PathParam("type") String type, @QueryParam("from") Integer from,
 			@QueryParam("size") Integer size, @QueryParam("sort") String sort) {
 		if (type == null || type.isEmpty()) {
@@ -103,7 +111,7 @@ public class ContentRestService extends RestServiceBase {
 	@Path("/{contentId}")
 	@Produces(MediaType.APPLICATION_JSON)
 	@GuestAllowed
-    @AccessControlAllowOrigin
+	@AccessControlAllowOrigin
 	public Object getContent(@PathParam("type") String type, @PathParam("contentId") String contentId) {
 
 		// validation
@@ -179,8 +187,23 @@ public class ContentRestService extends RestServiceBase {
 			// Copy distinct data from content to normalized fields
 			content.put(DcpContentObjectFields.DCP_TAGS, content.get("tags"));
 
+			// Fill type of content from configuration
+			if (content.containsKey(DcpContentObjectFields.DCP_CONTENT)) {
+				content.put(DcpContentObjectFields.DCP_CONTENT_CONTENT_TYPE,
+						ProviderService.extractDcpContentContentType(typeDef, type));
+			} else {
+				content.remove(DcpContentObjectFields.DCP_CONTENT_CONTENT_TYPE);
+			}
+
 			// Run preprocessors to manipulate other fields
 			providerService.runPreprocessors(type, ProviderService.extractPreprocessors(typeDef, type), content);
+
+			// Refill type of content from configuration if content was added in preprocessors
+			if (content.containsKey(DcpContentObjectFields.DCP_CONTENT)
+					&& !content.containsKey(DcpContentObjectFields.DCP_CONTENT_CONTENT_TYPE)) {
+				content.put(DcpContentObjectFields.DCP_CONTENT_CONTENT_TYPE,
+						ProviderService.extractDcpContentContentType(typeDef, type));
+			}
 
 			if (ProviderService.extractPersist(typeDef)) {
 				contentPersistenceService.store(dcpContentId, type, content);

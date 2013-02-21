@@ -411,6 +411,42 @@ public class ProviderServiceTest extends ESRealClientTestBase {
 		Assert.assertEquals(typeDef.get(ProviderService.DCP_TYPE), ProviderService.extractDcpType(typeDef, "mytype"));
 	}
 
+	@Test
+	public void extractDcpContentContentType() {
+		Map<String, Object> typeDef = new HashMap<String, Object>();
+
+		// case - dcp_type field not defined
+		try {
+			ProviderService.extractDcpContentContentType(typeDef, "mytype");
+			Assert.fail("SettingsException expected");
+		} catch (SettingsException e) {
+			// OK
+		}
+
+		// case - dcp_type field defined but empty
+		typeDef.put(ProviderService.DCP_CONTENT_CONTENT_TYPE, "");
+		try {
+			ProviderService.extractDcpContentContentType(typeDef, "mytype");
+			Assert.fail("SettingsException expected");
+		} catch (SettingsException e) {
+			// OK
+		}
+
+		// case - dcp_type field defined but empty
+		typeDef.put(ProviderService.DCP_CONTENT_CONTENT_TYPE, "  ");
+		try {
+			ProviderService.extractDcpContentContentType(typeDef, "mytype");
+			Assert.fail("SettingsException expected");
+		} catch (SettingsException e) {
+			// OK
+		}
+
+		// case - index type found correct found
+		typeDef.put(ProviderService.DCP_CONTENT_CONTENT_TYPE, "mydcptype");
+		Assert.assertEquals(typeDef.get(ProviderService.DCP_CONTENT_CONTENT_TYPE),
+				ProviderService.extractDcpContentContentType(typeDef, "mytype"));
+	}
+
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@Test
 	public void runPreprocessors() {

@@ -60,6 +60,8 @@ public class ProviderService implements EntityService {
 
 	public static final String PERSIST = "persist";
 
+	public static final String DCP_CONTENT_CONTENT_TYPE = "dcp_content_content-type";
+
 	@Inject
 	protected Logger log;
 
@@ -423,6 +425,26 @@ public class ProviderService implements EntityService {
 
 		if (ret == null || ret.trim().isEmpty())
 			throw new SettingsException("dcp_type is not defined correctly for dcp_provider_type=" + typeName
+					+ ". Contact administrators please.");
+
+		return ret;
+	}
+
+	/**
+	 * Get <code>dcp_content_content-type</code> value from one <code>dcp_content_type</code> configuration structure.
+	 * 
+	 * @param typeDef <code>dcp_content_type</code> configuration structure
+	 * @param typeName <code>dcp_content_type</code> name to be used for error messages
+	 * @return <code>dcp_content_content-type</code> value
+	 * @throws SettingsException if value is not present in configuration or is invalid
+	 */
+	public static String extractDcpContentContentType(Map<String, Object> typeDef, String typeName) {
+		String ret = null;
+		if (typeDef.get(DCP_CONTENT_CONTENT_TYPE) != null)
+			ret = typeDef.get(DCP_CONTENT_CONTENT_TYPE).toString();
+
+		if (ret == null || ret.trim().isEmpty())
+			throw new SettingsException("dcp_content_content-type is not defined correctly for dcp_provider_type=" + typeName
 					+ ". Contact administrators please.");
 
 		return ret;
