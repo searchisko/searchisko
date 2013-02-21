@@ -38,7 +38,7 @@ Example of issue data structure:
 		"assignee"              : {"email_address":"pat@mat.org", "display_name":"Pat Mat", "dcp_contributor": "Pat Mat <pat@mat.org>"},
 		"fix_versions"          : [ {"name":"3.0.0"} ],
 		"components"            : [ {"name":"community.jboss.org (SBS)"} ],
-		"comments"              : [
+		"dcp_comments"              : [
 		                            {
 		                              "comment_id"      : "1254652",
 		                              "comment_body"    : "Whole comment text.",
@@ -74,7 +74,7 @@ Description of data fields for the issue record:
 <tr><td>assignee</td><td>Info about contributor responsible for issue solution. 'Contributor data structure' is described below.</td></tr>
 <tr><td>fix_versions</td><td>Array of object describing version where the issue is fixed. Object contains `name` field only for now, with version name.</td></tr>
 <tr><td>components</td><td>Array of object describing component of project the issue is for. Object contains `name` field only for now, with component name.</td></tr>
-<tr><td>comments</td><td>Array of comment for issue. 'Comment data structure' is described below.</td></tr>
+<tr><td>dcp_comments</td><td>Array of comment for issue. 'Comment data structure' is described below.</td></tr>
 </tbody>
 </table>
 **Note:** some standard DCP [system fields](dcp_content_object.md) prefixed by `dcp_` are not described here. Description may be found in general documentation for "DCP Content object".  	

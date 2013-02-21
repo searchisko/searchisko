@@ -30,5 +30,6 @@ public final class DcpContentObjectFields {
 	public static final String DCP_CONTENT_CONTENT_TYPE = "dcp_content_content-type";
 	public static final String DCP_TAGS = "dcp_tags";
 	public static final String TAGS = "tags";
+	public static final String DCP_COMMENTS = "dcp_comments";
 
 }
