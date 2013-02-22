@@ -10,13 +10,16 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import org.jboss.dcp.api.rest.AccessControlPostProcessInterceptor;
+
 /**
- * Annotation used for setup 'Access-Control-Allow-Origin: *' value in header of a response
- * to a simple cross-origin request.
- *
+ * Annotation used for add '<code>Access-Control-Allow-Origin: *'<code>' header of a JAX-RS response
+ * to allow a simple cross-origin requests.
+ * 
  * See <a href="http://www.w3.org/TR/cors/#simple-cross-origin-request">http://www.w3.org/TR/cors/#simple-cross-origin-request</a>
- *
+ * 
  * @author Lukas Vlcek
+ * @see AccessControlPostProcessInterceptor
  */
 @Target({ ElementType.METHOD })
 @Retention(RetentionPolicy.RUNTIME)
