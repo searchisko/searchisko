@@ -47,33 +47,36 @@ to the `$EAP6HOME/standalone/deployments` folder.
 You can use [Eclipse with JBoss Tools](http://www.jboss.org/tools) or 
 [JBoss Developer Studio](https://devstudio.jboss.com) for this.
 
-DCP REST API is then available at the `http://localhost:8080/v1/rest/`  
-ElasticSearch search node REST API is available at the `http://localhost:15000/`  
+DCP REST API is then available at the [`http://localhost:8080/v1/rest/`](http://localhost:8080/v1/rest/)  
+ElasticSearch search node REST API is available at the [`http://localhost:15000/`](http://localhost:15000/)  
 
 **Note**: When you use standard configuration of embedded h2 database from JBoss EAP 6 then data are lost 
 when EAP is shutdown/restarted. To keep data simply open `standalone.xml` EAP configuration file, locate 
 `<connection-url>jdbc:h2:mem:test;DB_CLOSE_DELAY=-1</connection-url>` and change it to 
 the `<connection-url>jdbc:h2:test</connection-url>`. Data are then persisted in `$EAP6HOME/bin/test.h2.db` file so you can delete them manually if necessary.
 
-**Note#2**: You might get the following exception when ROOT.war is deployed:
-```
-JBAS018038: Root contexts can not be deployed when the virtual host configuration has the welcome root enabled, disable it and redeploy
-```
+**Note#2**: You might get the following exception when `ROOT.war` is deployed:
+
+
+	JBAS018038: Root contexts can not be deployed when the virtual host configuration has the welcome root enabled, disable it and redeploy
+
 In this case you need to change `standalone.xml` configuration. Navigate to line:
-```
-<virtual-server name="default-host" enable-welcome-root="true">
-```
+
+	<virtual-server name="default-host" enable-welcome-root="true">
+
 and change it to
-```
-<virtual-server name="default-host" enable-welcome-root="false">
-```
+
+	<virtual-server name="default-host" enable-welcome-root="false">
+
 
 #### OpenShift
 
-Simply instruct OpenShift to use MySQL and JBoss EAP 6 cartridge and this git repo. 
-Then project is built and deployed automatically.
+Simply login [OpenShift](https://openshift.redhat.com), create new Application 
+with 'JBoss Enterprise Application Platform 6.0 Cartridge ' 
+and add 'MySQL Database 5.1' cartridge into it. Then push content of this git 
+repo into the OpenShift application's git repo. Then DCP is built and deployed automatically.
 
-DCP REST API is then available at the `http://your_openshift_domain/v1/rest/`  
+DCP REST API is then available at the `http://your_openshift_aplication_url/v1/rest/`  
 ElasticSearch search node REST API is available only from gear shell at the `http://$OPENSHIFT_INTERNAL_IP:15000/`, 
 you have to use port forwarding to access it from outside.
 
@@ -87,11 +90,11 @@ After DCP is deployed it's necessary to initialize it. Next initialization steps
 
 2. Create ElasticSearch index templates and indices over ElasticSearch REST API
 3. Create ElasticSearch mappings over ElasticSearch REST API
-4. Push all DCP init data (see `rest-api/management` subfolder) over DCP REST API in given order:
+4. Push all DCP init data (see [`rest-api/management`](rest-api/management) subfolder) over DCP management REST API in given order:
    - content providers
-   - configurations
+   - DCP configurations
    - projects
    - contributors
 5. Initialize ElasticSearch rivers if any used to collect data 
 
-                
+TODO add example of initialization resources into this repo
