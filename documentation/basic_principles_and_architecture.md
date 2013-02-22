@@ -34,25 +34,31 @@ To support multiple projects synergy, informations stored into DCP will be norma
 * activity date - so you can filter/analyze informations/contributions by dates
   when they was created/updated   
 
-DCP provides **REST API** for informations manipulation and search/retrieve, 
-see [`REST API documentation`](rest-api/README.md). 
+DCP provides **REST API** with JSON for informations manipulation and search/retrieve, 
+see [`REST API documentation`](rest-api/README.md).  
 This allows simple integration with other systems and modern AJAX and HTML 5 
 based frontends. 
 
 Possible use cases for "project pages" maintained by project teams:
 
-* Unified fulltext search across different project related content
+* Unified fulltext search across different project related content.
+* Fulltext search for one project related content type presentation - eg. fulltext search 
+  for project's blog (like [http://arquillian.org/blog](http://arquillian.org/blog)).
+* Planet blog aggregator for project related blogposts.
 * Staff rooster for project - info about project team members, contributors, 
-  details about who contributed what 
-* Planet blog aggregator for project related blogposts
-* Project tag cloud - hot topics around project during last week, month, quarter, year
-* Project activity graph - overall or per activity type (commits, blogposts)
+  details about who contributed what.
+* Project tag cloud - hot topics around project during last week, month, quarter, year.
+* Project activity graphs - overall or per activity type (commits, blogposts), timeline histograms etc.
+* Project specific artifacts "repository" application - eg. something like [modules.ceylon-lang.org](http://modules.ceylon-lang.org)
+  site or [JDF quickstarts page](http://www.jboss.org/jdf/quickstarts/get-started/). 
+  DCP should be used for the search part only, or for the categorized content presentation 
+  pages also.
 
 Possible use cases for general community pages:
 
 * Unified fulltext search across all community project's content
-* List of all community projects
-* Planet - whole community blog aggregator
+* List of all community projects - like [www.jboss.org/projects](http://www.jboss.org/projects)
+* Planet - whole community blog aggregator like [planet.jboss.org](http://planet.jboss.org)
 * Who is Who in the community - info about community contributors, which 
   projects they contribute, all activities over all projects etc.
 * Community tag cloud - hot topics in the community during last week, month, quarter, year
