@@ -1,5 +1,7 @@
-/**
- * 
+/*
+ * JBoss, Home of Professional Open Source
+ * Copyright 2012 Red Hat Inc. and/or its affiliates and other contributors
+ * as indicated by the @authors tag. All rights reserved.
  */
 package org.jboss.dcp.api.service;
 
@@ -12,11 +14,10 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.ws.rs.core.StreamingOutput;
 
-import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.jboss.dcp.persistence.service.EntityService;
 
 /**
- * Service related to project
+ * Service related to project definitions
  * 
  * @author Libor Krzyzanek
  * @author Lukas Vlcek
