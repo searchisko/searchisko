@@ -10,6 +10,9 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.ejb.Singleton;
+import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Named;
 import javax.ws.rs.core.MultivaluedMap;
 
 import org.elasticsearch.common.joda.time.format.ISODateTimeFormat;
@@ -17,70 +20,31 @@ import org.jboss.dcp.api.model.FacetValue;
 import org.jboss.dcp.api.model.PastIntervalValue;
 import org.jboss.dcp.api.model.QuerySettings;
 import org.jboss.dcp.api.model.SortByValue;
-import org.jboss.dcp.api.rest.SearchRestService;
+import org.jboss.dcp.api.service.SearchService;
 
 /**
- * Query settings parser
+ * Search Query parameters parser component.
  * 
  * @author Libor Krzyzanek
  * @author Lukas Vlcek
  * @author Vlastimil Elias (velias at redhat dot com)
  */
+@Named
+@ApplicationScoped
+@Singleton
 public class QuerySettingsParser {
 
 	private final static Logger log = Logger.getLogger(QuerySettingsParser.class.getName());
 
 	/**
-	 * Sanity query in given settings. Trim it and patch wildchard if not null, else use <code>match_all:{}</code>.
+	 * Parse REST parameters, validate them, sanity them, and store into {@link QuerySettings} bean.
 	 * 
-	 * @param settings to sanity query in.
-	 * @throws IllegalArgumentException if settings is null
-	 */
-	public static void sanityQuery(QuerySettings settings) throws IllegalArgumentException {
-		if (settings == null) {
-			throw new IllegalArgumentException("No query settings provided!");
-		}
-		if (settings.getQuery() != null) {
-			settings.setQuery(settings.getQuery().trim());
-			settings.setQuery(patchWildchars(settings.getQuery()));
-		} else {
-			settings.setQuery("match_all:{}");
-		}
-	}
-
-	/**
-	 * Normalize search query string - trim it, return null if empty, patch wildchars.
-	 * 
-	 * @param query to normalize
-	 * @return normalized query
-	 */
-	public static String normalizeQueryString(String query) {
-		query = SearchUtils.trimToNull(query);
-		if (query == null) {
-			return null;
-		}
-		return patchWildchars(query);
-	}
-
-	private static String patchWildchars(String q) {
-		if (q != null) {
-			q = q.replaceAll("\\*\\?", "*");
-			q = q.replaceAll("\\?\\*", "*");
-			q = q.replaceAll("\\*+", "*");
-			q = q.replaceAll("\\?+", "?");
-		}
-		return q;
-	}
-
-	/**
-	 * Parse REST parameters to standardized query settings.
-	 * 
-	 * @param params to parse
-	 * @return query settings
+	 * @param params REST request params to parse
+	 * @return query settings instance filled with valid search settings
 	 * @throws IllegalArgumentException if some param has invalid value. Message from exception contains parameter name
 	 *           and is used for error handling later!
 	 */
-	public static QuerySettings parseUriParams(MultivaluedMap<String, String> params) throws IllegalArgumentException {
+	public QuerySettings parseUriParams(MultivaluedMap<String, String> params) throws IllegalArgumentException {
 		QuerySettings settings = new QuerySettings();
 		QuerySettings.Filters filters = new QuerySettings.Filters();
 		settings.setFilters(filters);
@@ -107,7 +71,7 @@ public class QuerySettingsParser {
 		if (filters.getFrom() != null && filters.getFrom() < 0)
 			throw new IllegalArgumentException(QuerySettings.Filters.FROM_KEY);
 		filters.setSize(readIntegerParam(params, QuerySettings.Filters.SIZE_KEY));
-		if (filters.getSize() != null && (filters.getSize() < 0 || filters.getSize() > SearchRestService.RESPONSE_MAX_SIZE))
+		if (filters.getSize() != null && (filters.getSize() < 0 || filters.getSize() > SearchService.RESPONSE_MAX_SIZE))
 			throw new IllegalArgumentException(QuerySettings.Filters.SIZE_KEY);
 
 		settings.setSortBy(SortByValue.parseRequestParameterValue(params.getFirst(QuerySettings.SORT_BY_KEY)));
@@ -125,6 +89,48 @@ public class QuerySettingsParser {
 	}
 
 	/**
+	 * Sanity query in given settings. Trim it and patch wildchard if not null, else use <code>match_all:{}</code>.
+	 * 
+	 * @param settings to sanity query in.
+	 * @throws IllegalArgumentException if settings is null
+	 */
+	protected void sanityQuery(QuerySettings settings) throws IllegalArgumentException {
+		if (settings == null) {
+			throw new IllegalArgumentException("No query settings provided!");
+		}
+		if (settings.getQuery() != null) {
+			settings.setQuery(settings.getQuery().trim());
+			settings.setQuery(patchWildchars(settings.getQuery()));
+		} else {
+			settings.setQuery("match_all:{}");
+		}
+	}
+
+	/**
+	 * Normalize search query string - trim it, return null if empty, patch wildchars.
+	 * 
+	 * @param query to normalize
+	 * @return normalized query
+	 */
+	protected String normalizeQueryString(String query) {
+		query = SearchUtils.trimToNull(query);
+		if (query == null) {
+			return null;
+		}
+		return patchWildchars(query);
+	}
+
+	private String patchWildchars(String q) {
+		if (q != null) {
+			q = q.replaceAll("\\*\\?", "*");
+			q = q.replaceAll("\\?\\*", "*");
+			q = q.replaceAll("\\*+", "*");
+			q = q.replaceAll("\\?+", "?");
+		}
+		return q;
+	}
+
+	/**
 	 * Read request param value as integer.
 	 * 
 	 * @param params to get param from
@@ -132,7 +138,7 @@ public class QuerySettingsParser {
 	 * @return param value as integer or null
 	 * @throws IllegalArgumentException if param value is not convertible to Integer
 	 */
-	protected static Integer readIntegerParam(MultivaluedMap<String, String> params, String paramKey)
+	protected Integer readIntegerParam(MultivaluedMap<String, String> params, String paramKey)
 			throws IllegalArgumentException {
 		if (params != null && params.containsKey(paramKey)) {
 			try {
@@ -155,8 +161,7 @@ public class QuerySettingsParser {
 	 * @return param timestamp value as Long or null
 	 * @throws IllegalArgumentException if datetime param value is not parseable due bad format
 	 */
-	protected static Long readDateParam(MultivaluedMap<String, String> params, String paramKey)
-			throws IllegalArgumentException {
+	protected Long readDateParam(MultivaluedMap<String, String> params, String paramKey) throws IllegalArgumentException {
 		if (params != null && params.containsKey(paramKey)) {
 			try {
 				String s = SearchUtils.trimToNull(params.getFirst(paramKey));
@@ -177,7 +182,7 @@ public class QuerySettingsParser {
 	 * @param paramKey key of param
 	 * @return param boolean value
 	 */
-	protected static boolean readBooleanParam(MultivaluedMap<String, String> params, String paramKey) {
+	protected boolean readBooleanParam(MultivaluedMap<String, String> params, String paramKey) {
 		if (params != null && params.containsKey(paramKey)) {
 			return Boolean.parseBoolean(SearchUtils.trimToNull(params.getFirst(paramKey)));
 		}
@@ -190,7 +195,7 @@ public class QuerySettingsParser {
 	 * @param paramValue value to normalize
 	 * @return normalized List param value
 	 */
-	protected static List<String> normalizeListParam(List<String> paramValue) {
+	protected List<String> normalizeListParam(List<String> paramValue) {
 		if (paramValue == null || paramValue.isEmpty()) {
 			return null;
 		}

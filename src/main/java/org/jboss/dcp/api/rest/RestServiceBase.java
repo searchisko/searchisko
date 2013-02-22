@@ -5,54 +5,40 @@
  */
 package org.jboss.dcp.api.rest;
 
-import org.elasticsearch.action.get.GetResponse;
-import org.elasticsearch.action.search.SearchResponse;
-import org.elasticsearch.common.xcontent.ToXContent;
-import org.elasticsearch.common.xcontent.XContentBuilder;
-import org.elasticsearch.common.xcontent.XContentFactory;
-import org.jboss.dcp.api.config.TimeoutConfiguration;
-import org.jboss.dcp.api.service.SearchClientService;
-import org.jboss.dcp.api.service.StatsClientService;
-
-import javax.inject.Inject;
-import javax.servlet.http.HttpServletResponse;
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
-import javax.ws.rs.core.SecurityContext;
-import javax.ws.rs.core.StreamingOutput;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.inject.Inject;
+import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
+import javax.ws.rs.core.SecurityContext;
+import javax.ws.rs.core.StreamingOutput;
+
+import org.elasticsearch.action.get.GetResponse;
+import org.elasticsearch.action.search.SearchResponse;
+import org.elasticsearch.common.xcontent.ToXContent;
+import org.elasticsearch.common.xcontent.XContentBuilder;
+import org.elasticsearch.common.xcontent.XContentFactory;
+
 /**
- * Base service for Rest Services
+ * Base for REST endpoint services.
  * 
  * @author Libor Krzyzanek
+ * @author Vlastimil Elias (velias at redhat dot com)
  * 
  */
 public class RestServiceBase {
-
-	@Inject
-	protected SearchClientService searchClientService;
-
-	@Inject
-	protected StatsClientService statsClientService;
-
-	@Inject
-	protected TimeoutConfiguration timeout;
 
 	@Inject
 	protected Logger log;
 
 	@Context
 	protected SecurityContext securityContext;
-
-	@Context
-	protected HttpServletResponse response;
 
 	/**
 	 * Get provider name based on security user principal
@@ -119,15 +105,4 @@ public class RestServiceBase {
 		return Response.serverError().entity("Error [" + ex.getClass().getName() + "]: " + ex.getMessage()).build();
 	}
 
-	public SearchClientService getSearchClientService() {
-		return searchClientService;
-	}
-
-	public StatsClientService getStatsClientService() {
-		return statsClientService;
-	}
-
-	public TimeoutConfiguration getTimeout() {
-		return timeout;
-	}
 }

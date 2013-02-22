@@ -23,7 +23,6 @@ import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.elasticsearch.search.facet.FacetBuilders;
 import org.elasticsearch.search.facet.terms.TermsFacetBuilder;
 import org.jboss.dcp.api.model.QuerySettings;
-import org.jboss.dcp.api.util.QuerySettingsParser;
 
 /**
  * @author lvlcek@redhat.com
@@ -37,7 +36,7 @@ public class ProxyQueryBuilder {
 	@SuppressWarnings("unused")
 	public static SearchSourceBuilder buildSearchQuery(QuerySettings settings) throws Exception {
 
-		QuerySettingsParser.sanityQuery(settings);
+		// QuerySettingsParser.sanityQuery(settings);
 
 		// User query string
 		QueryBuilder qb = null;

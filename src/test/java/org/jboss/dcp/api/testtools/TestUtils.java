@@ -143,6 +143,25 @@ public abstract class TestUtils {
 	}
 
 	/**
+	 * Assert string value equals one written by the StreamingOutput.
+	 * 
+	 * @param expectedPattern regexp value used to match
+	 * @param actual value
+	 * @throws IOException
+	 */
+	public static void assetStreamingOutputContentRegexp(String expectedPattern, Object actual) throws IOException {
+		if (!(actual instanceof StreamingOutput)) {
+			Assert.fail("Result must be StreamingOutput but is " + actual);
+		}
+		ByteArrayOutputStream output = new ByteArrayOutputStream();
+		((StreamingOutput) actual).write(output);
+		if (!output.toString().matches(expectedPattern)) {
+			Assert.fail("Expected regexp pattern '" + expectedPattern + "' do not match with content: " + output.toString());
+		}
+
+	}
+
+	/**
 	 * Assert passed string is same as content of given file loaded from classpath.
 	 * 
 	 * @param expectedFilePath path to file inside classpath

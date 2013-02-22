@@ -36,6 +36,7 @@ import org.jboss.dcp.api.annotations.header.AccessControlAllowOrigin;
 import org.jboss.dcp.api.annotations.security.GuestAllowed;
 import org.jboss.dcp.api.annotations.security.ProviderAllowed;
 import org.jboss.dcp.api.service.ProviderService;
+import org.jboss.dcp.api.service.SearchClientService;
 import org.jboss.dcp.persistence.service.ContentPersistenceService;
 
 /**
@@ -54,6 +55,9 @@ public class ContentRestService extends RestServiceBase {
 
 	@Inject
 	protected ProviderService providerService;
+
+	@Inject
+	protected SearchClientService searchClientService;
 
 	@Inject
 	protected ContentPersistenceService contentPersistenceService;
@@ -77,7 +81,7 @@ public class ContentRestService extends RestServiceBase {
 			String indexName = ProviderService.extractIndexName(typeDef, type);
 			String indexType = ProviderService.extractIndexType(typeDef, type);
 
-			SearchRequestBuilder srb = new SearchRequestBuilder(getSearchClientService().getClient());
+			SearchRequestBuilder srb = new SearchRequestBuilder(searchClientService.getClient());
 			srb.setIndices(indexName);
 			srb.setTypes(indexType);
 
@@ -132,7 +136,7 @@ public class ContentRestService extends RestServiceBase {
 			String indexName = ProviderService.extractIndexName(typeDef, type);
 			String indexType = ProviderService.extractIndexType(typeDef, type);
 
-			GetResponse getResponse = getSearchClientService().getClient().prepareGet(indexName, indexType, dcpContentId)
+			GetResponse getResponse = searchClientService.getClient().prepareGet(indexName, indexType, dcpContentId)
 					.execute().actionGet();
 
 			if (!getResponse.exists()) {
@@ -212,7 +216,7 @@ public class ContentRestService extends RestServiceBase {
 			// TODO EXTERNAL_TAGS - add external tags for this document into dcp_tags field
 
 			// Push to search subsystem
-			IndexResponse ir = getSearchClientService().getClient().prepareIndex(indexName, indexType, dcpContentId)
+			IndexResponse ir = searchClientService.getClient().prepareIndex(indexName, indexType, dcpContentId)
 					.setSource(content).execute().actionGet();
 			Map<String, String> retJson = new LinkedHashMap<String, String>();
 			if (ir.version() > 1) {
@@ -257,8 +261,8 @@ public class ContentRestService extends RestServiceBase {
 			String indexName = ProviderService.extractIndexName(typeDef, type);
 			String indexType = ProviderService.extractIndexType(typeDef, type);
 
-			DeleteResponse dr = getSearchClientService().getClient().prepareDelete(indexName, indexType, dcpContentId)
-					.execute().actionGet();
+			DeleteResponse dr = searchClientService.getClient().prepareDelete(indexName, indexType, dcpContentId).execute()
+					.actionGet();
 
 			if (dr.isNotFound() && !Boolean.parseBoolean(ignoreMissing)) {
 				return Response.status(Status.NOT_FOUND).entity("Content not found to be deleted.").build();
