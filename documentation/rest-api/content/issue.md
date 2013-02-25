@@ -29,7 +29,7 @@ Example of issue data structure:
 		"dcp_description"       : "We need to see what we can do with Clearspace L'n'F. As a part of this task some example theme changes should be created and staged. Specifically, some propositions for project pages.",
 		"status"                : "Closed",
 		"dcp_issue_status"      : "Closed",
-		"created"               : "2011-04-14T11:32Z",
+		"dcp_created"           : "2011-04-14T11:32Z",
 		"updated"               : "2012-11-27T14:22Z",
 		"resolutiondate"        : "2012-11-27T14:20Z",
 		"tags"                  : ["tag1","tag2"],
@@ -66,7 +66,7 @@ Description of data fields for the issue record:
 <tr><td>dcp_description</td><td>Long description text for the issue.</td></tr>
 <tr><td>status</td><td>Status of the issue lifecycle/worflow (eg. new, assigned, resolved, closed) from the source issue tracking system. Used as input for normalization necessary for `dcp_issue_status`.</td></tr>
 <tr><td>dcp_issue_status</td><td>Normalized value of the issue lifecycle/worflow status. Possible values: `Open`, `In Progress`, `Closed`</td></tr>
-<tr><td>created</td><td>Date when the issue was created in the source issue tracking system.</td></tr>
+<tr><td>dcp_created</td><td>Date when the issue was created in the source issue tracking system.</td></tr>
 <tr><td>updated</td><td>Date when the issue was last time updated in the source issue tracking system.</td></tr>
 <tr><td>resolutiondate</td><td>Date when the issue was resolved in the source issue tracking system</td></tr>
 <tr><td>tags</td><td>Tags from the source issue tracking system. (`Labels` field in case of JIRA)</td></tr>
