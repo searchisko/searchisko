@@ -112,7 +112,7 @@ public class JpaHibernateContentPersistenceService implements ContentPersistence
 				updated = (Date) o;
 			} else if (o instanceof String) {
 				try {
-					updated = SearchUtils.getISODateFormat().parse((String) o);
+					updated = SearchUtils.dateFromISOString((String) o, true);
 				} catch (Exception e) {
 					// ignore exception here
 				}

@@ -1,5 +1,7 @@
 package org.jboss.dcp.api.model;
 
+import org.jboss.dcp.api.rest.FeedRestService;
+import org.jboss.dcp.api.rest.SearchRestService;
 import org.jboss.dcp.api.util.SearchUtils;
 
 /**
@@ -10,13 +12,22 @@ import org.jboss.dcp.api.util.SearchUtils;
  */
 public enum SortByValue {
 	/**
-	 * Newest first
+	 * Sort by score. Used as default for search. See {@link SearchRestService}.
+	 */
+	SCORE("score"),
+	/**
+	 * Newest modified content first.
 	 */
 	NEW("new"),
 	/**
-	 * Oldest first
+	 * Oldest modified content first.
 	 */
-	OLD("old");
+	OLD("old"),
+
+	/**
+	 * Newest created content first. Used as default for ATOM feeds. See {@link FeedRestService}.
+	 */
+	NEW_CREATION("new-create");
 
 	/**
 	 * Value used as request parameter

@@ -46,8 +46,7 @@ public class QuerySettingsParser {
 	 */
 	public QuerySettings parseUriParams(MultivaluedMap<String, String> params) throws IllegalArgumentException {
 		QuerySettings settings = new QuerySettings();
-		QuerySettings.Filters filters = new QuerySettings.Filters();
-		settings.setFilters(filters);
+		QuerySettings.Filters filters = settings.getFiltersInit();
 		if (params == null) {
 			return settings;
 		}

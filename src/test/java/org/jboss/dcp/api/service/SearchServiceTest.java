@@ -928,10 +928,8 @@ public class SearchServiceTest {
 		{
 			Mockito.reset(srbMock, tested.configService);
 			QuerySettings querySettings = new QuerySettings();
-			List<String> fields = new ArrayList<String>();
-			querySettings.setFields(fields);
-			fields.add("aa");
-			fields.add("bb");
+			querySettings.addField("aa");
+			querySettings.addField("bb");
 			tested.handleResponseContentSettings(querySettings, srbMock);
 			Mockito.verify(srbMock).addFields(new String[] { "aa", "bb" });
 			Mockito.verifyNoMoreInteractions(srbMock);
@@ -967,6 +965,13 @@ public class SearchServiceTest {
 		{
 			Mockito.reset(srbMock);
 			QuerySettings querySettings = new QuerySettings();
+			querySettings.setSortBy(SortByValue.SCORE);
+			tested.handleSortingSettings(querySettings, srbMock);
+			Mockito.verifyNoMoreInteractions(srbMock);
+		}
+		{
+			Mockito.reset(srbMock);
+			QuerySettings querySettings = new QuerySettings();
 			querySettings.setSortBy(SortByValue.NEW);
 			tested.handleSortingSettings(querySettings, srbMock);
 			Mockito.verify(srbMock).addSort("dcp_last_activity_date", SortOrder.DESC);
@@ -978,6 +983,14 @@ public class SearchServiceTest {
 			querySettings.setSortBy(SortByValue.OLD);
 			tested.handleSortingSettings(querySettings, srbMock);
 			Mockito.verify(srbMock).addSort("dcp_last_activity_date", SortOrder.ASC);
+			Mockito.verifyNoMoreInteractions(srbMock);
+		}
+		{
+			Mockito.reset(srbMock);
+			QuerySettings querySettings = new QuerySettings();
+			querySettings.setSortBy(SortByValue.NEW_CREATION);
+			tested.handleSortingSettings(querySettings, srbMock);
+			Mockito.verify(srbMock).addSort("dcp_created", SortOrder.DESC);
 			Mockito.verifyNoMoreInteractions(srbMock);
 		}
 	}

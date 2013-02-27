@@ -9,7 +9,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 /**
- * Unit test for {@link SortByValue}
+ * Unit test for {@link SortByValue}.
  * 
  * @author Vlastimil Elias (velias at redhat dot com)
  */
@@ -17,9 +17,11 @@ public class SortByValueTest {
 
 	@Test
 	public void values() {
-		Assert.assertEquals(2, SortByValue.values().length);
+		Assert.assertEquals(4, SortByValue.values().length);
 		Assert.assertEquals("new", SortByValue.NEW.toString());
 		Assert.assertEquals("old", SortByValue.OLD.toString());
+		Assert.assertEquals("new-create", SortByValue.NEW_CREATION.toString());
+		Assert.assertEquals("score", SortByValue.SCORE.toString());
 	}
 
 	@Test

@@ -87,7 +87,7 @@ public class StatsClientServiceTest {
 		QuerySettings qs = new QuerySettings();
 		qs.setQuery("my query");
 		tested.statsConfiguration = new StatsConfiguration(false);
-		tested.writeStatistics(StatsRecordType.DOCUMENT_DETAIL, new ElasticSearchException("Test exception"),
+		tested.writeStatistics(StatsRecordType.SEARCH, new ElasticSearchException("Test exception"),
 				DateTools.stringToTime("20121221121212121"), qs);
 		Mockito.verifyZeroInteractions(tested.client);
 
@@ -101,7 +101,7 @@ public class StatsClientServiceTest {
 			Mockito.doAnswer(answ).when(tested.client)
 					.index(Mockito.any(IndexRequest.class), Mockito.any(ActionListener.class));
 
-			tested.writeStatistics(StatsRecordType.DOCUMENT_DETAIL, new ElasticSearchException("Test exception"),
+			tested.writeStatistics(StatsRecordType.SEARCH, new ElasticSearchException("Test exception"),
 					DateTools.stringToTime("20121221121212121"), qs);
 
 			Mockito.verify(tested.client).index(Mockito.any(IndexRequest.class), Mockito.any(ActionListener.class));
@@ -141,7 +141,7 @@ public class StatsClientServiceTest {
 			Mockito.doAnswer(answ).when(tested.client)
 					.index(Mockito.any(IndexRequest.class), Mockito.any(ActionListener.class));
 
-			tested.writeStatistics(StatsRecordType.DOCUMENT_DETAIL, new ElasticSearchException("Test exception"),
+			tested.writeStatistics(StatsRecordType.SEARCH, new ElasticSearchException("Test exception"),
 					DateTools.stringToTime("20121221121212121"), qs);
 
 			Mockito.verify(tested.client).index(Mockito.any(IndexRequest.class), Mockito.any(ActionListener.class));
@@ -155,7 +155,7 @@ public class StatsClientServiceTest {
 		Mockito.doThrow(new RuntimeException("testException")).when(tested.client)
 				.index(Mockito.any(IndexRequest.class), Mockito.any(ActionListener.class));
 
-		tested.writeStatistics(StatsRecordType.DOCUMENT_DETAIL, new ElasticSearchException("Test exception"),
+		tested.writeStatistics(StatsRecordType.SEARCH, new ElasticSearchException("Test exception"),
 				DateTools.stringToTime("20121221121212121"), qs);
 
 		Mockito.verify(tested.client).index(Mockito.any(IndexRequest.class), Mockito.any(ActionListener.class));
@@ -178,13 +178,13 @@ public class StatsClientServiceTest {
 		QuerySettings qs = new QuerySettings();
 
 		tested.statsConfiguration = new StatsConfiguration(false);
-		tested.writeStatistics(StatsRecordType.DOCUMENT_DETAIL, "uuid", searchResponseMock,
+		tested.writeStatistics(StatsRecordType.SEARCH, "uuid", searchResponseMock,
 				DateTools.stringToTime("20121221121212121"), qs);
 		Mockito.verifyZeroInteractions(tested.client);
 
 		// case - search response null
 		tested.statsConfiguration = new StatsConfiguration(true);
-		tested.writeStatistics(StatsRecordType.DOCUMENT_DETAIL, "uuid", (SearchResponse) null,
+		tested.writeStatistics(StatsRecordType.SEARCH, "uuid", (SearchResponse) null,
 				DateTools.stringToTime("20121221121212121"), qs);
 		Mockito.verifyZeroInteractions(tested.client);
 
@@ -213,7 +213,7 @@ public class StatsClientServiceTest {
 			Mockito.doAnswer(answ).when(tested.client)
 					.index(Mockito.any(IndexRequest.class), Mockito.any(ActionListener.class));
 
-			tested.writeStatistics(StatsRecordType.DOCUMENT_DETAIL, "uuid", searchResponseMock,
+			tested.writeStatistics(StatsRecordType.SEARCH, "uuid", searchResponseMock,
 					DateTools.stringToTime("20121221121212121"), qs);
 
 			Mockito.verify(tested.client).index(Mockito.any(IndexRequest.class), Mockito.any(ActionListener.class));
@@ -253,7 +253,7 @@ public class StatsClientServiceTest {
 			Mockito.doAnswer(answ).when(tested.client)
 					.index(Mockito.any(IndexRequest.class), Mockito.any(ActionListener.class));
 
-			tested.writeStatistics(StatsRecordType.DOCUMENT_DETAIL, "uuid", searchResponseMock,
+			tested.writeStatistics(StatsRecordType.SEARCH, "uuid", searchResponseMock,
 					DateTools.stringToTime("20121221121212121"), qs);
 
 			Mockito.verify(tested.client).index(Mockito.any(IndexRequest.class), Mockito.any(ActionListener.class));
@@ -267,7 +267,7 @@ public class StatsClientServiceTest {
 		Mockito.doThrow(new RuntimeException("testException")).when(tested.client)
 				.index(Mockito.any(IndexRequest.class), Mockito.any(ActionListener.class));
 
-		tested.writeStatistics(StatsRecordType.DOCUMENT_DETAIL, "uuid", searchResponseMock,
+		tested.writeStatistics(StatsRecordType.SEARCH, "uuid", searchResponseMock,
 				DateTools.stringToTime("20121221121212121"), qs);
 
 		Mockito.verify(tested.client).index(Mockito.any(IndexRequest.class), Mockito.any(ActionListener.class));

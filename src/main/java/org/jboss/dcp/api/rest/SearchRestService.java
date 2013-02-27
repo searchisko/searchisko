@@ -24,6 +24,7 @@ import org.jboss.dcp.api.annotations.header.AccessControlAllowOrigin;
 import org.jboss.dcp.api.annotations.security.GuestAllowed;
 import org.jboss.dcp.api.model.QuerySettings;
 import org.jboss.dcp.api.service.SearchService;
+import org.jboss.dcp.api.service.StatsRecordType;
 import org.jboss.dcp.api.util.QuerySettingsParser;
 
 /**
@@ -61,7 +62,7 @@ public class SearchRestService extends RestServiceBase {
 			querySettings = querySettingsParser.parseUriParams(params);
 			String responseUuid = UUID.randomUUID().toString();
 
-			SearchResponse searchResponse = searchService.performSearch(querySettings, responseUuid);
+			SearchResponse searchResponse = searchService.performSearch(querySettings, responseUuid, StatsRecordType.SEARCH);
 
 			return createResponse(searchResponse, responseUuid);
 		} catch (IllegalArgumentException e) {

@@ -259,6 +259,17 @@ public class QuerySettings {
 	}
 
 	/**
+	 * Get filters, init object if not initialized yet
+	 * 
+	 * @return filters, never null
+	 */
+	public Filters getFiltersInit() {
+		if (filters == null)
+			filters = new Filters();
+		return filters;
+	}
+
+	/**
 	 * Get search query
 	 * 
 	 * @return normalized query or null
@@ -306,6 +317,16 @@ public class QuerySettings {
 		if (facets == null)
 			facets = new LinkedHashSet<FacetValue>();
 		facets.add(value);
+	}
+
+	public void clearFacets() {
+		if (facets != null)
+			facets.clear();
+	}
+
+	public void clearFields() {
+		if (fields != null)
+			fields.clear();
 	}
 
 	@Override

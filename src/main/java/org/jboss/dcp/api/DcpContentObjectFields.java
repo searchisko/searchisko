@@ -19,6 +19,7 @@ public final class DcpContentObjectFields {
 	public static final String DCP_CONTENT_ID = "dcp_content_id";
 	public static final String DCP_CONTENT_TYPE = "dcp_content_type";
 	public static final String DCP_CONTENT_PROVIDER = "dcp_content_provider";
+	public static final String DCP_CREATED = "dcp_created";
 	public static final String DCP_UPDATED = "dcp_updated";
 	public static final String DCP_LAST_ACTIVITY_DATE = "dcp_last_activity_date";
 	public static final String DCP_CONTRIBUTORS = "dcp_contributors";

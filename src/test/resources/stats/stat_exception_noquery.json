@@ -5,6 +5,6 @@
     "query_highlight":false,
     "query_string":"my query",
     "date":1356091932121,
-    "type":"document_detail",
+    "type":"search",
     "exception_most_specific_cause":"org.elasticsearch.ElasticSearchException: Test exception"
 }

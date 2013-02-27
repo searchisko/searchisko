@@ -205,6 +205,13 @@
 			<version>${resteasy.version}</version>
 			<scope>provided</scope>
 		</dependency>
+    
+    <dependency>
+      <groupId>org.jboss.resteasy</groupId>
+      <artifactId>resteasy-atom-provider</artifactId>
+      <version>${resteasy.version}</version>
+      <scope>provided</scope>
+    </dependency>
 
 		<!-- Needed for DigestUtils but it's bundled in httpclient anyway -->
 		<dependency>

@@ -18,6 +18,7 @@ import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.indices.IndexMissingException;
 import org.jboss.dcp.api.model.QuerySettings;
 import org.jboss.dcp.api.service.SearchService;
+import org.jboss.dcp.api.service.StatsRecordType;
 import org.jboss.dcp.api.testtools.TestUtils;
 import org.jboss.dcp.api.util.QuerySettingsParser;
 import org.jboss.resteasy.specimpl.MultivaluedMapImpl;
@@ -68,11 +69,14 @@ public class SearchRestServiceTest {
 					return null;
 				}
 			}).when(sr).toXContent(Mockito.any(XContentBuilder.class), Mockito.any(Params.class));
-			Mockito.when(tested.searchService.performSearch(Mockito.eq(qs), Mockito.notNull(String.class))).thenReturn(sr);
+			Mockito.when(
+					tested.searchService.performSearch(Mockito.eq(qs), Mockito.notNull(String.class),
+							Mockito.eq(StatsRecordType.SEARCH))).thenReturn(sr);
 			Object response = tested.search(uriInfo);
 			Mockito.verify(uriInfo).getQueryParameters();
 			Mockito.verify(tested.querySettingsParser).parseUriParams(qp);
-			Mockito.verify(tested.searchService).performSearch(Mockito.eq(qs), Mockito.notNull(String.class));
+			Mockito.verify(tested.searchService).performSearch(Mockito.eq(qs), Mockito.notNull(String.class),
+					Mockito.eq(StatsRecordType.SEARCH));
 			TestUtils.assetStreamingOutputContentRegexp("\\{\"uuid\":\".+\",\"testfield\":\"testvalue\"\\}", response);
 		}
 
@@ -96,8 +100,9 @@ public class SearchRestServiceTest {
 			Mockito.when(uriInfo.getQueryParameters()).thenReturn(qp);
 			QuerySettings qs = new QuerySettings();
 			Mockito.when(tested.querySettingsParser.parseUriParams(qp)).thenReturn(qs);
-			Mockito.when(tested.searchService.performSearch(Mockito.eq(qs), Mockito.notNull(String.class))).thenThrow(
-					new IndexMissingException(null));
+			Mockito.when(
+					tested.searchService.performSearch(Mockito.eq(qs), Mockito.notNull(String.class),
+							Mockito.eq(StatsRecordType.SEARCH))).thenThrow(new IndexMissingException(null));
 			Object response = tested.search(uriInfo);
 			TestUtils.assertResponseStatus(response, Status.NOT_FOUND);
 		}
@@ -110,8 +115,9 @@ public class SearchRestServiceTest {
 			Mockito.when(uriInfo.getQueryParameters()).thenReturn(qp);
 			QuerySettings qs = new QuerySettings();
 			Mockito.when(tested.querySettingsParser.parseUriParams(qp)).thenReturn(qs);
-			Mockito.when(tested.searchService.performSearch(Mockito.eq(qs), Mockito.notNull(String.class))).thenThrow(
-					new RuntimeException());
+			Mockito.when(
+					tested.searchService.performSearch(Mockito.eq(qs), Mockito.notNull(String.class),
+							Mockito.eq(StatsRecordType.SEARCH))).thenThrow(new RuntimeException());
 			Object response = tested.search(uriInfo);
 			TestUtils.assertResponseStatus(response, Status.INTERNAL_SERVER_ERROR);
 		}

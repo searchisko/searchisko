@@ -451,6 +451,53 @@ GET /rest/suggestions/query_string?q=Hiberna
 }
 
 --
+Feed API
+This part of the API is used by all systems that want to consume [content](https://github.com/jbossorg/dcp-api/tree/master/documentation/rest-api/) 
+stored in DCP as feed in [Atom Syndication Format](http://tools.ietf.org/html/rfc4287). 
+Request parameters can be used to filter feed content by distinct criteria.
+--
+
+Get Atom feed with filtered content.
+
+##### Request parameters
+
+* `project` filters feed to specific project defined in `dcp_project` field. This param can be used multiple times to get feed for more projects.
+* `contributor` filters feed only for data with activity from given contributor (field `dcp_contributors`). This param can be used multiple times to get feed for more contributors.
+* `dcp_type` filters feed only to specific `dcp_type`, This param can be used multiple times to get feed for more types.
+* `tag` filters feed to specific tag defined in `dcp_tags` field. This param can be used multiple times to get feed for more tags.
+* `type` filters feed only to specific `dcp_content_type`
+* `content_provider` filters feed only to data provided by specified provider - `dcp_content_provider` field
+* `query` full text query string
+* `sortBy` sort result. If not used then date of last content modification is 
+  used to include content in feed. You can use `new-create` value here to 
+  include content in feed by date of its creation (so later modifications are ignored and content is not included in feed again).
+
+
+GET /rest/feed?{project,contributor,dcp_type,tag,type,content_provider,query,sortBy}
+< 200
+< Content-Type: application/atom+xml
+< Access-Control-Allow-Origin: *
+<?xml version="1.0" encoding="utf-8"?>
+ 
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <title>DCP whole content feed</title>
+  <id>http://dcp.org/v1/rest/feed</id>
+  <updated>2012-12-06T06:34:55.000Z</updated>
+  <entry>
+     <title>AS7-1254 - Set the port_range on JGroups stacks to 1</title>
+     <link href="https://issues.jboss.org/browse/AS7-1254" />
+     <id>dcp:content:jbossorg_jira_issue-AS7-1254</id>
+     <published>2012-12-06T06:34:55.000Z</published>
+     <updated>2012-12-06T06:34:55.000Z</updated>
+     <summary>Set the port_range on JGroups stacks to 1 to lock down the ports.</summary>
+     <author>
+       <name>John Doe</name>
+     </author>
+  </entry>
+</feed>
+
+
+--
 Management API - content providers
 
 This part of the API allows to manage configurations of *content providers*. *Content provider* is an entity which stores content into DCP (see Content Push API).

@@ -6,6 +6,7 @@
 package org.jboss.dcp.api.util;
 
 import java.io.IOException;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -24,6 +25,57 @@ import org.junit.Test;
  * @author Vlastimil Elias (velias at redhat dot com)
  */
 public class SearchUtilsTest {
+
+	@Test
+	public void dateFromISOString() throws ParseException {
+		Assert.assertNull(SearchUtils.dateFromISOString(null, false));
+		Assert.assertNull(SearchUtils.dateFromISOString(null, true));
+
+		try {
+			Assert.assertNull(SearchUtils.dateFromISOString("", false));
+			Assert.fail("ParseException expected");
+		} catch (ParseException e) {
+			// OK
+		}
+		Assert.assertNull(SearchUtils.dateFromISOString("", true));
+
+		try {
+			Assert.assertNull(SearchUtils.dateFromISOString("badvalue", false));
+			Assert.fail("ParseException expected");
+		} catch (ParseException e) {
+			// OK
+		}
+		Assert.assertNull(SearchUtils.dateFromISOString("badvalue", true));
+
+		Assert.assertEquals(1361386810123l, SearchUtils.dateFromISOString("2013-02-20T20:00:10.123+0100", false).getTime());
+
+	}
+
+	@Test
+	public void extractContributorName() {
+		Assert.assertNull(SearchUtils.extractContributorName(null));
+		Assert.assertNull(SearchUtils.extractContributorName(""));
+
+		// no email present
+		Assert.assertEquals("John Doe", SearchUtils.extractContributorName("John Doe"));
+		Assert.assertEquals("John Doe", SearchUtils.extractContributorName(" John Doe "));
+		Assert.assertEquals("John > Doe", SearchUtils.extractContributorName("John > Doe"));
+		Assert.assertEquals("John < Doe", SearchUtils.extractContributorName("John < Doe"));
+		Assert.assertEquals("John Doe <", SearchUtils.extractContributorName("John Doe <"));
+		Assert.assertEquals("John Doe >", SearchUtils.extractContributorName("John Doe >"));
+		Assert.assertEquals("John >< Doe", SearchUtils.extractContributorName("John >< Doe"));
+
+		// remove email
+		Assert.assertEquals("John Doe", SearchUtils.extractContributorName("John Doe<john@doe.org>"));
+		Assert.assertEquals("John Doe", SearchUtils.extractContributorName("John Doe <john@doe.org>"));
+		Assert.assertEquals("John > Doe", SearchUtils.extractContributorName("John > Doe <john@doe.org>"));
+		Assert.assertEquals("John Doe", SearchUtils.extractContributorName("John Doe<john@doe.org> "));
+		Assert.assertEquals("John Doe", SearchUtils.extractContributorName("John Doe <john@doe.org> "));
+		Assert.assertEquals("John Doe", SearchUtils.extractContributorName("John Doe <> "));
+		Assert.assertEquals("John Doe", SearchUtils.extractContributorName("John Doe<> "));
+		Assert.assertNull(SearchUtils.extractContributorName("<john@doe.org>"));
+		Assert.assertNull(SearchUtils.extractContributorName(" <john@doe.org>"));
+	}
 
 	@Test
 	public void trimToNull() {

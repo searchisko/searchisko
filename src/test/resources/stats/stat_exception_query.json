@@ -20,7 +20,7 @@
         "issue",
         "blogpost"
     ],
-    "type":"document_detail",
+    "type":"search",
     "date":1356091932121,
     "query_string":"my query",
     "filters_size":12,

@@ -8,7 +8,9 @@ package org.jboss.dcp.api.util;
 import java.io.IOException;
 import java.io.InputStream;
 import java.text.DateFormat;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Map;
 import java.util.Properties;
 import java.util.TimeZone;
@@ -86,6 +88,27 @@ public class SearchUtils {
 	}
 
 	/**
+	 * Parse ISO date time formated string.
+	 * 
+	 * @param string ISO formatted date string to parse
+	 * @param silent if tru then null is returned instead of {@link ParseException} thrown
+	 * @return parsed date or null
+	 * @throws ParseException
+	 */
+	public static Date dateFromISOString(String string, boolean silent) throws ParseException {
+		if (string == null)
+			return null;
+		try {
+			return getISODateFormat().parse(string);
+		} catch (ParseException e) {
+			if (!silent)
+				throw e;
+			else
+				return null;
+		}
+	}
+
+	/**
 	 * Convert String with JSON content into JSON Map structure.
 	 * 
 	 * @param jsonData string to convert
@@ -102,6 +125,24 @@ public class SearchUtils {
 		return mapper.readValue(jsonData, new TypeReference<Map<String, Object>>() {
 		});
 
+	}
+
+	/**
+	 * Extract contributor name from contributor id string. So extracts 'John Doe' from '
+	 * <code>John Doe <john@doe.org></code>'.
+	 * 
+	 * @param contributor id to extract name from
+	 * @return contributor name
+	 */
+	public static String extractContributorName(String contributor) {
+		if (contributor == null)
+			return null;
+		int i = contributor.lastIndexOf("<");
+		int i2 = contributor.lastIndexOf(">");
+		if (i > -1 && i2 > -1 && i < i2) {
+			return trimToNull(contributor.substring(0, i));
+		}
+		return trimToNull(contributor);
 	}
 
 }

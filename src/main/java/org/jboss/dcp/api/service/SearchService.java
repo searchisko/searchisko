@@ -89,7 +89,7 @@ public class SearchService {
 	 * @param responseUuid used for search response, we need it only to write it into statistics (so can be null)
 	 * @return search response
 	 */
-	public SearchResponse performSearch(QuerySettings querySettings, String responseUuid) {
+	public SearchResponse performSearch(QuerySettings querySettings, String responseUuid, StatsRecordType statsRecordType) {
 		try {
 			SearchRequestBuilder srb = new SearchRequestBuilder(searchClientService.getClient());
 
@@ -113,11 +113,11 @@ public class SearchService {
 
 			final SearchResponse searchResponse = srb.execute().actionGet();
 
-			statsClientService.writeStatistics(StatsRecordType.SEARCH, responseUuid, searchResponse,
-					System.currentTimeMillis(), querySettings);
+			statsClientService.writeStatistics(statsRecordType, responseUuid, searchResponse, System.currentTimeMillis(),
+					querySettings);
 			return searchResponse;
 		} catch (ElasticSearchException e) {
-			statsClientService.writeStatistics(StatsRecordType.SEARCH, e, System.currentTimeMillis(), querySettings);
+			statsClientService.writeStatistics(statsRecordType, e, System.currentTimeMillis(), querySettings);
 			throw e;
 		}
 	}
@@ -445,6 +445,8 @@ public class SearchService {
 				srb.addSort(DcpContentObjectFields.DCP_LAST_ACTIVITY_DATE, SortOrder.DESC);
 			} else if (querySettings.getSortBy().equals(SortByValue.OLD)) {
 				srb.addSort(DcpContentObjectFields.DCP_LAST_ACTIVITY_DATE, SortOrder.ASC);
+			} else if (querySettings.getSortBy().equals(SortByValue.NEW_CREATION)) {
+				srb.addSort(DcpContentObjectFields.DCP_CREATED, SortOrder.DESC);
 			}
 		}
 	}
