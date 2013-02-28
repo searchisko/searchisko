@@ -33,6 +33,7 @@ import org.jboss.dcp.api.model.QuerySettings.Filters;
 import org.jboss.dcp.api.model.SortByValue;
 import org.jboss.dcp.api.service.SearchService;
 import org.jboss.dcp.api.service.StatsRecordType;
+import org.jboss.dcp.api.service.SystemInfoService;
 import org.jboss.dcp.api.util.QuerySettingsParser;
 import org.jboss.dcp.api.util.SearchUtils;
 import org.jboss.resteasy.plugins.providers.atom.Category;
@@ -54,6 +55,9 @@ import org.jboss.resteasy.plugins.providers.atom.Person;
 @Path("/feed")
 @Produces(MediaType.APPLICATION_ATOM_XML)
 public class FeedRestService extends RestServiceBase {
+
+	@Inject
+	protected SystemInfoService systemInfoService;
 
 	protected static final String REQPARAM_FEED_TITLE = "feed_title";
 
@@ -145,6 +149,7 @@ public class FeedRestService extends RestServiceBase {
 		feed.setTitle(title);
 		Generator generator = new Generator();
 		generator.setText("DCP");
+		generator.setVersion(systemInfoService.getVersion());
 		feed.setGenerator(generator);
 		feed.setUpdated(new Date());
 		if (searchResponse.hits().getHits() != null) {

@@ -25,6 +25,7 @@ import org.jboss.dcp.api.model.QuerySettings.Filters;
 import org.jboss.dcp.api.model.SortByValue;
 import org.jboss.dcp.api.service.SearchService;
 import org.jboss.dcp.api.service.StatsRecordType;
+import org.jboss.dcp.api.service.SystemInfoService;
 import org.jboss.dcp.api.testtools.TestUtils;
 import org.jboss.dcp.api.util.QuerySettingsParser;
 import org.jboss.resteasy.plugins.providers.atom.Feed;
@@ -139,6 +140,7 @@ public class FeedRestServiceTest {
 		FeedRestService tested = getTested();
 		tested.querySettingsParser = Mockito.mock(QuerySettingsParser.class);
 		tested.searchService = Mockito.mock(SearchService.class);
+		tested.systemInfoService = Mockito.mock(SystemInfoService.class);
 
 		// case - incorrect input
 		{

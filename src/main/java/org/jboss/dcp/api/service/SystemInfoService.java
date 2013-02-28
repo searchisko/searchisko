@@ -50,7 +50,14 @@ public class SystemInfoService {
 			inStream.close();
 		}
 
-		log.log(Level.INFO, "Starting DCP version {0} built at {1}",
-				new Object[] { prop.get("version"), prop.get("build-timestamp") });
+		log.log(Level.INFO, "Starting DCP version {0} built at {1}", new Object[] { getVersion(), getBuildTimestamp() });
+	}
+
+	public String getVersion() {
+		return prop.getProperty("version");
+	}
+
+	public String getBuildTimestamp() {
+		return prop.getProperty("build-timestamp");
 	}
 }
