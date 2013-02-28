@@ -233,10 +233,11 @@ public class FeedRestServiceTest {
 		{
 			QuerySettings querySettings = new QuerySettings();
 			querySettings.getFiltersInit().addProject("as7");
-			Assert.assertEquals("DCP content feed for project=[as7]", tested.constructFeedTitle(querySettings).toString());
-			querySettings.getFiltersInit().addProject("aerogear");
-			Assert.assertEquals("DCP content feed for project=[as7, aerogear]", tested.constructFeedTitle(querySettings)
+			Assert.assertEquals("DCP content feed for criteria project=[as7]", tested.constructFeedTitle(querySettings)
 					.toString());
+			querySettings.getFiltersInit().addProject("aerogear");
+			Assert.assertEquals("DCP content feed for criteria project=[as7, aerogear]",
+					tested.constructFeedTitle(querySettings).toString());
 		}
 
 		// case - multiple params
@@ -255,7 +256,7 @@ public class FeedRestServiceTest {
 			querySettings.setSortBy(SortByValue.NEW_CREATION);
 			Assert
 					.assertEquals(
-							"DCP content feed for project=[as7, aerogear] and contributor=[John Doe <john@doe.org>] and tag=[tag1, tag2] and dcp_type=[issue, blogpost] and type=content_type and content_provider=jbossorg and query='querry me fulltext' and sortBy=new-create",
+							"DCP content feed for criteria project=[as7, aerogear] and contributor=[John Doe <john@doe.org>] and tag=[tag1, tag2] and dcp_type=[issue, blogpost] and type=content_type and content_provider=jbossorg and query='querry me fulltext' and sortBy=new-create",
 							tested.constructFeedTitle(querySettings).toString());
 		}
 
