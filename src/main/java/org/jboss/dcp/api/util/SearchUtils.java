@@ -8,7 +8,6 @@ package org.jboss.dcp.api.util;
 import java.io.IOException;
 import java.io.InputStream;
 import java.text.DateFormat;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Map;
@@ -19,6 +18,7 @@ import org.codehaus.jackson.JsonParseException;
 import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.type.TypeReference;
+import org.elasticsearch.common.joda.time.format.ISODateTimeFormat;
 
 /**
  * Utility class for search
@@ -88,19 +88,19 @@ public class SearchUtils {
 	}
 
 	/**
-	 * Parse ISO date time formated string.
+	 * Parse ISO date time formated string into {@link Date} instance.
 	 * 
 	 * @param string ISO formatted date string to parse
-	 * @param silent if tru then null is returned instead of {@link ParseException} thrown
+	 * @param silent if true then null is returned instead of {@link IllegalArgumentException} thrown
 	 * @return parsed date or null
-	 * @throws ParseException
+	 * @throws IllegalArgumentException in case of bad format
 	 */
-	public static Date dateFromISOString(String string, boolean silent) throws ParseException {
+	public static Date dateFromISOString(String string, boolean silent) throws IllegalArgumentException {
 		if (string == null)
 			return null;
 		try {
-			return getISODateFormat().parse(string);
-		} catch (ParseException e) {
+			return ISODateTimeFormat.dateTimeParser().parseDateTime(string).toDate();
+		} catch (IllegalArgumentException e) {
 			if (!silent)
 				throw e;
 			else

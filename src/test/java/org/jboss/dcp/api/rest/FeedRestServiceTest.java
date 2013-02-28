@@ -160,7 +160,7 @@ public class FeedRestServiceTest {
 					tested.searchService.performSearch(Mockito.eq(qs), Mockito.notNull(String.class),
 							Mockito.eq(StatsRecordType.FEED))).thenReturn(sr);
 			Object response = tested.feed(uriInfo);
-			Mockito.verify(uriInfo).getQueryParameters();
+			Mockito.verify(uriInfo, Mockito.times(2)).getQueryParameters();
 			Mockito.verify(tested.querySettingsParser).parseUriParams(qp);
 			Mockito.verify(tested.searchService).performSearch(Mockito.eq(qs), Mockito.notNull(String.class),
 					Mockito.eq(StatsRecordType.FEED));

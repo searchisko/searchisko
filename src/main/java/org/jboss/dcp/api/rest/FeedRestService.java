@@ -7,7 +7,6 @@ package org.jboss.dcp.api.rest;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.text.ParseException;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
@@ -55,6 +54,8 @@ import org.jboss.resteasy.plugins.providers.atom.Person;
 @Path("/feed")
 @Produces(MediaType.APPLICATION_ATOM_XML)
 public class FeedRestService extends RestServiceBase {
+
+	protected static final String REQPARAM_FEED_TITLE = "feed_title";
 
 	private static URI TAG_SCHEME_URI = null;
 	static {
@@ -138,7 +139,10 @@ public class FeedRestService extends RestServiceBase {
 			final UriInfo uriInfo) throws URISyntaxException {
 		Feed feed = new Feed();
 		feed.setId(uriInfo.getRequestUri());
-		feed.setTitle(constructFeedTitle(querySettings));
+		String title = SearchUtils.trimToNull(uriInfo.getQueryParameters().getFirst(REQPARAM_FEED_TITLE));
+		if (title == null)
+			title = constructFeedTitle(querySettings);
+		feed.setTitle(title);
 		Generator generator = new Generator();
 		generator.setText("DCP");
 		feed.setGenerator(generator);
@@ -264,11 +268,7 @@ public class FeedRestService extends RestServiceBase {
 				return (Date) o;
 			}
 			if (o != null) {
-				try {
-					return SearchUtils.dateFromISOString(o.toString(), true);
-				} catch (ParseException e) {
-					// never thrown due silent
-				}
+				return SearchUtils.dateFromISOString(o.toString(), true);
 			}
 		}
 		return null;

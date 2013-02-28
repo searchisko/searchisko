@@ -471,9 +471,10 @@ Get Atom feed with filtered content.
 * `sortBy` sort result. If not used then date of last content modification is 
   used to include content in feed. You can use `new-create` value here to 
   include content in feed by date of its creation (so later modifications are ignored and content is not included in feed again).
+* `feed_title` optional param allows to customize title of generated feed. By default it's generated from the filter criteria used for feed.  
 
 
-GET /rest/feed?{project,contributor,dcp_type,tag,type,content_provider,query,sortBy}
+GET /rest/feed?{project,contributor,dcp_type,tag,type,content_provider,query,sortBy,feed_title}
 < 200
 < Content-Type: application/atom+xml
 < Access-Control-Allow-Origin: *
@@ -482,6 +483,7 @@ GET /rest/feed?{project,contributor,dcp_type,tag,type,content_provider,query,sor
 	  <title>DCP whole content feed</title>
 	  <id>http://dcp.org/v1/rest/feed</id>
 	  <updated>2012-12-06T06:34:55.000Z</updated>
+	  <generator>DCP</generator>
 	  <entry>
 	     <title>AS7-1254 - Set the port_range on JGroups stacks to 1</title>
 	     <link href="https://issues.jboss.org/browse/AS7-1254" />

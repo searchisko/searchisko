@@ -33,21 +33,27 @@ public class SearchUtilsTest {
 
 		try {
 			Assert.assertNull(SearchUtils.dateFromISOString("", false));
-			Assert.fail("ParseException expected");
-		} catch (ParseException e) {
+			Assert.fail("IllegalArgumentException expected");
+		} catch (IllegalArgumentException e) {
 			// OK
 		}
 		Assert.assertNull(SearchUtils.dateFromISOString("", true));
 
 		try {
 			Assert.assertNull(SearchUtils.dateFromISOString("badvalue", false));
-			Assert.fail("ParseException expected");
-		} catch (ParseException e) {
+			Assert.fail("IllegalArgumentException expected");
+		} catch (IllegalArgumentException e) {
 			// OK
 		}
+		// case - silent mode test
 		Assert.assertNull(SearchUtils.dateFromISOString("badvalue", true));
 
 		Assert.assertEquals(1361386810123l, SearchUtils.dateFromISOString("2013-02-20T20:00:10.123+0100", false).getTime());
+		Assert.assertEquals(1361386810123l, SearchUtils.dateFromISOString("2013-02-20T20:00:10.123+01", false).getTime());
+		Assert
+				.assertEquals(1361386810123l, SearchUtils.dateFromISOString("2013-02-20T20:00:10.123+01:00", false).getTime());
+
+		Assert.assertEquals(1361390410123l, SearchUtils.dateFromISOString("2013-02-20T20:00:10.123Z", false).getTime());
 
 	}
 
