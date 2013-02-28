@@ -6,6 +6,7 @@
 package org.jboss.dcp.api.service;
 
 import java.util.Properties;
+import java.util.logging.Logger;
 
 import javax.annotation.PostConstruct;
 import javax.ejb.Singleton;
@@ -30,6 +31,7 @@ public class SearchClientService extends ElasticsearchClientService {
 
 	@PostConstruct
 	public void init() throws Exception {
+		log = Logger.getLogger(getClass().getName());
 		Properties settings = SearchUtils.loadProperties("/search_client_settings.properties");
 
 		if (ClientType.EMBEDDED.equals(appConfigurationService.getAppConfiguration().getClientType())) {

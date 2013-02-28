@@ -320,7 +320,6 @@
 				<configuration>
 					<source>${compileSource}</source>
 					<target>${compileSource}</target>
-					<!--<encoding>iso8859-1</encoding> -->
 					<encoding>UTF-8</encoding>
 					<debug>false</debug>
 					<optimize>false</optimize>
@@ -335,6 +334,28 @@
           <warName>ROOT</warName>
         </configuration>
       </plugin>
+      
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>buildnumber-maven-plugin</artifactId>
+        <version>1.1</version>
+        <executions>
+          <execution>
+            <phase>validate</phase>
+            <goals>
+              <goal>create</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <doCheck>false</doCheck>
+          <doUpdate>false</doUpdate>
+          <format>{0,date,yyyy-MM-dd HH:mm:ss}</format>
+          <items>
+            <item>timestamp</item>
+          </items>
+        </configuration>
+      </plugin>
           
 			<!-- Prepare exploded WAR content so that we can replace tokens in html files during prepare-package phase -->
 			<plugin>
@@ -344,7 +365,12 @@
 				<configuration>
 					<failOnMissingWebXml>false</failOnMissingWebXml>
 					<archive>
-						<manifestEntries>
+            <manifest>
+              <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+              <addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
+            </manifest>
+            <manifestEntries>
+              <Build-Time>${buildNumber}</Build-Time>
 							<Dependencies>
 								org.jboss.resteasy.resteasy-jaxrs,
 								org.jboss.resteasy.resteasy-cdi,

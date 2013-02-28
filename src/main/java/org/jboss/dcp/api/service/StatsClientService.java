@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.annotation.PostConstruct;
 import javax.ejb.Singleton;
@@ -61,6 +62,7 @@ public class StatsClientService extends ElasticsearchClientService {
 
 	@PostConstruct
 	public void init() throws Exception {
+		log = Logger.getLogger(getClass().getName());
 		statsLogListener = new ActionListener<IndexResponse>() {
 			@Override
 			public void onResponse(IndexResponse indexResponse) {
