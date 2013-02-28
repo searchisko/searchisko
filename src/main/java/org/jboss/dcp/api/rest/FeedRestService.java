@@ -155,7 +155,7 @@ public class FeedRestService extends RestServiceBase {
 		if (searchResponse.hits().getHits() != null) {
 			for (SearchHit hit : searchResponse.hits().getHits()) {
 				Entry entry = new Entry();
-				entry.setId(new URI("dcp:content:" + hit.getId()));
+				entry.setId(new URI("dcp:content:id:" + hit.getId()));
 				entry.setPublished(getHitDateFieldValue(hit, DcpContentObjectFields.DCP_CREATED));
 				entry.setUpdated(getHitDateFieldValue(hit, DcpContentObjectFields.DCP_LAST_ACTIVITY_DATE));
 				entry.setTitle(getHitStringFieldValue(hit, DcpContentObjectFields.DCP_TITLE));
