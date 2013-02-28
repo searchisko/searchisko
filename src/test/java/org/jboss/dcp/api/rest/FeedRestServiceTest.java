@@ -225,8 +225,8 @@ public class FeedRestServiceTest {
 		{
 			QuerySettings querySettings = new QuerySettings();
 			querySettings.getFiltersInit().setContentType("conetnt_type");
-			Assert
-					.assertEquals("DCP content feed for type=conetnt_type", tested.constructFeedTitle(querySettings).toString());
+			Assert.assertEquals("DCP content feed for criteria type=conetnt_type", tested.constructFeedTitle(querySettings)
+					.toString());
 		}
 
 		// case - list param

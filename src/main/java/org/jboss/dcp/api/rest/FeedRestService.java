@@ -173,7 +173,7 @@ public class FeedRestService extends RestServiceBase {
 					entry.setContent(content);
 				}
 
-				List<Object> contributors = hit.getFields().get(DcpContentObjectFields.DCP_CONTRIBUTORS).getValues();
+				List<Object> contributors = getHitListFieldValue(hit, DcpContentObjectFields.DCP_CONTRIBUTORS);
 				if (contributors != null) {
 					for (Object contributor : contributors) {
 						Person p = new Person(SearchUtils.extractContributorName(contributor.toString()));
@@ -185,7 +185,7 @@ public class FeedRestService extends RestServiceBase {
 					entry.getAuthors().add(new Person("unknown"));
 				}
 
-				List<Object> tags = hit.getFields().get(DcpContentObjectFields.DCP_TAGS).getValues();
+				List<Object> tags = getHitListFieldValue(hit, DcpContentObjectFields.DCP_TAGS);
 				if (tags != null) {
 					for (Object tag : tags) {
 						Category c = new Category();
@@ -217,7 +217,7 @@ public class FeedRestService extends RestServiceBase {
 		if (sb.length() == 0)
 			return "DCP whole content feed";
 		else
-			return "DCP content feed for " + sb.toString();
+			return "DCP content feed for criteria " + sb.toString();
 	}
 
 	private void appendParamIfExists(StringBuilder sb, String paramName, String value) {
@@ -243,20 +243,32 @@ public class FeedRestService extends RestServiceBase {
 		}
 	}
 
-	private String getHitStringFieldValue(SearchHit hit, String fieldName) {
-		return SearchUtils.trimToNull((String) hit.getFields().get(fieldName).getValue());
+	protected String getHitStringFieldValue(SearchHit hit, String fieldName) {
+		if (hit.getFields().containsKey(fieldName))
+			return SearchUtils.trimToNull((String) hit.getFields().get(fieldName).getValue());
+		else
+			return null;
 	}
 
-	private Date getHitDateFieldValue(SearchHit hit, String fieldName) {
-		Object o = SearchUtils.trimToNull((String) hit.getFields().get(fieldName).getValue());
-		if (o instanceof Date) {
-			return (Date) o;
-		}
-		if (o != null) {
-			try {
-				return SearchUtils.dateFromISOString(o.toString(), true);
-			} catch (ParseException e) {
-				// never thrown due silent
+	protected List<Object> getHitListFieldValue(SearchHit hit, String fieldName) {
+		if (hit.getFields().containsKey(fieldName))
+			return (List<Object>) hit.getFields().get(fieldName).getValues();
+		else
+			return null;
+	}
+
+	protected Date getHitDateFieldValue(SearchHit hit, String fieldName) {
+		if (hit.getFields().containsKey(fieldName)) {
+			Object o = SearchUtils.trimToNull((String) hit.getFields().get(fieldName).getValue());
+			if (o instanceof Date) {
+				return (Date) o;
+			}
+			if (o != null) {
+				try {
+					return SearchUtils.dateFromISOString(o.toString(), true);
+				} catch (ParseException e) {
+					// never thrown due silent
+				}
 			}
 		}
 		return null;

@@ -94,15 +94,21 @@ public class RestServiceBase {
 	}
 
 	public Response createErrorResponse(Exception ex) {
-		if (log.isLoggable(Level.WARNING)) {
-			log.log(Level.WARNING, "Exception {0} occurred. Message: {1}",
-					new Object[] { ex.getClass().getName(), ex.getMessage() });
-			log.log(Level.FINE, "Exception trace.", ex);
-		}
-		if (ex instanceof IllegalArgumentException) {
+		if (ex instanceof NullPointerException) {
+			log.log(Level.SEVERE, ex.getMessage(), ex);
+		} else if (ex instanceof IllegalArgumentException) {
+			// we use this exception in case of bad input parameters in request etc, message contains erro description
+			if (log.isLoggable(Level.FINE)) {
+				log.log(Level.FINE, ex.getMessage(), ex);
+			}
 			return Response.serverError().entity(ex.getMessage()).build();
+		} else {
+			if (log.isLoggable(Level.WARNING)) {
+				log.log(Level.WARNING, "Exception {0} occurred. Message: {1}",
+						new Object[] { ex.getClass().getName(), ex.getMessage() });
+				log.log(Level.FINE, "Exception trace.", ex);
+			}
 		}
 		return Response.serverError().entity("Error [" + ex.getClass().getName() + "]: " + ex.getMessage()).build();
 	}
-
 }
