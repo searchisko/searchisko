@@ -34,10 +34,10 @@ To support multiple projects synergy, informations stored into DCP will be norma
 * activity date - so you can filter/analyze informations/contributions by dates
   when they was created/updated   
 
-DCP provides **REST API** with JSON for informations manipulation and search/retrieve, 
-see [`REST API documentation`](rest-api/README.md).  
+DCP provides **REST API** with JSON for informations manipulation and search/retrieve. Feeds in 
+[Atom Syndication Format](http://tools.ietf.org/html/rfc4287) are available also.  
 This allows simple integration with other systems and modern AJAX and HTML 5 
-based frontends. 
+based frontends/websites. See [`DCP REST API documentation`](rest-api/README.md) for details. 
 
 Possible use cases for "project pages" maintained by project teams:
 
