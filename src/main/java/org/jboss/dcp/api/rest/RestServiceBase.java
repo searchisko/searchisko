@@ -20,6 +20,7 @@ import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.core.StreamingOutput;
 
 import org.elasticsearch.action.get.GetResponse;
+import org.elasticsearch.action.search.MultiSearchResponse;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.common.xcontent.ToXContent;
 import org.elasticsearch.common.xcontent.XContentBuilder;
@@ -30,7 +31,8 @@ import org.elasticsearch.common.xcontent.XContentFactory;
  * 
  * @author Libor Krzyzanek
  * @author Vlastimil Elias (velias at redhat dot com)
- * 
+ * @author Lukas Vlcek
+ *
  */
 public class RestServiceBase {
 
@@ -82,6 +84,28 @@ public class RestServiceBase {
 			}
 		};
 	}
+
+    /**
+     * Create response based on elastic multi search response (does not add UUID for now)
+     *
+     * @param response
+     * @param responseUuid
+     * @return
+     */
+    public StreamingOutput createResponse(final MultiSearchResponse response, final String responseUuid) {
+        return new StreamingOutput() {
+            @Override
+            public void write(OutputStream output) throws IOException, WebApplicationException {
+                XContentBuilder builder = XContentFactory.jsonBuilder(output);
+                builder.startObject();
+//                if (responseUuid != null) // TODO shall we add uuid into multi-search responses too?
+//                    builder.field("uuid", responseUuid);
+                response.toXContent(builder, ToXContent.EMPTY_PARAMS);
+                builder.endObject();
+                builder.close();
+            }
+        };
+    }
 
 	public Response createRequiredFieldResponse(String fieldName) {
 		log.log(Level.FINE, "Required parameter {0} not set", fieldName);

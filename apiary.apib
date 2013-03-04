@@ -263,7 +263,7 @@ GET /rest/search?{query,query_highlight,sortBy,from,size,facet,field,content_pro
 }
 
 --
-Query Suggestions API
+Suggestions API - Query
 It can return suggestions for given user query such as *query completion*, *did you mean*, ... etc.
 
 Returned JSON contains two highlevel objects:
@@ -337,7 +337,7 @@ The individual actions are described using symbolic commands. An interpretation 
 ... more TDB.
 --
 
-GET /rest/suggestions/query_string{?q}
+GET /rest/suggestions/query_string{?query}
 < 200
 < Content-Type: application/json
 < Access-Control-Allow-Origin: *
@@ -396,7 +396,7 @@ GET /rest/suggestions/query_string{?q}
 
 
 Example for user query 'Hiberna'.
-GET /rest/suggestions/query_string?q=Hiberna
+GET /rest/suggestions/query_string?query=Hiberna
 < 200
 < Access-Control-Allow-Origin: *
 {
@@ -448,6 +448,22 @@ GET /rest/suggestions/query_string?q=Hiberna
             {}
         ]
     }
+}
+
+--
+Suggestions API - Project
+It can return suggestions of project names for given user query.
+--
+
+Get suggestions for project name.
+
+GET /rest/suggestions/project?{query,size}
+< 200
+< Content-Type: application/atom+xml
+< Access-Control-Allow-Origin: *
+{
+    [],
+    []
 }
 
 --

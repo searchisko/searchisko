@@ -1,0 +1,27 @@
+{
+    "size" : 5,
+    "query" : {
+        "query_string" : {
+            "query" : "JBoss",
+            "fields" : [ "dcp_project_name", "dcp_project_name.edgengram", "dcp_project_name.ngram" ],
+            "analyzer" : "whitespace"
+        }
+    },
+    "fields" : [ "dcp_project", "dcp_project_name" ],
+    "highlight" : {
+        "fields" : {
+            "dcp_project_name" : {
+                "fragment_size" : 1,
+                "number_of_fragments" : 0
+            },
+            "dcp_project_name.ngram" : {
+                "fragment_size" : 1,
+                "number_of_fragments" : 0
+            },
+            "dcp_project_name.edgengram" : {
+                "fragment_size" : 1,
+                "number_of_fragments" : 0
+            }
+        }
+    }
+}
