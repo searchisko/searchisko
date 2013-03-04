@@ -1,0 +1,10 @@
+{
+  "code": "portletbridge",
+  "name": "Portlet Bridge",
+  "type_specific_code" : {
+    "jbossorg_blog": ["portletbridge"],
+    "jbossorg_jira": ["PBR"],
+    "jbossorg_mailing_list": "",
+    "jbossorg_project_info": "portletbridge"
+  }
+}

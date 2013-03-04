@@ -1,0 +1,10 @@
+{
+  "code": "hornetq",
+  "name": "HornetQ",
+  "type_specific_code" : {
+    "jbossorg_blog": ["hornetq"],
+    "jbossorg_jira": ["HORNETQ"],
+    "jbossorg_mailing_list": "",
+    "jbossorg_project_info": "hornetq"
+  }
+}

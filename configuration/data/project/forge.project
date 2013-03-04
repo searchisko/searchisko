@@ -1,0 +1,10 @@
+{
+  "code": "forge",
+  "name": "Forge",
+  "type_specific_code" : {
+    "jbossorg_blog": [""],
+    "jbossorg_jira": ["FORGE", "FORGEPLUGINS"],
+    "jbossorg_mailing_list": "",
+    "jbossorg_project_info": "forge_projectnav"
+  }
+}

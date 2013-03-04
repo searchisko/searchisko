@@ -1,0 +1,10 @@
+{
+  "code": "metajizer",
+  "name": "Metajizer",
+  "type_specific_code" : {
+    "jbossorg_blog": [""],
+    "jbossorg_jira": ["MTAJZR"],
+    "jbossorg_mailing_list": "",
+    "jbossorg_project_info": "metajizer"
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "code": "jbossremoting",
+  "name": "JBoss Remoting",
+  "type_specific_code" : {
+    "jbossorg_blog": ["dmlloyd_rem", "ron_sigal"],
+    "jbossorg_jira": ["JBREM"],
+    "jbossorg_mailing_list": "",
+    "jbossorg_project_info": "jbossremoting"
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "code": "tattletale",
+  "name": "Tattletale",
+  "type_specific_code" : {
+    "jbossorg_blog": [""],
+    "jbossorg_jira": ["TTALE"],
+    "jbossorg_mailing_list": "",
+    "jbossorg_project_info": "tattletale"
+  }
+}

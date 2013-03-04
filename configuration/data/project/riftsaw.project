@@ -1,0 +1,10 @@
+{
+  "code": "riftsaw",
+  "name": "RiftSaw Open Source BPEL",
+  "type_specific_code" : {
+    "jbossorg_blog": ["riftsaw"],
+    "jbossorg_jira": ["RIFTSAW"],
+    "jbossorg_mailing_list": "",
+    "jbossorg_project_info": "riftsaw"
+  }
+}

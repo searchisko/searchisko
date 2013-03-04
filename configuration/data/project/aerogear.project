@@ -1,0 +1,10 @@
+{
+  "code": "aerogear",
+  "name": "Aerogear",
+  "type_specific_code" : {
+    "jbossorg_blog": ["jbossmobile", "tech4j_irt", "qmx_blog", "rcernich", "krisborchers", "abstractj"],
+    "jbossorg_jira": ["AEROGEAR"],
+    "jbossorg_mailing_list": "",
+    "jbossorg_project_info": "aerogear"
+  }
+}

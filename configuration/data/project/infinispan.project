@@ -1,0 +1,10 @@
+{
+  "code": "infinispan",
+  "name": "Infinispan",
+  "type_specific_code" : {
+    "jbossorg_blog": ["infinispan"],
+    "jbossorg_jira": ["ISPN"],
+    "jbossorg_mailing_list": "",
+    "jbossorg_project_info": "infinispan"
+  }
+}

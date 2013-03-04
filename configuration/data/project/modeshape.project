@@ -1,0 +1,10 @@
+{
+  "code": "modeshape",
+  "name": "ModeShape",
+  "type_specific_code" : {
+    "jbossorg_blog": ["modeshape"],
+    "jbossorg_jira": ["DNA", "MODE", "MODETOOLS"],
+    "jbossorg_mailing_list": "",
+    "jbossorg_project_info": "modeshape"
+  }
+}

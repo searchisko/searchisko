@@ -1,0 +1,10 @@
+{
+  "code": "tohu",
+  "name": "Tohu",
+  "type_specific_code" : {
+    "jbossorg_blog": [""],
+    "jbossorg_jira": ["TOHU"],
+    "jbossorg_mailing_list": "",
+    "jbossorg_project_info": "tohu"
+  }
+}

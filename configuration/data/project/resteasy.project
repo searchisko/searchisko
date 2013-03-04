@@ -1,0 +1,10 @@
+{
+  "code": "resteasy",
+  "name": "RESTEasy",
+  "type_specific_code" : {
+    "jbossorg_blog": [""],
+    "jbossorg_jira": ["RESTEASY"],
+    "jbossorg_mailing_list": "",
+    "jbossorg_project_info": "resteasy"
+  }
+}

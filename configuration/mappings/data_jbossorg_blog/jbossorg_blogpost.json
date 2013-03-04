@@ -1,0 +1,11 @@
+{
+    "jbossorg_blogpost" : {
+        "_all" : {"enabled" : false},
+        "properties" : {
+            "tags" : {"type" : "string", "index" : "no"},
+            "author" : {"type" : "string", "index" : "no"},
+            "avatar_link" : {"type" : "string", "index" : "no"},
+            "modified" : {"type" : "date", "index" : "no"}
+        }
+    }
+}

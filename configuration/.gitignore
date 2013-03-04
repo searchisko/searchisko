@@ -1,0 +1,7 @@
+.project
+
+/init-elasticsearch-localhost.sh
+/init-data-localhost.sh
+/init-1-elasticsearch-localhost.sh
+/init-2-data-localhost.sh
+/init-3-elasticsearch-rivers-localhost.sh

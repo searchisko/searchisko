@@ -1,0 +1,32 @@
+{
+    "dcp_title":{
+        "fragment_size":"-1",
+        "number_of_fragments":"0",
+        "fragment_offset":"0"
+    },
+    "dcp_description":{
+        "fragment_size":"150",
+        "number_of_fragments":"3",
+        "fragment_offset":"20"
+    },
+    "dcp_content":{
+        "fragment_size":"150",
+        "number_of_fragments":"3",
+        "fragment_offset":"20"
+    },
+    "_all":{
+        "fragment_size":"50",
+        "number_of_fragments":"3",
+        "fragment_offset":"20"
+    },
+    "dcp_contributors.fulltext":{
+        "fragment_size":"-1",
+        "number_of_fragments":"0",
+        "fragment_offset":"0"
+    },
+    "comment_body":{
+        "fragment_size":"150",
+        "number_of_fragments":"3",
+        "fragment_offset":"20"
+    }
+}

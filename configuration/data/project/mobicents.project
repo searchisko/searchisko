@@ -1,0 +1,10 @@
+{
+  "code": "mobicents",
+  "name": "Mobicents",
+  "type_specific_code" : {
+    "jbossorg_blog": ["mobicents"],
+    "jbossorg_jira": [""],
+    "jbossorg_mailing_list": "",
+    "jbossorg_project_info": "mobicents"
+  }
+}

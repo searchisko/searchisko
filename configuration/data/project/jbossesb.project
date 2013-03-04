@@ -1,0 +1,10 @@
+{
+  "code": "jbossesb",
+  "name": "JBoss ESB",
+  "type_specific_code" : {
+    "jbossorg_blog": ["jbossesb"],
+    "jbossorg_jira": ["JBESB"],
+    "jbossorg_mailing_list": "",
+    "jbossorg_project_info": "jbossesb"
+  }
+}

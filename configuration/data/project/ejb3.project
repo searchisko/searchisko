@@ -1,0 +1,10 @@
+{
+  "code": "ejb3",
+  "name": "EJB3",
+  "type_specific_code" : {
+    "jbossorg_blog": ["carlo", "wolfc"],
+    "jbossorg_jira": ["EJBTHREE"],
+    "jbossorg_mailing_list": "",
+    "jbossorg_project_info": "ejb3"
+  }
+}

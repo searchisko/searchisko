@@ -1,0 +1,10 @@
+{
+  "code": "jca",
+  "name": "JCA",
+  "type_specific_code" : {
+    "jbossorg_blog": [""],
+    "jbossorg_jira": [""],
+    "jbossorg_mailing_list": "",
+    "jbossorg_project_info": "jca"
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "code": "weld",
+  "name": "Weld",
+  "type_specific_code" : {
+    "jbossorg_blog": [""],
+    "jbossorg_jira": ["WELD", "WELDRAD", "WELDX", "WELDINT", "WELDSERVLET", "WELDSE"],
+    "jbossorg_mailing_list": "",
+    "jbossorg_project_info": "weld_projectnav"
+  }
+}

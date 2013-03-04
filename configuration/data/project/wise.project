@@ -1,0 +1,10 @@
+{
+  "code": "wise",
+  "name": "Wise",
+  "type_specific_code" : {
+    "jbossorg_blog": ["jbosswise"],
+    "jbossorg_jira": ["WISE"],
+    "jbossorg_mailing_list": "",
+    "jbossorg_project_info": "wise"
+  }
+}

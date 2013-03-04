@@ -1,0 +1,10 @@
+{
+  "code": "maven-jdocbook-style-plugin",
+  "name": "Maven jDocBook Style Plugin",
+  "type_specific_code" : {
+    "jbossorg_blog": [""],
+    "jbossorg_jira": [""],
+    "jbossorg_mailing_list": "",
+    "jbossorg_project_info": "maven-jdocbook-style-plugin"
+  }
+}

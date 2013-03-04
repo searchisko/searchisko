@@ -97,4 +97,12 @@ After DCP is deployed it's necessary to initialize it. Next initialization steps
    - contributors
 5. Initialize ElasticSearch rivers if any used to collect data 
 
-TODO add example of initialization resources into this repo
+Configuration used for jboss.org DCP instance is stored in
+[`/configuration`](/configuration) folder of this repo. You can use it as
+example for your DCP instance.
+
+**Note** initial superprovider is automatically created with username `jbossorg`
+and password `jbossorgjbossorg` during DCP first start. You can use it for 
+initialization. It's highly recommended to change default 
+password on publicly available instances!
+

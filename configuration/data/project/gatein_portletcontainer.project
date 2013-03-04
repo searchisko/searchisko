@@ -1,0 +1,10 @@
+{
+  "code": "gatein_portletcontainer",
+  "name": "GateIn Portlet Container",
+  "type_specific_code" : {
+    "jbossorg_blog": [""],
+    "jbossorg_jira": ["GTNPC"],
+    "jbossorg_mailing_list": "",
+    "jbossorg_project_info": "gatein_portletcontainer"
+  }
+}

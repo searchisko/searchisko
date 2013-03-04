@@ -1,0 +1,10 @@
+{
+  "code": "errai",
+  "name": "Errai",
+  "type_specific_code" : {
+    "jbossorg_blog": ["errai"],
+    "jbossorg_jira": ["ERRAI", "ERPL"],
+    "jbossorg_mailing_list": "",
+    "jbossorg_project_info": "errai"
+  }
+}

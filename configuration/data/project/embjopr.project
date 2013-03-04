@@ -1,0 +1,10 @@
+{
+  "code": "embjopr",
+  "name": "Embedded Jopr",
+  "type_specific_code" : {
+    "jbossorg_blog": [""],
+    "jbossorg_jira": ["EMBJOPR"],
+    "jbossorg_mailing_list": "",
+    "jbossorg_project_info": "embjopr"
+  }
+}

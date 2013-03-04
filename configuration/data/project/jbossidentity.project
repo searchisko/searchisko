@@ -1,0 +1,10 @@
+{
+  "code": "jbossidentity",
+  "name": "JBoss Identity",
+  "type_specific_code" : {
+    "jbossorg_blog": ["jbosssecurity"],
+    "jbossorg_jira": ["JBID"],
+    "jbossorg_mailing_list": "",
+    "jbossorg_project_info": "jbossidentity"
+  }
+}

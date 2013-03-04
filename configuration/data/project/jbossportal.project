@@ -1,0 +1,10 @@
+{
+  "code": "jbossportal",
+  "name": "JBoss Portal",
+  "type_specific_code" : {
+    "jbossorg_blog": ["jbossportal", "bdawidowicz", "andypembertononj"],
+    "jbossorg_jira": ["JBPORTAL"],
+    "jbossorg_mailing_list": "",
+    "jbossorg_project_info": "jbossportal"
+  }
+}

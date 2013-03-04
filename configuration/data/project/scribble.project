@@ -1,0 +1,10 @@
+{
+  "code": "scribble",
+  "name": "Scribble",
+  "type_specific_code" : {
+    "jbossorg_blog": [""],
+    "jbossorg_jira": ["SCRIBBLE"],
+    "jbossorg_mailing_list": "",
+    "jbossorg_project_info": "scribble"
+  }
+}

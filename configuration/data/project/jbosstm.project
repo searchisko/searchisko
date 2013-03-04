@@ -1,0 +1,10 @@
+{
+  "code": "jbosstm",
+  "name": "JBoss Transactions",
+  "type_specific_code" : {
+    "jbossorg_blog": ["transactions"],
+    "jbossorg_jira": ["JBTM"],
+    "jbossorg_mailing_list": "",
+    "jbossorg_project_info": "jbosstm"
+  }
+}

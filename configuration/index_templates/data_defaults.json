@@ -1,0 +1,85 @@
+{
+  "template": "data_*",
+  "order" : 0,
+  "settings": {
+    "analysis": {
+      "analyzer": {
+        "default" : {
+          "type" : "custom",
+          "tokenizer" : "standard",
+          "filter" : ["word_delimiter","standard","lowercase","asciifolding","stop","kstem"]
+        },
+        "default_html_strip": {
+          "type": "custom",
+          "char_filter": ["html_strip"],
+          "tokenizer": "standard",
+          "filter": ["word_delimiter","standard","lowercase","asciifolding","stop","kstem"]
+        },
+        "dcp_project_name" : {
+          "type": "standard"
+        }
+      },
+      "filter" : {
+        "word_delimiter" : {
+          "type" : "word_delimiter",
+          "preserve_original" : true,
+          "catenate_all" : true,
+          "catenate_numbers" : true,
+          "catenate_words" : true
+        }
+      }
+    }
+  },
+  "mappings": {
+    "_default_": {
+      "_timestamp" : { "enabled" : true },
+      "include_in_all" : false,    
+      "properties": {
+        "dcp_content_provider" : {"type" : "string", "analyzer" : "keyword"},
+        "dcp_content_type"     : {"type" : "string", "analyzer" : "keyword"},
+        "dcp_content_id" : {"type" : "string", "analyzer" : "keyword"},
+        "dcp_id" : {"type" : "string", "analyzer" : "keyword"},
+        "dcp_type" : {"type" : "string", "analyzer" : "keyword", "store":"yes"},
+        "dcp_title" : {"type" : "string", "store":"yes"},
+        "dcp_url_view" : {"type" : "string", "store":"yes"},
+        "dcp_description" : {"type" : "string", "store":"yes"},
+        "dcp_content" : {"type" : "string", "analyzer" : "default_html_strip"},
+        "dcp_updated" : {"type" : "date"},
+        "dcp_project" : {"type" : "string", "analyzer" : "keyword", "store":"yes"},
+        "dcp_project_name" : {"type" : "string", "analyzer" : "dcp_project_name", "store":"yes"},
+        "dcp_contributors" : {
+            "type" : "multi_field",
+            "fields" : {
+                "fulltext" : {"type" : "string", "index" : "analyzed"},
+                "dcp_contributors" : {"type" : "string", "analyzer" : "keyword", "store":"yes"}
+            }
+         },             
+        "dcp_tags" : {"type" : "string", "analyzer" : "keyword", "store":"yes"},
+        "dcp_created" : {"type" : "date", "store":"yes"},
+        "dcp_last_activity_date" : {"type" : "date", "store":"yes"},
+        "dcp_activity_dates" : {"type" : "date"},
+        "dcp_comments" : {
+  	      "type" : "object",
+  	      "properties" : {
+  	          "comment_id" : {"type" : "string", "index" : "no"},
+  	          "comment_body": {"type" : "string", "store":"yes"},
+  	          "comment_created" : {"type" : "date", "index" : "no"},
+  	          "comment_updated" : {"type" : "date", "index" : "no"},
+  	          "comment_author" : {
+  	              "type" : "object",
+  	              "properties" : {
+  	                  "dcp_contributor" : {"type" : "string", "index" : "no"}
+  	              }                    
+  	          },
+  	          "comment_updater" : {
+  	              "type" : "object",
+  	              "properties" : {
+  	                  "dcp_contributor" : {"type" : "string", "index" : "no"}
+  	              }                    
+  	          }
+	      }    
+        }
+      }
+    }
+  }
+}

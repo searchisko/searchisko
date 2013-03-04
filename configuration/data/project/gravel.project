@@ -1,0 +1,10 @@
+{
+  "code": "gravel",
+  "name": "Gravel",
+  "type_specific_code" : {
+    "jbossorg_blog": [""],
+    "jbossorg_jira": ["GRAVEL"],
+    "jbossorg_mailing_list": "",
+    "jbossorg_project_info": "gravel"
+  }
+}

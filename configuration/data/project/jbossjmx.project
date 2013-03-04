@@ -1,0 +1,10 @@
+{
+  "code": "jbossjmx",
+  "name": "JBoss JMX",
+  "type_specific_code" : {
+    "jbossorg_blog": [""],
+    "jbossorg_jira": ["JBJMX"],
+    "jbossorg_mailing_list": "",
+    "jbossorg_project_info": "jbossjmx"
+  }
+}

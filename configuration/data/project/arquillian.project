@@ -1,0 +1,10 @@
+{
+  "code": "arquillian",
+  "name": "Arquillian",
+  "type_specific_code" : {
+    "jbossorg_blog": ["arquillian"],
+    "jbossorg_jira": ["ARQ", "ARQGRA", "ARQRUSH"],
+    "jbossorg_mailing_list": "",
+    "jbossorg_project_info": "arquillian"
+  }
+}

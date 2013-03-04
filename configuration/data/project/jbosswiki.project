@@ -1,0 +1,10 @@
+{
+  "code": "jbosswiki",
+  "name": "JBoss Wiki",
+  "type_specific_code" : {
+    "jbossorg_blog": [""],
+    "jbossorg_jira": ["JBWIKI"],
+    "jbossorg_mailing_list": "",
+    "jbossorg_project_info": "jbosswiki"
+  }
+}

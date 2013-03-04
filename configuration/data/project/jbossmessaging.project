@@ -1,0 +1,10 @@
+{
+  "code": "jbossmessaging",
+  "name": "JBoss Messaging",
+  "type_specific_code" : {
+    "jbossorg_blog": ["clebert_suconic_"],
+    "jbossorg_jira": ["JBMESSAGING"],
+    "jbossorg_mailing_list": "",
+    "jbossorg_project_info": "jbossmessaging"
+  }
+}

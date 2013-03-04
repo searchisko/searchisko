@@ -1,0 +1,10 @@
+{
+  "code": "jbossmarshalling",
+  "name": "JBoss Marshalling",
+  "type_specific_code" : {
+    "jbossorg_blog": ["dmlloyd_mar"],
+    "jbossorg_jira": ["JBMAR"],
+    "jbossorg_mailing_list": "",
+    "jbossorg_project_info": "jbossmarshalling"
+  }
+}

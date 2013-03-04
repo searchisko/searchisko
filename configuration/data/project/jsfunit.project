@@ -1,0 +1,10 @@
+{
+  "code": "jsfunit",
+  "name": "JSFUnit",
+  "type_specific_code" : {
+    "jbossorg_blog": ["jsfunit"],
+    "jbossorg_jira": ["JSFUNIT"],
+    "jbossorg_mailing_list": "",
+    "jbossorg_project_info": "jsfunit"
+  }
+}

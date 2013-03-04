@@ -1,0 +1,10 @@
+{
+  "code": "jbossas",
+  "name": "JBoss Application Server 7",
+  "type_specific_code" : {
+    "jbossorg_blog": ["dimitris", "mywiki", "clustering_blog", "donnamishelly", "jasongreene", "managetheboss", "irtjbossas7", "irtas7", "irtjbossas7cs", "vardlokkur"],
+    "jbossorg_jira": [""],
+    "jbossorg_mailing_list": "",
+    "jbossorg_project_info": "jbossas"
+  }
+}

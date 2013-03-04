@@ -1,0 +1,10 @@
+{
+  "code": "jbossas_osgi",
+  "name": "OSGi",
+  "type_specific_code" : {
+    "jbossorg_blog": ["jbossosgi", "osgithoughts"],
+    "jbossorg_jira": ["JBOSGI"],
+    "jbossorg_mailing_list": "",
+    "jbossorg_project_info": "jbossas_osgi"
+  }
+}

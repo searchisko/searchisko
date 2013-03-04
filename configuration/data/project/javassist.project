@@ -1,0 +1,10 @@
+{
+  "code": "javassist",
+  "name": "Javassist",
+  "type_specific_code" : {
+    "jbossorg_blog": [""],
+    "jbossorg_jira": ["JASSIST"],
+    "jbossorg_mailing_list": "",
+    "jbossorg_project_info": "javassist"
+  }
+}

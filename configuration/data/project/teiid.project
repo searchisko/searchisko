@@ -1,0 +1,10 @@
+{
+  "code": "teiid",
+  "name": "Teiid",
+  "type_specific_code" : {
+    "jbossorg_blog": ["teiid"],
+    "jbossorg_jira": ["TEIID"],
+    "jbossorg_mailing_list": "",
+    "jbossorg_project_info": "teiid"
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "code": "jbossprofiler",
+  "name": "JBoss Profiler",
+  "type_specific_code" : {
+    "jbossorg_blog": [""],
+    "jbossorg_jira": ["JBPROFILER"],
+    "jbossorg_mailing_list": "",
+    "jbossorg_project_info": "jbossprofiler"
+  }
+}

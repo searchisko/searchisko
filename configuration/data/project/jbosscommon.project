@@ -1,0 +1,10 @@
+{
+  "code": "jbosscommon",
+  "name": "",
+  "type_specific_code" : {
+    "jbossorg_blog": [""],
+    "jbossorg_jira": ["JBCOMMON"],
+    "jbossorg_mailing_list": "",
+    "jbossorg_project_info": "jboss-common"
+  }
+}

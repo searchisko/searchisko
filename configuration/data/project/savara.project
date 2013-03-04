@@ -1,0 +1,10 @@
+{
+  "code": "savara",
+  "name": "Savara",
+  "type_specific_code" : {
+    "jbossorg_blog": ["savara"],
+    "jbossorg_jira": ["SAVARA"],
+    "jbossorg_mailing_list": "",
+    "jbossorg_project_info": "savara"
+  }
+}

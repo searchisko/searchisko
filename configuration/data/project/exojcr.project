@@ -1,0 +1,10 @@
+{
+  "code": "exojcr",
+  "name": "eXo JCR",
+  "type_specific_code" : {
+    "jbossorg_blog": [""],
+    "jbossorg_jira": ["EXOJCR"],
+    "jbossorg_mailing_list": "",
+    "jbossorg_project_info": "exojcr"
+  }
+}

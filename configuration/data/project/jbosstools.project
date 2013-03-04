@@ -1,0 +1,10 @@
+{
+  "code": "jbosstools",
+  "name": "JBoss Tools",
+  "type_specific_code" : {
+    "jbossorg_blog": ["jbosstools"],
+    "jbossorg_jira": ["JBIDE", "TOOLSDOC"],
+    "jbossorg_mailing_list": "",
+    "jbossorg_project_info": "jbosstools"
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "code": "jopr",
+  "name": "RHQ",
+  "type_specific_code" : {
+    "jbossorg_blog": ["heikowrupp", "greghinkle", "josephmarques", "ianspringer", "fadymatar", "mazz", "jayshaughnessy", "jasondobies", "johnsandablog", "lkrejciblog", "simeonsblog", "saas"],
+    "jbossorg_jira": [""],
+    "jbossorg_mailing_list": "",
+    "jbossorg_project_info": "jopr"
+  }
+}

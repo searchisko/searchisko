@@ -1,0 +1,10 @@
+{
+  "code": "drools",
+  "name": "Drools",
+  "type_specific_code" : {
+    "jbossorg_blog": ["drools", "javadude", "anton"],
+    "jbossorg_jira": ["DROOLS", "JBRULES"],
+    "jbossorg_mailing_list": "",
+    "jbossorg_project_info": "drools"
+  }
+}

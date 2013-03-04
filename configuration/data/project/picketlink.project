@@ -1,0 +1,10 @@
+{
+  "code": "picketlink",
+  "name": "PicketLink",
+  "type_specific_code" : {
+    "jbossorg_blog": ["picketlink"],
+    "jbossorg_jira": ["PLINK", "PLFED", "PLIDM"],
+    "jbossorg_mailing_list": "",
+    "jbossorg_project_info": "picketlink"
+  }
+}

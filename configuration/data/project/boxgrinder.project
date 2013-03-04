@@ -1,0 +1,10 @@
+{
+  "code": "boxgrinder",
+  "name": "BoxGrinder",
+  "type_specific_code" : {
+    "jbossorg_blog": ["boxgrinder"],
+    "jbossorg_jira": ["BG", "BGBUILD", "BGREST"],
+    "jbossorg_mailing_list": "",
+    "jbossorg_project_info": "boxgrinder"
+  }
+}

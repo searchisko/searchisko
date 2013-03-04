@@ -1,0 +1,10 @@
+{
+  "code": "picketbox",
+  "name": "PicketBox",
+  "type_specific_code" : {
+    "jbossorg_blog": [""],
+    "jbossorg_jira": ["SECURITY"],
+    "jbossorg_mailing_list": "",
+    "jbossorg_project_info": "picketbox"
+  }
+}

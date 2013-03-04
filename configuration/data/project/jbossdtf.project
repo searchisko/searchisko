@@ -1,0 +1,10 @@
+{
+  "code": "jbossdtf",
+  "name": "JBoss DTF",
+  "type_specific_code" : {
+    "jbossorg_blog": [""],
+    "jbossorg_jira": ["DTF"],
+    "jbossorg_mailing_list": "",
+    "jbossorg_project_info": "jbossdtf"
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "code": "immutant",
+  "name": "Immutant",
+  "type_specific_code" : {
+    "jbossorg_blog": [""],
+    "jbossorg_jira": ["IMMUTANT"],
+    "jbossorg_mailing_list": "",
+    "jbossorg_project_info": "immutant"
+  }
+}

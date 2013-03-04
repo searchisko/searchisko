@@ -1,0 +1,10 @@
+{
+  "code": "torquebox",
+  "name": "TorqueBox",
+  "type_specific_code" : {
+    "jbossorg_blog": ["torquebox"],
+    "jbossorg_jira": ["TORQUE"],
+    "jbossorg_mailing_list": "",
+    "jbossorg_project_info": "torquebox"
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "code": "jbossweb",
+  "name": "JBoss Web",
+  "type_specific_code" : {
+    "jbossorg_blog": ["mturk", "remm"],
+    "jbossorg_jira": ["JBWEB"],
+    "jbossorg_mailing_list": "",
+    "jbossorg_project_info": "jbossweb"
+  }
+}

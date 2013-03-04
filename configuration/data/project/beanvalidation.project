@@ -1,0 +1,10 @@
+{
+  "code": "beanvalidation",
+  "name": "Bean Validation",
+  "type_specific_code" : {
+    "jbossorg_blog": ["bean_validation"],
+    "jbossorg_jira": [""],
+    "jbossorg_mailing_list": "",
+    "jbossorg_project_info": "beanvalidation"
+  }
+}

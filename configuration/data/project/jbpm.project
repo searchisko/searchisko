@@ -1,0 +1,10 @@
+{
+  "code": "jbpm",
+  "name": "jBPM",
+  "type_specific_code" : {
+    "jbossorg_blog": ["koenaers", "enterprisebpm", "kverlaen"],
+    "jbossorg_jira": ["JBPM", "BPEL", "GPD"],
+    "jbossorg_mailing_list": "",
+    "jbossorg_project_info": "jbpm"
+  }
+}

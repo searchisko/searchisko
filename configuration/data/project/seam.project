@@ -1,0 +1,10 @@
+{
+  "code": "seam",
+  "name": "Seam",
+  "type_specific_code" : {
+    "jbossorg_blog": ["jbossseam", "stuartdouglas", "ocpsoft", "mnovotny", "solutionsfit", "lightguard"],
+    "jbossorg_jira": ["JBSEAM", "SEAM", "SEAMCLOUD", "SEAMCRON", "SEAMDROOLS", "SEAMFACES", "SEAMWICKET", "SEAMINTL", "SEAMJBPM", "SEAMJCR", "SEAMJMS", "SEAMMAIL", "SEAMPERSIST", "SEAMREMOTING", "SEAMREPORTS", "SEAMREST", "SEAMSECURITY", "SEAMSOCIAL", "SEAMSPRING", "SEAMTRANSACTION", "SEAMVALIDATE", "SEAMFP"],
+    "jbossorg_mailing_list": "",
+    "jbossorg_project_info": "seam_projectnav"
+  }
+}
