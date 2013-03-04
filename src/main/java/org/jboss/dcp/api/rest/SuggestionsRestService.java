@@ -5,9 +5,8 @@
  */
 package org.jboss.dcp.api.rest;
 
-import org.elasticsearch.action.search.SearchRequestBuilder;
-import org.elasticsearch.action.search.SearchResponse;
-import org.elasticsearch.action.search.SearchType;
+import org.elasticsearch.action.search.*;
+import org.elasticsearch.client.Client;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.jboss.dcp.api.annotations.header.AccessControlAllowOrigin;
 import org.jboss.dcp.api.annotations.security.GuestAllowed;
@@ -32,7 +31,7 @@ import java.util.logging.Logger;
  * @author Lukas Vlcek
  */
 @RequestScoped
-@Path("/search")
+@Path("/suggestions")
 @Produces(MediaType.APPLICATION_JSON)
 public class SuggestionsRestService extends RestServiceBase {
 
@@ -82,12 +81,25 @@ public class SuggestionsRestService extends RestServiceBase {
             if (query == null) {
                 throw new IllegalArgumentException(QuerySettings.QUERY_KEY);
             }
+            int responseSize = 5;
+            String size = SearchUtils.trimToNull(params.getFirst(QuerySettings.Filters.SIZE_KEY));
+            if (size != null ) {
+                try {
+                    responseSize = Integer.parseInt(size);
+                } catch (NumberFormatException ex) {
+                    log.finer("Error parsing size URL parameter to int");
+                    log.finest(ex.getMessage());
+                }
+            }
 
-            final SearchRequestBuilder srb = getProjectSearchRequestBuilder(
-                    searchClientService.getClient().prepareSearch(SEARCH_INDEX_NAME, SEARCH_INDEX_TYPE),
-                    query);
+            final Client client = searchClientService.getClient();
+            final MultiSearchRequestBuilder msrb = getProjectMultiSearchRequestBuilder(
+                    client.prepareMultiSearch(),
+                    getProjectSearchNGramRequestBuilder(client.prepareSearch(SEARCH_INDEX_NAME, SEARCH_INDEX_TYPE), query, responseSize),
+                    getProjectSearchFuzzyRequestBuilder(client.prepareSearch(SEARCH_INDEX_NAME, SEARCH_INDEX_TYPE), query, responseSize)
+            );
 
-            final SearchResponse searchResponse = srb.execute().actionGet();
+            final MultiSearchResponse searchResponse = msrb.execute().actionGet();
 
             return createResponse(searchResponse, null); // Do we need uuid in this case?
         } catch (IllegalArgumentException e) {
@@ -99,13 +111,59 @@ public class SuggestionsRestService extends RestServiceBase {
 
     /**
      *
+     * @param srb
      * @param query
      * @return
      */
-    protected SearchRequestBuilder getProjectSearchRequestBuilder(SearchRequestBuilder srb, String query) {
+    protected SearchRequestBuilder getProjectSearchNGramRequestBuilder(SearchRequestBuilder srb, String query, int size) {
+        return srb.addFields("dcp_project", "dcp_project_name")
+            .setSize(size)
+            .setSearchType(SearchType.QUERY_AND_FETCH)
+            .setQuery(
+                    QueryBuilders.queryString(query)
+                            .analyzer("whitespace")
+                            .field("dcp_project_name")
+                            .field("dcp_project_name.edgengram")
+                            .field("dcp_project_name.ngram")
+            )
+            .addHighlightedField("dcp_project_name", 1, 0)
+            .addHighlightedField("dcp_project_name.ngram", 1, 0)
+            .addHighlightedField("dcp_project_name.edgengram", 1, 0)
+            ;
+    }
+
+    /**
+     *
+     * @param srb
+     * @param query
+     * @return
+     */
+    protected SearchRequestBuilder getProjectSearchFuzzyRequestBuilder(SearchRequestBuilder srb, String query, int size) {
         return srb.addFields("dcp_project","dcp_project_name")
-           .setQuery(QueryBuilders.fieldQuery("dcp_project_name",query))
-           .setSearchType(SearchType.QUERY_AND_FETCH);
+                .setSize(size)
+                .setSearchType(SearchType.QUERY_AND_FETCH)
+                .setQuery(
+                        QueryBuilders.fuzzyLikeThisQuery("dcp_project_name", "dcp_project_name.ngram")
+                                .analyzer("whitespace")
+                                .maxQueryTerms(10)
+                                .likeText(query)
+                )
+                .addHighlightedField("dcp_project_name", 1, 0)
+                .addHighlightedField("dcp_project_name.ngram", 1, 0)
+                .addHighlightedField("dcp_project_name.edgengram", 1, 0)
+                ;
+    }
+
+    /**
+     * @param msrb
+     * @param srbNGram
+     * @param srbFuzzy
+     * @return
+     */
+    protected MultiSearchRequestBuilder getProjectMultiSearchRequestBuilder(MultiSearchRequestBuilder msrb,
+                                                                            SearchRequestBuilder srbNGram,
+                                                                            SearchRequestBuilder srbFuzzy) {
+        return msrb.add(srbNGram).add(srbFuzzy);
     }
 
 }

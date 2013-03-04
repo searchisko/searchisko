@@ -1,8 +1,0 @@
-{
-    "query" : {
-        "field" : {
-            "dcp_project_name" : "JBoss"
-        }
-    },
-    "fields" : [ "dcp_project", "dcp_project_name" ]
-}
