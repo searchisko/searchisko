@@ -1,73 +1,73 @@
-DCP basic principles and architecture
+DCP Basic Principles and Architecture
 =====================================
 
-## DCP Overview
+The **Distributed Contribution Platform** (DCP) is a system designed to store,
+search and retrieve content related to Open Source Software (OSS) projects
+which may be distributed across multiple systems.
 
-**Distributed Contribution Platform** is a system intended to store and 
-search/retrieve information related to OSS projects, 
-aggregated from various source systems. 
-This system is necessary to support/extend synergy of community formed by 
-more projects in the era of more distributed environment, when distinct project 
-teams tends to use distinct services available across internet instead of some 
-centralized solution.
+The aim is to provide greater insight into where projects may benefit from
+sharing a common approach to problems as well as highlighting the contributions
+being made and who is contributing them.
 
-Distributed Contribution Platform main design attributes:
+The need for the DCP came from the realization that individual projects
+often want the ability to choose their own services such as source code repositories,
+wikis, forums, mailing lists and issue trackers rather than relying on a
+centralized infrastructure. Where projects are created by the same organization,
+or share contributors, there is an equal argument for the economies of scale
+provided by a centralized service so another reason for the DCP is to allow
+the gradual migration of projects from one service to another without impacting
+the ability to consistently search or retrieve information about them.
 
-* openness and easy of use
-* high flexibility of stored information structures
-* simple, quick and flexible search of stored informations
-* possibility to store informations with guaranteed long term persistence for 
-  data sources where it is hard or impossible to obtain informations again in 
-  the future (eg. blog posts obtained over RSS protocol)
-* high availability of services (both for common runtime and platform upgrade time)
+The main design attributes of the DCP are:
 
-To support multiple projects synergy, informations stored into DCP will be normalized in these areas:
+* openness and ease of use
+* simple, quick and flexible search of stored information
+* highly flexible stored information structures
+* possibility to store information with guaranteed long-term persistence for 
+  data sources where it is hard or impossible to obtain the information again in 
+  the future (eg. blog posts obtained using the RSS protocol)
+* high availability of services (both for the common runtime and at platform upgrade time)
 
-* information type - so all pieces of informations of same type (blog post, 
-  issue, source code commit, mailing list email) originated from distinct 
-  systems can be obtained by one search request
-* project - so all informations/contributions related to one project can be 
-  obtained by one search request
-* contributor - so all informations/contributions performed by one contributor 
-  across distinct projects can be simply obtained by one search request
-* tags - so you can obtain all pieces of informations tagged with same value
-* activity date - so you can filter/analyze informations/contributions by dates
-  when they was created/updated   
+To allow for simple searches across multiple projects the content stored in the DCP will
+be normalized as follows:
 
-DCP provides **REST API** with JSON for informations manipulation and search/retrieve. Feeds in 
-[Atom Syndication Format](http://tools.ietf.org/html/rfc4287) are available also.  
-This allows simple integration with other systems and modern AJAX and HTML 5 
-based frontends/websites. See [`DCP REST API documentation`](rest-api/README.md) for details. 
+* content type (e.g. blog post, issue, source code commit, mailing list email)
+* project
+* contributor
+* tags (either associated with the original content or added after it's been stored in the DCP)
+* activity date - (e.g. created, updated dates)  
+
+The DCP provides a **REST API** using JSON for content manipulation and search/retrieval of content.
+Feeds in [Atom Syndication Format](http://tools.ietf.org/html/rfc4287) are also available. This
+allows for simple integration with other systems and modern AJAX/HTML 5 based frontends/websites.
+See [`DCP REST API documentation`](rest-api/README.md) for details. 
 
 Possible use cases for "project pages" maintained by project teams:
 
-* Unified fulltext search across different project related content.
-* Fulltext search for one project related content type presentation - eg. fulltext search 
-  for project's blog (like [http://arquillian.org/blog](http://arquillian.org/blog)).
-* Planet blog aggregator for project related blogposts.
-* Staff rooster for project - info about project team members, contributors, 
-  details about who contributed what.
-* Project tag cloud - hot topics around project during last week, month, quarter, year.
-* Project activity graphs - overall or per activity type (commits, blogposts), timeline histograms etc.
+* Unified fulltext search across project content.
+* Fulltext search for one content type - eg. project blog [http://arquillian.org/blog](http://arquillian.org/blog).
+* Project-specific planet blog aggregator for project related blogposts coming from multiple blogging services.
+* Contributor list - info about project team members, contributors, details about who contributed what.
+* Project tag cloud - hot topics around the project during the last week, month, quarter, year.
+* Project activity graphs - overall or per content type (commits, blogposts), timeline histograms etc.
 * Project specific artifacts "repository" application - eg. something like [modules.ceylon-lang.org](http://modules.ceylon-lang.org)
   site or [JDF quickstarts page](http://www.jboss.org/jdf/quickstarts/get-started/). 
-  DCP should be used for the search part only, or for the categorized content presentation 
-  pages also.
+  The DCP can be used just for the search part or also for presenting categorized content on pages.
 
-Possible use cases for general community pages:
+Possible use cases for "community pages":
 
-* Unified fulltext search across all community project's content
+* Unified fulltext search across all community content
 * List of all community projects - like [www.jboss.org/projects](http://www.jboss.org/projects)
 * Planet - whole community blog aggregator like [planet.jboss.org](http://planet.jboss.org)
-* Who is Who in the community - info about community contributors, which 
-  projects they contribute, all activities over all projects etc.
-* Community tag cloud - hot topics in the community during last week, month, quarter, year
+* Who's Who in the community - info about community contributors, which 
+  projects they contribute to, all activities over all projects, etc...
+* Community tag cloud - hot topics in the community during the last week, month, quarter, year
 
-## Basic principles
+## Basic Principles
 
 ### Flexible data structure for content
-A document stored into the DCP platform will be stored in the same format 
-as received (JSON format) with all fields provided. 
+A document added to the DCP will be stored in the same (JSON) format as it's
+received with all fields provided.
 Some 'system data fields' with unique nonconflicting names will be added 
 into this document before it is stored in the DCP,
 see [details here](rest-api/content/dcp_content_object.md).
@@ -77,59 +77,59 @@ For example content type "issue" can store issues from JIRA, GitHub, Bugzilla,
 but we define new system fields for them with normalized values, such as 
 "issue type" (bug, feature request), "issue status" (new, in progress, resolved, closed) etc.
 
-Documents without "system data fields" can be stored into platform, but will not 
-be visible/searchable over basic search GUI. They will be available over search 
-API to be used by users who need them.
+Documents without "system data fields" can be stored in the DCP, but will not 
+be visible/searchable over the basic search GUI. They will be available over a custom search 
+API by users who need them.
  
 ### Flexible normalization process
 Normalization of the values for `dcp_contributors` and `dcp_project` field must be 
-flexible to handle distinct identifiers sent from distinct systems to the normalized unique ones.
+flexible enough to handle distinct identifiers sent from distinct systems to the normalized unique ones.
 
 Normalization process for contributors:
 
-* contributor is uniquely identified by string `Name Surname <primaryemail@email.com>` 
+* a contributor is uniquely identified by a string `Name Surname <primaryemail@email.com>` 
   containing primary email address. Secondary email addresses used by given contributor 
-  and other user identifiers from other systems (eg. jboss.org username, github username) 
+  and other user identifiers from other systems (eg. jboss.org username, GitHub username) 
   are joined to this primary string in contributor mapping definition.
 * contributor mapping definitions are stored in the DCP, see [Contributors mapping documentation]
   (rest-api/management/contributor.md)
-* external content provider passes contributor identifier in arbitrary document 
-  field, DCP Push API takes it here, looks for unique contributor identifier 
-  in mapping and stores it into `dcp_contributors` field and then store document in DCP.  
-* when mapping definition for some contributor changes, then all affected 
-  documents in DCP search indices must be reindexed. Because document stored 
-  in DCP contains all original input fields no external data source need to be 
-  called. We can obtain documents from our search indices and update them here.  
-  DCP contains universal component called "Reindexator" which is able to perform this process.
+* an external content provider passes the contributor identifier in an arbitrary document 
+  field. The DCP Push API looks for the contributor identifier in the mapping and stores it
+  into the `dcp_contributors` field before storing the document in the DCP.  
+* when the mapping definition for some contributor changes, all affected 
+  documents in the DCP search indices must be reindexed. Because documents stored 
+  in the DCP contain all the original input fields no external data sources need to be 
+  involved. We simply obtain documents from our search indices and update them here.  
+  The DCP contains a universal component called the "Reindexator" which is able to perform this process.
 
-Same principle is used for project identifier normalization, see 
+The same principle is used for project identifier normalization, see 
 [Project configuration documentation](rest-api/management/project.md)
 
-### Long term content persistence support
-Guaranteed long term persistence of content is necessary for some data sources, 
-where it is hard or impossible to obtain informations again in future. Example 
-is blog post obtained over RSS protocol. DCP supports this over the "Persistence back-end" 
-component. "Reindexator" component is able to rebuild search indices from data stored here.
+### Long-term content persistence support
+Guaranteed long-term persistence of content is necessary for some data sources
+where it's hard or impossible to obtain the content again in the future. One example 
+is blog posts obtained usng the RSS protocol. The DCP supports this via the "Persistence back-end" 
+component. The "Reindexator" component is able to rebuild search indices from data stored here.
  
 ### Zero downtime upgrade process
-We need to develop a zero downtime upgrade process. The basic idea of the
-process in case of some significant changes in DCP or underlying technologies:
+We need to develop a zero downtime upgrade process in case of any significant changes in
+the DCP behaviour or in any of the underlying technologies:
 
 1. if the platform REST API changes and becomes backward incompatible for the 
-   new version, then prepare a testing instance with new API and announce the 
+   new version, then prepare a testing instance with the new API and announce the 
    upgrade to the community, so they can prepare for the migration
 2. prepare/install the "new" platform instance
 3. disable the information input into the "old" platform instance (disable Push API, 
    stop Indexers), data retrieval/search will still be possible
 4. copy configurations and search indexes from the 'old' to the  'new' instance 
    - it can take a long time, depends on data amount
-5. switch all "client" systems to the search over the "new" platform instance
+5. switch all "client" systems to the DCP over to the "new" platform instance
 6. stop the old instance
 7. enable the information input into "new" platform instance (enable Push API, start Indexers)
 
 ### Runtime environment
-DCP is platform with runtime agnostic architecture, so it can run 
-distinct components on any platform and/or cloud provider (OpenShift, EC2 etc).
+The DCP platform has a runtime agnostic architecture so distinct components can be
+run on any platform and/or cloud provider (OpenShift, EC2 etc).
 
 ## DCP Architecture
 
@@ -137,8 +137,8 @@ distinct components on any platform and/or cloud provider (OpenShift, EC2 etc).
 
 ### Push API
 
-This component allows to push information into the platform from various 
-information sources. This API supports basic CRUD and List operations for content:
+This component allows content to be pushed into the platform from various 
+information sources. It supports the following basic CRUD and List operations:
 
 * POST document into platform (create or update it based on provided 'provider content type' and id)
 * DELETE document from platform (based on provided 'provider content type' and id)
@@ -152,8 +152,8 @@ Main API parameters used for document POST request:
 * content provider identifier
 * password
 * provider content type - each content provider has set of 'provider content 
-  types' configured. This configuration defines how is the given document handled 
-  during the insert into the platform.
+  types' configured. This configuration defines how the document is handled 
+  during insertion into the platform.
 * provider content identifier - unique identifier of content per given 'provider content type'
 * provider content document - JSON formatted document to be inserted into platform
 
@@ -163,35 +163,35 @@ Main actions performed during document POST request handling:
   authorization is performed over "content provider identifier" and "password"
 * content processing necessary to produce defined 'dcp_type' document - based on 
   configuration for given 'provider content type' - adds 'system data fields' with 
-  the values transformed over the 'data normalization' process etc.
+  the values transformed using the 'data normalization' process etc.
 * storage routing - based on the 'provider content type' configuration - stores 
   the data to a Search Back-end and a Persistence Back-end. It defines which 
-  search index will be used in the Search Back-end  etc.
+  search index will be used in the Search Back-end etc.
 
-So before some third party starts to use DCP it must negotiate a new 'content provider' 
-access with DCP administrators. Both parties must agree on the set of 'provider content 
-type's for this access and define the configuration for each of it. 
+Before a third-party starts to use the DCP it must negotiate a new 'content provider' 
+access agreement with DCP administrators. Both parties must agree on the set of 'provider content 
+type's for this access and define the configuration for each of them. 
 See [Content provider documentation](rest-api/management/content_provider.md).
 
-
-Framework for mappings/normalizations has been developed as part 
-of ElasticSearch JIRA river and extracted to separate github 
+The framework for mappings/normalizations has been developed as part 
+of the ElasticSearch JIRA river project and extracted to a separate GitHub 
 project called [structured-content-tools](https://github.com/jbossorg/structured-content-tools).
 
 ### Search API
 
-It is a component that allows to retrieve/search data from the platform. It is 
-used by both JBoss Community Team developed frontend systems (basic search GUI 
-at search.jboss.org, new Borg at planet.jboss.org ) and third party/project teams 
-developed systems also.
+This component allows a user to retrieve/search content from the platform. It is 
+used by both the JBoss Community Team developed websites (http://search.jboss.org
+and http://planet.jboss.org) and third-party/project team developed websites.
 
-Current search API supports predefined set of filters and facets. Full ElasticSearch search 
-API should be provided in the future, but we need to investigate if this is not dangerous 
-from some point of view, eg. stoling of all email addresses, performance etc.
+The current search API supports a predefined set of filters and facets. The full ElasticSearch search 
+API should be provided in the future but we need to first investigate whether or not this could
+introduce security concerns, eg. harvesting of email addresses, denial of service attacks, etc...
 
-We also need to implement some form of QoS handing here - for search requests from unauthorized/unknown systems so they do not degrade the performance of the authorized/known systems.
+We also need to implement some form of Quality of Service (QoS) handing here - for search requests
+from unauthorized/unknown systems so they do not degrade the performance of the authorized/known systems.
 
-Part of this API will be the "Project list" operation too that allows to obtain the list of project identifiers and related project names used in platform normalized field dcp_project.
+Part of this API will be the "Project list" operation that allows you to obtain the list of project
+identifiers and related project names used in platform normalized field dcp_project.
  
 ### Search Back-end
 
@@ -199,35 +199,35 @@ Fulltext search nodes with distributed search indices etc.
 
 Based on ElasticSearch technology - [http://www.elasticsearch.org](http://www.elasticsearch.org).
 
-Informations are not persistently stored here, because search indices must be 
+Information is not persistently stored here, because search indices must be 
 rebuilt from scratch from data sources in some cases (typically when something significant 
 is changed in ElasticSearch or Lucene).
 
-Separate ElasticSearch cluster is used to store some statistics from DCP runtime for use by DCP administrators.
+Separate ElasticSearch cluster is used to store some statistics from the DCP runtime for use by DCP administrators.
 
 ### Persistence Back-end
 
-It's component realizing long term persistence for selected content from data 
-sources where is hard or impossible to obtain the information again in future 
-(eg. blog posts obtained over RSS protocol).
+This component realizes long-term persistence for selected content from data 
+sources where it's hard or impossible to obtain the information again in the future 
+(eg. blog posts obtained using the RSS protocol).
 
-It is used by Reindexator component to rebuild the search indices on Search Back-end from scratch.
+It's used by the Reindexator component to rebuild the search indices on the Search Back-end from scratch.
 
 Some form of distributed key/value store (where value is JSON document) or SQL 
 database should be used here.
 
-Part of Persistence Back-end is used to store DCP configuration data also.
+Part of Persistence Back-end is used to store the DCP configuration data also.
  
 ### Indexers
 
 These components run code provided and maintained by DCP Administrators that 
-acquires the information from an external data source and store it into the platform.
+acquire content from external data sources and store it into the platform.
 
-They can be implemented as ElasticSearch rivers, or as standalone processes using "DCP Push API".
+They can be implemented as ElasticSearch rivers, or as standalone processes using the "DCP Push API".
 For example instances of [JIRA River Plugin for ElasticSearch](https://github.com/jbossorg/elasticsearch-river-jira) 
-pulling data from distinct JIRA instances (issues.jbss.org, hibernate.onjira.com etc). 
+pulling data from distinct JIRA instances (http://issues.jboss.org, http://hibernate.onjira.com, etc...) 
 
-This is an alternative of information retrieval to pushing by third party systems over "Push API".
+This is an alternative to pushing content from third-party systems using the "Push API".
  
 ### Reindexator
 
@@ -243,11 +243,11 @@ REST API for DCP management operations. Used by DCP Administrators directly or o
  
 ### Administrative GUI
 
-Web GUI application used by DCP Administrators to configure and monitor whole platform. Main use cases:
+Web GUI application used by DCP Administrators to configure and monitor the whole platform. Main use cases:
 
 * platform runtime parameters monitoring, eg. [bigdesk for ElasticSearch](http://bigdesk.org) 
   and visualization of data stored in statistics part of Search back-end 
 * platform configuration, eg. 'Push API' configuration (eg. providers), "Indexers" configuration etc.
 * change of mappings for values normalization, start search index update for data affected by changed mapping
-* start reindexation of data from Persistence back-end into Search back-end
+* start reindexing of data from the Persistence back-end into the Search back-end
 * data migration to new version of platform during upgrade
