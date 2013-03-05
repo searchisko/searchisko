@@ -95,8 +95,8 @@ public class SuggestionsRestService extends RestServiceBase {
             final Client client = searchClientService.getClient();
             final MultiSearchRequestBuilder msrb = getProjectMultiSearchRequestBuilder(
                     client.prepareMultiSearch(),
-                    getProjectSearchNGramRequestBuilder(client.prepareSearch(SEARCH_INDEX_NAME, SEARCH_INDEX_TYPE), query, responseSize),
-                    getProjectSearchFuzzyRequestBuilder(client.prepareSearch(SEARCH_INDEX_NAME, SEARCH_INDEX_TYPE), query, responseSize)
+                    getProjectSearchNGramRequestBuilder(client.prepareSearch().setIndices(SEARCH_INDEX_NAME).setTypes(SEARCH_INDEX_TYPE), query, responseSize),
+                    getProjectSearchFuzzyRequestBuilder(client.prepareSearch().setIndices(SEARCH_INDEX_NAME).setTypes(SEARCH_INDEX_TYPE), query, responseSize)
             );
 
             final MultiSearchResponse searchResponse = msrb.execute().actionGet();
