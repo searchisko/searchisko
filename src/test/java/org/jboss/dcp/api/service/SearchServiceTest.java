@@ -1236,7 +1236,7 @@ public class SearchServiceTest {
 		filters.setActivityDateTo(System.currentTimeMillis());
 		Assert.assertEquals("month", SearchService.selectActivityDatesHistogramInterval(qs));
 
-		filters.setActivityDateTo(System.currentTimeMillis() - 1000 * 60 * 60 * 24 * 365 * 10);
+		filters.setActivityDateTo(System.currentTimeMillis() - 1000l * 60l * 60l * 24l * 365l * 10l);
 		Assert.assertEquals("month", SearchService.selectActivityDatesHistogramInterval(qs));
 
 		// case - no to defined means current timestamp is used
@@ -1244,24 +1244,24 @@ public class SearchServiceTest {
 		filters.setActivityDateTo(null);
 		Assert.assertEquals("minute", SearchService.selectActivityDatesHistogramInterval(qs));
 
-		filters.setActivityDateFrom(System.currentTimeMillis() - 1000L * 60L * 60L + 1);
+		filters.setActivityDateFrom(System.currentTimeMillis() - 1000L * 60L * 60L + 100l);
 		Assert.assertEquals("minute", SearchService.selectActivityDatesHistogramInterval(qs));
-		filters.setActivityDateFrom(System.currentTimeMillis() - 1000L * 60L * 60L - 1);
+		filters.setActivityDateFrom(System.currentTimeMillis() - 1000L * 60L * 60L - 100l);
 		Assert.assertEquals("hour", SearchService.selectActivityDatesHistogramInterval(qs));
 
-		filters.setActivityDateFrom(System.currentTimeMillis() - 1000L * 60L * 60L * 24 * 2 + 1);
+		filters.setActivityDateFrom(System.currentTimeMillis() - 1000L * 60L * 60L * 24l * 2l + 100l);
 		Assert.assertEquals("hour", SearchService.selectActivityDatesHistogramInterval(qs));
-		filters.setActivityDateFrom(System.currentTimeMillis() - 1000L * 60L * 60L * 24 * 2 - 1);
+		filters.setActivityDateFrom(System.currentTimeMillis() - 1000L * 60L * 60L * 24l * 2l - 100l);
 		Assert.assertEquals("day", SearchService.selectActivityDatesHistogramInterval(qs));
 
-		filters.setActivityDateFrom(System.currentTimeMillis() - 1000L * 60L * 60L * 24 * 7 * 8 + 1);
+		filters.setActivityDateFrom(System.currentTimeMillis() - 1000L * 60L * 60L * 24l * 7l * 8l + 100l);
 		Assert.assertEquals("day", SearchService.selectActivityDatesHistogramInterval(qs));
-		filters.setActivityDateFrom(System.currentTimeMillis() - 1000L * 60L * 60L * 24 * 7 * 8 - 1);
+		filters.setActivityDateFrom(System.currentTimeMillis() - 1000L * 60L * 60L * 24l * 7l * 8l - 100l);
 		Assert.assertEquals("week", SearchService.selectActivityDatesHistogramInterval(qs));
 
-		filters.setActivityDateFrom(System.currentTimeMillis() - 1000L * 60L * 60L * 24 * 366 + 1);
+		filters.setActivityDateFrom(System.currentTimeMillis() - 1000L * 60L * 60L * 24l * 366l + 100l);
 		Assert.assertEquals("week", SearchService.selectActivityDatesHistogramInterval(qs));
-		filters.setActivityDateFrom(System.currentTimeMillis() - 1000L * 60L * 60L * 24 * 366 - 1);
+		filters.setActivityDateFrom(System.currentTimeMillis() - 1000L * 60L * 60L * 24l * 366l - 100l);
 		Assert.assertEquals("month", SearchService.selectActivityDatesHistogramInterval(qs));
 
 		// case - both from and to defined
@@ -1269,27 +1269,27 @@ public class SearchServiceTest {
 		filters.setActivityDateTo(1200l);
 		Assert.assertEquals("minute", SearchService.selectActivityDatesHistogramInterval(qs));
 
-		filters.setActivityDateTo(1000l + 1000L * 60L * 60L - 1);
+		filters.setActivityDateTo(1000l + 1000L * 60L * 60L - 100l);
 		Assert.assertEquals("minute", SearchService.selectActivityDatesHistogramInterval(qs));
-		filters.setActivityDateTo(1000l + 1000L * 60L * 60L + 1);
+		filters.setActivityDateTo(1000l + 1000L * 60L * 60L + 100l);
 		Assert.assertEquals("hour", SearchService.selectActivityDatesHistogramInterval(qs));
 
 		filters.setActivityDateFrom(1000000l);
-		filters.setActivityDateTo(1000000l + 1000L * 60L * 60L * 24 * 2 - 1);
+		filters.setActivityDateTo(1000000l + 1000L * 60L * 60L * 24l * 2l - 100l);
 		Assert.assertEquals("hour", SearchService.selectActivityDatesHistogramInterval(qs));
-		filters.setActivityDateTo(1000000l + 1000L * 60L * 60L * 24 * 2 + 1);
+		filters.setActivityDateTo(1000000l + 1000L * 60L * 60L * 24l * 2l + 100l);
 		Assert.assertEquals("day", SearchService.selectActivityDatesHistogramInterval(qs));
 
 		filters.setActivityDateFrom(100000000l);
-		filters.setActivityDateTo(100000000l + 1000L * 60L * 60L * 24 * 7 * 8 - 1);
+		filters.setActivityDateTo(100000000l + 1000L * 60L * 60L * 24l * 7l * 8l - 100l);
 		Assert.assertEquals("day", SearchService.selectActivityDatesHistogramInterval(qs));
-		filters.setActivityDateTo(100000000l + 1000L * 60L * 60L * 24 * 7 * 8 + 1);
+		filters.setActivityDateTo(100000000l + 1000L * 60L * 60L * 24l * 7l * 8l + 100l);
 		Assert.assertEquals("week", SearchService.selectActivityDatesHistogramInterval(qs));
 
 		filters.setActivityDateFrom(1000000000l);
-		filters.setActivityDateTo(1000000000l + 1000L * 60L * 60L * 24 * 366 - 1);
+		filters.setActivityDateTo(1000000000l + 1000L * 60L * 60L * 24l * 366l - 100l);
 		Assert.assertEquals("week", SearchService.selectActivityDatesHistogramInterval(qs));
-		filters.setActivityDateTo(1000000000l + 1000L * 60L * 60L * 24 * 366 + 1);
+		filters.setActivityDateTo(1000000000l + 1000L * 60L * 60L * 24l * 366l + 100l);
 		Assert.assertEquals("month", SearchService.selectActivityDatesHistogramInterval(qs));
 	}
 
