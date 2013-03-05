@@ -16,13 +16,12 @@ import org.jboss.dcp.api.util.SearchUtils;
 
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
+import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.UriInfo;
+import java.util.UUID;
 import java.util.logging.Logger;
 
 /**
@@ -38,6 +37,8 @@ public class SuggestionsRestService extends RestServiceBase {
     public static final String SEARCH_INDEX_NAME = "data_project_info";
 
     public static final String SEARCH_INDEX_TYPE = "jbossorg_project_info";
+
+    public static final Integer DEFAULT_SIZE = 5;
 
     @Inject
     protected Logger log;
@@ -73,35 +74,32 @@ public class SuggestionsRestService extends RestServiceBase {
     @Produces(MediaType.APPLICATION_JSON)
     @GuestAllowed
     @AccessControlAllowOrigin
-    public Object project(@Context UriInfo uriInfo) {
+    public Object project(@QueryParam(QuerySettings.QUERY_KEY) String query, @QueryParam(QuerySettings.Filters.SIZE_KEY) Integer size) {
 
         try {
-            MultivaluedMap<String, String> params = uriInfo.getQueryParameters();
-            String query = SearchUtils.trimToNull(params.getFirst(QuerySettings.QUERY_KEY));
+
             if (query == null) {
                 throw new IllegalArgumentException(QuerySettings.QUERY_KEY);
             }
-            int responseSize = 5;
-            String size = SearchUtils.trimToNull(params.getFirst(QuerySettings.Filters.SIZE_KEY));
-            if (size != null ) {
-                try {
-                    responseSize = Integer.parseInt(size);
-                } catch (NumberFormatException ex) {
-                    log.finer("Error parsing size URL parameter to int");
-                    log.finest(ex.getMessage());
-                }
+
+            if (size == null || size < 1) {
+                size = DEFAULT_SIZE;
+            } else if (size > 200) {
+                size = 200; // Max
             }
 
             final Client client = searchClientService.getClient();
             final MultiSearchRequestBuilder msrb = getProjectMultiSearchRequestBuilder(
                     client.prepareMultiSearch(),
-                    getProjectSearchNGramRequestBuilder(client.prepareSearch().setIndices(SEARCH_INDEX_NAME).setTypes(SEARCH_INDEX_TYPE), query, responseSize),
-                    getProjectSearchFuzzyRequestBuilder(client.prepareSearch().setIndices(SEARCH_INDEX_NAME).setTypes(SEARCH_INDEX_TYPE), query, responseSize)
+                    getProjectSearchNGramRequestBuilder(client.prepareSearch().setIndices(SEARCH_INDEX_NAME).setTypes(SEARCH_INDEX_TYPE), query, size),
+                    getProjectSearchFuzzyRequestBuilder(client.prepareSearch().setIndices(SEARCH_INDEX_NAME).setTypes(SEARCH_INDEX_TYPE), query, size)
             );
+
+            String responseUuid = UUID.randomUUID().toString();
 
             final MultiSearchResponse searchResponse = msrb.execute().actionGet();
 
-            return createResponse(searchResponse, null); // Do we need uuid in this case?
+            return createResponse(searchResponse, responseUuid);
         } catch (IllegalArgumentException e) {
             return createBadFieldDataResponse(e.getMessage());
         } catch (Exception e) {

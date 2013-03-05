@@ -98,8 +98,8 @@ public class RestServiceBase {
             public void write(OutputStream output) throws IOException, WebApplicationException {
                 XContentBuilder builder = XContentFactory.jsonBuilder(output);
                 builder.startObject();
-//                if (responseUuid != null) // TODO shall we add uuid into multi-search responses too?
-//                    builder.field("uuid", responseUuid);
+                if (responseUuid != null)
+                    builder.field("uuid", responseUuid);
                 response.toXContent(builder, ToXContent.EMPTY_PARAMS);
                 builder.endObject();
                 builder.close();
