@@ -35,7 +35,7 @@ import java.util.logging.Logger;
 @Produces(MediaType.APPLICATION_JSON)
 public class SuggestionsRestService extends RestServiceBase {
 
-    public static final String SEARCH_INDEX_NAME = "data_projects_info";
+    public static final String SEARCH_INDEX_NAME = "data_project_info";
 
     public static final String SEARCH_INDEX_TYPE = "jbossorg_project_info";
 
