@@ -43,9 +43,9 @@ import org.elasticsearch.search.facet.terms.TermsFacetBuilder;
 import org.elasticsearch.search.sort.SortOrder;
 import org.jboss.dcp.api.DcpContentObjectFields;
 import org.jboss.dcp.api.cache.IndexNamesCache;
-import org.jboss.dcp.api.config.TimeoutConfiguration;
 import org.jboss.dcp.api.model.FacetValue;
 import org.jboss.dcp.api.model.QuerySettings;
+import org.jboss.dcp.api.model.TimeoutConfiguration;
 import org.jboss.dcp.api.model.QuerySettings.Filters;
 import org.jboss.dcp.api.model.SortByValue;
 

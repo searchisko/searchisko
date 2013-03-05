@@ -31,10 +31,10 @@ import org.elasticsearch.common.joda.time.format.DateTimeFormatter;
 import org.elasticsearch.common.joda.time.format.ISODateTimeFormat;
 import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.search.SearchHit;
-import org.jboss.dcp.api.config.StatsConfiguration;
-import org.jboss.dcp.api.config.TimeoutConfiguration;
 import org.jboss.dcp.api.model.AppConfiguration.ClientType;
 import org.jboss.dcp.api.model.QuerySettings;
+import org.jboss.dcp.api.model.StatsConfiguration;
+import org.jboss.dcp.api.model.TimeoutConfiguration;
 import org.jboss.dcp.api.util.SearchUtils;
 
 /**

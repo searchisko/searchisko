@@ -3,10 +3,11 @@
  * Copyright 2012 Red Hat Inc. and/or its affiliates and other contributors
  * as indicated by the @authors tag. All rights reserved.
  */
-package org.jboss.dcp.api.config;
+package org.jboss.dcp.api.model;
 
 import java.io.IOException;
 
+import org.jboss.dcp.api.model.TimeoutConfiguration;
 import org.junit.Assert;
 import org.junit.Test;
 
