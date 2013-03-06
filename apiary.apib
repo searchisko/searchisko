@@ -462,9 +462,97 @@ GET /rest/suggestions/project?{query,size}
 < Content-Type: application/atom+xml
 < Access-Control-Allow-Origin: *
 {
-    [],
-    []
+    "responses" : [
+        {
+            "hits.hits" : [ ]
+        },
+        {
+            "hits.hits" : [ ] 
+        }
+    ]
 }
+
+
+Example: suggestions for query `gin`
+
+GET /rest/suggestions/project?query=gin&size=2
+< 200
+< Content-Type: application/atom+xml
+< Access-Control-Allow-Origin: *
+{
+    "uuid":"56f56a29-7a2e-4337-af2b-5b6ed9cf5000",
+    "responses": [{ 
+        "took":12,
+        "timed_out":false,
+        "_shards":{
+            "total":5,"successful":5,"failed":0
+        },
+        "hits":{
+            "total":6,
+            "max_score":0.37307936,
+            "hits": [{
+                "_index":"data_project_info",
+                "_type":"jbossorg_project_info",
+                "_id":"jbossorg_project_info-jbossmessaging",
+                "_score":0.37307936,
+                "fields": {
+                    "dcp_project":"jbossmessaging",
+                    "dcp_project_name":"JBoss Messaging"
+                },
+                "highlight": {
+                    "dcp_project_name.ngram":["JBoss Messa<em>gin</em>g"]
+                }
+            },
+            {
+                "_index":"data_project_info",
+                "_type":"jbossorg_project_info",
+                "_id":"jbossorg_project_info-maven-jboss-retro-plugin",
+                "_score":0.22255114,
+                "fields": {
+                    "dcp_project":"maven-jboss-retro-plugin",
+                    "dcp_project_name":"Maven jBoss-retro Plugin"
+                },
+                "highlight": {
+                    "dcp_project_name.ngram":["Maven jBoss-retro Plu<em>gin</em>"]
+                }
+            }]
+        }
+    },
+    {
+        "took":16,
+        "timed_out":false,
+        "_shards": {
+            "total":5,
+            "successful":5,
+            "failed":0
+        },
+        "hits": {
+            "total":21,
+            "max_score":0.14913967,
+            "hits": [{
+                "_index":"data_project_info",
+                "_type":"jbossorg_project_info",
+                "_id":"jbossorg_project_info-jbossmessaging",
+                "_score":0.14913967,
+                "fields": {
+                    "dcp_project":"jbossmessaging",
+                    "dcp_project_name":"JBoss Messaging"
+                }
+            },
+            {
+                "_index":"data_project_info",
+                "_type":"jbossorg_project_info",
+                "_id":"jbossorg_project_info-shrinkwrap",
+                "_score":0.125,
+                "fields": {
+                    "dcp_project":"shrinkwrap",
+                    "dcp_project_name":"Shrinkwrap"
+                }
+            }]
+        }
+    }]
+}
+
 
 --
 Feed API
