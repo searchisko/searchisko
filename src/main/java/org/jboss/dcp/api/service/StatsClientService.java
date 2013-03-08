@@ -91,29 +91,37 @@ public class StatsClientService extends ElasticsearchClientService {
 			}
 		};
 
-		if (statsConfiguration.isUseSearchCluster()) {
-			client = searchClientService.getClient();
-		} else {
-			Properties settings = SearchUtils.loadProperties("/stats_client_settings.properties");
-
-			if (ClientType.EMBEDDED.equals(appConfigurationService.getAppConfiguration().getClientType())) {
-				node = createEmbeddedNode("stats", settings);
-				client = node.client();
+		if (statsConfiguration.enabled()) {
+			if (statsConfiguration.isUseSearchCluster()) {
+				log.info("Statistics are enabled, search ES cluster is used");
+				client = searchClientService.getClient();
 			} else {
-				Properties transportAddresses = SearchUtils.loadProperties("/stats_client_connections.properties");
-				client = createTransportClient(transportAddresses, settings);
+				Properties settings = SearchUtils.loadProperties("/stats_client_settings.properties");
+				if (ClientType.EMBEDDED.equals(appConfigurationService.getAppConfiguration().getClientType())) {
+					log.info("Statistics are enabled, embedded ES cluster is used");
+					node = createEmbeddedNode("stats", settings);
+					client = node.client();
+				} else {
+					log.info("Statistics are enabled, remote ES cluster is used");
+					Properties transportAddresses = SearchUtils.loadProperties("/stats_client_connections.properties");
+					client = createTransportClient(transportAddresses, settings);
+				}
+				checkHealthOfCluster(client);
 			}
+		} else {
+			log.info("Statistics are dissabled");
 		}
 
-		checkHealthOfCluster(client);
 	}
 
 	@PreDestroy
 	public void destroy() {
-		if (!statsConfiguration.isUseSearchCluster()) {
-			super.destroy();
-		} else {
-			client = null;
+		if (statsConfiguration.enabled()) {
+			if (!statsConfiguration.isUseSearchCluster()) {
+				super.destroy();
+			} else {
+				client = null;
+			}
 		}
 	}
 
@@ -233,6 +241,9 @@ public class StatsClientService extends ElasticsearchClientService {
 	 * @return true if at least one record matching conditions exits
 	 */
 	public boolean checkStatisticsRecordExists(StatsRecordType type, Map<String, Object> conditions) {
+		if (!statsConfiguration.enabled()) {
+			return false;
+		}
 		SearchRequestBuilder srb = new SearchRequestBuilder(client);
 		srb.setIndices(type.getSearchIndexName());
 		srb.setTypes(type.getSearchIndexType());

@@ -58,7 +58,7 @@ public class StatsClientServiceTest {
 		tested.appConfigurationService = acs;
 		tested.log = Logger.getLogger("testlogger");
 
-		tested.statsConfiguration = new StatsConfiguration();
+		tested.statsConfiguration = new StatsConfiguration(true, false);
 
 		try {
 			tested.init();
@@ -97,6 +97,29 @@ public class StatsClientServiceTest {
 	@Test
 	public void init_transport() {
 		// untestable :-(
+	}
+
+	@Test
+	public void init_disabled() throws Exception {
+		// no initialization is performed if statistics are disabled
+		StatsClientService tested = new StatsClientService();
+		tested.log = Logger.getLogger("testlogger");
+		tested.statsConfiguration = new StatsConfiguration(false, true);
+		Client mockClient = Mockito.mock(Client.class);
+		tested.searchClientService = Mockito.mock(SearchClientService.class);
+		Mockito.when(tested.searchClientService.getClient()).thenReturn(mockClient);
+		try {
+			tested.init();
+			Assert.assertNull(tested.node);
+			Assert.assertNull(tested.client);
+			Assert.assertNotNull(tested.statsLogListener);
+		} finally {
+			tested.destroy();
+			Assert.assertNull(tested.node);
+			Assert.assertNull(tested.client);
+			Mockito.verifyZeroInteractions(mockClient);
+			Mockito.verifyZeroInteractions(tested.searchClientService);
+		}
 	}
 
 	@SuppressWarnings("unchecked")
@@ -364,6 +387,7 @@ public class StatsClientServiceTest {
 	@Test
 	public void checkStatisticsRecordExists() {
 		// TODO SEARCH STATS UNITTEST
+		// test case when stats are disabled!
 	}
 
 	@SuppressWarnings("rawtypes")
