@@ -116,7 +116,7 @@ public class SuggestionsRestService extends RestServiceBase {
     protected SearchRequestBuilder getProjectSearchNGramRequestBuilder(SearchRequestBuilder srb, String query, int size) {
         return srb.addFields("dcp_project", "dcp_project_name")
             .setSize(size)
-            .setSearchType(SearchType.QUERY_AND_FETCH)
+            .setSearchType(SearchType.QUERY_THEN_FETCH)
             .setQuery(
                     QueryBuilders.queryString(query)
                             .analyzer("whitespace")
@@ -139,7 +139,7 @@ public class SuggestionsRestService extends RestServiceBase {
     protected SearchRequestBuilder getProjectSearchFuzzyRequestBuilder(SearchRequestBuilder srb, String query, int size) {
         return srb.addFields("dcp_project","dcp_project_name")
                 .setSize(size)
-                .setSearchType(SearchType.QUERY_AND_FETCH)
+                .setSearchType(SearchType.QUERY_THEN_FETCH)
                 .setQuery(
                         QueryBuilders.fuzzyLikeThisQuery("dcp_project_name", "dcp_project_name.ngram")
                                 .analyzer("whitespace")
