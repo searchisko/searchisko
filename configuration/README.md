@@ -24,24 +24,16 @@ given script.
 
 ## Example - OpenShift
 
-1. Zip all bits and copy to OpenShift
+1. Push repo to Openshift
 
-		zip -r init_data.zip  **
-		scp init_data.zip  5da3d60fa1034d1887eb4b8792c1bee2@dcp-jbossorgdev.rhcloud.com:~/app-root/data/initial-configuration/
-
-
-2. Connect to OpenShift and unzip
-
+2. Connect to Openshift Console
+		
 		ssh 5da3d60fa1034d1887eb4b8792c1bee2@dcp-jbossorgdev.rhcloud.com
-		cd app-root/data/initial-configuration/
-		unzip init_data.zip
-		rm init_data.zip
 
 3. Stop EAP and remove all DCP data
 
 		ctl_app stop
 		rm -rf ~/app-root/data/search
-		rm -rf ~/app-root/data/stats
 		
 		mysql dcp;
 		delete from Config; delete from Contributor; delete from Project; delete from Provider;
@@ -50,4 +42,11 @@ given script.
 4. Start EAP and push all init data
 
 		ctl_app start
+		# Wait till app is up - visit main page of DCP
+		cd ~/app-root/repo/configuration
 		./init_all_noriver.sh http://${OPENSHIFT_JBOSSEAP_IP}:8080
+
+5. Start Rivers
+
+		cd ~/app-root/repo/configuration/rivers/
+		./init_rivers.sh

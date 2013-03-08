@@ -60,7 +60,7 @@ pushd data/project/
 popd
 
 pushd data/contributor/
-./init-contributors ${dcpurl} ${username} ${password}
+./init-contributors.sh ${dcpurl} ${username} ${password}
 popd
 
 echo FINISHED!
