@@ -10,8 +10,11 @@ import java.util.UUID;
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
 import javax.ws.rs.GET;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
@@ -26,6 +29,7 @@ import org.jboss.dcp.api.model.QuerySettings;
 import org.jboss.dcp.api.service.SearchService;
 import org.jboss.dcp.api.service.StatsRecordType;
 import org.jboss.dcp.api.util.QuerySettingsParser;
+import org.jboss.dcp.api.util.SearchUtils;
 
 /**
  * Search REST API.
@@ -69,6 +73,28 @@ public class SearchRestService extends RestServiceBase {
 			return createBadFieldDataResponse(e.getMessage());
 		} catch (IndexMissingException e) {
 			return Response.status(Response.Status.NOT_FOUND).build();
+		} catch (Exception e) {
+			return createErrorResponse(e);
+		}
+	}
+
+	@PUT
+	@Path("/{search_result_uuid}/{hit_id}")
+	@GuestAllowed
+	@AccessControlAllowOrigin
+	public Object writeSearchHitUsedStatisticsRecord(@PathParam("search_result_uuid") String uuid,
+			@PathParam("hit_id") String contentId, @QueryParam("session_id") String sessionId) {
+
+		if ((uuid = SearchUtils.trimToNull(uuid)) == null) {
+			return createRequiredFieldResponse("search_result_uuid");
+		}
+		if ((contentId = SearchUtils.trimToNull(contentId)) == null) {
+			return createRequiredFieldResponse("hit_id");
+		}
+		sessionId = SearchUtils.trimToNull(sessionId);
+		try {
+			boolean result = searchService.writeSearchHitUsedStatisticsRecord(uuid, contentId, sessionId);
+			return Response.ok(result ? "statistics record accepted" : "statistics record ignored").build();
 		} catch (Exception e) {
 			return createErrorResponse(e);
 		}

@@ -112,17 +112,31 @@ public abstract class TestUtils {
 	 * Assert passed in object is REST {@link Response} and has given status.
 	 * 
 	 * @param actual object to check
-	 * @param status to check
+	 * @param expectedStatus to check
 	 * @return actual object casted to {@link Response} so other assertions may be performed on it.
 	 */
-	public static Response assertResponseStatus(Object actual, Response.Status status) {
+	public static Response assertResponseStatus(Object actual, Response.Status expectedStatus) {
+		return assertResponseStatus(actual, expectedStatus, null);
+	}
+
+	/**
+	 * Assert passed in object is REST {@link Response} and has given status and string as Entity object.
+	 * 
+	 * @param actual object to check
+	 * @param expectedStatus to check
+	 * @param expectedContent of response
+	 * @return actual object casted to {@link Response} so other assertions may be performed on it.
+	 */
+	public static Response assertResponseStatus(Object actual, Response.Status expectedStatus, String expectedContent) {
 		if (actual == null) {
 			Assert.fail("Result must be response Response object, but is null");
 		}
 		if (!(actual instanceof Response))
 			Assert.fail("Result must be response Response object, but is " + actual.getClass().getName());
 		Response r = (Response) actual;
-		Assert.assertEquals(status.getStatusCode(), r.getStatus());
+		Assert.assertEquals(expectedStatus.getStatusCode(), r.getStatus());
+		if (expectedContent != null)
+			Assert.assertEquals(expectedContent, r.getEntity());
 		return r;
 	}
 

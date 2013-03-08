@@ -32,6 +32,8 @@ import org.jboss.dcp.api.testtools.TestUtils;
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 
 /**
  * Unit test for {@link SearchService}
@@ -1291,6 +1293,80 @@ public class SearchServiceTest {
 		Assert.assertEquals("week", SearchService.selectActivityDatesHistogramInterval(qs));
 		filters.setActivityDateTo(1000000000l + 1000L * 60L * 60L * 24l * 366l + 100l);
 		Assert.assertEquals("month", SearchService.selectActivityDatesHistogramInterval(qs));
+	}
+
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	@Test
+	public void writeSearchHitUsedStatisticsRecord() {
+		SearchService tested = new SearchService();
+		tested.statsClientService = Mockito.mock(StatsClientService.class);
+		tested.log = Logger.getLogger("test logger");
+
+		// case - record not accepted
+		{
+			Mockito.reset(tested.statsClientService);
+			Mockito.when(
+					tested.statsClientService.checkStatisticsRecordExists(Mockito.eq(StatsRecordType.SEARCH), Mockito.anyMap()))
+					.thenAnswer(new Answer<Boolean>() {
+
+						@Override
+						public Boolean answer(InvocationOnMock invocation) throws Throwable {
+							Map<String, String> conditions = (Map<String, String>) invocation.getArguments()[1];
+							Assert.assertEquals(2, conditions.size());
+							Assert.assertEquals("my-uuid", conditions.get(StatsClientService.FIELD_RESPONSE_UUID));
+							Assert.assertEquals("my_hit_id", conditions.get(StatsClientService.FIELD_HITS_ID));
+							return false;
+						}
+
+					});
+			Assert.assertFalse(tested.writeSearchHitUsedStatisticsRecord("my-uuid", "my_hit_id", null));
+			Mockito.verify(tested.statsClientService).checkStatisticsRecordExists(Mockito.eq(StatsRecordType.SEARCH),
+					Mockito.anyMap());
+			Mockito.verifyNoMoreInteractions(tested.statsClientService);
+		}
+
+		// case - record accepted
+		{
+			Mockito.reset(tested.statsClientService);
+			Mockito.when(
+					tested.statsClientService.checkStatisticsRecordExists(Mockito.eq(StatsRecordType.SEARCH), Mockito.anyMap()))
+					.thenAnswer(new Answer<Boolean>() {
+
+						@Override
+						public Boolean answer(InvocationOnMock invocation) throws Throwable {
+							Map<String, String> conditions = (Map<String, String>) invocation.getArguments()[1];
+							Assert.assertEquals(2, conditions.size());
+							Assert.assertEquals("my-uuid", conditions.get(StatsClientService.FIELD_RESPONSE_UUID));
+							Assert.assertEquals("my_hit_id", conditions.get(StatsClientService.FIELD_HITS_ID));
+							return true;
+						}
+
+					});
+			Mockito.doAnswer(new Answer() {
+
+				@Override
+				public Object answer(InvocationOnMock invocation) throws Throwable {
+					Map<String, String> conditions = (Map<String, String>) invocation.getArguments()[2];
+					Assert.assertEquals(3, conditions.size());
+					Assert.assertEquals("my-uuid", conditions.get(StatsClientService.FIELD_RESPONSE_UUID));
+					Assert.assertEquals("my_hit_id", conditions.get(StatsClientService.FIELD_HITS_ID));
+					Assert.assertEquals("my-session-id", conditions.get("session"));
+					Long ts = (Long) invocation.getArguments()[1];
+					long cts = System.currentTimeMillis();
+					Assert.assertTrue("passed in timestamp is invalid, must be nearly current", (cts - 2000) <= ts && ts <= cts);
+					return null;
+				}
+			}).when(tested.statsClientService)
+					.writeStatisticsRecord(Mockito.eq(StatsRecordType.SEARCH_HIT_USED), Mockito.anyLong(), Mockito.anyMap());
+
+			Assert.assertTrue(tested.writeSearchHitUsedStatisticsRecord("my-uuid", "my_hit_id", "my-session-id"));
+
+			Mockito.verify(tested.statsClientService).checkStatisticsRecordExists(Mockito.eq(StatsRecordType.SEARCH),
+					Mockito.anyMap());
+			Mockito.verify(tested.statsClientService).writeStatisticsRecord(Mockito.eq(StatsRecordType.SEARCH_HIT_USED),
+					Mockito.anyLong(), Mockito.anyMap());
+			Mockito.verifyNoMoreInteractions(tested.statsClientService);
+		}
 	}
 
 }

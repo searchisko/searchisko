@@ -1,0 +1,10 @@
+{
+    "search_hit_used" : {
+        "properties" : {
+            "type"          : {"type" : "string", "analyzer" : "keyword"},
+            "response_uuid" : {"type" : "string", "analyzer" : "keyword"},
+            "hits_id"       : {"type" : "string", "analyzer" : "keyword"},
+            "session"       : {"type" : "string", "analyzer" : "keyword"}
+        }
+    }
+}

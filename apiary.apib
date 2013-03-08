@@ -219,8 +219,24 @@ Search contributions based on input parameters
      "max_score":null,
      "hits":[
        {
-         ...
-       },{
+			    "_index": "data_jbossorg_jira",
+			    "_type": "jbossorg_jira_issue",
+			    "_id": "jbossorg_jira_issue-AEROGEAR-2",
+			    "_score": 1,
+			    "fields": {
+			        "dcp_last_activity_date": "2012-01-10T15:29:02.000Z",
+			        "dcp_project": "aerogear",
+			        "dcp_project_name": "Aerogear",
+			        "dcp_description": "At the bottom of the current site is a feed of aerogear tweets. This needs to be expanded to include multiple sources. The RichFaces project does this, but I think they needed to use a good feed aggregator to get a single stream.",
+			        "dcp_title": "AEROGEAR-2 - Project page needs a consolidated feed of various content, not just tweets",
+			        "dcp_url_view": "https://issues.jboss.org/browse/AEROGEAR-2",
+			        "dcp_contributors": [
+			            "Jay Balunas <tech4j@gmail.com>",
+			            "Wesley Hales <wesleyhales@gmail.com>"
+			        ],
+			        "dcp_type": "issue"
+			    }
+			 },{
          ...
        }
      ]
@@ -261,6 +277,26 @@ GET /rest/search?{query,query_highlight,sortBy,from,size,facet,field,content_pro
      "hits":[]
    }
 }
+
+
+Write statistics record about hit returned in search response was "useful" for
+user, eg. user clicked URL related with given hit or viewed hit detail. 
+These statistics records may be analyzed later to improve fulltext search engine 
+configuration to bring better search results for users. 
+
+##### Request parameters
+
+* `search_result_uuid` - value of `uuid` field from search response this statistics record is for 
+* `hit_id` - unique identifier of search hit document (`hits/hits[]/_id` field 
+in response) from given search response which was "useful" for user (eg. he clicked it 
+or viewed detail). Validation is performed during DCP side record write to ensure this 
+identifier was part of given search response. 
+* `session_id` - optional, identifier of user's frontend session to allow more precise user behavior analyze
+
+PUT /rest/search/{search_result_uuid}/{hit_id}?{session_id}
+< 200
+< Access-Control-Allow-Origin: *
+
 
 --
 Suggestions API - Query

@@ -32,7 +32,7 @@ import org.elasticsearch.common.xcontent.XContentFactory;
  * @author Libor Krzyzanek
  * @author Vlastimil Elias (velias at redhat dot com)
  * @author Lukas Vlcek
- *
+ * 
  */
 public class RestServiceBase {
 
@@ -52,10 +52,10 @@ public class RestServiceBase {
 	}
 
 	/**
-	 * Create response based on elastic get response
+	 * Create JAX-RS response based on elastic get response.
 	 * 
-	 * @param response
-	 * @return
+	 * @param response to process
+	 * @return source from elastic search response
 	 * @throws IOException
 	 */
 	public Map<String, Object> createResponse(final GetResponse response) {
@@ -85,27 +85,27 @@ public class RestServiceBase {
 		};
 	}
 
-    /**
-     * Create response based on elastic multi search response (does not add UUID for now)
-     *
-     * @param response
-     * @param responseUuid
-     * @return
-     */
-    public StreamingOutput createResponse(final MultiSearchResponse response, final String responseUuid) {
-        return new StreamingOutput() {
-            @Override
-            public void write(OutputStream output) throws IOException, WebApplicationException {
-                XContentBuilder builder = XContentFactory.jsonBuilder(output);
-                builder.startObject();
-                if (responseUuid != null)
-                    builder.field("uuid", responseUuid);
-                response.toXContent(builder, ToXContent.EMPTY_PARAMS);
-                builder.endObject();
-                builder.close();
-            }
-        };
-    }
+	/**
+	 * Create response based on elastic multi search response (does not add UUID for now)
+	 * 
+	 * @param response
+	 * @param responseUuid
+	 * @return
+	 */
+	public StreamingOutput createResponse(final MultiSearchResponse response, final String responseUuid) {
+		return new StreamingOutput() {
+			@Override
+			public void write(OutputStream output) throws IOException, WebApplicationException {
+				XContentBuilder builder = XContentFactory.jsonBuilder(output);
+				builder.startObject();
+				if (responseUuid != null)
+					builder.field("uuid", responseUuid);
+				response.toXContent(builder, ToXContent.EMPTY_PARAMS);
+				builder.endObject();
+				builder.close();
+			}
+		};
+	}
 
 	public Response createRequiredFieldResponse(String fieldName) {
 		log.log(Level.FINE, "Required parameter {0} not set", fieldName);

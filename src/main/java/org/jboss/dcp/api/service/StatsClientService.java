@@ -14,6 +14,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 import javax.ejb.Singleton;
 import javax.ejb.Startup;
 import javax.enterprise.context.ApplicationScoped;
@@ -24,12 +25,17 @@ import org.elasticsearch.ElasticSearchException;
 import org.elasticsearch.action.ActionListener;
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.index.IndexResponse;
+import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.search.ShardSearchFailure;
 import org.elasticsearch.client.Requests;
 import org.elasticsearch.common.joda.time.format.DateTimeFormatter;
 import org.elasticsearch.common.joda.time.format.ISODateTimeFormat;
 import org.elasticsearch.common.unit.TimeValue;
+import org.elasticsearch.index.query.AndFilterBuilder;
+import org.elasticsearch.index.query.FilteredQueryBuilder;
+import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.index.query.TermsFilterBuilder;
 import org.elasticsearch.search.SearchHit;
 import org.jboss.dcp.api.model.AppConfiguration.ClientType;
 import org.jboss.dcp.api.model.QuerySettings;
@@ -49,14 +55,20 @@ import org.jboss.dcp.api.util.SearchUtils;
 @Startup
 public class StatsClientService extends ElasticsearchClientService {
 
-	protected static final String INDEX_NAME = "stats";
-	protected static final String INDEX_TYPE = "stats";
+	public static final String FIELD_STATUS = "status";
+	public static final String FIELD_DATE = "date";
+	public static final String FIELD_TYPE = "type";
+	public static final String FIELD_HITS_ID = "hits_id";
+	public static final String FIELD_RESPONSE_UUID = "response_uuid";
 
 	@Inject
 	protected StatsConfiguration statsConfiguration;
 
 	@Inject
 	protected TimeoutConfiguration timeout;
+
+	@Inject
+	protected SearchClientService searchClientService;
 
 	protected ActionListener<IndexResponse> statsLogListener;
 
@@ -78,17 +90,31 @@ public class StatsClientService extends ElasticsearchClientService {
 				}
 			}
 		};
-		Properties settings = SearchUtils.loadProperties("/stats_client_settings.properties");
 
-		if (ClientType.EMBEDDED.equals(appConfigurationService.getAppConfiguration().getClientType())) {
-			node = createEmbeddedNode("stats", settings);
-			client = node.client();
+		if (statsConfiguration.isUseSearchCluster()) {
+			client = searchClientService.getClient();
 		} else {
-			Properties transportAddresses = SearchUtils.loadProperties("/stats_client_connections.properties");
-			client = createTransportClient(transportAddresses, settings);
+			Properties settings = SearchUtils.loadProperties("/stats_client_settings.properties");
+
+			if (ClientType.EMBEDDED.equals(appConfigurationService.getAppConfiguration().getClientType())) {
+				node = createEmbeddedNode("stats", settings);
+				client = node.client();
+			} else {
+				Properties transportAddresses = SearchUtils.loadProperties("/stats_client_connections.properties");
+				client = createTransportClient(transportAddresses, settings);
+			}
 		}
 
 		checkHealthOfCluster(client);
+	}
+
+	@PreDestroy
+	public void destroy() {
+		if (!statsConfiguration.isUseSearchCluster()) {
+			super.destroy();
+		} else {
+			client = null;
+		}
 	}
 
 	/**
@@ -100,7 +126,7 @@ public class StatsClientService extends ElasticsearchClientService {
 	 * @param query search query performed
 	 * @param filters used for search - optional
 	 */
-	public void writeStatistics(StatsRecordType type, ElasticSearchException ex, long dateInMillis,
+	public void writeStatisticsRecord(StatsRecordType type, ElasticSearchException ex, long dateInMillis,
 			QuerySettings querySettings) {
 
 		if (!statsConfiguration.enabled()) {
@@ -109,23 +135,14 @@ public class StatsClientService extends ElasticsearchClientService {
 
 		Map<String, Object> source = new HashMap<String, Object>();
 
-		source.put("type", type.name().toLowerCase());
-		source.put("date", dateInMillis);
 		source.put("exception", true);
 		source.put("exception_detailed_message", ex.getDetailedMessage());
 		source.put("exception_most_specific_cause", ex.getMostSpecificCause());
-		source.put("status", ex.status());
+		source.put(FIELD_STATUS, ex.status());
 
 		addQuery(source, querySettings);
 
-		try {
-			IndexRequest ir = Requests.indexRequest().index(INDEX_NAME).type(INDEX_TYPE)
-					.timeout(TimeValue.timeValueSeconds(timeout.stats())).source(source);
-			// async call, if it fails -> just log
-			client.index(ir, statsLogListener);
-		} catch (Throwable e) {
-			log.log(Level.FINEST, "Error writing into stats server: " + e.getMessage(), e);
-		}
+		writeStatisticsRecord(type, dateInMillis, source);
 	}
 
 	/**
@@ -137,7 +154,7 @@ public class StatsClientService extends ElasticsearchClientService {
 	 * @param dateInMillis timestamp when search was performed
 	 * @param querySettings performed
 	 */
-	public void writeStatistics(StatsRecordType type, String responseUuid, SearchResponse resp, long dateInMillis,
+	public void writeStatisticsRecord(StatsRecordType type, String responseUuid, SearchResponse resp, long dateInMillis,
 			QuerySettings querySettings) {
 
 		if (!statsConfiguration.enabled()) {
@@ -150,16 +167,14 @@ public class StatsClientService extends ElasticsearchClientService {
 
 		Map<String, Object> source = new HashMap<String, Object>();
 
-		source.put("type", type.name().toLowerCase());
-		source.put("date", DATE_TIME_FORMATTER_UTC.print(dateInMillis));
-		source.put("response_uuid", responseUuid);
+		source.put(FIELD_RESPONSE_UUID, responseUuid);
 		source.put("took", resp.tookInMillis());
 		source.put("timed_out", resp.timedOut());
 		source.put("total_hits", resp.hits().totalHits());
 		source.put("max_score", resp.hits().maxScore());
 		source.put("shards_successful", resp.successfulShards());
 		source.put("shards_failed", resp.failedShards());
-		source.put("status", resp.status().name());
+		source.put(FIELD_STATUS, resp.status().name());
 		if (resp.failedShards() > 0) {
 			for (ShardSearchFailure ssf : resp.getShardFailures()) {
 				source.put("shard_failure", ssf.reason());
@@ -174,17 +189,70 @@ public class StatsClientService extends ElasticsearchClientService {
 				hitIds.add(hit.getId());
 			}
 			source.put("returned_hits", hitIds.size());
-			source.put("hits_id", hitIds);
+			source.put(FIELD_HITS_ID, hitIds);
 
 		}
 
+		writeStatisticsRecord(type, dateInMillis, source);
+	}
+
+	/**
+	 * Write ES statistics record - general code.
+	 * 
+	 * @param type of record
+	 * @param dateInMillis timestamp when operation was performed
+	 * @param source fields to be written into statistics record.
+	 */
+	public void writeStatisticsRecord(StatsRecordType type, long dateInMillis, Map<String, Object> source) {
+
+		if (!statsConfiguration.enabled()) {
+			return;
+		}
+
+		if (source == null)
+			source = new HashMap<String, Object>();
+
+		source.put(FIELD_TYPE, type.getSearchIndexedValue());
+		source.put(FIELD_DATE, DATE_TIME_FORMATTER_UTC.print(dateInMillis));
 		try {
-			IndexRequest ir = Requests.indexRequest().index(INDEX_NAME).type(INDEX_TYPE)
+			IndexRequest ir = Requests.indexRequest().index(type.getSearchIndexName()).type(type.getSearchIndexType())
 					.timeout(TimeValue.timeValueSeconds(timeout.stats())).source(source);
 			// async call, if it fails -> just log
 			client.index(ir, statsLogListener);
 		} catch (Throwable e) {
 			log.log(Level.FINEST, "Error writing into stats server: " + e.getMessage(), e);
+		}
+	}
+
+	/**
+	 * Check if some statistics record exists for specified conditions.
+	 * 
+	 * @param type of record we are looking for
+	 * @param conditions for lookup. Key is a name of field to filter over, Value is a value to filter for using term
+	 *          condition.
+	 * @return true if at least one record matching conditions exits
+	 */
+	public boolean checkStatisticsRecordExists(StatsRecordType type, Map<String, Object> conditions) {
+		SearchRequestBuilder srb = new SearchRequestBuilder(client);
+		srb.setIndices(type.getSearchIndexName());
+		srb.setTypes(type.getSearchIndexType());
+		AndFilterBuilder fb = new AndFilterBuilder();
+		fb.add(new TermsFilterBuilder(FIELD_TYPE, type.getSearchIndexedValue()));
+		if (conditions != null) {
+			for (String fieldName : conditions.keySet()) {
+				fb.add(new TermsFilterBuilder(fieldName, conditions.get(fieldName)));
+			}
+		}
+
+		srb.setQuery(new FilteredQueryBuilder(QueryBuilders.matchAllQuery(), fb));
+		srb.addField("_id");
+
+		try {
+			SearchResponse searchResponse = srb.execute().actionGet();
+
+			return searchResponse.getHits().getTotalHits() > 0;
+		} catch (org.elasticsearch.indices.IndexMissingException e) {
+			return false;
 		}
 	}
 

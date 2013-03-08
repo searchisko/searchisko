@@ -12,6 +12,33 @@ package org.jboss.dcp.api.service;
  */
 public enum StatsRecordType {
 
-	SEARCH, FEED;
+	SEARCH, FEED, SEARCH_HIT_USED;
+
+	/**
+	 * Get value representing this type to be stored into search index.
+	 * 
+	 * @return value for index
+	 */
+	public String getSearchIndexedValue() {
+		return name().toLowerCase();
+	}
+
+	/**
+	 * Return name of ElasticSearch index used to store this statistics type.
+	 * 
+	 * @return name of ElasticSearch index used to store this statistics type.
+	 */
+	public String getSearchIndexName() {
+		return "stats_api_" + getSearchIndexedValue();
+	}
+
+	/**
+	 * Get name of ElasticSearch type used to store this statistics type.
+	 * 
+	 * @return name of ElasticSearch type used to store this statistics type.
+	 */
+	public String getSearchIndexType() {
+		return getSearchIndexedValue();
+	}
 
 }

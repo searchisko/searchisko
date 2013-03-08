@@ -41,10 +41,7 @@ public class SearchRestServiceTest {
 
 	@Test
 	public void search() throws IOException {
-		SearchRestService tested = new SearchRestService();
-		tested.querySettingsParser = Mockito.mock(QuerySettingsParser.class);
-		tested.searchService = Mockito.mock(SearchService.class);
-		tested.log = Logger.getLogger("test logger");
+		SearchRestService tested = getTested();
 
 		// case - incorrect input
 		{
@@ -122,4 +119,69 @@ public class SearchRestServiceTest {
 			TestUtils.assertResponseStatus(response, Status.INTERNAL_SERVER_ERROR);
 		}
 	}
+
+	@Test
+	public void writeSearchHitUsedStatisticsRecord() {
+		SearchRestService tested = getTested();
+
+		// case - incorrect input
+		{
+			TestUtils.assertResponseStatus(tested.writeSearchHitUsedStatisticsRecord(null, "aa", null), Status.BAD_REQUEST);
+			TestUtils.assertResponseStatus(tested.writeSearchHitUsedStatisticsRecord("", "aa", null), Status.BAD_REQUEST);
+			TestUtils.assertResponseStatus(tested.writeSearchHitUsedStatisticsRecord(" ", "aa", null), Status.BAD_REQUEST);
+			TestUtils.assertResponseStatus(tested.writeSearchHitUsedStatisticsRecord("sss", null, null), Status.BAD_REQUEST);
+			TestUtils.assertResponseStatus(tested.writeSearchHitUsedStatisticsRecord("sss", "", null), Status.BAD_REQUEST);
+			TestUtils.assertResponseStatus(tested.writeSearchHitUsedStatisticsRecord("sss", "  ", null), Status.BAD_REQUEST);
+			Mockito.verifyZeroInteractions(tested.searchService);
+		}
+
+		// case - input params trimmed
+		{
+			Mockito.reset(tested.searchService);
+			Mockito.when(tested.searchService.writeSearchHitUsedStatisticsRecord("aaa", "bb", null)).thenReturn(true);
+			TestUtils.assertResponseStatus(tested.writeSearchHitUsedStatisticsRecord(" aaa ", " bb  ", "  "), Status.OK);
+			Mockito.verify(tested.searchService).writeSearchHitUsedStatisticsRecord("aaa", "bb", null);
+			Mockito.verifyNoMoreInteractions(tested.searchService);
+		}
+
+		// case - record accepted
+		{
+			Mockito.reset(tested.searchService);
+			Mockito.when(tested.searchService.writeSearchHitUsedStatisticsRecord("aaa", "bb", null)).thenReturn(true);
+			TestUtils.assertResponseStatus(tested.writeSearchHitUsedStatisticsRecord("aaa", "bb", null), Status.OK,
+					"statistics record accepted");
+			Mockito.verify(tested.searchService).writeSearchHitUsedStatisticsRecord("aaa", "bb", null);
+			Mockito.verifyNoMoreInteractions(tested.searchService);
+		}
+
+		// case - record denied
+		{
+			Mockito.reset(tested.searchService);
+			Mockito.when(tested.searchService.writeSearchHitUsedStatisticsRecord("aaa", "bb", "jj")).thenReturn(false);
+			TestUtils.assertResponseStatus(tested.writeSearchHitUsedStatisticsRecord("aaa", "bb", "jj"), Status.OK,
+					"statistics record ignored");
+			Mockito.verify(tested.searchService).writeSearchHitUsedStatisticsRecord("aaa", "bb", "jj");
+			Mockito.verifyNoMoreInteractions(tested.searchService);
+		}
+
+		// case - exception from business service
+		{
+			Mockito.reset(tested.searchService);
+			Mockito.when(tested.searchService.writeSearchHitUsedStatisticsRecord("aaa", "bb", null)).thenThrow(
+					new RuntimeException("exception"));
+			TestUtils.assertResponseStatus(tested.writeSearchHitUsedStatisticsRecord("aaa", "bb", null),
+					Status.INTERNAL_SERVER_ERROR);
+			Mockito.verify(tested.searchService).writeSearchHitUsedStatisticsRecord("aaa", "bb", null);
+			Mockito.verifyNoMoreInteractions(tested.searchService);
+		}
+	}
+
+	private SearchRestService getTested() {
+		SearchRestService tested = new SearchRestService();
+		tested.querySettingsParser = Mockito.mock(QuerySettingsParser.class);
+		tested.searchService = Mockito.mock(SearchService.class);
+		tested.log = Logger.getLogger("test logger");
+		return tested;
+	}
+
 }

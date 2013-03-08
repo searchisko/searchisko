@@ -8,6 +8,7 @@ package org.jboss.dcp.api.service;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -45,9 +46,9 @@ import org.jboss.dcp.api.DcpContentObjectFields;
 import org.jboss.dcp.api.cache.IndexNamesCache;
 import org.jboss.dcp.api.model.FacetValue;
 import org.jboss.dcp.api.model.QuerySettings;
-import org.jboss.dcp.api.model.TimeoutConfiguration;
 import org.jboss.dcp.api.model.QuerySettings.Filters;
 import org.jboss.dcp.api.model.SortByValue;
+import org.jboss.dcp.api.model.TimeoutConfiguration;
 
 /**
  * Search business logic service.
@@ -113,11 +114,11 @@ public class SearchService {
 
 			final SearchResponse searchResponse = srb.execute().actionGet();
 
-			statsClientService.writeStatistics(statsRecordType, responseUuid, searchResponse, System.currentTimeMillis(),
-					querySettings);
+			statsClientService.writeStatisticsRecord(statsRecordType, responseUuid, searchResponse,
+					System.currentTimeMillis(), querySettings);
 			return searchResponse;
 		} catch (ElasticSearchException e) {
-			statsClientService.writeStatistics(statsRecordType, e, System.currentTimeMillis(), querySettings);
+			statsClientService.writeStatisticsRecord(statsRecordType, e, System.currentTimeMillis(), querySettings);
 			throw e;
 		}
 	}
@@ -488,6 +489,29 @@ public class SearchService {
 					size = RESPONSE_MAX_SIZE;
 				srb.setSize(size);
 			}
+		}
+	}
+
+	/**
+	 * Write info about used search hit into DCP statistics. Validation is performed inside of this method to ensure given
+	 * content was returned as hit of given search response.
+	 * 
+	 * @param uuid of search response hit was returned in
+	 * @param contentId identifier of content used
+	 * @param sessionId optional session id
+	 * @return true if validation was successful so record was written
+	 */
+	public boolean writeSearchHitUsedStatisticsRecord(String uuid, String contentId, String sessionId) {
+		Map<String, Object> conditions = new HashMap<String, Object>();
+		conditions.put(StatsClientService.FIELD_RESPONSE_UUID, uuid);
+		conditions.put(StatsClientService.FIELD_HITS_ID, contentId);
+		if (statsClientService.checkStatisticsRecordExists(StatsRecordType.SEARCH, conditions)) {
+			if (sessionId != null)
+				conditions.put("session", sessionId);
+			statsClientService.writeStatisticsRecord(StatsRecordType.SEARCH_HIT_USED, System.currentTimeMillis(), conditions);
+			return true;
+		} else {
+			return false;
 		}
 	}
 }

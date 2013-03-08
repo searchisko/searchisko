@@ -7,7 +7,6 @@ package org.jboss.dcp.api.model;
 
 import java.io.IOException;
 
-import org.jboss.dcp.api.model.StatsConfiguration;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -18,14 +17,15 @@ import org.junit.Test;
  */
 public class StatsConfiguationTest {
 
-  @Test
-  public void init() throws IOException {
-    StatsConfiguration tested = new StatsConfiguration();
-    Assert.assertFalse(tested.enabled());
+	@Test
+	public void init() throws IOException {
+		StatsConfiguration tested = new StatsConfiguration();
+		Assert.assertFalse(tested.enabled());
 
-    tested.init();
+		tested.init();
 
-    Assert.assertTrue(tested.enabled());
-  }
+		Assert.assertTrue(tested.enabled());
+		Assert.assertTrue(tested.isUseSearchCluster());
+	}
 
 }

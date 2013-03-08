@@ -29,7 +29,9 @@ import org.jboss.dcp.api.util.SearchUtils;
 @Startup
 public class StatsConfiguration {
 
-	private boolean enabled;
+	protected boolean enabled;
+
+	protected boolean useSearchCluster;
 
 	/**
 	 * Default constructor.
@@ -48,14 +50,30 @@ public class StatsConfiguration {
 		this.enabled = enabled;
 	}
 
+	/**
+	 * Constructor.
+	 * 
+	 * @param enabled to set
+	 */
+	public StatsConfiguration(boolean enabled, boolean useSearchCluster) {
+		super();
+		this.enabled = enabled;
+		this.useSearchCluster = useSearchCluster;
+	}
+
 	public boolean enabled() {
 		return this.enabled;
+	}
+
+	public boolean isUseSearchCluster() {
+		return useSearchCluster;
 	}
 
 	@PostConstruct
 	public void init() throws IOException {
 		Properties prop = SearchUtils.loadProperties("/stats_clinet_configuration.properties");
 		enabled = Boolean.parseBoolean(prop.getProperty("stats.enabled", "true"));
+		useSearchCluster = Boolean.parseBoolean(prop.getProperty("stats.useSearchCluster", "true"));
 	}
 
 }
