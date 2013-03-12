@@ -5,7 +5,7 @@
             "fields" : [ "dcp_project_name", "dcp_project_name.ngram" ],
             "like_text" : "JBoss",
             "max_query_terms" : 10,
-            "analyzer" : "whitespace"
+            "analyzer" : "whitespace_lowercase"
         }
     },
     "fields" : [ "dcp_project", "dcp_project_name" ],

@@ -119,7 +119,7 @@ public class SuggestionsRestService extends RestServiceBase {
             .setSearchType(SearchType.QUERY_THEN_FETCH)
             .setQuery(
                     QueryBuilders.queryString(query)
-                            .analyzer("whitespace")
+                            .analyzer("whitespace_lowercase")
                             .field("dcp_project_name")
                             .field("dcp_project_name.edgengram")
                             .field("dcp_project_name.ngram")
@@ -142,7 +142,7 @@ public class SuggestionsRestService extends RestServiceBase {
                 .setSearchType(SearchType.QUERY_THEN_FETCH)
                 .setQuery(
                         QueryBuilders.fuzzyLikeThisQuery("dcp_project_name", "dcp_project_name.ngram")
-                                .analyzer("whitespace")
+                                .analyzer("whitespace_lowercase")
                                 .maxQueryTerms(10)
                                 .likeText(query)
                 )

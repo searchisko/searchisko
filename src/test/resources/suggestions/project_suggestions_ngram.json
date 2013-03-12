@@ -4,7 +4,7 @@
         "query_string" : {
             "query" : "JBoss",
             "fields" : [ "dcp_project_name", "dcp_project_name.edgengram", "dcp_project_name.ngram" ],
-            "analyzer" : "whitespace"
+            "analyzer" : "whitespace_lowercase"
         }
     },
     "fields" : [ "dcp_project", "dcp_project_name" ],
