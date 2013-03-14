@@ -11,8 +11,10 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
@@ -31,7 +33,7 @@ import org.jboss.dcp.api.util.SearchUtils;
 
 /**
  * Hibernate JPA implementation of {@link ContentPersistenceService}. We use raw JDBC here because we need to
- * dynamically create and use tables for distinct dcp_content_types<br>
+ * dynamically create and use tables for distinct dcp_content_types which is not supported in JPA.<br>
  * It's session bean to work with transactions.
  * 
  * @author Vlastimil Elias (velias at redhat dot com)
@@ -359,6 +361,90 @@ public class JpaHibernateContentPersistenceService implements ContentPersistence
 				ps.close();
 			} catch (Exception e) {
 				// nothing
+			}
+		}
+	}
+
+	protected int LIST_PAGE_SIZE = 1000;
+
+	protected static class JpaListRequest implements ListRequest {
+
+		List<Map<String, Object>> content;
+		String dcpContentType;
+		int beginIndex = 0;
+
+		protected JpaListRequest(String dcpContentType, int beginIndex, List<Map<String, Object>> content) {
+			super();
+			this.dcpContentType = dcpContentType;
+			this.beginIndex = beginIndex;
+			this.content = content;
+		}
+
+		@Override
+		public boolean hasContent() {
+			return content != null && !content.isEmpty();
+		}
+
+		@Override
+		public List<Map<String, Object>> content() {
+			return content;
+		}
+
+	}
+
+	@Override
+	public ListRequest listRequestInit(String dcpContentType) {
+		return listRequestImpl(dcpContentType, 0);
+	}
+
+	@Override
+	public ListRequest listRequestNext(ListRequest previous) {
+		JpaListRequest lr = (JpaListRequest) previous;
+		return listRequestImpl(lr.dcpContentType, lr.beginIndex + LIST_PAGE_SIZE);
+	}
+
+	protected ListRequest listRequestImpl(String dcpContentType, int beginIndex) {
+		new ArrayList<Map<String, Object>>();
+		List<Map<String, Object>> content = null;
+		String tableName = getTableName(dcpContentType);
+		if (checkTableExists(tableName)) {
+			content = doDatabaseReturningWork(new ListWork(tableName, beginIndex, LIST_PAGE_SIZE));
+		}
+		return new JpaListRequest(dcpContentType, beginIndex, content);
+	}
+
+	protected static class ListWork implements ReturningWork<List<Map<String, Object>>> {
+		String tableName;
+		int beginIndex;
+		int listPageSize;
+
+		private ListWork(String tableName, int beginIndex, int listPageSize) {
+			super();
+			this.tableName = tableName;
+			this.beginIndex = beginIndex;
+			this.listPageSize = listPageSize;
+		}
+
+		@Override
+		public List<Map<String, Object>> execute(Connection connection) throws SQLException {
+			PreparedStatement ps = null;
+			ResultSet rs = null;
+			String id = null;
+			try {
+				ps = connection.prepareStatement("select id,json_data from " + tableName + " order by id" + " limit "
+						+ listPageSize + " OFFSET " + beginIndex);
+				rs = ps.executeQuery();
+				List<Map<String, Object>> content = new ArrayList<Map<String, Object>>();
+				while (rs != null && rs.next()) {
+					id = rs.getString(1);
+					content.add(SearchUtils.convertToJsonMap(rs.getString(2)));
+				}
+				return content;
+			} catch (IOException e) {
+				throw new SQLException("Persisted JSON data are not valid for DB table '" + tableName + "' and id '" + id
+						+ "': " + e.getMessage());
+			} finally {
+				closeJDBCStuff(ps, rs);
 			}
 		}
 	}

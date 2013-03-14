@@ -14,6 +14,7 @@ import org.elasticsearch.action.admin.cluster.health.ClusterHealthRequest;
 import org.elasticsearch.action.admin.indices.create.CreateIndexRequest;
 import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest;
 import org.elasticsearch.action.admin.indices.flush.FlushRequest;
+import org.elasticsearch.action.admin.indices.mapping.put.PutMappingRequest;
 import org.elasticsearch.action.get.GetRequest;
 import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.index.IndexRequest;
@@ -162,6 +163,18 @@ public abstract class ESRealClientTestBase {
 	public void indexCreate(String indexName) {
 		client.admin().indices().create(new CreateIndexRequest(indexName)).actionGet();
 		client.admin().cluster().health((new ClusterHealthRequest(indexName)).waitForYellowStatus()).actionGet();
+	}
+
+	/**
+	 * Create mapping inside index in inmemory client.
+	 * 
+	 * @param indexName to add mapping into
+	 * @param indexType to add mapping for
+	 * @param mappingSource mapping definition
+	 */
+	public void indexMappingCreate(String indexName, String indexType, String mappingSource) {
+		client.admin().indices().putMapping(new PutMappingRequest(indexName).type(indexType).source(mappingSource))
+				.actionGet();
 	}
 
 	/**

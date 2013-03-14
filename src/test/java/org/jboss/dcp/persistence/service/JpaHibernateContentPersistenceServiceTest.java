@@ -20,6 +20,7 @@ import org.hibernate.jdbc.Work;
 import org.jboss.dcp.api.DcpContentObjectFields;
 import org.jboss.dcp.api.testtools.TestUtils;
 import org.jboss.dcp.api.util.SearchUtils;
+import org.jboss.dcp.persistence.service.ContentPersistenceService.ListRequest;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -153,6 +154,70 @@ public class JpaHibernateContentPersistenceServiceTest extends JpaTestBase {
 			ex.printStackTrace();
 			Assert.fail("Exception during testPersistence");
 		}
+	}
+
+	@Test
+	public void listRequest() {
+		JpaHibernateContentPersistenceService tested = getTested();
+		tested.LIST_PAGE_SIZE = 3;
+		try {
+			String dcpContentType = "testtypelist";
+
+			// case - no table exists for type
+			{
+				ListRequest req = tested.listRequestInit(dcpContentType);
+				Assert.assertFalse(req.hasContent());
+			}
+
+			em.getTransaction().begin();
+			for (int i = 7; i >= 1; i--)
+				addContent(tested, dcpContentType, "aaa-" + i);
+			em.getTransaction().commit();
+
+			// case - data handling test
+			{
+				ListRequest req = tested.listRequestInit(dcpContentType);
+				Assert.assertTrue(req.hasContent());
+				Assert.assertNotNull(req.content());
+				Assert.assertEquals(3, req.content().size());
+				Assert.assertEquals("aaa-1", req.content().get(0).get(DcpContentObjectFields.DCP_ID));
+				Assert.assertEquals("aaa-2", req.content().get(1).get(DcpContentObjectFields.DCP_ID));
+				Assert.assertEquals("aaa-3", req.content().get(2).get(DcpContentObjectFields.DCP_ID));
+
+				req = tested.listRequestNext(req);
+				Assert.assertTrue(req.hasContent());
+				Assert.assertNotNull(req.content());
+				Assert.assertEquals(3, req.content().size());
+				Assert.assertEquals("aaa-4", req.content().get(0).get(DcpContentObjectFields.DCP_ID));
+				Assert.assertEquals("aaa-5", req.content().get(1).get(DcpContentObjectFields.DCP_ID));
+				Assert.assertEquals("aaa-6", req.content().get(2).get(DcpContentObjectFields.DCP_ID));
+
+				req = tested.listRequestNext(req);
+				Assert.assertTrue(req.hasContent());
+				Assert.assertNotNull(req.content());
+				Assert.assertEquals(1, req.content().size());
+				Assert.assertEquals("aaa-7", req.content().get(0).get(DcpContentObjectFields.DCP_ID));
+
+				req = tested.listRequestNext(req);
+				Assert.assertFalse(req.hasContent());
+
+			}
+
+		} catch (Exception ex) {
+			if (em.getTransaction().isActive())
+				em.getTransaction().rollback();
+			ex.printStackTrace();
+			Assert.fail("Exception during testPersistence");
+		}
+
+	}
+
+	private void addContent(JpaHibernateContentPersistenceService tested, String dcpContentType, String id) {
+		Map<String, Object> content = new HashMap<String, Object>();
+		content.put(DcpContentObjectFields.DCP_ID, id);
+		content.put(DcpContentObjectFields.DCP_CONTENT_TYPE, dcpContentType);
+		content.put(DcpContentObjectFields.DCP_DESCRIPTION, "value " + id);
+		tested.store(id, dcpContentType, content);
 	}
 
 	private void assertRowCount(JpaHibernateContentPersistenceService tested, String dcpContentType, int expectedCount) {

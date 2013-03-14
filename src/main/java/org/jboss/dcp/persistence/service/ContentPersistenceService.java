@@ -5,6 +5,7 @@
  */
 package org.jboss.dcp.persistence.service;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -13,9 +14,6 @@ import java.util.Map;
  * @author Vlastimil Elias (velias at redhat dot com)
  */
 public interface ContentPersistenceService {
-
-	// TODO PERSISTENCE - add operation to list content objects with some filters - dcp_content_type,
-	// dcp_updated from and to
 
 	// TODO PERSISTENCE - add management operation which allows to get counts of records for all stored dcp_content_types
 
@@ -45,5 +43,41 @@ public interface ContentPersistenceService {
 	 * @param dcpContentType dcp_content_type of content object
 	 */
 	public void delete(String id, String dcpContentType);
+
+	/**
+	 * Init list request for whole content of given dcpContentType. Call this first time, then call
+	 * {@link #listRequestNext(ListRequest)} while {@link ListRequest#hasContent()} returns true.
+	 * 
+	 * @param dcpContentType to init request for
+	 * @return request object
+	 */
+	public ListRequest listRequestInit(String dcpContentType);
+
+	/**
+	 * Get subsequent iterations for list request.
+	 * 
+	 * @param previous list request status
+	 * @return current list request status
+	 */
+	public ListRequest listRequestNext(ListRequest previous);
+
+	public static interface ListRequest {
+
+		/**
+		 * Return true if request has some content to process, false otherwise.
+		 * 
+		 * @return true if there is some content to process. False if there is not any other content so next call to
+		 *         {@link ContentPersistenceService#listRequestNext(ListRequest)} has no meaning.
+		 */
+		public boolean hasContent();
+
+		/**
+		 * Get content to be processed in this iteration.
+		 * 
+		 * @return content to process.
+		 */
+		public List<Map<String, Object>> content();
+
+	}
 
 }

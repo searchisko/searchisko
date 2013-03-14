@@ -53,6 +53,7 @@ public class ProviderService implements EntityService {
 	public static final String INDEX = "index";
 	/** Configuration Key for dcp_type setting **/
 	public static final String DCP_TYPE = "dcp_type";
+	public static final String INPUT_PREPROCESSORS = "input_preprocessors";
 	/** Configuration Key for Elastic Search indices **/
 	public static final String SEARCH_INDICES = "search_indices";
 
@@ -316,7 +317,7 @@ public class ProviderService implements EntityService {
 	@SuppressWarnings("unchecked")
 	public static List<Map<String, Object>> extractPreprocessors(Map<String, Object> typeDef, String typeName) {
 		try {
-			return (List<Map<String, Object>>) typeDef.get("input_preprocessors");
+			return (List<Map<String, Object>>) typeDef.get(INPUT_PREPROCESSORS);
 		} catch (ClassCastException e) {
 			throw new SettingsException("Incorrect configuration of 'input_preprocessors' for dcp_provider_type=" + typeName
 					+ ". Contact administrators please.");

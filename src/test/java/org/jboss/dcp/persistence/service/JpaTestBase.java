@@ -13,6 +13,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
 
+import org.jboss.dcp.api.testtools.ESRealClientTestBase;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -22,7 +23,7 @@ import org.junit.Before;
  * 
  * @author Vlastimil Elias (velias at redhat dot com)
  */
-public class JpaTestBase {
+public class JpaTestBase extends ESRealClientTestBase {
 
 	protected Logger logger = Logger.getLogger(JpaTestBase.class.getName());
 
