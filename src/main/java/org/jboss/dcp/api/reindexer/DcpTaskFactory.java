@@ -33,6 +33,8 @@ import org.jboss.dcp.persistence.service.ContentPersistenceService;
 @Singleton
 public class DcpTaskFactory implements TaskFactory {
 
+	public static final String CFG_DCP_CONTENT_TYPE = "dcp_content_type";
+
 	@Inject
 	protected ContentPersistenceService contentPersistenceService;
 
@@ -58,18 +60,21 @@ public class DcpTaskFactory implements TaskFactory {
 		case REINDEX_FROM_PERSISTENCE:
 			// TODO REINDEX validate dcp_content_type exists and is persisted
 			return new ReindexFromPersistenceTask(contentPersistenceService, providerService, searchClientService,
-					getMandatoryConfigString(taskConfig, "dcp_content_type"));
+					getMandatoryConfigString(taskConfig, CFG_DCP_CONTENT_TYPE));
 		}
 		throw new UnsupportedTaskException(taskType);
 	}
 
 	private String getMandatoryConfigString(Map<String, Object> taskConfig, String propertyName)
 			throws TaskConfigurationException {
+		if (taskConfig == null)
+			throw new TaskConfigurationException(propertyName + " configuration property must be defined");
+
 		Object val = taskConfig.get(propertyName);
 
 		if (val == null || val.toString().trim().length() == 0)
 			throw new TaskConfigurationException(propertyName + " configuration property must be defined");
 
-		return null;
+		return val.toString().trim();
 	}
 }
