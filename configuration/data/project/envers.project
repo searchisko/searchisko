@@ -2,7 +2,7 @@
   "code": "envers",
   "name": "Envers",
   "type_specific_code" : {
-    "jbossorg_blog": ["envers"],
+    "jbossorg_blog": ["adamw"],
     "jbossorg_jira": ["ENVERS"],
     "jbossorg_mailing_list": "",
     "jbossorg_project_info": "envers"

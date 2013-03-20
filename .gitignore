@@ -4,8 +4,4 @@ target
 .classpath
 .idea
 *.iml
-data/
 !.settings/.jsdtscope
-/persistance
-/search
-/stats

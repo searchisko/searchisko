@@ -19,6 +19,10 @@
         "edgengram" : {
         	"tokenizer" : "standard",
         	"filter" : ["standard","lowercase","edgengram"]
+        },
+        "whitespace_lowercase" : {
+            "tokenizer" : "whitespace",
+            "filter" : ["lowercase"]
         }
   	  }
   	}
