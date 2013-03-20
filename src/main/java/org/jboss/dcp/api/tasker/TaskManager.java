@@ -25,6 +25,7 @@ public class TaskManager {
 
 	protected TaskFactory taskFactory;
 	protected TaskPersister taskPersister;
+	protected TaskRunner taskRunner;
 
 	/**
 	 * Create task manager.
@@ -43,17 +44,26 @@ public class TaskManager {
 	/**
 	 * Start tasks execution in this manager.
 	 */
-	public void startTasksExecution() {
-		log.info("Starting TaskManager for cluster node " + nodeId + ". Task types supported: " + listSupportedTaskTypes());
-		// TODO TASKS start execution
+	public synchronized void startTasksExecution() {
+		if (taskRunner != null) {
+			log.fine("Tasks execution started already.");
+			return;
+		}
+		log.info("Starting tasks execution for cluster node " + nodeId + ". Task types supported: "
+				+ listSupportedTaskTypes());
+		taskRunner = new TaskRunner(nodeId, taskFactory, taskPersister);
+		taskRunner.start();
 	}
 
 	/**
 	 * Stop tasks execution in this manager.
 	 */
-	public void stopTasksExecution() {
-		// TODO TASKS stop execution
-		log.info("Stopped TaskManager for cluster node " + nodeId);
+	public synchronized void stopTasksExecution() {
+		log.info("Stopping tasks execution for cluster node " + nodeId);
+		if (taskRunner != null) {
+			taskRunner.interrupt();
+			taskRunner = null;
+		}
 	}
 
 	/**
@@ -80,8 +90,7 @@ public class TaskManager {
 		// validation if task may be performed
 		taskFactory.createTask(taskType, taskConfig);
 
-		// TODO TASKS persist task
-		String id = null;
+		String id = taskPersister.createTask(taskType, taskConfig);
 
 		// TODO TASKS notify tasks runtime there is new task to perform
 
@@ -92,10 +101,10 @@ public class TaskManager {
 	 * Get info about task.
 	 * 
 	 * @param id identifier of task to get status info for
+	 * @return info about task. null if task doesn't exists
 	 */
-	public TaskStatusInfo getTaskStatus(String id) {
-		// TODO TASKS implement get status
-		return null;
+	public TaskStatusInfo getTaskStatusInfo(String id) {
+		return taskPersister.getTaskStatusInfo(id);
 	}
 
 	/**
@@ -105,8 +114,11 @@ public class TaskManager {
 	 * @return true if task is canceled, false if not (because doesn't exist or is finished already)
 	 */
 	public boolean cancelTask(String id) {
-		// TODO TASKS implement get status
-		return false;
+		boolean ret = taskPersister.markTaskToBeCancelled(id);
+		if (ret) {
+			// TODO TASKS notify tasks runtime there is someting to cancell
+		}
+		return ret;
 	}
 
 	/**
@@ -119,8 +131,7 @@ public class TaskManager {
 	 * @return list of tasks matching filters.
 	 */
 	public List<TaskStatusInfo> listTasks(String taskTypeFilter, List<TaskStatus> taskStatusFilter, int from, int size) {
-		// TODO TASKS implement list tasks
-		return null;
+		return taskPersister.listTasks(taskTypeFilter, taskStatusFilter, from, size);
 	}
 
 }

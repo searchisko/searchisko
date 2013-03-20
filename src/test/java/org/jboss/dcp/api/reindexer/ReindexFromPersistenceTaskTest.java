@@ -34,7 +34,7 @@ public class ReindexFromPersistenceTaskTest extends ESRealClientTestBase {
 
 	@SuppressWarnings("unchecked")
 	@Test
-	public void run_ok() {
+	public void performTask_ok() throws Exception {
 
 		try {
 			ReindexFromPersistenceTask tested = new ReindexFromPersistenceTask();
@@ -51,7 +51,7 @@ public class ReindexFromPersistenceTaskTest extends ESRealClientTestBase {
 			// case - put it into empty index
 			{
 				tested.contentPersistenceService = getContentPersistenceServiceMock(false);
-				tested.run();
+				tested.performTask();
 				indexFlush(indexName);
 				Assert.assertNotNull(indexGetDocument(indexName, typeName, "tt-1"));
 				Assert.assertNotNull(indexGetDocument(indexName, typeName, "tt-2"));
@@ -71,7 +71,7 @@ public class ReindexFromPersistenceTaskTest extends ESRealClientTestBase {
 				Mockito.reset(tested.providerService);
 				configProviderServiceMock(tested, preprocessorsDef);
 				tested.contentPersistenceService = getContentPersistenceServiceMock(true);
-				tested.run();
+				tested.performTask();
 				indexFlush(indexName);
 				Assert.assertNotNull(indexGetDocument(indexName, typeName, "tt-1"));
 				Assert.assertNotNull(indexGetDocument(indexName, typeName, "tt-2"));
@@ -85,6 +85,30 @@ public class ReindexFromPersistenceTaskTest extends ESRealClientTestBase {
 				Mockito.verify(tested.providerService, Mockito.times(6)).runPreprocessors(Mockito.eq(dcpContentType),
 						Mockito.eq(preprocessorsDef), Mockito.anyMap());
 			}
+		} finally {
+			finalizeESClientForUnitTest();
+		}
+	}
+
+	@Test
+	public void performTask_errorhandling() throws Exception {
+
+		try {
+			ReindexFromPersistenceTask tested = new ReindexFromPersistenceTask();
+			tested.searchClientService = Mockito.mock(SearchClientService.class);
+			Mockito.when(tested.searchClientService.getClient()).thenReturn(prepareESClientForUnitTest());
+			tested.dcpContentType = dcpContentType;
+			tested.providerService = Mockito.mock(ProviderService.class);
+			List<Map<String, Object>> preprocessorsDef = new ArrayList<Map<String, Object>>();
+
+			configProviderServiceMock(tested, preprocessorsDef);
+
+			indexCreate(indexName);
+			indexMappingCreate(indexName, typeName, "{ \"" + typeName + "\" : {\"_timestamp\" : { \"enabled\" : true }}}");
+			{
+				// TODO TASK init test
+			}
+
 		} finally {
 			finalizeESClientForUnitTest();
 		}

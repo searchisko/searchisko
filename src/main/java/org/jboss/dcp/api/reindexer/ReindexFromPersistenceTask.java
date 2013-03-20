@@ -28,7 +28,7 @@ import org.jboss.elasticsearch.tools.content.InvalidDataException;
  * 
  * @author Vlastimil Elias (velias at redhat dot com)
  */
-public class ReindexFromPersistenceTask implements Task {
+public class ReindexFromPersistenceTask extends Task {
 
 	protected ContentPersistenceService contentPersistenceService;
 
@@ -61,11 +61,10 @@ public class ReindexFromPersistenceTask implements Task {
 	}
 
 	@Override
-	public void run() {
+	public void performTask() throws Exception {
 		Map<String, Object> typeDef = providerService.findContentType(dcpContentType);
 		if (typeDef == null) {
-			// TODO REINDEX mark task as unsuccessful and finish it
-			return;
+			throw new Exception("Configuration not found for dcp_content_type " + dcpContentType);
 		}
 
 		try {
@@ -79,21 +78,26 @@ public class ReindexFromPersistenceTask implements Task {
 				while (lr.hasContent()) {
 					BulkRequestBuilder brb = client.prepareBulk();
 					for (Map<String, Object> content : lr.content()) {
-						// TODO REINDEX support for task cancellation
+						if (isCanceled())
+							return;
+						String id = (String) content.get(DcpContentObjectFields.DCP_ID);
 						try {
 							// Run preprocessors to normalize mapped fields
 							providerService.runPreprocessors(dcpContentType,
 									ProviderService.extractPreprocessors(typeDef, dcpContentType), content);
 						} catch (InvalidDataException e) {
-							// TODO REINDEX write error to the task log but continue processing
+							writeTaskLog("Data error from preprocessors execution so document " + id + " is skipped: "
+									+ e.getMessage());
+							continue;
 						}
 						// TODO EXTERNAL_TAGS - add external tags for this document into dcp_tags field
 
 						// Push to search subsystem
-						brb.add(client.prepareIndex(indexName, indexType, (String) content.get(DcpContentObjectFields.DCP_ID))
-								.setSource(content));
+						brb.add(client.prepareIndex(indexName, indexType, id).setSource(content));
 					}
 					brb.execute().actionGet();
+					if (isCanceled())
+						return;
 					lr = contentPersistenceService.listRequestNext(lr);
 				}
 				// delete old entries from index which are not in persistence store anymore (so they was not updated during this
@@ -104,9 +108,7 @@ public class ReindexFromPersistenceTask implements Task {
 						.setQuery(QueryBuilders.filteredQuery(QueryBuilders.matchAllQuery(), filterTime)).execute().actionGet();
 			}
 		} catch (SettingsException e) {
-			// TODO REINDEX mark task as unsuccessful
-		} catch (Exception e) {
-			// TODO REINDEX mark task as failed
+			throw new Exception(e.getMessage());
 		}
 	}
 }

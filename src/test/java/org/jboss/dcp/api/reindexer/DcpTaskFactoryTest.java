@@ -63,6 +63,14 @@ public class DcpTaskFactoryTest {
 		} catch (TaskConfigurationException e) {
 			// OK
 		}
+		try {
+			Map<String, Object> config = new HashMap<String, Object>();
+			config.put(DcpTaskFactory.CFG_DCP_CONTENT_TYPE, "  ");
+			tested.createTask(DcpTaskTypes.REINDEX_FROM_PERSISTENCE.getTaskType(), config);
+			Assert.fail("TaskConfigurationException expected");
+		} catch (TaskConfigurationException e) {
+			// OK
+		}
 		{
 			Map<String, Object> config = new HashMap<String, Object>();
 			config.put(DcpTaskFactory.CFG_DCP_CONTENT_TYPE, "mytype");
