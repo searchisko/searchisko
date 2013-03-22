@@ -34,7 +34,7 @@ public class TaskManager {
 	 * @param taskFactory to be used
 	 * @param taskPersister to be used
 	 */
-	private TaskManager(String nodeId, TaskFactory taskFactory, TaskPersister taskPersister) {
+	public TaskManager(String nodeId, TaskFactory taskFactory, TaskPersister taskPersister) {
 		super();
 		this.nodeId = nodeId;
 		this.taskFactory = taskFactory;

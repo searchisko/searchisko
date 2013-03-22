@@ -6,6 +6,7 @@
 package org.jboss.dcp.api.tasker;
 
 import java.io.InterruptedIOException;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -68,7 +69,12 @@ public abstract class Task extends Thread {
 		} catch (InterruptedIOException e) {
 			writeStatus(TaskStatus.FAILOVER, "Task execution was interrupted");
 		} catch (RuntimeException e) {
-			writeStatus(TaskStatus.FAILOVER, e.getMessage());
+			String msg = e.getMessage();
+			if (e instanceof NullPointerException) {
+				msg = "Task finished due NullPointerException, see log file for stacktrace";
+				log.log(Level.SEVERE, "Task finished due NullPointerException", e);
+			}
+			writeStatus(TaskStatus.FAILOVER, msg);
 		} catch (Exception e) {
 			writeStatus(TaskStatus.FINISHED_ERROR, e.getMessage());
 		} finally {
