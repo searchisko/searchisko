@@ -5,6 +5,7 @@
  */
 package org.jboss.dcp.api.tasker;
 
+import java.io.InterruptedIOException;
 import java.util.logging.Logger;
 
 /**
@@ -12,27 +13,36 @@ import java.util.logging.Logger;
  * 
  * @author Vlastimil Elias (velias at redhat dot com)
  */
-public abstract class Task implements Runnable {
+public abstract class Task extends Thread {
 
-	private String id;
+	protected String taskId;
 
 	private Logger log = null;
 
-	private TaskExecutionContext context;
+	protected TaskExecutionContext context;
 
-	private boolean canceled;
+	private transient boolean canceled;
 
 	public Task() {
 		log = Logger.getLogger(getClass().getName());
 	}
 
+	/**
+	 * Called from {@link TaskManager} before task execution is started.
+	 * 
+	 * @param taskId id of task
+	 * @param context callback
+	 */
 	public void setExecutionContext(String taskId, TaskExecutionContext context) {
-		this.id = taskId;
+		this.taskId = taskId;
 		this.context = context;
+		setName("Task thread for task.id=" + taskId);
+		setDaemon(false);
 	}
 
 	/**
-	 * Implement task here.
+	 * Implement your long running task here. Do not forget to check {@link #isCanceledOrInterrupted()} and return from
+	 * method immediately.
 	 * 
 	 * @throws RuntimeException runtime exception is treated as system error, so task is marked as
 	 *           {@link TaskStatus#FAILOVER} and run again later
@@ -43,21 +53,31 @@ public abstract class Task implements Runnable {
 
 	@Override
 	public void run() {
-		log.fine("Starting task " + id);
+		log.fine("Starting task " + taskId);
 		try {
 			performTask();
-			writeStatus(TaskStatus.FINISHED_OK, null);
+			if (isInterrupted()) {
+				writeStatus(TaskStatus.FAILOVER, "Task execution was interrupted");
+			} else if (canceled) {
+				writeStatus(TaskStatus.CANCELED, null);
+			} else {
+				writeStatus(TaskStatus.FINISHED_OK, null);
+			}
+		} catch (InterruptedException e) {
+			writeStatus(TaskStatus.FAILOVER, "Task execution was interrupted");
+		} catch (InterruptedIOException e) {
+			writeStatus(TaskStatus.FAILOVER, "Task execution was interrupted");
 		} catch (RuntimeException e) {
 			writeStatus(TaskStatus.FAILOVER, e.getMessage());
 		} catch (Exception e) {
 			writeStatus(TaskStatus.FINISHED_ERROR, e.getMessage());
 		} finally {
-			log.fine("Finished task " + id);
+			log.fine("Finished task " + taskId);
 		}
 	}
 
 	private void writeStatus(TaskStatus status, String message) {
-		context.changeTaskStatus(id, status, message);
+		context.changeTaskStatus(taskId, status, message);
 	}
 
 	/**
@@ -66,13 +86,26 @@ public abstract class Task implements Runnable {
 	 * @param message
 	 */
 	protected void writeTaskLog(String message) {
-		context.writeTaskLog(id, message);
+		context.writeTaskLog(taskId, message);
 	}
 
-	public boolean isCanceled() {
-		return canceled;
+	/**
+	 * Check if task is cancelled or interrupted. Use this check in {@link #performTask()} implementation to finish long
+	 * running task if this method returns true!
+	 * 
+	 * @return true if task interruption/cancel is requested.
+	 */
+	public boolean isCanceledOrInterrupted() {
+		return canceled || isInterrupted();
 	}
 
+	/**
+	 * Used from {@link TaskManager} to request cancellation for this task. You have to use
+	 * {@link #isCanceledOrInterrupted()} in your {@link #performTask()} implementation to allow correct task
+	 * cancellation!
+	 * 
+	 * @param canceled
+	 */
 	public void setCanceled(boolean canceled) {
 		this.canceled = canceled;
 	}

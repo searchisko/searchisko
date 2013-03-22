@@ -92,7 +92,7 @@ public class TaskManager {
 
 		String id = taskPersister.createTask(taskType, taskConfig);
 
-		// TODO TASKS notify tasks runtime there is new task to perform
+		taskRunner.notifyNewTaskAvailableForRun();
 
 		return id;
 	}
@@ -115,8 +115,8 @@ public class TaskManager {
 	 */
 	public boolean cancelTask(String id) {
 		boolean ret = taskPersister.markTaskToBeCancelled(id);
-		if (ret) {
-			// TODO TASKS notify tasks runtime there is someting to cancell
+		if (ret && taskRunner != null) {
+			taskRunner.cancelTask(id);
 		}
 		return ret;
 	}

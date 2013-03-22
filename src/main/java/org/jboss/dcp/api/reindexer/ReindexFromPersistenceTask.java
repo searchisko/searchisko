@@ -78,7 +78,7 @@ public class ReindexFromPersistenceTask extends Task {
 				while (lr.hasContent()) {
 					BulkRequestBuilder brb = client.prepareBulk();
 					for (Map<String, Object> content : lr.content()) {
-						if (isCanceled())
+						if (isCanceledOrInterrupted())
 							return;
 						String id = (String) content.get(DcpContentObjectFields.DCP_ID);
 						try {
@@ -96,7 +96,7 @@ public class ReindexFromPersistenceTask extends Task {
 						brb.add(client.prepareIndex(indexName, indexType, id).setSource(content));
 					}
 					brb.execute().actionGet();
-					if (isCanceled())
+					if (isCanceledOrInterrupted())
 						return;
 					lr = contentPersistenceService.listRequestNext(lr);
 				}

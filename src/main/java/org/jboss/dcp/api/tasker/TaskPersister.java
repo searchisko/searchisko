@@ -67,4 +67,13 @@ public interface TaskPersister {
 	 */
 	public void writeTaskLog(String id, String message);
 
+	/**
+	 * Get task to be stared. Persister must switch status of task to {@link TaskStatus#RUNNING} before return it.
+	 * Persister must handle cluster concurrency also to prevent task starting on more nodes.
+	 * 
+	 * @param nodeId to start task on
+	 * @return task to be started or null if no any available
+	 */
+	public TaskStatusInfo getTaskToRun(String nodeId);
+
 }
