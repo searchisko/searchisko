@@ -116,12 +116,10 @@ public class StatsClientService extends ElasticsearchClientService {
 
 	@PreDestroy
 	public void destroy() {
-		if (statsConfiguration.enabled()) {
-			if (!statsConfiguration.isUseSearchCluster()) {
-				super.destroy();
-			} else {
-				client = null;
-			}
+		if (node != null) {
+			super.destroy();
+		} else {
+			client = null;
 		}
 	}
 
