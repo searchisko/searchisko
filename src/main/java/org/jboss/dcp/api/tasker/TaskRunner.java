@@ -77,7 +77,7 @@ public class TaskRunner extends Thread {
 				TaskStatusInfo tsi = taskPersister.getTaskToRun(nodeId);
 				if (tsi == null)
 					return;
-				Task t = taskFactory.createTask(tsi.taskType, tsi.taskConfig);
+				Task t = taskFactory.createTask(tsi.taskType, tsi.getTaskConfig());
 				t.setExecutionContext(tsi.id, taskExecutionContextInstance);
 				runningTasks.put(tsi.id, t);
 				t.start();

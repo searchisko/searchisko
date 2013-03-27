@@ -42,7 +42,6 @@ import javax.persistence.PersistenceContext;
 @Singleton
 public class Resources {
 
-	@SuppressWarnings("unused")
 	@Produces
 	@PersistenceContext
 	private static EntityManager em;

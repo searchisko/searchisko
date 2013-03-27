@@ -10,6 +10,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.lang.reflect.Method;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -35,6 +36,17 @@ import org.junit.Assert;
  * @author Vlastimil Elias (velias at redhat dot com)
  */
 public abstract class TestUtils {
+
+	/**
+	 * Assert date is current.
+	 * 
+	 * @param actualDate to assert
+	 */
+	public static void assertCurrentDate(Date actualDate) {
+		Assert.assertNotNull(actualDate);
+		long l = System.currentTimeMillis() - actualDate.getTime();
+		Assert.assertTrue(l >= 0 && l <= 1000);
+	}
 
 	/**
 	 * Assert list contains expected values.
@@ -227,6 +239,22 @@ public abstract class TestUtils {
 		JsonNode actualRootNode = getMapper().readValue(SearchUtils.convertJsonMapToString(actualJsonString),
 				JsonNode.class);
 		JsonNode expectedRootNode = getMapper().readValue(expectedJsonString, JsonNode.class);
+		Assert.assertEquals(expectedRootNode, actualRootNode);
+	}
+
+	/**
+	 * Assert passed in JSON content is same as JSON content of given file loaded from classpath.
+	 * 
+	 * @param expectedJsonString expected JSON content to assert for equality
+	 * @param actualJsonString JSON content to assert for equality
+	 * @throws IOException
+	 */
+	public static void assertJsonContent(Map<String, Object> expectedJsonString, Map<String, Object> actualJsonString)
+			throws IOException {
+		JsonNode actualRootNode = getMapper().readValue(SearchUtils.convertJsonMapToString(actualJsonString),
+				JsonNode.class);
+		JsonNode expectedRootNode = getMapper().readValue(SearchUtils.convertJsonMapToString(expectedJsonString),
+				JsonNode.class);
 		Assert.assertEquals(expectedRootNode, actualRootNode);
 	}
 

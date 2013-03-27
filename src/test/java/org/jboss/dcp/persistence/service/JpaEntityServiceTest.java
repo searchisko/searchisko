@@ -8,6 +8,7 @@ package org.jboss.dcp.persistence.service;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.jboss.dcp.api.testtools.TestUtils;
@@ -58,7 +59,7 @@ public class JpaEntityServiceTest extends JpaTestBase {
 			em.getTransaction().commit();
 		} catch (Exception ex) {
 			em.getTransaction().rollback();
-			ex.printStackTrace();
+			logger.log(Level.SEVERE, ex.getMessage(), ex);
 			Assert.fail("Exception during testPersistence");
 		}
 

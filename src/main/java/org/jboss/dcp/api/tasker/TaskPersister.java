@@ -52,13 +52,15 @@ public interface TaskPersister {
 	public boolean markTaskToBeCancelled(String id);
 
 	/**
-	 * Change task status. This method MUST NOT allow bad task status transitions! Just must ignore them.
+	 * Change task status. This method MUST NOT allow bad task status transitions! Just must ignore them with false
+	 * returned.
 	 * 
 	 * @param id of task
 	 * @param taskStatus to be set
 	 * @param message optional message to be written into task log
+	 * @return true if status was changed
 	 */
-	public void changeTaskStatus(String id, TaskStatus taskStatus, String message);
+	public boolean changeTaskStatus(String id, TaskStatus taskStatus, String message);
 
 	/**
 	 * Write new row into task log.

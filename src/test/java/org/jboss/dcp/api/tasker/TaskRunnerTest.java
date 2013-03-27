@@ -6,8 +6,6 @@
 package org.jboss.dcp.api.tasker;
 
 import java.lang.Thread.State;
-import java.util.HashMap;
-import java.util.Map;
 
 import junit.framework.Assert;
 
@@ -78,6 +76,7 @@ public class TaskRunnerTest {
 		return ret;
 	}
 
+	@SuppressWarnings("unchecked")
 	@Test
 	public void startTasks() throws UnsupportedTaskException, TaskConfigurationException {
 		TaskRunner tested = getTested();
@@ -100,13 +99,14 @@ public class TaskRunnerTest {
 
 		});
 
-		Mockito.when(tested.taskFactory.createTask(TASK_TYPE_TEST, taskConfigMock)).thenAnswer(new Answer<Task>() {
+		Mockito.when(tested.taskFactory.createTask(Mockito.eq(TASK_TYPE_TEST), Mockito.anyMap())).thenAnswer(
+				new Answer<Task>() {
 
-			@Override
-			public Task answer(InvocationOnMock invocation) throws Throwable {
-				return createTaskMock();
-			}
-		});
+					@Override
+					public Task answer(InvocationOnMock invocation) throws Throwable {
+						return createTaskMock();
+					}
+				});
 
 		tested.startTasks();
 
@@ -117,7 +117,7 @@ public class TaskRunnerTest {
 			Assert.assertTrue(task.getState() != State.NEW);
 		}
 		Mockito.verify(tested.taskPersister, Mockito.times(2)).getTaskToRun(TESTNODEID);
-		Mockito.verify(tested.taskFactory, Mockito.times(2)).createTask(TASK_TYPE_TEST, taskConfigMock);
+		Mockito.verify(tested.taskFactory, Mockito.times(2)).createTask(Mockito.eq(TASK_TYPE_TEST), Mockito.anyMap());
 
 		// case - all running slot full so nothing started
 		Mockito.reset(tested.taskFactory, tested.taskPersister);
@@ -135,14 +135,12 @@ public class TaskRunnerTest {
 	}
 
 	int ctc = 1;
-	private Map<String, Object> taskConfigMock = new HashMap<String, Object>();
 
 	private TaskStatusInfo createTaskStatusInfoStartTest() {
 		TaskStatusInfo ti = new TaskStatusInfo();
 		ti.id = "t" + ctc;
 		ctc++;
 		ti.taskType = TASK_TYPE_TEST;
-		ti.taskConfig = taskConfigMock;
 		return ti;
 	}
 
