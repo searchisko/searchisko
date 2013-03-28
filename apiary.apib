@@ -1112,3 +1112,83 @@ Delete configuration document with given `id`.
 DELETE /rest/config/{id}
 < 200
 
+
+--
+Management API - content reindexation tasks
+
+This part of the API is used by 'DCP administrators' to operate long running reindexation tasks.
+These task are used to refres search indices in case of contributor or project mapping change. 
+Special task type is used to put content from peristent store into search indices also. 
+--
+
+List all task types available in DCP. Task types are used in some other calls.
+
+GET /rest/tasks/type
+< 200
+< Content-Type: application/json
+[  
+  "reindex_from_persistence"
+]
+
+
+List information about all tasks in system. More recent tasks on top.
+
+##### Request parameters
+
+* `from` index of the first task info returned in the results array. The default value is 0 (start from begin of list).
+* `size` of returned results array. Default is 10.
+* `taskType` optional filter over task type
+* `taskStatus` optional filter over task status, multiple values may be used. Allowed values `new`, `running`, `failover`, `canceled`, `finished_ok`, `finished_error`
+
+
+GET /rest/tasks/task{?taskType,taskStatus,from,size}
+< 200
+< Content-Type: application/json
+[
+  {
+    "id": "egde9g8d9fg8d9fg",
+    "taskType" : "reindex_from_persistence",
+    "taskStatus" : "NEW",
+    "taskCreatedAt" : "2013-03-27 12:24:35"
+  }
+]
+
+Get information about execution of task with given identifier.
+
+GET /rest/tasks/task/{taskId}
+< 200
+< Content-Type: application/json
+{
+  "id": "egde9g8d9fg8d9fg",
+  "taskType" : "reindex_from_persistence",
+  "taskStatus" : "FINISHED_OK",
+  "taskCreatedAt" : "2013-03-27 12:24:35",
+  "lastRunStartedAt" : "2013-03-27 12:25:05",
+  "lastRunFinishedAt" : "2013-03-27 12:27:47",
+  "runCount" : 1,
+  "processingLog" : ""
+}
+
+Create new task of given task type to be executed. 
+
+##### Request content
+Optional JSON with task configuration document. 
+TODO configurations for distinct task types. 
+
+##### Response content
+The response contains a JSON structure with `id` of created task.
+
+POST /rest/tasks/task/{taskType}
+> Accept: application/json
+{
+  "cfg_param_1" : "cfg value 1"
+}
+< 200
+< Content-Type: application/json
+{
+  "id":"egde9g8d9fg8d9fg"
+}
+
+Cancel execution of task with given `id`.
+DELETE /rest/tasks/task/{id}
+< 200

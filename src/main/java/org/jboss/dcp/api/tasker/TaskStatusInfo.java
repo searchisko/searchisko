@@ -15,7 +15,9 @@ import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.Id;
 import javax.validation.constraints.NotNull;
+import javax.xml.bind.annotation.XmlRootElement;
 
+import org.codehaus.jackson.annotate.JsonIgnore;
 import org.jboss.dcp.api.util.SearchUtils;
 
 /**
@@ -24,6 +26,7 @@ import org.jboss.dcp.api.util.SearchUtils;
  * @author Vlastimil Elias (velias at redhat dot com)
  */
 @Entity
+@XmlRootElement
 public class TaskStatusInfo {
 
 	@Id
@@ -128,6 +131,7 @@ public class TaskStatusInfo {
 		this.taskType = taskType;
 	}
 
+	@JsonIgnore
 	public String getTaskConfigSerialized() {
 		return taskConfigSerialized;
 	}
@@ -198,6 +202,14 @@ public class TaskStatusInfo {
 
 	public void setCancelRequsted(boolean cancelRequsted) {
 		this.cancelRequsted = cancelRequsted;
+	}
+
+	@Override
+	public String toString() {
+		return "TaskStatusInfo [id=" + id + ", taskType=" + taskType + ", taskStatus=" + taskStatus
+				+ ", taskConfigSerialized=" + taskConfigSerialized + ", taskCreatedAt=" + taskCreatedAt + ", lastRunStartedAt="
+				+ lastRunStartedAt + ", runCount=" + runCount + ", lastRunFinishedAt=" + lastRunFinishedAt
+				+ ", executionNodeId=" + executionNodeId + ", cancelRequsted=" + cancelRequsted + "]";
 	}
 
 }

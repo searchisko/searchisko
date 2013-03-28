@@ -32,4 +32,14 @@ public enum TaskStatus {
 	 */
 	FINISHED_ERROR;
 
+	public static TaskStatus fromString(String ts) {
+		if (ts != null) {
+			for (TaskStatus t : TaskStatus.values()) {
+				if (ts.equalsIgnoreCase(t.name()))
+					return t;
+			}
+		}
+		return null;
+	}
+
 }

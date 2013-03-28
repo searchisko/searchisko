@@ -47,8 +47,10 @@ public class TaskRunner extends Thread {
 
 	@Override
 	public void run() {
-		log.info("Started tasks execution for cluster node " + nodeId);
 		try {
+			// wait a moment before first task is started so whole app can initialize
+			Thread.sleep(10l * 1000l);
+			log.info("Started tasks execution for cluster node " + nodeId);
 			while (!isInterrupted()) {
 				try {
 					handleCancelRequests();
@@ -158,8 +160,11 @@ public class TaskRunner extends Thread {
 	 * Notify this runner new task is available, so it can start it immediately if there is some room for it.
 	 */
 	public void notifyNewTaskAvailableForRun() {
-		if (runningTasks.size() < maxRunningTasks)
-			this.notifyAll();
+		if (runningTasks.size() < maxRunningTasks) {
+			synchronized (this) {
+				this.notifyAll();
+			}
+		}
 	}
 
 	protected class TaskExecutionContextImpl implements TaskExecutionContext {

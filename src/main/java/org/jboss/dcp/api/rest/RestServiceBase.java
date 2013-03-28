@@ -7,6 +7,7 @@ package org.jboss.dcp.api.rest;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -60,6 +61,18 @@ public class RestServiceBase {
 	 */
 	public Map<String, Object> createResponse(final GetResponse response) {
 		return response.getSource();
+	}
+
+	/**
+	 * Create response structure with id field only.
+	 * 
+	 * @param id value for id field
+	 * @return response with id field
+	 */
+	protected Map<String, Object> createResponseWithId(String id) {
+		Map<String, Object> result = new HashMap<String, Object>();
+		result.put("id", id);
+		return result;
 	}
 
 	/**

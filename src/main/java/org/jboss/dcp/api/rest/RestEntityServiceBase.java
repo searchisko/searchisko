@@ -5,7 +5,6 @@
  */
 package org.jboss.dcp.api.rest;
 
-import java.util.HashMap;
 import java.util.Map;
 
 import javax.ws.rs.Consumes;
@@ -83,18 +82,6 @@ public class RestEntityServiceBase extends RestServiceBase {
 		} catch (Exception e) {
 			return createErrorResponse(e);
 		}
-	}
-
-	/**
-	 * Create response structure with id field only.
-	 * 
-	 * @param id value for id field
-	 * @return response with id field
-	 */
-	protected Map<String, Object> createResponseWithId(String id) {
-		Map<String, Object> result = new HashMap<String, Object>();
-		result.put("id", id);
-		return result;
 	}
 
 	@POST

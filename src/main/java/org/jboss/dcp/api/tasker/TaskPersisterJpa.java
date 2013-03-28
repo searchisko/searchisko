@@ -118,6 +118,9 @@ public class TaskPersisterJpa implements TaskPersister {
 					|| (taskStatusCurrent == TaskStatus.FAILOVER && (taskStatusNew == TaskStatus.RUNNING || taskStatusNew == TaskStatus.CANCELED))) {
 				tis.setTaskStatus(taskStatusNew);
 				tis.appendProcessingLog(message);
+				if (taskStatusCurrent == TaskStatus.RUNNING) {
+					tis.setLastRunFinishedAt(new Date());
+				}
 				return true;
 			}
 		}

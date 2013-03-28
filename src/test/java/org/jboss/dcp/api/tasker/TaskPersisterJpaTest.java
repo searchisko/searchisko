@@ -91,6 +91,9 @@ public class TaskPersisterJpaTest {
 		if (retExpected) {
 			Assert.assertEquals("testmessage", ret.getProcessingLog());
 			Assert.assertEquals(newStatus, ret.getTaskStatus());
+			if (actualStatus == TaskStatus.RUNNING) {
+				TestUtils.assertCurrentDate(ret.getLastRunFinishedAt());
+			}
 		} else {
 			Assert.assertNull(ret.getProcessingLog());
 			Assert.assertEquals(actualStatus, ret.getTaskStatus());

@@ -114,6 +114,8 @@ public class TaskManager {
 	 * @return true if task is canceled, false if not (because doesn't exist or is finished already)
 	 */
 	public boolean cancelTask(String id) {
+		if (id == null)
+			return false;
 		boolean ret = taskPersister.markTaskToBeCancelled(id);
 		if (ret && taskRunner != null) {
 			taskRunner.cancelTask(id);
@@ -132,6 +134,22 @@ public class TaskManager {
 	 */
 	public List<TaskStatusInfo> listTasks(String taskTypeFilter, List<TaskStatus> taskStatusFilter, int from, int size) {
 		return taskPersister.listTasks(taskTypeFilter, taskStatusFilter, from, size);
+	}
+
+	public String getNodeId() {
+		return nodeId;
+	}
+
+	public TaskFactory getTaskFactory() {
+		return taskFactory;
+	}
+
+	public TaskPersister getTaskPersister() {
+		return taskPersister;
+	}
+
+	public TaskRunner getTaskRunner() {
+		return taskRunner;
 	}
 
 }
