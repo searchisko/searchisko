@@ -5,7 +5,7 @@
  */
 package org.jboss.dcp.api.rest;
 
-import org.jboss.dcp.api.annotations.header.AccessControlAllowOrigin;
+import org.jboss.dcp.api.annotations.header.CORSSupport;
 import org.jboss.dcp.api.annotations.security.ProviderAllowed;
 import org.jboss.dcp.api.service.ProviderService;
 import org.jboss.dcp.api.service.SecurityService;
@@ -52,7 +52,7 @@ public class ProviderRestService extends RestEntityServiceBase {
 	@GET
 	@Path("/")
 	@Produces(MediaType.APPLICATION_JSON)
-    @AccessControlAllowOrigin
+    @CORSSupport
 	public Object getAll(@QueryParam("from") Integer from, @QueryParam("size") Integer size) {
 		try {
 			return entityService.getAll(from, size, FIELDS_TO_REMOVE);
@@ -66,7 +66,7 @@ public class ProviderRestService extends RestEntityServiceBase {
 	@Produces(MediaType.APPLICATION_JSON)
 	@ProviderAllowed
 	@Override
-    @AccessControlAllowOrigin
+    @CORSSupport
 	public Object get(@PathParam("id") String id) {
 
 		if (id == null || id.isEmpty()) {

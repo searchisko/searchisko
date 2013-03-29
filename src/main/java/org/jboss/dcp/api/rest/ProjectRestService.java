@@ -5,7 +5,7 @@
  */
 package org.jboss.dcp.api.rest;
 
-import org.jboss.dcp.api.annotations.header.AccessControlAllowOrigin;
+import org.jboss.dcp.api.annotations.header.CORSSupport;
 import org.jboss.dcp.api.annotations.security.GuestAllowed;
 import org.jboss.dcp.api.annotations.security.ProviderAllowed;
 import org.jboss.dcp.api.service.ProjectService;
@@ -59,7 +59,7 @@ public class ProjectRestService extends RestEntityServiceBase {
 	@Produces(MediaType.APPLICATION_JSON)
 	@Override
 	@GuestAllowed
-    @AccessControlAllowOrigin
+    @CORSSupport
 	public Object getAll(@QueryParam("from") Integer from, @QueryParam("size") Integer size) {
 		Principal principal = securityContext.getUserPrincipal();
 
@@ -79,7 +79,7 @@ public class ProjectRestService extends RestEntityServiceBase {
 	@Produces(MediaType.APPLICATION_JSON)
 	@Override
 	@GuestAllowed
-    @AccessControlAllowOrigin
+    @CORSSupport
 	public Object get(@PathParam("id") String id) {
 		Principal principal = securityContext.getUserPrincipal();
 		if (principal == null) {

@@ -26,7 +26,7 @@ import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.indices.IndexMissingException;
 import org.elasticsearch.search.SearchHit;
 import org.jboss.dcp.api.DcpContentObjectFields;
-import org.jboss.dcp.api.annotations.header.AccessControlAllowOrigin;
+import org.jboss.dcp.api.annotations.header.CORSSupport;
 import org.jboss.dcp.api.annotations.security.GuestAllowed;
 import org.jboss.dcp.api.model.QuerySettings;
 import org.jboss.dcp.api.model.QuerySettings.Filters;
@@ -80,7 +80,7 @@ public class FeedRestService extends RestServiceBase {
 	@Path("/")
 	@Produces(MediaType.APPLICATION_ATOM_XML)
 	@GuestAllowed
-	@AccessControlAllowOrigin
+	@CORSSupport
 	public Object feed(@Context UriInfo uriInfo) {
 
 		QuerySettings querySettings = null;

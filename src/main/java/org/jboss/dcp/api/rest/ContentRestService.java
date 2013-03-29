@@ -32,7 +32,7 @@ import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.indices.IndexMissingException;
 import org.elasticsearch.search.sort.SortOrder;
 import org.jboss.dcp.api.DcpContentObjectFields;
-import org.jboss.dcp.api.annotations.header.AccessControlAllowOrigin;
+import org.jboss.dcp.api.annotations.header.CORSSupport;
 import org.jboss.dcp.api.annotations.security.GuestAllowed;
 import org.jboss.dcp.api.annotations.security.ProviderAllowed;
 import org.jboss.dcp.api.service.ProviderService;
@@ -66,7 +66,7 @@ public class ContentRestService extends RestServiceBase {
 	@Path("/")
 	@Produces(MediaType.APPLICATION_JSON)
 	@GuestAllowed
-	@AccessControlAllowOrigin
+	@CORSSupport
 	public Object getAllContent(@PathParam("type") String type, @QueryParam("from") Integer from,
 			@QueryParam("size") Integer size, @QueryParam("sort") String sort) {
 		if (type == null || type.isEmpty()) {
@@ -115,7 +115,7 @@ public class ContentRestService extends RestServiceBase {
 	@Path("/{contentId}")
 	@Produces(MediaType.APPLICATION_JSON)
 	@GuestAllowed
-	@AccessControlAllowOrigin
+	@CORSSupport
 	public Object getContent(@PathParam("type") String type, @PathParam("contentId") String contentId) {
 
 		// validation

@@ -5,11 +5,15 @@
  */
 package org.jboss.dcp.api.rest;
 
-import junit.framework.Assert;
+import static org.jboss.dcp.api.rest.AccessControlPostProcessInterceptor.*;
+import org.jboss.dcp.api.annotations.header.CORSSupport;
 import org.jboss.resteasy.core.ServerResponse;
+import org.junit.Assert;
 import org.junit.Test;
 
-import static org.jboss.dcp.api.rest.AccessControlPostProcessInterceptor.*;
+import javax.ws.rs.GET;
+import javax.ws.rs.OPTIONS;
+import java.lang.reflect.Method;
 
 /**
  * Unit test for {@link AccessControlPostProcessInterceptor}
@@ -23,15 +27,61 @@ public class AccessControlPostProcessInterceptorTest {
         return tested;
     }
 
-    @Test
-    public void responseHeaderTest() {
+    @GET
+    @CORSSupport()
+    private void methodGET() {}
 
-        AccessControlPostProcessInterceptor tested = getTested();
+    @OPTIONS
+    @CORSSupport(allowedMethods = {CORSSupport.PUT, CORSSupport.POST})
+    private void methodOPTIONS() {}
+
+    @Test
+    public void responseHeaderForGETTest() {
+
+        Class noparams[] = {};
+        Method aMethod = null;
+
+        try {
+            aMethod = AccessControlPostProcessInterceptorTest.class.getDeclaredMethod("methodGET", noparams);
+        } catch (NoSuchMethodException e) {
+            Assert.fail(e.getMessage());
+        }
 
         ServerResponse response = new ServerResponse();
+        response.setResourceMethod(aMethod);
+
+        AccessControlPostProcessInterceptor.addHeaders(aMethod);
+        AccessControlPostProcessInterceptor tested = getTested();
         tested.postProcess(response);
 
         Assert.assertTrue(response.getMetadata().containsKey(ACCESS_CONTROL_ALLOW_ORIGIN));
         Assert.assertEquals("*", response.getMetadata().get(ACCESS_CONTROL_ALLOW_ORIGIN).get(0));
+    }
+
+    @Test
+    public void responseHeaderForOPTIONSTest() {
+
+        Class noparams[] = {};
+        Method aMethod = null;
+
+        try {
+            aMethod = AccessControlPostProcessInterceptorTest.class.getDeclaredMethod("methodOPTIONS", noparams);
+        } catch (NoSuchMethodException e) {
+            Assert.fail(e.getMessage());
+        }
+
+        ServerResponse response = new ServerResponse();
+        response.setResourceMethod(aMethod);
+
+        AccessControlPostProcessInterceptor.addHeaders(aMethod);
+        AccessControlPostProcessInterceptor tested = getTested();
+        tested.postProcess(response);
+
+        Assert.assertTrue(response.getMetadata().containsKey(ACCESS_CONTROL_ALLOW_ORIGIN));
+        Assert.assertEquals("*", response.getMetadata().get(ACCESS_CONTROL_ALLOW_ORIGIN).get(0));
+
+        Assert.assertTrue(response.getMetadata().containsKey(ACCESS_CONTROL_ALLOW_METHODS));
+        Assert.assertEquals(CORSSupport.PUT, response.getMetadata().get(ACCESS_CONTROL_ALLOW_METHODS).get(0));
+        Assert.assertEquals(CORSSupport.POST, response.getMetadata().get(ACCESS_CONTROL_ALLOW_METHODS).get(1));
     }
 }

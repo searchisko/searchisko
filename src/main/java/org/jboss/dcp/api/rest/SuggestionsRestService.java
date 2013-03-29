@@ -8,7 +8,7 @@ package org.jboss.dcp.api.rest;
 import org.elasticsearch.action.search.*;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.index.query.QueryBuilders;
-import org.jboss.dcp.api.annotations.header.AccessControlAllowOrigin;
+import org.jboss.dcp.api.annotations.header.CORSSupport;
 import org.jboss.dcp.api.annotations.security.GuestAllowed;
 import org.jboss.dcp.api.model.QuerySettings;
 import org.jboss.dcp.api.service.SearchClientService;
@@ -50,7 +50,7 @@ public class SuggestionsRestService extends RestServiceBase {
     @Path("/query_string")
     @Produces(MediaType.APPLICATION_JSON)
     @GuestAllowed
-    @AccessControlAllowOrigin
+    @CORSSupport
     public Object queryString(@Context UriInfo uriInfo) {
 
         try {
@@ -73,7 +73,7 @@ public class SuggestionsRestService extends RestServiceBase {
     @Path("/project")
     @Produces(MediaType.APPLICATION_JSON)
     @GuestAllowed
-    @AccessControlAllowOrigin
+    @CORSSupport
     public Object project(@QueryParam(QuerySettings.QUERY_KEY) String query, @QueryParam(QuerySettings.Filters.SIZE_KEY) Integer size) {
 
         try {

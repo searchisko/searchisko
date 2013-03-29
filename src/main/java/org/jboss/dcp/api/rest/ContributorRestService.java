@@ -6,7 +6,7 @@
 package org.jboss.dcp.api.rest;
 
 import org.elasticsearch.action.search.SearchResponse;
-import org.jboss.dcp.api.annotations.header.AccessControlAllowOrigin;
+import org.jboss.dcp.api.annotations.header.CORSSupport;
 import org.jboss.dcp.api.annotations.security.GuestAllowed;
 import org.jboss.dcp.api.annotations.security.ProviderAllowed;
 import org.jboss.dcp.api.service.ContributorService;
@@ -43,7 +43,7 @@ public class ContributorRestService extends RestEntityServiceBase {
 	@Path("/search")
 	@Produces(MediaType.APPLICATION_JSON)
 	@GuestAllowed
-    @AccessControlAllowOrigin
+    @CORSSupport
 	public Object search(@QueryParam("email") String email) {
 		try {
 			SearchResponse response = contributorService.search(email);

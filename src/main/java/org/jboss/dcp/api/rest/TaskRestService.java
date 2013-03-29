@@ -23,7 +23,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
-import org.jboss.dcp.api.annotations.header.AccessControlAllowOrigin;
+import org.jboss.dcp.api.annotations.header.CORSSupport;
 import org.jboss.dcp.api.annotations.security.ProviderAllowed;
 import org.jboss.dcp.api.service.TaskService;
 import org.jboss.dcp.api.tasker.TaskConfigurationException;
@@ -47,7 +47,7 @@ public class TaskRestService extends RestServiceBase {
 	@GET
 	@Path("/type")
 	@Produces(MediaType.APPLICATION_JSON)
-	@AccessControlAllowOrigin
+	@CORSSupport
 	public Object getTypes() {
 		try {
 			return taskService.getTaskManager().listSupportedTaskTypes();
@@ -59,7 +59,7 @@ public class TaskRestService extends RestServiceBase {
 	@GET
 	@Path("/task")
 	@Produces(MediaType.APPLICATION_JSON)
-	@AccessControlAllowOrigin
+	@CORSSupport
 	public Object getTasks(@QueryParam("taskType") String taskType, @QueryParam("taskStatus") String[] taskStatus,
 			@QueryParam("from") Integer from, @QueryParam("size") Integer size) {
 		try {
@@ -82,7 +82,7 @@ public class TaskRestService extends RestServiceBase {
 	@GET
 	@Path("/task/{taskId}")
 	@Produces(MediaType.APPLICATION_JSON)
-	@AccessControlAllowOrigin
+	@CORSSupport
 	public Object getTask(@PathParam("taskId") String taskId) {
 		try {
 			TaskStatusInfo tsi = taskService.getTaskManager().getTaskStatusInfo(taskId);
