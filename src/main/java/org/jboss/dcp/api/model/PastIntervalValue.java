@@ -3,7 +3,7 @@ package org.jboss.dcp.api.model;
 import org.jboss.dcp.api.util.SearchUtils;
 
 /**
- * Enum with names used for <code>activity_date_interval</code> rearch request param.
+ * Enum with names used for <code>activity_date_interval</code> search request param.
  * 
  * @author Vlastimil Elias (velias at redhat dot com)
  * @see QuerySettings
