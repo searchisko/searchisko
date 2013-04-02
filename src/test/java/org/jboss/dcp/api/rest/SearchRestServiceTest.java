@@ -6,6 +6,7 @@
 package org.jboss.dcp.api.rest;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.logging.Logger;
 
 import javax.ws.rs.core.MultivaluedMap;
@@ -69,11 +70,15 @@ public class SearchRestServiceTest {
 			Mockito.when(
 					tested.searchService.performSearch(Mockito.eq(qs), Mockito.notNull(String.class),
 							Mockito.eq(StatsRecordType.SEARCH))).thenReturn(sr);
+			Mockito.when(tested.searchService.getSearchResponseAdditionalFields(Mockito.eq(qs))).thenReturn(
+					new HashMap<String, String>());
 			Object response = tested.search(uriInfo);
 			Mockito.verify(uriInfo).getQueryParameters();
 			Mockito.verify(tested.querySettingsParser).parseUriParams(qp);
 			Mockito.verify(tested.searchService).performSearch(Mockito.eq(qs), Mockito.notNull(String.class),
 					Mockito.eq(StatsRecordType.SEARCH));
+			Mockito.verify(tested.searchService).getSearchResponseAdditionalFields(Mockito.eq(qs));
+			Mockito.verifyNoMoreInteractions(tested.searchService);
 			TestUtils.assetStreamingOutputContentRegexp("\\{\"uuid\":\".+\",\"testfield\":\"testvalue\"\\}", response);
 		}
 
@@ -87,6 +92,7 @@ public class SearchRestServiceTest {
 					new IllegalArgumentException("test exception"));
 			Object response = tested.search(uriInfo);
 			TestUtils.assertResponseStatus(response, Status.BAD_REQUEST);
+			Mockito.verifyNoMoreInteractions(tested.searchService);
 		}
 
 		// case - error handling for index not found exception

@@ -76,21 +76,24 @@ public class RestServiceBase {
 	}
 
 	/**
-	 * Create response based on elastic search response
+	 * Create JAX-RS response based on elastic search response
 	 * 
 	 * @param response elastic search response to return
-	 * @param responseUuid UUID of response
-	 * @return
-	 * @throws IOException
+	 * @param additionalResponseFields map with additional fields added to the response root level object
+	 * @return JAX-RS response
 	 */
-	public StreamingOutput createResponse(final SearchResponse response, final String responseUuid) {
+	public StreamingOutput createResponse(final SearchResponse response,
+			final Map<String, String> additionalResponseFields) {
 		return new StreamingOutput() {
 			@Override
 			public void write(OutputStream output) throws IOException, WebApplicationException {
 				XContentBuilder builder = XContentFactory.jsonBuilder(output);
 				builder.startObject();
-				if (responseUuid != null)
-					builder.field("uuid", responseUuid);
+				if (additionalResponseFields != null) {
+					for (String key : additionalResponseFields.keySet()) {
+						builder.field(key, additionalResponseFields.get(key));
+					}
+				}
 				response.toXContent(builder, ToXContent.EMPTY_PARAMS);
 				builder.endObject();
 				builder.close();

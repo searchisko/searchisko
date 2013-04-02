@@ -43,6 +43,30 @@ import org.mockito.stubbing.Answer;
 public class SearchServiceTest {
 
 	@Test
+	public void getSearchResponseAdditionalFields() {
+		SearchService tested = new SearchService();
+		tested.log = Logger.getLogger("testlogger");
+
+		try {
+			tested.getSearchResponseAdditionalFields(null);
+			Assert.fail("NullPointerException expected");
+		} catch (NullPointerException e) {
+			// OK
+		}
+
+		QuerySettings qs = new QuerySettings();
+		Map<String, String> ret = tested.getSearchResponseAdditionalFields(qs);
+		Assert.assertTrue(ret.isEmpty());
+
+		qs.addFacet(FacetValue.ACTIVITY_DATES_HISTOGRAM);
+		qs.getFiltersInit().setActivityDateInterval(PastIntervalValue.QUARTER);
+		ret = tested.getSearchResponseAdditionalFields(qs);
+		Assert.assertEquals(1, ret.size());
+		Assert.assertEquals("week", ret.get("activity_dates_histogram_interval"));
+
+	}
+
+	@Test
 	public void prepareIndexNamesCacheKey() {
 
 		Assert.assertEquals("_all||false", SearchService.prepareIndexNamesCacheKey(null, false));

@@ -5,12 +5,19 @@
  */
 package org.jboss.dcp.api.rest;
 
+import java.util.Map;
 import java.util.UUID;
-import java.util.logging.Level;
 
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
-import javax.ws.rs.*;
+import javax.ws.rs.GET;
+import javax.ws.rs.OPTIONS;
+import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
@@ -64,8 +71,9 @@ public class SearchRestService extends RestServiceBase {
 			String responseUuid = UUID.randomUUID().toString();
 
 			SearchResponse searchResponse = searchService.performSearch(querySettings, responseUuid, StatsRecordType.SEARCH);
-
-			return createResponse(searchResponse, responseUuid);
+			Map<String, String> af = searchService.getSearchResponseAdditionalFields(querySettings);
+			af.put("uuid", responseUuid);
+			return createResponse(searchResponse, af);
 		} catch (IllegalArgumentException e) {
 			return createBadFieldDataResponse(e.getMessage());
 		} catch (IndexMissingException e) {
@@ -75,13 +83,13 @@ public class SearchRestService extends RestServiceBase {
 		}
 	}
 
-    @OPTIONS
-    @Path("/{search_result_uuid}/{hit_id}")
-    @GuestAllowed
-    @CORSSupport(allowedMethods = {CORSSupport.PUT, CORSSupport.POST})
-    public Object writeSearchHitUsedStatisticsRecordOPTIONS() {
-        return Response.ok().build();
-    }
+	@OPTIONS
+	@Path("/{search_result_uuid}/{hit_id}")
+	@GuestAllowed
+	@CORSSupport(allowedMethods = { CORSSupport.PUT, CORSSupport.POST })
+	public Object writeSearchHitUsedStatisticsRecordOPTIONS() {
+		return Response.ok().build();
+	}
 
 	@PUT
 	@Path("/{search_result_uuid}/{hit_id}")
@@ -89,34 +97,34 @@ public class SearchRestService extends RestServiceBase {
 	@CORSSupport
 	public Object writeSearchHitUsedStatisticsRecordPUT(@PathParam("search_result_uuid") String uuid,
 			@PathParam("hit_id") String contentId, @QueryParam("session_id") String sessionId) {
-        return writeSearchHitUsedStatisticsRecord(uuid, contentId, sessionId);
+		return writeSearchHitUsedStatisticsRecord(uuid, contentId, sessionId);
 	}
 
-    @POST
-    @Path("/{search_result_uuid}/{hit_id}")
-    @GuestAllowed
-    @CORSSupport
-    public Object writeSearchHitUsedStatisticsRecordPOST(@PathParam("search_result_uuid") String uuid,
-             @PathParam("hit_id") String contentId, @QueryParam("session_id") String sessionId) {
-        return writeSearchHitUsedStatisticsRecord(uuid, contentId, sessionId);
-    }
+	@POST
+	@Path("/{search_result_uuid}/{hit_id}")
+	@GuestAllowed
+	@CORSSupport
+	public Object writeSearchHitUsedStatisticsRecordPOST(@PathParam("search_result_uuid") String uuid,
+			@PathParam("hit_id") String contentId, @QueryParam("session_id") String sessionId) {
+		return writeSearchHitUsedStatisticsRecord(uuid, contentId, sessionId);
+	}
 
-    protected Object writeSearchHitUsedStatisticsRecord(@PathParam("search_result_uuid") String uuid,
-            @PathParam("hit_id") String contentId, @QueryParam("session_id") String sessionId) {
+	protected Object writeSearchHitUsedStatisticsRecord(@PathParam("search_result_uuid") String uuid,
+			@PathParam("hit_id") String contentId, @QueryParam("session_id") String sessionId) {
 
-        if ((uuid = SearchUtils.trimToNull(uuid)) == null) {
-            return createRequiredFieldResponse("search_result_uuid");
-        }
-        if ((contentId = SearchUtils.trimToNull(contentId)) == null) {
-            return createRequiredFieldResponse("hit_id");
-        }
-        sessionId = SearchUtils.trimToNull(sessionId);
-        try {
-            boolean result = searchService.writeSearchHitUsedStatisticsRecord(uuid, contentId, sessionId);
-            return Response.ok(result ? "statistics record accepted" : "statistics record ignored").build();
-        } catch (Exception e) {
-            return createErrorResponse(e);
-        }
-    }
+		if ((uuid = SearchUtils.trimToNull(uuid)) == null) {
+			return createRequiredFieldResponse("search_result_uuid");
+		}
+		if ((contentId = SearchUtils.trimToNull(contentId)) == null) {
+			return createRequiredFieldResponse("hit_id");
+		}
+		sessionId = SearchUtils.trimToNull(sessionId);
+		try {
+			boolean result = searchService.writeSearchHitUsedStatisticsRecord(uuid, contentId, sessionId);
+			return Response.ok(result ? "statistics record accepted" : "statistics record ignored").build();
+		} catch (Exception e) {
+			return createErrorResponse(e);
+		}
+	}
 
 }

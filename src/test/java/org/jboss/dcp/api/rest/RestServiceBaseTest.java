@@ -5,6 +5,18 @@
  */
 package org.jboss.dcp.api.rest;
 
+import java.io.IOException;
+import java.security.Principal;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.logging.Logger;
+
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
+import javax.ws.rs.core.SecurityContext;
+import javax.ws.rs.core.StreamingOutput;
+
 import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.common.xcontent.ToXContent;
@@ -15,16 +27,6 @@ import org.junit.Test;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
-
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
-import javax.ws.rs.core.SecurityContext;
-import javax.ws.rs.core.StreamingOutput;
-import java.io.IOException;
-import java.security.Principal;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.logging.Logger;
 
 /**
  * Unit test for {@link RestServiceBase}.
@@ -81,11 +83,17 @@ public class RestServiceBaseTest {
 			}
 		}).when(srMock).toXContent(Mockito.any(XContentBuilder.class), Mockito.eq(ToXContent.EMPTY_PARAMS));
 
-		StreamingOutput so = tested.createResponse(srMock, "myid");
-		TestUtils.assetStreamingOutputContent("{\"uuid\":\"myid\",\"testfield\":\"testvalue\"}", so);
+		Map<String, String> af = new LinkedHashMap<String, String>();
+		TestUtils.assetStreamingOutputContent("{\"testfield\":\"testvalue\"}", tested.createResponse(srMock, af));
+
+		af.put("uuid", "myid");
+		af.put("ag", "qag");
+		af.put("oo", null);
+		StreamingOutput so = tested.createResponse(srMock, af);
+		TestUtils.assetStreamingOutputContent("{\"uuid\":\"myid\",\"ag\":\"qag\",\"oo\":null,\"testfield\":\"testvalue\"}",
+				so);
 
 		TestUtils.assetStreamingOutputContent("{\"testfield\":\"testvalue\"}", tested.createResponse(srMock, null));
-
 	}
 
 	@Test

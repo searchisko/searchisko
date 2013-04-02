@@ -371,6 +371,21 @@ public class SearchService {
 		}
 	}
 
+	/**
+	 * Get additional fields to be added into search response.
+	 * 
+	 * @param querySettings for search
+	 * @return map with additional fields, never null
+	 */
+	public Map<String, String> getSearchResponseAdditionalFields(QuerySettings querySettings) {
+		Map<String, String> ret = new HashMap<String, String>();
+		Set<FacetValue> facets = querySettings.getFacets();
+		if (facets != null && facets.contains(FacetValue.ACTIVITY_DATES_HISTOGRAM)) {
+			ret.put(FacetValue.ACTIVITY_DATES_HISTOGRAM + "_interval", selectActivityDatesHistogramInterval(querySettings));
+		}
+		return ret;
+	}
+
 	protected TermsFacetBuilder createTermsFacetBuilder(FacetValue facetName, String facetField, int size,
 			Map<String, FilterBuilder> searchFilters) {
 

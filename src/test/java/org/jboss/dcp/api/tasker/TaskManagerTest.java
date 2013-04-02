@@ -41,7 +41,7 @@ public class TaskManagerTest {
 	}
 
 	@Test
-	public void startStopTasksExecution() {
+	public void startStopTasksExecution() throws InterruptedException {
 		TaskManager tested = getTested();
 
 		tested.taskRunner = null;
@@ -53,6 +53,7 @@ public class TaskManagerTest {
 		tested.startTasksExecution();
 		Assert.assertNotNull(tested.taskRunner);
 		TaskRunner tr = tested.taskRunner;
+		Thread.sleep(200);
 		Assert.assertTrue(tr.isAlive());
 
 		// case - second start has no effect
