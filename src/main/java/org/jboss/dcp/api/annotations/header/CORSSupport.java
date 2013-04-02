@@ -36,6 +36,7 @@ import org.jboss.dcp.api.rest.CORSSupportInterceptor;
  * </pre>
  * <p/>
  * See <a href="http://www.w3.org/TR/cors/#preflight-request">http://www.w3.org/TR/cors/#preflight-request</a>
+ * See <a href="http://www.html5rocks.com/en/tutorials/cors/">http://www.html5rocks.com/en/tutorials/cors/</a>
  *
  * @author Lukas Vlcek
  * @see CORSSupportInterceptor

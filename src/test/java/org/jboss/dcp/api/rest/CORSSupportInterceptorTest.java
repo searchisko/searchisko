@@ -7,6 +7,7 @@ package org.jboss.dcp.api.rest;
 
 import static org.jboss.dcp.api.rest.CORSSupportInterceptor.ACCESS_CONTROL_ALLOW_METHODS;
 import static org.jboss.dcp.api.rest.CORSSupportInterceptor.ACCESS_CONTROL_ALLOW_ORIGIN;
+import static org.jboss.dcp.api.rest.CORSSupportInterceptor.ACCESS_CONTROL_MAX_AGE;
 
 import java.lang.reflect.Method;
 
@@ -62,6 +63,8 @@ public class CORSSupportInterceptorTest {
 
 		Assert.assertTrue(response.getMetadata().containsKey(ACCESS_CONTROL_ALLOW_ORIGIN));
 		Assert.assertEquals("*", response.getMetadata().get(ACCESS_CONTROL_ALLOW_ORIGIN).get(0));
+
+		Assert.assertFalse(response.getMetadata().containsKey(ACCESS_CONTROL_MAX_AGE));
 	}
 
 	@Test
@@ -86,6 +89,9 @@ public class CORSSupportInterceptorTest {
 
 		Assert.assertTrue(response.getMetadata().containsKey(ACCESS_CONTROL_ALLOW_ORIGIN));
 		Assert.assertEquals("*", response.getMetadata().get(ACCESS_CONTROL_ALLOW_ORIGIN).get(0));
+
+		Assert.assertTrue(response.getMetadata().containsKey(ACCESS_CONTROL_MAX_AGE));
+		Assert.assertEquals("86400", response.getMetadata().get(ACCESS_CONTROL_MAX_AGE).get(0));
 
 		Assert.assertTrue(response.getMetadata().containsKey(ACCESS_CONTROL_ALLOW_METHODS));
 		Assert.assertEquals(CORSSupport.PUT, response.getMetadata().get(ACCESS_CONTROL_ALLOW_METHODS).get(0));

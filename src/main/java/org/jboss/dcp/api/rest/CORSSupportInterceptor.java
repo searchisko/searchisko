@@ -25,11 +25,15 @@ import org.jboss.resteasy.spi.interception.PostProcessInterceptor;
 /**
  * RestEasy interceptor which adds '<code>Access-Control-Allow-Origin: *<code>' header to JAX-RS responses
  * for JAX-RS methods annotated by {@link org.jboss.dcp.api.annotations.header.CORSSupport}.
- * 
+ *
  * It can be used on any HTTP method (GET, PUT, POST, ... ) even on custom ones. If, however; used on OPTIONS
  * method then it adds also '<code>Access-Control-Allow-Methods<code>' header for all allowed methods
  * (see {@link org.jboss.dcp.api.annotations.header.CORSSupport#allowedMethods()}).
- * 
+ *
+ * 'Access-Control-Max-Age' is set to 86400, this means pre-flight response can be cached for 24 hours.
+ *
+ * Support of 'Access-Control-Request-Headers' not implemented yet.
+ *
  * @author Lukas Vlcek
  */
 @Provider
@@ -42,6 +46,7 @@ public class CORSSupportInterceptor implements PostProcessInterceptor, AcceptedB
 
 	public static final String ACCESS_CONTROL_ALLOW_ORIGIN = "Access-Control-Allow-Origin";
 	public static final String ACCESS_CONTROL_ALLOW_METHODS = "Access-Control-Allow-Methods";
+	public static final String ACCESS_CONTROL_MAX_AGE = "Access-Control-Max-Age";
 
 	private static class Header {
 		protected String key;
@@ -71,9 +76,13 @@ public class CORSSupportInterceptor implements PostProcessInterceptor, AcceptedB
 		addIntoHeaderList(method, new Header(ACCESS_CONTROL_ALLOW_ORIGIN, "*"));
 		if (method.isAnnotationPresent(javax.ws.rs.OPTIONS.class)) {
 			CORSSupport annotation = method.getAnnotation(CORSSupport.class);
-			if (annotation != null && annotation.allowedMethods() != null) {
-				for (String m : annotation.allowedMethods()) {
-					addIntoHeaderList(method, new Header(ACCESS_CONTROL_ALLOW_METHODS, m));
+			if (annotation != null) {
+				// allow to cache pre-flight response for 24 hours
+				addIntoHeaderList(method, new Header(ACCESS_CONTROL_MAX_AGE, "86400"));
+				if (annotation.allowedMethods() != null) {
+					for (String m : annotation.allowedMethods()) {
+						addIntoHeaderList(method, new Header(ACCESS_CONTROL_ALLOW_METHODS, m));
+					}
 				}
 			}
 		}
