@@ -10,7 +10,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import org.jboss.dcp.api.rest.AccessControlPostProcessInterceptor;
+import org.jboss.dcp.api.rest.CORSSupportInterceptor;
 
 /**
  * Annotation used to support CORS specification.
@@ -38,7 +38,7 @@ import org.jboss.dcp.api.rest.AccessControlPostProcessInterceptor;
  * See <a href="http://www.w3.org/TR/cors/#preflight-request">http://www.w3.org/TR/cors/#preflight-request</a>
  *
  * @author Lukas Vlcek
- * @see AccessControlPostProcessInterceptor
+ * @see CORSSupportInterceptor
  */
 @Target({ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
