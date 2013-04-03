@@ -7,6 +7,7 @@ package org.jboss.dcp.api.tasker;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Interface for task persister component. It is used inside {@link TaskManager} to persist tasks informations.
@@ -73,9 +74,19 @@ public interface TaskPersister {
 	 * Get task to be stared. Persister must switch status of task to {@link TaskStatus#RUNNING} before return it.
 	 * Persister must handle cluster concurrency also to prevent task starting on more nodes.
 	 * 
-	 * @param nodeId to start task on
+	 * @param nodeId to start task on (current cluster node)
 	 * @return task to be started or null if no any available
 	 */
 	public TaskStatusInfo getTaskToRun(String nodeId);
+
+	/**
+	 * Method periodically called by task runner to perform node heartbeat operations.
+	 * 
+	 * @param nodeId of current cluster node
+	 * @param runningTasksId identifiers of tasks currently running on this cluster node
+	 * @param failoverTimeout failover timeout in miliseconds. Must be accurate to this method call period (two or three
+	 *          times higher!).
+	 */
+	public void heartbeat(String nodeId, Set<String> runningTasksId, long failoverTimeout);
 
 }

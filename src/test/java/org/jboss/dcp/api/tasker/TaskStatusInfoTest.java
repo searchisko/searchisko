@@ -111,6 +111,7 @@ public class TaskStatusInfoTest {
 		tested.taskStatus = TaskStatus.FINISHED_ERROR;
 		assertStartRTaskExecutionIllegalStateException(tested);
 
+		// case - start ok
 		{
 			tested = new TaskStatusInfo();
 			tested.taskStatus = TaskStatus.NEW;
@@ -120,9 +121,11 @@ public class TaskStatusInfoTest {
 			Assert.assertEquals(TaskStatus.RUNNING, tested.taskStatus);
 			Assert.assertEquals("mynode", tested.executionNodeId);
 			TestUtils.assertCurrentDate(tested.lastRunStartedAt);
+			TestUtils.assertCurrentDate(tested.heartbeat);
 			Assert.assertNull(tested.lastRunFinishedAt);
 		}
 
+		// case - start ok
 		{
 			tested = new TaskStatusInfo();
 			tested.taskStatus = TaskStatus.FAILOVER;
@@ -135,6 +138,34 @@ public class TaskStatusInfoTest {
 			Assert.assertEquals(TaskStatus.RUNNING, tested.taskStatus);
 			Assert.assertEquals("mynode2", tested.executionNodeId);
 			TestUtils.assertCurrentDate(tested.lastRunStartedAt);
+			TestUtils.assertCurrentDate(tested.heartbeat);
+			Assert.assertNull(tested.lastRunFinishedAt);
+		}
+
+		// case - no start due cancel request, cancel it directly
+		{
+			tested = new TaskStatusInfo();
+			tested.taskStatus = TaskStatus.NEW;
+			tested.setCancelRequsted(true);
+			Assert.assertFalse(tested.startTaskExecution("mynode"));
+
+			Assert.assertEquals(TaskStatus.CANCELED, tested.taskStatus);
+			Assert.assertEquals(0, tested.runCount);
+			Assert.assertNull(tested.executionNodeId);
+			Assert.assertNull(tested.lastRunStartedAt);
+			Assert.assertNull(tested.lastRunFinishedAt);
+		}
+
+		{
+			tested = new TaskStatusInfo();
+			tested.taskStatus = TaskStatus.FAILOVER;
+			tested.setCancelRequsted(true);
+			Assert.assertFalse(tested.startTaskExecution("mynode"));
+
+			Assert.assertEquals(TaskStatus.CANCELED, tested.taskStatus);
+			Assert.assertEquals(0, tested.runCount);
+			Assert.assertNull(tested.executionNodeId);
+			Assert.assertNull(tested.lastRunStartedAt);
 			Assert.assertNull(tested.lastRunFinishedAt);
 		}
 

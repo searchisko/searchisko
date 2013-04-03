@@ -65,6 +65,11 @@ public class TaskStatusInfo {
 	protected boolean cancelRequsted = false;
 
 	/**
+	 * Timestamp of last heartbeat for this task. Used to failover tasks from failed cluater nodes.
+	 */
+	protected long heartbeat;
+
+	/**
 	 * @param message
 	 */
 	public void appendProcessingLog(String message) {
@@ -81,19 +86,26 @@ public class TaskStatusInfo {
 	}
 
 	/**
-	 * Change object fields into state for task execution.
+	 * Check if object is in status to start task execution. Change object fields into state for task execution if yes.
 	 * 
 	 * @param executionNodeId identifier of cluster node where task is started
-	 * @return true if task was in status which allow start execution, so execution was strated
+	 * @return true if task was in status which allow start execution, so execution was started. False if object is not in
+	 *         state for execution (but some fields may be changed even in this).
 	 */
 	public boolean startTaskExecution(String executionNodeId) {
 		if (taskStatus == TaskStatus.NEW || taskStatus == TaskStatus.FAILOVER) {
-			taskStatus = TaskStatus.RUNNING;
-			lastRunStartedAt = new Date();
-			lastRunFinishedAt = null;
-			runCount++;
-			this.executionNodeId = executionNodeId;
-			return true;
+			if (cancelRequsted) {
+				taskStatus = TaskStatus.CANCELED;
+				return false;
+			} else {
+				taskStatus = TaskStatus.RUNNING;
+				lastRunStartedAt = new Date();
+				lastRunFinishedAt = null;
+				runCount++;
+				this.executionNodeId = executionNodeId;
+				heartbeat = System.currentTimeMillis();
+				return true;
+			}
 		} else {
 			return false;
 		}
@@ -202,6 +214,14 @@ public class TaskStatusInfo {
 
 	public void setCancelRequsted(boolean cancelRequsted) {
 		this.cancelRequsted = cancelRequsted;
+	}
+
+	public long getHeartbeat() {
+		return heartbeat;
+	}
+
+	public void setHeartbeat(long heartbeat) {
+		this.heartbeat = heartbeat;
 	}
 
 	@Override

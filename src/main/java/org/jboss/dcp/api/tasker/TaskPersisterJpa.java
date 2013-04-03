@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Logger;
 
 import javax.ejb.LocalBean;
@@ -16,6 +17,7 @@ import javax.ejb.Stateless;
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.persistence.LockModeType;
+import javax.persistence.LockTimeoutException;
 import javax.persistence.TypedQuery;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
@@ -137,25 +139,59 @@ public class TaskPersisterJpa implements TaskPersister {
 		}
 	}
 
-	private static final List<TaskStatus> taskStatusFilter = new ArrayList<TaskStatus>();
+	private static final List<TaskStatus> toRunTaskStatusFilter = new ArrayList<TaskStatus>();
 	static {
-		taskStatusFilter.add(TaskStatus.NEW);
-		taskStatusFilter.add(TaskStatus.FAILOVER);
+		toRunTaskStatusFilter.add(TaskStatus.NEW);
+		toRunTaskStatusFilter.add(TaskStatus.FAILOVER);
 	}
 
 	@Override
 	public TaskStatusInfo getTaskToRun(String nodeId) {
-		List<TaskStatusInfo> tsi = listTasks(null, taskStatusFilter, 0, 0);
+		List<TaskStatusInfo> tsi = listTasks(null, toRunTaskStatusFilter, 0, 0);
 		if (tsi != null && !tsi.isEmpty()) {
 			for (int i = tsi.size() - 1; i >= 0; i--) {
 				TaskStatusInfo work = tsi.get(i);
-				em.lock(work, LockModeType.PESSIMISTIC_WRITE);
-				if (work.startTaskExecution(nodeId)) {
-					return work;
+				try {
+					em.lock(work, LockModeType.PESSIMISTIC_WRITE);
+					if (work.startTaskExecution(nodeId)) {
+						return work;
+					}
+				} catch (LockTimeoutException e) {
+					log.fine("Lock exception for task id=" + work.getId());
 				}
 			}
 		}
 		return null;
 	}
 
+	private static final List<TaskStatus> runningTaskStatusFilter = new ArrayList<TaskStatus>();
+	static {
+		runningTaskStatusFilter.add(TaskStatus.RUNNING);
+	}
+
+	@Override
+	public void heartbeat(String nodeId, Set<String> runningTasksId, long failoverTimeout) {
+		List<TaskStatusInfo> tsi = listTasks(null, runningTaskStatusFilter, 0, 0);
+		if (tsi != null && !tsi.isEmpty()) {
+			long ct = System.currentTimeMillis();
+			long ft = ct - failoverTimeout;
+			for (TaskStatusInfo task : tsi) {
+				try {
+					em.lock(task, LockModeType.PESSIMISTIC_WRITE);
+					if (task.getTaskStatus() == TaskStatus.RUNNING) {
+						if (runningTasksId != null && runningTasksId.contains(task.getId())) {
+							task.setHeartbeat(ct);
+						} else {
+							if (task.getHeartbeat() < ft) {
+								changeTaskStatus(task.getId(), TaskStatus.FAILOVER, "Failover necessity detected by node '" + nodeId
+										+ "' at " + ct + " due heartbeat timestamp " + task.getHeartbeat());
+							}
+						}
+					}
+				} catch (LockTimeoutException e) {
+					log.fine("Lock exception for task id=" + task.getId());
+				}
+			}
+		}
+	}
 }

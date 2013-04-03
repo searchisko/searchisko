@@ -32,6 +32,16 @@ public class TaskRunner extends Thread {
 
 	protected TaskExecutionContext taskExecutionContextInstance = new TaskExecutionContextImpl();
 
+	/**
+	 * hertbeat period.
+	 */
+	protected long hbPeriod = 10000;
+
+	/**
+	 * last hertbeat timestamp
+	 */
+	protected long lastHb;
+
 	public TaskRunner(String nodeId, TaskFactory taskFactory, TaskPersister taskPersister) {
 		super();
 		this.nodeId = nodeId;
@@ -39,6 +49,7 @@ public class TaskRunner extends Thread {
 		this.taskPersister = taskPersister;
 		setDaemon(false);
 		setName("TaskRunner thread");
+		lastHb = System.currentTimeMillis();
 	}
 
 	protected TaskRunner() {
@@ -54,8 +65,7 @@ public class TaskRunner extends Thread {
 			while (!isInterrupted()) {
 				try {
 					handleCancelRequests();
-					// TODO TASKS sometimes check if there is some failed task in persister and mark it as FAILOVER to be run
-					// again
+					heartbeat();
 					removeFinished();
 					startTasks();
 				} catch (Exception e) {
@@ -118,6 +128,18 @@ public class TaskRunner extends Thread {
 			}
 		} catch (Exception e) {
 			log.fine(e.getMessage());
+		}
+	}
+
+	protected void heartbeat() {
+		long now = System.currentTimeMillis();
+		if (lastHb < (now - hbPeriod)) {
+			lastHb = now;
+			try {
+				taskPersister.heartbeat(nodeId, new HashSet<String>(runningTasks.keySet()), hbPeriod * 5);
+			} catch (Exception e) {
+				log.fine(e.getMessage());
+			}
 		}
 	}
 

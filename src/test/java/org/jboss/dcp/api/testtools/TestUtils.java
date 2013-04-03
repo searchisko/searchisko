@@ -38,13 +38,25 @@ import org.junit.Assert;
 public abstract class TestUtils {
 
 	/**
-	 * Assert date is current.
+	 * Assert date is current timestamp.
 	 * 
 	 * @param actualDate to assert
+	 * @see #assertCurrentDate(long)
 	 */
 	public static void assertCurrentDate(Date actualDate) {
 		Assert.assertNotNull(actualDate);
-		long l = System.currentTimeMillis() - actualDate.getTime();
+		assertCurrentDate(actualDate.getTime());
+
+	}
+
+	/**
+	 * Assert current timestamp. There is 1000ms tolerance for future because assertion may run with some delay against
+	 * current date creation to asserted variable.
+	 * 
+	 * @param actualDate to assert in millis
+	 */
+	public static void assertCurrentDate(long actualDate) {
+		long l = System.currentTimeMillis() - actualDate;
 		Assert.assertTrue(l >= 0 && l <= 1000);
 	}
 

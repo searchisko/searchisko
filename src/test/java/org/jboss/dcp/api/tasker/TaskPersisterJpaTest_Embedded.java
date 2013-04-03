@@ -8,8 +8,10 @@ package org.jboss.dcp.api.tasker;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -27,6 +29,94 @@ public class TaskPersisterJpaTest_Embedded extends JpaTestBase {
 
 	{
 		logger = Logger.getLogger(TaskPersisterJpaTest_Embedded.class.getName());
+	}
+
+	@Test
+	public void heartbeat() {
+		TaskPersisterJpa tested = new TaskPersisterJpa();
+		tested.em = em;
+		try {
+			em.getTransaction().begin();
+			tested.heartbeat("mynode", null, 1000);
+			em.getTransaction().commit();
+
+			em.getTransaction().begin();
+			long now = System.currentTimeMillis();
+
+			// not expired on same node - no FAILOVER
+			String id1 = tested.createTask("type1", null);
+			TaskStatusInfo tsi = em.find(TaskStatusInfo.class, id1);
+			tsi.startTaskExecution("mynode");
+			tsi.setHeartbeat(now - 2500);
+
+			// expired on same node but running still here - no FAILOVER
+			String id2 = tested.createTask("type1", null);
+			tsi = em.find(TaskStatusInfo.class, id2);
+			tsi.startTaskExecution("mynode");
+			tsi.setHeartbeat(now - 3200);
+
+			// expired on same node, no running here anymore - must be FAILOVER
+			String id3 = tested.createTask("type1", null);
+			tsi = em.find(TaskStatusInfo.class, id3);
+			tsi.startTaskExecution("mynode");
+			tsi.setHeartbeat(now - 3200);
+
+			// not expired on another node - no FAILOVER
+			String id4 = tested.createTask("type1", null);
+			tsi = em.find(TaskStatusInfo.class, id4);
+			tsi.startTaskExecution("mynode-other");
+			tsi.setHeartbeat(now - 2500);
+
+			// expired on another node - must be FAILOVER
+			String id5 = tested.createTask("type1", null);
+			tsi = em.find(TaskStatusInfo.class, id5);
+			tsi.startTaskExecution("mynode-other");
+			tsi.setHeartbeat(now - 3200);
+
+			// not running task so no FAILOVER
+			String id6 = tested.createTask("type1", null);
+			em.getTransaction().commit();
+
+			// perform hertbeat
+			em.getTransaction().begin();
+			Set<String> runningTasksId = new HashSet<String>();
+			runningTasksId.add(id1);
+			runningTasksId.add(id2);
+			tested.heartbeat("mynode", runningTasksId, 3000);
+			em.getTransaction().commit();
+
+			// assert outputs
+			em.getTransaction().begin();
+			tsi = em.find(TaskStatusInfo.class, id1);
+			Assert.assertEquals(TaskStatus.RUNNING, tsi.getTaskStatus());
+			TestUtils.assertCurrentDate(tsi.getHeartbeat());
+
+			tsi = em.find(TaskStatusInfo.class, id2);
+			Assert.assertEquals(TaskStatus.RUNNING, tsi.getTaskStatus());
+			TestUtils.assertCurrentDate(tsi.getHeartbeat());
+
+			tsi = em.find(TaskStatusInfo.class, id3);
+			Assert.assertEquals(TaskStatus.FAILOVER, tsi.getTaskStatus());
+			TestUtils.assertCurrentDate(tsi.getLastRunFinishedAt());
+
+			tsi = em.find(TaskStatusInfo.class, id4);
+			Assert.assertEquals(TaskStatus.RUNNING, tsi.getTaskStatus());
+			Assert.assertEquals(now - 2500, tsi.getHeartbeat());
+
+			tsi = em.find(TaskStatusInfo.class, id5);
+			Assert.assertEquals(TaskStatus.FAILOVER, tsi.getTaskStatus());
+			TestUtils.assertCurrentDate(tsi.getLastRunFinishedAt());
+
+			tsi = em.find(TaskStatusInfo.class, id6);
+			Assert.assertEquals(TaskStatus.NEW, tsi.getTaskStatus());
+
+			em.getTransaction().commit();
+
+		} catch (Exception ex) {
+			em.getTransaction().rollback();
+			logger.log(Level.SEVERE, ex.getMessage(), ex);
+			Assert.fail("Exception during testPersistence, see log file");
+		}
 	}
 
 	@Test
@@ -81,7 +171,6 @@ public class TaskPersisterJpaTest_Embedded extends JpaTestBase {
 			logger.log(Level.SEVERE, ex.getMessage(), ex);
 			Assert.fail("Exception during testPersistence, see log file");
 		}
-
 	}
 
 	@Test

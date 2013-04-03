@@ -63,7 +63,10 @@ public class TaskManagerTest {
 		// case - stop it
 		tested.stopTasksExecution();
 		Assert.assertNull(tested.taskRunner);
-		Assert.assertTrue(tr.isInterrupted() || !tr.isAlive());
+		Thread.sleep(200);
+		synchronized (tr) {
+			Assert.assertTrue(tr.isInterrupted() || !tr.isAlive());
+		}
 	}
 
 	@Test

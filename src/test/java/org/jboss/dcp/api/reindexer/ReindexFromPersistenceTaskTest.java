@@ -90,30 +90,6 @@ public class ReindexFromPersistenceTaskTest extends ESRealClientTestBase {
 		}
 	}
 
-	@Test
-	public void performTask_errorhandling() throws Exception {
-
-		try {
-			ReindexFromPersistenceTask tested = new ReindexFromPersistenceTask();
-			tested.searchClientService = Mockito.mock(SearchClientService.class);
-			Mockito.when(tested.searchClientService.getClient()).thenReturn(prepareESClientForUnitTest());
-			tested.dcpContentType = dcpContentType;
-			tested.providerService = Mockito.mock(ProviderService.class);
-			List<Map<String, Object>> preprocessorsDef = new ArrayList<Map<String, Object>>();
-
-			configProviderServiceMock(tested, preprocessorsDef);
-
-			indexCreate(indexName);
-			indexMappingCreate(indexName, typeName, "{ \"" + typeName + "\" : {\"_timestamp\" : { \"enabled\" : true }}}");
-			{
-				// TODO TASK init test
-			}
-
-		} finally {
-			finalizeESClientForUnitTest();
-		}
-	}
-
 	private void configProviderServiceMock(ReindexFromPersistenceTask tested, List<Map<String, Object>> preprocessorsDef) {
 		Map<String, Object> typeDef = new HashMap<String, Object>();
 		typeDef.put(ProviderService.INPUT_PREPROCESSORS, preprocessorsDef);

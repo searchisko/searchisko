@@ -6,9 +6,11 @@
 package org.jboss.dcp.api.tasker;
 
 import java.lang.Thread.State;
+import java.util.Set;
 
 import junit.framework.Assert;
 
+import org.jboss.dcp.api.testtools.TestUtils;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
@@ -32,6 +34,8 @@ public class TaskRunnerTest {
 		Assert.assertEquals("ndid", tested.nodeId);
 		Assert.assertEquals(taskFactory, tested.taskFactory);
 		Assert.assertEquals(taskPersister, tested.taskPersister);
+		// case - assert last heartbeat initialization so no HB runs after start immediately
+		TestUtils.assertCurrentDate(tested.lastHb);
 	}
 
 	@Test
@@ -170,6 +174,75 @@ public class TaskRunnerTest {
 		for (Task task : tested.runningTasks.values()) {
 			Assert.assertTrue(!task.isAlive() || task.isInterrupted());
 		}
+	}
+
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	@Test
+	public void heartbeat() {
+		TaskRunner tested = getTested();
+
+		// case - no heartbeat performed
+		{
+			long lhb = System.currentTimeMillis() - tested.hbPeriod + 200;
+			tested.lastHb = lhb;
+
+			tested.heartbeat();
+			Assert.assertEquals(lhb, tested.lastHb);
+			Mockito.verifyZeroInteractions(tested.taskPersister);
+		}
+
+		// case - heartbeat performed, no any running tasks in runner
+		{
+			Mockito.reset(tested.taskPersister);
+			long lhb = System.currentTimeMillis() - tested.hbPeriod - 200;
+			tested.lastHb = lhb;
+			Mockito.doAnswer(new Answer() {
+
+				@Override
+				public Object answer(InvocationOnMock invocation) throws Throwable {
+					Set<String> s = (Set<String>) invocation.getArguments()[1];
+					Assert.assertNotNull(s);
+					Assert.assertTrue(s.isEmpty());
+					return null;
+				}
+			}).when(tested.taskPersister).heartbeat(Mockito.eq(TESTNODEID), Mockito.anySet(), Mockito.anyLong());
+
+			tested.heartbeat();
+
+			TestUtils.assertCurrentDate(tested.lastHb);
+			Mockito.verify(tested.taskPersister).heartbeat(Mockito.eq(TESTNODEID), Mockito.anySet(),
+					Mockito.eq(tested.hbPeriod * 5));
+			Mockito.verifyNoMoreInteractions(tested.taskPersister);
+		}
+
+		// case - heartbeat performed, some running tasks in runner
+		{
+			Mockito.reset(tested.taskPersister);
+			tested.runningTasks.put("tid1", Mockito.mock(Task.class));
+			tested.runningTasks.put("tid2", Mockito.mock(Task.class));
+			long lhb = System.currentTimeMillis() - tested.hbPeriod - 200;
+			tested.lastHb = lhb;
+			Mockito.doAnswer(new Answer() {
+
+				@Override
+				public Object answer(InvocationOnMock invocation) throws Throwable {
+					Set<String> s = (Set<String>) invocation.getArguments()[1];
+					Assert.assertNotNull(s);
+					Assert.assertEquals(2, s.size());
+					Assert.assertTrue(s.contains("tid1"));
+					Assert.assertTrue(s.contains("tid2"));
+					return null;
+				}
+			}).when(tested.taskPersister).heartbeat(Mockito.eq(TESTNODEID), Mockito.anySet(), Mockito.anyLong());
+
+			tested.heartbeat();
+
+			TestUtils.assertCurrentDate(tested.lastHb);
+			Mockito.verify(tested.taskPersister).heartbeat(Mockito.eq(TESTNODEID), Mockito.anySet(),
+					Mockito.eq(tested.hbPeriod * 5));
+			Mockito.verifyNoMoreInteractions(tested.taskPersister);
+		}
+
 	}
 
 	@Test
