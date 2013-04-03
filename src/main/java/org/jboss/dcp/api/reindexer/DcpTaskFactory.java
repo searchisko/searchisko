@@ -58,11 +58,23 @@ public class DcpTaskFactory implements TaskFactory {
 			TaskConfigurationException {
 		switch (DcpTaskTypes.getInstance(taskType)) {
 		case REINDEX_FROM_PERSISTENCE:
-			// TODO REINDEX validate dcp_content_type exists and is persisted
-			return new ReindexFromPersistenceTask(contentPersistenceService, providerService, searchClientService,
-					getMandatoryConfigString(taskConfig, CFG_DCP_CONTENT_TYPE));
+			return createReindexFromPersistenceTask(taskConfig);
+
 		}
 		throw new UnsupportedTaskException(taskType);
+	}
+
+	private Task createReindexFromPersistenceTask(Map<String, Object> taskConfig) throws TaskConfigurationException {
+		String dcpContentType = getMandatoryConfigString(taskConfig, CFG_DCP_CONTENT_TYPE);
+		Map<String, Object> typeDef = providerService.findContentType(dcpContentType);
+		if (typeDef == null) {
+			throw new TaskConfigurationException("Content type '" + dcpContentType + "' doesn't exists.");
+		}
+		if (!ProviderService.extractPersist(typeDef)) {
+			throw new TaskConfigurationException("Content type '" + dcpContentType + "' is not persisted.");
+		}
+		return new ReindexFromPersistenceTask(contentPersistenceService, providerService, searchClientService,
+				dcpContentType);
 	}
 
 	private String getMandatoryConfigString(Map<String, Object> taskConfig, String propertyName)

@@ -37,10 +37,7 @@ public class DcpTaskFactoryTest {
 
 	@Test
 	public void createTask() throws TaskConfigurationException, UnsupportedTaskException {
-		DcpTaskFactory tested = new DcpTaskFactory();
-		tested.contentPersistenceService = Mockito.mock(ContentPersistenceService.class);
-		tested.providerService = Mockito.mock(ProviderService.class);
-		tested.searchClientService = Mockito.mock(SearchClientService.class);
+		DcpTaskFactory tested = getTested();
 
 		try {
 			tested.createTask("nonsense", null);
@@ -49,13 +46,20 @@ public class DcpTaskFactoryTest {
 			// OK
 		}
 
-		// case - REINDEX_FROM_PERSISTENCE tests
+	}
+
+	@Test
+	public void createTask_REINDEX_FROM_PERSISTENCE() throws TaskConfigurationException, UnsupportedTaskException {
+		DcpTaskFactory tested = getTested();
+
+		// case - missing content type in configuration
 		try {
 			tested.createTask(DcpTaskTypes.REINDEX_FROM_PERSISTENCE.getTaskType(), null);
 			Assert.fail("TaskConfigurationException expected");
 		} catch (TaskConfigurationException e) {
 			// OK
 		}
+		// case - missing content type in configuration
 		try {
 			Map<String, Object> config = new HashMap<String, Object>();
 			tested.createTask(DcpTaskTypes.REINDEX_FROM_PERSISTENCE.getTaskType(), config);
@@ -63,15 +67,50 @@ public class DcpTaskFactoryTest {
 		} catch (TaskConfigurationException e) {
 			// OK
 		}
+		// case - missing content type in configuration
 		try {
 			Map<String, Object> config = new HashMap<String, Object>();
 			config.put(DcpTaskFactory.CFG_DCP_CONTENT_TYPE, "  ");
 			tested.createTask(DcpTaskTypes.REINDEX_FROM_PERSISTENCE.getTaskType(), config);
 			Assert.fail("TaskConfigurationException expected");
 		} catch (TaskConfigurationException e) {
-			// OK
+			Assert.assertEquals("dcp_content_type configuration property must be defined", e.getMessage());
 		}
+
+		// case - nonexisting content type in configuration
 		{
+			Mockito.when(tested.providerService.findContentType("mytype")).thenReturn(null);
+			Map<String, Object> config = new HashMap<String, Object>();
+			config.put(DcpTaskFactory.CFG_DCP_CONTENT_TYPE, "mytype");
+
+			try {
+				tested.createTask(DcpTaskTypes.REINDEX_FROM_PERSISTENCE.getTaskType(), config);
+			} catch (TaskConfigurationException e) {
+				Assert.assertEquals("Content type 'mytype' doesn't exists.", e.getMessage());
+			}
+		}
+
+		// case - nonpersistent content type in configuration
+		{
+			Map<String, Object> typeDef = new HashMap<String, Object>();
+			typeDef.put(ProviderService.PERSIST, false);
+			Mockito.when(tested.providerService.findContentType("mytype")).thenReturn(typeDef);
+			Map<String, Object> config = new HashMap<String, Object>();
+			config.put(DcpTaskFactory.CFG_DCP_CONTENT_TYPE, "mytype");
+
+			try {
+				tested.createTask(DcpTaskTypes.REINDEX_FROM_PERSISTENCE.getTaskType(), config);
+			} catch (TaskConfigurationException e) {
+				Assert.assertEquals("Content type 'mytype' is not persisted.", e.getMessage());
+			}
+		}
+
+		// case - everything is OK
+		{
+			Map<String, Object> typeDef = new HashMap<String, Object>();
+			typeDef.put(ProviderService.PERSIST, true);
+			Mockito.when(tested.providerService.findContentType("mytype")).thenReturn(typeDef);
+
 			Map<String, Object> config = new HashMap<String, Object>();
 			config.put(DcpTaskFactory.CFG_DCP_CONTENT_TYPE, "mytype");
 			Task task = tested.createTask(DcpTaskTypes.REINDEX_FROM_PERSISTENCE.getTaskType(), config);
@@ -82,6 +121,14 @@ public class DcpTaskFactoryTest {
 			Assert.assertEquals(tested.providerService, ctask.providerService);
 			Assert.assertEquals(tested.searchClientService, ctask.searchClientService);
 		}
-
 	}
+
+	private DcpTaskFactory getTested() {
+		DcpTaskFactory tested = new DcpTaskFactory();
+		tested.contentPersistenceService = Mockito.mock(ContentPersistenceService.class);
+		tested.providerService = Mockito.mock(ProviderService.class);
+		tested.searchClientService = Mockito.mock(SearchClientService.class);
+		return tested;
+	}
+
 }
