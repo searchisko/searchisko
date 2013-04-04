@@ -123,6 +123,64 @@ public class DcpTaskFactoryTest {
 		}
 	}
 
+	@Test
+	public void createTask_RENORMALIZE_BY_CONTENT_TYPE() throws TaskConfigurationException, UnsupportedTaskException {
+		DcpTaskFactory tested = getTested();
+
+		// case - missing content type in configuration
+		try {
+			tested.createTask(DcpTaskTypes.RENORMALIZE_BY_CONTENT_TYPE.getTaskType(), null);
+			Assert.fail("TaskConfigurationException expected");
+		} catch (TaskConfigurationException e) {
+			// OK
+		}
+		// case - missing content type in configuration
+		try {
+			Map<String, Object> config = new HashMap<String, Object>();
+			tested.createTask(DcpTaskTypes.RENORMALIZE_BY_CONTENT_TYPE.getTaskType(), config);
+			Assert.fail("TaskConfigurationException expected");
+		} catch (TaskConfigurationException e) {
+			// OK
+		}
+		// case - missing content type in configuration
+		try {
+			Map<String, Object> config = new HashMap<String, Object>();
+			config.put(DcpTaskFactory.CFG_DCP_CONTENT_TYPE, "  ");
+			tested.createTask(DcpTaskTypes.RENORMALIZE_BY_CONTENT_TYPE.getTaskType(), config);
+			Assert.fail("TaskConfigurationException expected");
+		} catch (TaskConfigurationException e) {
+			Assert.assertEquals("dcp_content_type configuration property must be defined", e.getMessage());
+		}
+
+		// case - nonexisting content type in configuration
+		{
+			Mockito.when(tested.providerService.findContentType("mytype")).thenReturn(null);
+			Map<String, Object> config = new HashMap<String, Object>();
+			config.put(DcpTaskFactory.CFG_DCP_CONTENT_TYPE, "mytype");
+
+			try {
+				tested.createTask(DcpTaskTypes.RENORMALIZE_BY_CONTENT_TYPE.getTaskType(), config);
+			} catch (TaskConfigurationException e) {
+				Assert.assertEquals("Content type 'mytype' doesn't exists.", e.getMessage());
+			}
+		}
+
+		// case - everything is OK
+		{
+			Map<String, Object> typeDef = new HashMap<String, Object>();
+			Mockito.when(tested.providerService.findContentType("mytype")).thenReturn(typeDef);
+
+			Map<String, Object> config = new HashMap<String, Object>();
+			config.put(DcpTaskFactory.CFG_DCP_CONTENT_TYPE, "mytype");
+			Task task = tested.createTask(DcpTaskTypes.RENORMALIZE_BY_CONTENT_TYPE.getTaskType(), config);
+			Assert.assertEquals(RenormalizeByContentTypeTask.class, task.getClass());
+			RenormalizeByContentTypeTask ctask = (RenormalizeByContentTypeTask) task;
+			Assert.assertEquals("mytype", ctask.dcpContentType);
+			Assert.assertEquals(tested.providerService, ctask.providerService);
+			Assert.assertEquals(tested.searchClientService, ctask.searchClientService);
+		}
+	}
+
 	private DcpTaskFactory getTested() {
 		DcpTaskFactory tested = new DcpTaskFactory();
 		tested.contentPersistenceService = Mockito.mock(ContentPersistenceService.class);

@@ -59,9 +59,19 @@ public class DcpTaskFactory implements TaskFactory {
 		switch (DcpTaskTypes.getInstance(taskType)) {
 		case REINDEX_FROM_PERSISTENCE:
 			return createReindexFromPersistenceTask(taskConfig);
-
+		case RENORMALIZE_BY_CONTENT_TYPE:
+			return createRenormalizeByContentTypeTask(taskConfig);
 		}
 		throw new UnsupportedTaskException(taskType);
+	}
+
+	private Task createRenormalizeByContentTypeTask(Map<String, Object> taskConfig) throws TaskConfigurationException {
+		String dcpContentType = getMandatoryConfigString(taskConfig, CFG_DCP_CONTENT_TYPE);
+		Map<String, Object> typeDef = providerService.findContentType(dcpContentType);
+		if (typeDef == null) {
+			throw new TaskConfigurationException("Content type '" + dcpContentType + "' doesn't exists.");
+		}
+		return new RenormalizeByContentTypeTask(providerService, searchClientService, dcpContentType);
 	}
 
 	private Task createReindexFromPersistenceTask(Map<String, Object> taskConfig) throws TaskConfigurationException {
@@ -84,9 +94,20 @@ public class DcpTaskFactory implements TaskFactory {
 
 		Object val = taskConfig.get(propertyName);
 
-		if (val == null || val.toString().trim().length() == 0)
+		if (val == null || val.toString().trim().isEmpty())
 			throw new TaskConfigurationException(propertyName + " configuration property must be defined");
 
+		return val.toString().trim();
+	}
+
+	private String getConfigString(Map<String, Object> taskConfig, String propertyName) throws TaskConfigurationException {
+		if (taskConfig == null)
+			throw new TaskConfigurationException(propertyName + " configuration property must be defined");
+
+		Object val = taskConfig.get(propertyName);
+
+		if (val == null || val.toString().trim().isEmpty())
+			return null;
 		return val.toString().trim();
 	}
 }
