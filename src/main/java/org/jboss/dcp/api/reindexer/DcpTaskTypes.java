@@ -13,7 +13,7 @@ import org.jboss.dcp.api.tasker.UnsupportedTaskException;
  * @author Vlastimil Elias (velias at redhat dot com)
  */
 public enum DcpTaskTypes {
-	REINDEX_FROM_PERSISTENCE, RENORMALIZE_BY_CONTENT_TYPE;
+	REINDEX_FROM_PERSISTENCE, RENORMALIZE_BY_CONTENT_TYPE, RENORMALIZE_BY_PROJECT_CODE;
 
 	/**
 	 * @return task type identifier for this type

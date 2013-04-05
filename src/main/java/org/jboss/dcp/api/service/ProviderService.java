@@ -308,6 +308,25 @@ public class ProviderService implements EntityService {
 	}
 
 	/**
+	 * Get configuration for all <code>dcp_content_type</code> from provider configuration.
+	 * 
+	 * @param providerDef provider configuration structure
+	 * @return map with all type configurations or null if doesn't exist. Key in map is type name, value is type
+	 *         configuration.
+	 * @throws SettingsException for incorrect configuration structure
+	 */
+	@SuppressWarnings("unchecked")
+	public static Map<String, Map<String, Object>> extractAllContentTypes(Map<String, Object> providerDef) {
+		try {
+			Map<String, Map<String, Object>> types = (Map<String, Map<String, Object>>) providerDef.get(TYPE);
+			return types;
+		} catch (ClassCastException e) {
+			throw new SettingsException("Incorrect configuration for provider '" + providerDef.get(NAME)
+					+ "' when trying to retrieve all dcp_provider_type configurations. Contact administrators please.");
+		}
+	}
+
+	/**
 	 * Get preprocessors configuration from one <code>dcp_content_type</code> configuration structure.
 	 * 
 	 * @param typeDef <code>dcp_content_type</code> configuration structure

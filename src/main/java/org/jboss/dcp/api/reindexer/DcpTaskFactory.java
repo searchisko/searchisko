@@ -34,6 +34,7 @@ import org.jboss.dcp.persistence.service.ContentPersistenceService;
 public class DcpTaskFactory implements TaskFactory {
 
 	public static final String CFG_DCP_CONTENT_TYPE = "dcp_content_type";
+	public static final String CFG_PROJECT_CODE = "project_code";
 
 	@Inject
 	protected ContentPersistenceService contentPersistenceService;
@@ -61,6 +62,8 @@ public class DcpTaskFactory implements TaskFactory {
 			return createReindexFromPersistenceTask(taskConfig);
 		case RENORMALIZE_BY_CONTENT_TYPE:
 			return createRenormalizeByContentTypeTask(taskConfig);
+		case RENORMALIZE_BY_PROJECT_CODE:
+			return createRenormalizeByProjectCodeTask(taskConfig);
 		}
 		throw new UnsupportedTaskException(taskType);
 	}
@@ -72,6 +75,11 @@ public class DcpTaskFactory implements TaskFactory {
 			throw new TaskConfigurationException("Content type '" + dcpContentType + "' doesn't exists.");
 		}
 		return new RenormalizeByContentTypeTask(providerService, searchClientService, dcpContentType);
+	}
+
+	private Task createRenormalizeByProjectCodeTask(Map<String, Object> taskConfig) throws TaskConfigurationException {
+		String projectCode = getMandatoryConfigString(taskConfig, CFG_PROJECT_CODE);
+		return new RenormalizeByProjectCodeTask(providerService, searchClientService, projectCode);
 	}
 
 	private Task createReindexFromPersistenceTask(Map<String, Object> taskConfig) throws TaskConfigurationException {

@@ -181,6 +181,49 @@ public class DcpTaskFactoryTest {
 		}
 	}
 
+	@Test
+	public void createTask_RENORMALIZE_BY_PROJECT_CODE() throws TaskConfigurationException, UnsupportedTaskException {
+		DcpTaskFactory tested = getTested();
+
+		// case - missing projet code in configuration
+		try {
+			tested.createTask(DcpTaskTypes.RENORMALIZE_BY_PROJECT_CODE.getTaskType(), null);
+			Assert.fail("TaskConfigurationException expected");
+		} catch (TaskConfigurationException e) {
+			// OK
+		}
+		// case - missing project code in configuration
+		try {
+			Map<String, Object> config = new HashMap<String, Object>();
+			tested.createTask(DcpTaskTypes.RENORMALIZE_BY_PROJECT_CODE.getTaskType(), config);
+			Assert.fail("TaskConfigurationException expected");
+		} catch (TaskConfigurationException e) {
+			// OK
+		}
+		// case - missing project code in configuration
+		try {
+			Map<String, Object> config = new HashMap<String, Object>();
+			config.put(DcpTaskFactory.CFG_PROJECT_CODE, "  ");
+			tested.createTask(DcpTaskTypes.RENORMALIZE_BY_PROJECT_CODE.getTaskType(), config);
+			Assert.fail("TaskConfigurationException expected");
+		} catch (TaskConfigurationException e) {
+			Assert.assertEquals("project_code configuration property must be defined", e.getMessage());
+		}
+
+		// case - everything is OK
+		{
+
+			Map<String, Object> config = new HashMap<String, Object>();
+			config.put(DcpTaskFactory.CFG_PROJECT_CODE, "myproject");
+			Task task = tested.createTask(DcpTaskTypes.RENORMALIZE_BY_PROJECT_CODE.getTaskType(), config);
+			Assert.assertEquals(RenormalizeByProjectCodeTask.class, task.getClass());
+			RenormalizeByProjectCodeTask ctask = (RenormalizeByProjectCodeTask) task;
+			Assert.assertEquals("myproject", ctask.projectCode);
+			Assert.assertEquals(tested.providerService, ctask.providerService);
+			Assert.assertEquals(tested.searchClientService, ctask.searchClientService);
+		}
+	}
+
 	private DcpTaskFactory getTested() {
 		DcpTaskFactory tested = new DcpTaskFactory();
 		tested.contentPersistenceService = Mockito.mock(ContentPersistenceService.class);
