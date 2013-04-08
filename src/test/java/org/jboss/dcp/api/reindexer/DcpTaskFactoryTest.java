@@ -5,6 +5,8 @@
  */
 package org.jboss.dcp.api.reindexer;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -209,16 +211,169 @@ public class DcpTaskFactoryTest {
 		} catch (TaskConfigurationException e) {
 			Assert.assertEquals("project_code configuration property must be defined", e.getMessage());
 		}
+		try {
+			Map<String, Object> config = new HashMap<String, Object>();
+			config.put(DcpTaskFactory.CFG_PROJECT_CODE, new String[] {});
+			tested.createTask(DcpTaskTypes.RENORMALIZE_BY_PROJECT_CODE.getTaskType(), config);
+			Assert.fail("TaskConfigurationException expected");
+		} catch (TaskConfigurationException e) {
+			Assert.assertEquals("project_code configuration property must be defined", e.getMessage());
+		}
+		try {
+			Map<String, Object> config = new HashMap<String, Object>();
+			config.put(DcpTaskFactory.CFG_PROJECT_CODE, new String[] { " " });
+			tested.createTask(DcpTaskTypes.RENORMALIZE_BY_PROJECT_CODE.getTaskType(), config);
+			Assert.fail("TaskConfigurationException expected");
+		} catch (TaskConfigurationException e) {
+			Assert.assertEquals("project_code configuration property must be defined", e.getMessage());
+		}
+		try {
+			Map<String, Object> config = new HashMap<String, Object>();
+			config.put(DcpTaskFactory.CFG_PROJECT_CODE, new ArrayList<String>());
+			tested.createTask(DcpTaskTypes.RENORMALIZE_BY_PROJECT_CODE.getTaskType(), config);
+			Assert.fail("TaskConfigurationException expected");
+		} catch (TaskConfigurationException e) {
+			Assert.assertEquals("project_code configuration property must be defined", e.getMessage());
+		}
+		try {
+			Map<String, Object> config = new HashMap<String, Object>();
+			config.put(DcpTaskFactory.CFG_PROJECT_CODE, Arrays.asList(new String[] { " ", "" }));
+			tested.createTask(DcpTaskTypes.RENORMALIZE_BY_PROJECT_CODE.getTaskType(), config);
+			Assert.fail("TaskConfigurationException expected");
+		} catch (TaskConfigurationException e) {
+			Assert.assertEquals("project_code configuration property must be defined", e.getMessage());
+		}
 
 		// case - everything is OK
 		{
-
 			Map<String, Object> config = new HashMap<String, Object>();
 			config.put(DcpTaskFactory.CFG_PROJECT_CODE, "myproject");
 			Task task = tested.createTask(DcpTaskTypes.RENORMALIZE_BY_PROJECT_CODE.getTaskType(), config);
 			Assert.assertEquals(RenormalizeByProjectCodeTask.class, task.getClass());
 			RenormalizeByProjectCodeTask ctask = (RenormalizeByProjectCodeTask) task;
-			Assert.assertEquals("myproject", ctask.projectCode);
+			Assert.assertEquals("myproject", ctask.projectCodes[0]);
+			Assert.assertEquals(tested.providerService, ctask.providerService);
+			Assert.assertEquals(tested.searchClientService, ctask.searchClientService);
+		}
+
+		{
+			Map<String, Object> config = new HashMap<String, Object>();
+			config.put(DcpTaskFactory.CFG_PROJECT_CODE, new String[] { "myproject", "myproject2" });
+			Task task = tested.createTask(DcpTaskTypes.RENORMALIZE_BY_PROJECT_CODE.getTaskType(), config);
+			Assert.assertEquals(RenormalizeByProjectCodeTask.class, task.getClass());
+			RenormalizeByProjectCodeTask ctask = (RenormalizeByProjectCodeTask) task;
+			Assert.assertEquals("myproject", ctask.projectCodes[0]);
+			Assert.assertEquals("myproject2", ctask.projectCodes[1]);
+			Assert.assertEquals(tested.providerService, ctask.providerService);
+			Assert.assertEquals(tested.searchClientService, ctask.searchClientService);
+		}
+
+		{
+			Map<String, Object> config = new HashMap<String, Object>();
+			config.put(DcpTaskFactory.CFG_PROJECT_CODE, Arrays.asList(new String[] { "myproject", "myproject2" }));
+			Task task = tested.createTask(DcpTaskTypes.RENORMALIZE_BY_PROJECT_CODE.getTaskType(), config);
+			Assert.assertEquals(RenormalizeByProjectCodeTask.class, task.getClass());
+			RenormalizeByProjectCodeTask ctask = (RenormalizeByProjectCodeTask) task;
+			Assert.assertEquals("myproject", ctask.projectCodes[0]);
+			Assert.assertEquals("myproject2", ctask.projectCodes[1]);
+			Assert.assertEquals(tested.providerService, ctask.providerService);
+			Assert.assertEquals(tested.searchClientService, ctask.searchClientService);
+		}
+	}
+
+	@Test
+	public void createTask_RENORMALIZE_BY_CONTRIBUTOR_CODE() throws TaskConfigurationException, UnsupportedTaskException {
+		DcpTaskFactory tested = getTested();
+
+		// case - missing projet code in configuration
+		try {
+			tested.createTask(DcpTaskTypes.RENORMALIZE_BY_CONTRIBUTOR_CODE.getTaskType(), null);
+			Assert.fail("TaskConfigurationException expected");
+		} catch (TaskConfigurationException e) {
+			// OK
+		}
+		// case - missing project code in configuration
+		try {
+			Map<String, Object> config = new HashMap<String, Object>();
+			tested.createTask(DcpTaskTypes.RENORMALIZE_BY_CONTRIBUTOR_CODE.getTaskType(), config);
+			Assert.fail("TaskConfigurationException expected");
+		} catch (TaskConfigurationException e) {
+			// OK
+		}
+		// case - missing project code in configuration
+		try {
+			Map<String, Object> config = new HashMap<String, Object>();
+			config.put(DcpTaskFactory.CFG_CONTRIBUTOR_CODE, "  ");
+			tested.createTask(DcpTaskTypes.RENORMALIZE_BY_CONTRIBUTOR_CODE.getTaskType(), config);
+			Assert.fail("TaskConfigurationException expected");
+		} catch (TaskConfigurationException e) {
+			Assert.assertEquals("contributor_code configuration property must be defined", e.getMessage());
+		}
+		try {
+			Map<String, Object> config = new HashMap<String, Object>();
+			config.put(DcpTaskFactory.CFG_CONTRIBUTOR_CODE, new String[] {});
+			tested.createTask(DcpTaskTypes.RENORMALIZE_BY_CONTRIBUTOR_CODE.getTaskType(), config);
+			Assert.fail("TaskConfigurationException expected");
+		} catch (TaskConfigurationException e) {
+			Assert.assertEquals("contributor_code configuration property must be defined", e.getMessage());
+		}
+		try {
+			Map<String, Object> config = new HashMap<String, Object>();
+			config.put(DcpTaskFactory.CFG_CONTRIBUTOR_CODE, new String[] { " " });
+			tested.createTask(DcpTaskTypes.RENORMALIZE_BY_CONTRIBUTOR_CODE.getTaskType(), config);
+			Assert.fail("TaskConfigurationException expected");
+		} catch (TaskConfigurationException e) {
+			Assert.assertEquals("contributor_code configuration property must be defined", e.getMessage());
+		}
+		try {
+			Map<String, Object> config = new HashMap<String, Object>();
+			config.put(DcpTaskFactory.CFG_CONTRIBUTOR_CODE, new ArrayList<String>());
+			tested.createTask(DcpTaskTypes.RENORMALIZE_BY_CONTRIBUTOR_CODE.getTaskType(), config);
+			Assert.fail("TaskConfigurationException expected");
+		} catch (TaskConfigurationException e) {
+			Assert.assertEquals("contributor_code configuration property must be defined", e.getMessage());
+		}
+		try {
+			Map<String, Object> config = new HashMap<String, Object>();
+			config.put(DcpTaskFactory.CFG_CONTRIBUTOR_CODE, Arrays.asList(new String[] { " ", "" }));
+			tested.createTask(DcpTaskTypes.RENORMALIZE_BY_CONTRIBUTOR_CODE.getTaskType(), config);
+			Assert.fail("TaskConfigurationException expected");
+		} catch (TaskConfigurationException e) {
+			Assert.assertEquals("contributor_code configuration property must be defined", e.getMessage());
+		}
+
+		// case - everything is OK
+		{
+			Map<String, Object> config = new HashMap<String, Object>();
+			config.put(DcpTaskFactory.CFG_CONTRIBUTOR_CODE, "myproject");
+			Task task = tested.createTask(DcpTaskTypes.RENORMALIZE_BY_CONTRIBUTOR_CODE.getTaskType(), config);
+			Assert.assertEquals(RenormalizeByContributorCodeTask.class, task.getClass());
+			RenormalizeByContributorCodeTask ctask = (RenormalizeByContributorCodeTask) task;
+			Assert.assertEquals("myproject", ctask.contributorCodes[0]);
+			Assert.assertEquals(tested.providerService, ctask.providerService);
+			Assert.assertEquals(tested.searchClientService, ctask.searchClientService);
+		}
+
+		{
+			Map<String, Object> config = new HashMap<String, Object>();
+			config.put(DcpTaskFactory.CFG_CONTRIBUTOR_CODE, new String[] { "myproject", "myproject2" });
+			Task task = tested.createTask(DcpTaskTypes.RENORMALIZE_BY_CONTRIBUTOR_CODE.getTaskType(), config);
+			Assert.assertEquals(RenormalizeByContributorCodeTask.class, task.getClass());
+			RenormalizeByContributorCodeTask ctask = (RenormalizeByContributorCodeTask) task;
+			Assert.assertEquals("myproject", ctask.contributorCodes[0]);
+			Assert.assertEquals("myproject2", ctask.contributorCodes[1]);
+			Assert.assertEquals(tested.providerService, ctask.providerService);
+			Assert.assertEquals(tested.searchClientService, ctask.searchClientService);
+		}
+
+		{
+			Map<String, Object> config = new HashMap<String, Object>();
+			config.put(DcpTaskFactory.CFG_CONTRIBUTOR_CODE, Arrays.asList(new String[] { "myproject", "myproject2" }));
+			Task task = tested.createTask(DcpTaskTypes.RENORMALIZE_BY_CONTRIBUTOR_CODE.getTaskType(), config);
+			Assert.assertEquals(RenormalizeByContributorCodeTask.class, task.getClass());
+			RenormalizeByContributorCodeTask ctask = (RenormalizeByContributorCodeTask) task;
+			Assert.assertEquals("myproject", ctask.contributorCodes[0]);
+			Assert.assertEquals("myproject2", ctask.contributorCodes[1]);
 			Assert.assertEquals(tested.providerService, ctask.providerService);
 			Assert.assertEquals(tested.searchClientService, ctask.searchClientService);
 		}

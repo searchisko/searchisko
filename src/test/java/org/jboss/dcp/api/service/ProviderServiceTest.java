@@ -42,6 +42,29 @@ public class ProviderServiceTest extends ESRealClientTestBase {
 	}
 
 	@Test
+	public void extractAllContentTypes() {
+		Map<String, Object> providerDef = new HashMap<String, Object>();
+
+		// case - type field not defined
+		Assert.assertNull(ProviderService.extractAllContentTypes(providerDef));
+
+		Map<String, Object> types = new HashMap<String, Object>();
+		providerDef.put(ProviderService.TYPE, types);
+
+		// case - type field defined
+		Assert.assertEquals(types, ProviderService.extractAllContentTypes(providerDef));
+
+		// case - bad class of type field
+		providerDef.put(ProviderService.TYPE, "baaad");
+		try {
+			ProviderService.extractAllContentTypes(providerDef);
+			Assert.fail("SettingsException expected");
+		} catch (SettingsException e) {
+			// OK
+		}
+	}
+
+	@Test
 	public void extractContentType() {
 		Map<String, Object> providerDef = new HashMap<String, Object>();
 
@@ -75,7 +98,6 @@ public class ProviderServiceTest extends ESRealClientTestBase {
 		} catch (SettingsException e) {
 			// OK
 		}
-
 	}
 
 	@Test

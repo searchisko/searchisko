@@ -23,14 +23,14 @@ import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
 /**
- * Unit test for {@link RenormalizeByProjectCodeTask}
+ * Unit test for {@link RenormalizeByContributorCodeTask}
  * 
  * @author Vlastimil Elias (velias at redhat dot com)
  */
-public class RenormalizeByProjectCodeTaskTest extends ESRealClientTestBase {
+public class RenormalizeByContributorCodeTaskTest extends ESRealClientTestBase {
 
-	String projectCode = "project1";
-	String projectCode2 = "project2";
+	String contributorCode = "project 1";
+	String contributorCode2 = "project 2";
 	String dcpContentType = "tt";
 	String indexName = "myindex";
 	String typeName = "mytype";
@@ -40,10 +40,10 @@ public class RenormalizeByProjectCodeTaskTest extends ESRealClientTestBase {
 	public void performTask_ok() throws Exception {
 
 		try {
-			RenormalizeByProjectCodeTask tested = new RenormalizeByProjectCodeTask();
+			RenormalizeByContributorCodeTask tested = new RenormalizeByContributorCodeTask();
 			tested.searchClientService = Mockito.mock(SearchClientService.class);
 			Mockito.when(tested.searchClientService.getClient()).thenReturn(prepareESClientForUnitTest());
-			tested.projectCodes = new String[] { projectCode };
+			tested.contributorCodes = new String[] { contributorCode };
 			tested.providerService = Mockito.mock(ProviderService.class);
 			TaskExecutionContext contextMock = Mockito.mock(TaskExecutionContext.class);
 			tested.setExecutionContext("tid", contextMock);
@@ -61,7 +61,7 @@ public class RenormalizeByProjectCodeTaskTest extends ESRealClientTestBase {
 
 			indexCreate(indexName);
 			indexMappingCreate(indexName, typeName, "{ \"" + typeName
-					+ "\" : {\"properties\": {\"dcp_project\" : {\"type\" : \"string\", \"analyzer\" : \"keyword\"}}}}");
+					+ "\" : {\"properties\": {\"dcp_contributors\" : {\"type\" : \"string\", \"analyzer\" : \"keyword\"}}}}");
 			// case - run on empty index
 			{
 				Mockito.reset(tested.providerService);
@@ -76,23 +76,23 @@ public class RenormalizeByProjectCodeTaskTest extends ESRealClientTestBase {
 			// case - run on non empty index, for one project
 			{
 				indexInsertDocument(indexName, typeName, "tt-1",
-						"{\"id\" : \"tt1\", \"dcp_project\" : \"project1\", \"dcp_content_type\" : \"tt\"}");
+						"{\"id\" : \"tt1\", \"dcp_contributors\" : [\"project 3\",\"project 1\"], \"dcp_content_type\" : \"tt\"}");
 				indexInsertDocument(indexName, typeName, "tt-2",
-						"{\"id\" : \"tt2\", \"dcp_project\" : \"project1\", \"dcp_content_type\" : \"tt\"}");
+						"{\"id\" : \"tt2\", \"dcp_contributors\" : \"project 1\", \"dcp_content_type\" : \"tt\"}");
 				indexInsertDocument(indexName, typeName, "tt-3",
-						"{\"id\" : \"tt3\", \"dcp_project\" : \"project1\", \"dcp_content_type\" : \"tt\"}");
+						"{\"id\" : \"tt3\", \"dcp_contributors\" : \"project 1\", \"dcp_content_type\" : \"tt\"}");
 				indexInsertDocument(indexName, typeName, "tt-4",
-						"{\"id\" : \"tt4\", \"dcp_project\" : \"project2\", \"dcp_content_type\" : \"tt\"}");
+						"{\"id\" : \"tt4\", \"dcp_contributors\" : \"project 2\", \"dcp_content_type\" : \"tt\"}");
 				indexInsertDocument(indexName, typeName, "tt-5",
-						"{\"id\" : \"tt5\", \"dcp_project\" : \"project1\", \"dcp_content_type\" : \"tt\"}");
+						"{\"id\" : \"tt5\", \"dcp_contributors\" : [\"project 1\",\"project 2\"], \"dcp_content_type\" : \"tt\"}");
 				indexInsertDocument(indexName, typeName, "tt-6",
-						"{\"id\" : \"tt6\", \"dcp_project\" : \"project2\", \"dcp_content_type\" : \"tt\"}");
+						"{\"id\" : \"tt6\", \"dcp_contributors\" : \"project 2\", \"dcp_content_type\" : \"tt\"}");
 
 				// next must be skipped due nonexisting type definition
 				indexInsertDocument(indexName, typeName, "tt-7",
-						"{\"id\" : \"tt7\", \"dcp_project\" : \"project1\", \"dcp_content_type\" : \"tt2\"}");
+						"{\"id\" : \"tt7\", \"dcp_contributors\" : \"project 1\", \"dcp_content_type\" : \"tt2\"}");
 				indexInsertDocument(indexName, typeName, "tt-8",
-						"{\"id\" : \"tt8\", \"dcp_project\" : \"project3\", \"dcp_content_type\" : \"tt\"}");
+						"{\"id\" : \"tt8\", \"dcp_contributors\" : \"project 3\", \"dcp_content_type\" : \"tt\"}");
 				indexFlush(indexName);
 
 				Mockito.reset(tested.providerService, contextMock);
@@ -130,7 +130,7 @@ public class RenormalizeByProjectCodeTaskTest extends ESRealClientTestBase {
 
 			// case - run on non empty index, for more projects
 			{
-				tested.projectCodes = new String[] { projectCode, projectCode2 };
+				tested.contributorCodes = new String[] { contributorCode, contributorCode2 };
 
 				Mockito.reset(tested.providerService, contextMock);
 				configProviderServiceMock(tested, preprocessorsDef);
@@ -170,7 +170,8 @@ public class RenormalizeByProjectCodeTaskTest extends ESRealClientTestBase {
 		}
 	}
 
-	private void configProviderServiceMock(RenormalizeByProjectCodeTask tested, List<Map<String, Object>> preprocessorsDef) {
+	private void configProviderServiceMock(RenormalizeByContributorCodeTask tested,
+			List<Map<String, Object>> preprocessorsDef) {
 		Map<String, Object> typeDef = new HashMap<String, Object>();
 		typeDef.put(ProviderService.INPUT_PREPROCESSORS, preprocessorsDef);
 		Map<String, Object> index = new HashMap<String, Object>();

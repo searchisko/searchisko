@@ -6,8 +6,11 @@
 package org.jboss.dcp.api.reindexer;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.ejb.Singleton;
 import javax.enterprise.context.ApplicationScoped;
@@ -24,7 +27,8 @@ import org.jboss.dcp.persistence.service.ContentPersistenceService;
 
 /**
  * {@link TaskFactory} for DCP tasks. It's CDI singleton bean because needs to inject some other DCP components to pass
- * them into tasks.
+ * them into tasks. <br>
+ * TODO TASKS types and configuration documentation in REST API doc
  * 
  * @author Vlastimil Elias (velias at redhat dot com)
  */
@@ -35,6 +39,7 @@ public class DcpTaskFactory implements TaskFactory {
 
 	public static final String CFG_DCP_CONTENT_TYPE = "dcp_content_type";
 	public static final String CFG_PROJECT_CODE = "project_code";
+	public static final String CFG_CONTRIBUTOR_CODE = "contributor_code";
 
 	@Inject
 	protected ContentPersistenceService contentPersistenceService;
@@ -64,6 +69,8 @@ public class DcpTaskFactory implements TaskFactory {
 			return createRenormalizeByContentTypeTask(taskConfig);
 		case RENORMALIZE_BY_PROJECT_CODE:
 			return createRenormalizeByProjectCodeTask(taskConfig);
+		case RENORMALIZE_BY_CONTRIBUTOR_CODE:
+			return createRenormalizeByContributorCodeTask(taskConfig);
 		}
 		throw new UnsupportedTaskException(taskType);
 	}
@@ -78,8 +85,13 @@ public class DcpTaskFactory implements TaskFactory {
 	}
 
 	private Task createRenormalizeByProjectCodeTask(Map<String, Object> taskConfig) throws TaskConfigurationException {
-		String projectCode = getMandatoryConfigString(taskConfig, CFG_PROJECT_CODE);
-		return new RenormalizeByProjectCodeTask(providerService, searchClientService, projectCode);
+		return new RenormalizeByProjectCodeTask(providerService, searchClientService, getMandatoryConfigStringArray(
+				taskConfig, CFG_PROJECT_CODE));
+	}
+
+	private Task createRenormalizeByContributorCodeTask(Map<String, Object> taskConfig) throws TaskConfigurationException {
+		return new RenormalizeByContributorCodeTask(providerService, searchClientService, getMandatoryConfigStringArray(
+				taskConfig, CFG_CONTRIBUTOR_CODE));
 	}
 
 	private Task createReindexFromPersistenceTask(Map<String, Object> taskConfig) throws TaskConfigurationException {
@@ -106,6 +118,48 @@ public class DcpTaskFactory implements TaskFactory {
 			throw new TaskConfigurationException(propertyName + " configuration property must be defined");
 
 		return val.toString().trim();
+	}
+
+	private String[] getMandatoryConfigStringArray(Map<String, Object> taskConfig, String propertyName)
+			throws TaskConfigurationException {
+		if (taskConfig == null)
+			throw new TaskConfigurationException(propertyName + " configuration property must be defined");
+
+		Object val = taskConfig.get(propertyName);
+
+		if (val == null)
+			throw new TaskConfigurationException(propertyName + " configuration property must be defined");
+
+		Set<String> ret = new LinkedHashSet<String>();
+		if (val instanceof Collection) {
+			for (Object o : ((Collection<?>) val)) {
+				if (o != null) {
+					addToHash(ret, o.toString());
+				}
+			}
+		} else if (val instanceof String[]) {
+			for (String o : (String[]) val) {
+				if (o != null) {
+					addToHash(ret, o);
+				}
+			}
+		} else {
+			addToHash(ret, val.toString());
+		}
+
+		if (ret.isEmpty())
+			throw new TaskConfigurationException(propertyName + " configuration property must be defined");
+
+		return ret.toArray(new String[ret.size()]);
+	}
+
+	private void addToHash(Set<String> ret, String string) {
+		if (string != null) {
+			string = string.trim();
+			if (!string.isEmpty()) {
+				ret.add(string);
+			}
+		}
 	}
 
 	private String getConfigString(Map<String, Object> taskConfig, String propertyName) throws TaskConfigurationException {

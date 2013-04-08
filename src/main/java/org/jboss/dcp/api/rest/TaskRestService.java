@@ -32,7 +32,7 @@ import org.jboss.dcp.api.tasker.TaskStatusInfo;
 import org.jboss.dcp.api.tasker.UnsupportedTaskException;
 
 /**
- * Long running Tasks execution related REST API. TODO documentation and unit tests.
+ * Long running Tasks execution related REST API.
  * 
  * @author Vlastimil Elias (velias at redhat dot com)
  */
