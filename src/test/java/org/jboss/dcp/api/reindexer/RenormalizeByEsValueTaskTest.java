@@ -13,6 +13,7 @@ import java.util.Map;
 import junit.framework.Assert;
 
 import org.elasticsearch.indices.IndexMissingException;
+import org.jboss.dcp.api.DcpContentObjectFields;
 import org.jboss.dcp.api.service.ProviderService;
 import org.jboss.dcp.api.service.SearchClientService;
 import org.jboss.dcp.api.tasker.TaskExecutionContext;
@@ -23,11 +24,11 @@ import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
 /**
- * Unit test for {@link RenormalizeByContributorCodeTask}
+ * Unit test for {@link RenormalizeByEsValueTask}
  * 
  * @author Vlastimil Elias (velias at redhat dot com)
  */
-public class RenormalizeByContributorCodeTaskTest extends ESRealClientTestBase {
+public class RenormalizeByEsValueTaskTest extends ESRealClientTestBase {
 
 	String contributorCode = "project 1";
 	String contributorCode2 = "project 2";
@@ -40,10 +41,11 @@ public class RenormalizeByContributorCodeTaskTest extends ESRealClientTestBase {
 	public void performTask_ok() throws Exception {
 
 		try {
-			RenormalizeByContributorCodeTask tested = new RenormalizeByContributorCodeTask();
+			RenormalizeByEsValueTask tested = new RenormalizeByEsValueTask();
 			tested.searchClientService = Mockito.mock(SearchClientService.class);
 			Mockito.when(tested.searchClientService.getClient()).thenReturn(prepareESClientForUnitTest());
-			tested.contributorCodes = new String[] { contributorCode };
+			tested.esField = DcpContentObjectFields.DCP_CONTRIBUTORS;
+			tested.esValues = new String[] { contributorCode };
 			tested.providerService = Mockito.mock(ProviderService.class);
 			TaskExecutionContext contextMock = Mockito.mock(TaskExecutionContext.class);
 			tested.setExecutionContext("tid", contextMock);
@@ -130,7 +132,7 @@ public class RenormalizeByContributorCodeTaskTest extends ESRealClientTestBase {
 
 			// case - run on non empty index, for more projects
 			{
-				tested.contributorCodes = new String[] { contributorCode, contributorCode2 };
+				tested.esValues = new String[] { contributorCode, contributorCode2 };
 
 				Mockito.reset(tested.providerService, contextMock);
 				configProviderServiceMock(tested, preprocessorsDef);
@@ -170,8 +172,7 @@ public class RenormalizeByContributorCodeTaskTest extends ESRealClientTestBase {
 		}
 	}
 
-	private void configProviderServiceMock(RenormalizeByContributorCodeTask tested,
-			List<Map<String, Object>> preprocessorsDef) {
+	private void configProviderServiceMock(RenormalizeByEsValueTask tested, List<Map<String, Object>> preprocessorsDef) {
 		Map<String, Object> typeDef = new HashMap<String, Object>();
 		typeDef.put(ProviderService.INPUT_PREPROCESSORS, preprocessorsDef);
 		Map<String, Object> index = new HashMap<String, Object>();

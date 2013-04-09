@@ -13,6 +13,7 @@ import java.util.Map;
 
 import junit.framework.Assert;
 
+import org.jboss.dcp.api.DcpContentObjectFields;
 import org.jboss.dcp.api.service.ProviderService;
 import org.jboss.dcp.api.service.SearchClientService;
 import org.jboss.dcp.api.tasker.Task;
@@ -249,9 +250,10 @@ public class DcpTaskFactoryTest {
 			Map<String, Object> config = new HashMap<String, Object>();
 			config.put(DcpTaskFactory.CFG_PROJECT_CODE, "myproject");
 			Task task = tested.createTask(DcpTaskTypes.RENORMALIZE_BY_PROJECT_CODE.getTaskType(), config);
-			Assert.assertEquals(RenormalizeByProjectCodeTask.class, task.getClass());
-			RenormalizeByProjectCodeTask ctask = (RenormalizeByProjectCodeTask) task;
-			Assert.assertEquals("myproject", ctask.projectCodes[0]);
+			Assert.assertEquals(RenormalizeByEsValueTask.class, task.getClass());
+			RenormalizeByEsValueTask ctask = (RenormalizeByEsValueTask) task;
+			Assert.assertEquals(DcpContentObjectFields.DCP_PROJECT, ctask.esField);
+			Assert.assertEquals("myproject", ctask.esValues[0]);
 			Assert.assertEquals(tested.providerService, ctask.providerService);
 			Assert.assertEquals(tested.searchClientService, ctask.searchClientService);
 		}
@@ -260,10 +262,11 @@ public class DcpTaskFactoryTest {
 			Map<String, Object> config = new HashMap<String, Object>();
 			config.put(DcpTaskFactory.CFG_PROJECT_CODE, new String[] { "myproject", "myproject2" });
 			Task task = tested.createTask(DcpTaskTypes.RENORMALIZE_BY_PROJECT_CODE.getTaskType(), config);
-			Assert.assertEquals(RenormalizeByProjectCodeTask.class, task.getClass());
-			RenormalizeByProjectCodeTask ctask = (RenormalizeByProjectCodeTask) task;
-			Assert.assertEquals("myproject", ctask.projectCodes[0]);
-			Assert.assertEquals("myproject2", ctask.projectCodes[1]);
+			Assert.assertEquals(RenormalizeByEsValueTask.class, task.getClass());
+			RenormalizeByEsValueTask ctask = (RenormalizeByEsValueTask) task;
+			Assert.assertEquals(DcpContentObjectFields.DCP_PROJECT, ctask.esField);
+			Assert.assertEquals("myproject", ctask.esValues[0]);
+			Assert.assertEquals("myproject2", ctask.esValues[1]);
 			Assert.assertEquals(tested.providerService, ctask.providerService);
 			Assert.assertEquals(tested.searchClientService, ctask.searchClientService);
 		}
@@ -272,10 +275,11 @@ public class DcpTaskFactoryTest {
 			Map<String, Object> config = new HashMap<String, Object>();
 			config.put(DcpTaskFactory.CFG_PROJECT_CODE, Arrays.asList(new String[] { "myproject", "myproject2" }));
 			Task task = tested.createTask(DcpTaskTypes.RENORMALIZE_BY_PROJECT_CODE.getTaskType(), config);
-			Assert.assertEquals(RenormalizeByProjectCodeTask.class, task.getClass());
-			RenormalizeByProjectCodeTask ctask = (RenormalizeByProjectCodeTask) task;
-			Assert.assertEquals("myproject", ctask.projectCodes[0]);
-			Assert.assertEquals("myproject2", ctask.projectCodes[1]);
+			Assert.assertEquals(RenormalizeByEsValueTask.class, task.getClass());
+			RenormalizeByEsValueTask ctask = (RenormalizeByEsValueTask) task;
+			Assert.assertEquals(DcpContentObjectFields.DCP_PROJECT, ctask.esField);
+			Assert.assertEquals("myproject", ctask.esValues[0]);
+			Assert.assertEquals("myproject2", ctask.esValues[1]);
 			Assert.assertEquals(tested.providerService, ctask.providerService);
 			Assert.assertEquals(tested.searchClientService, ctask.searchClientService);
 		}
@@ -347,9 +351,10 @@ public class DcpTaskFactoryTest {
 			Map<String, Object> config = new HashMap<String, Object>();
 			config.put(DcpTaskFactory.CFG_CONTRIBUTOR_CODE, "myproject");
 			Task task = tested.createTask(DcpTaskTypes.RENORMALIZE_BY_CONTRIBUTOR_CODE.getTaskType(), config);
-			Assert.assertEquals(RenormalizeByContributorCodeTask.class, task.getClass());
-			RenormalizeByContributorCodeTask ctask = (RenormalizeByContributorCodeTask) task;
-			Assert.assertEquals("myproject", ctask.contributorCodes[0]);
+			Assert.assertEquals(RenormalizeByEsValueTask.class, task.getClass());
+			RenormalizeByEsValueTask ctask = (RenormalizeByEsValueTask) task;
+			Assert.assertEquals(DcpContentObjectFields.DCP_CONTRIBUTORS, ctask.esField);
+			Assert.assertEquals("myproject", ctask.esValues[0]);
 			Assert.assertEquals(tested.providerService, ctask.providerService);
 			Assert.assertEquals(tested.searchClientService, ctask.searchClientService);
 		}
@@ -358,10 +363,11 @@ public class DcpTaskFactoryTest {
 			Map<String, Object> config = new HashMap<String, Object>();
 			config.put(DcpTaskFactory.CFG_CONTRIBUTOR_CODE, new String[] { "myproject", "myproject2" });
 			Task task = tested.createTask(DcpTaskTypes.RENORMALIZE_BY_CONTRIBUTOR_CODE.getTaskType(), config);
-			Assert.assertEquals(RenormalizeByContributorCodeTask.class, task.getClass());
-			RenormalizeByContributorCodeTask ctask = (RenormalizeByContributorCodeTask) task;
-			Assert.assertEquals("myproject", ctask.contributorCodes[0]);
-			Assert.assertEquals("myproject2", ctask.contributorCodes[1]);
+			Assert.assertEquals(RenormalizeByEsValueTask.class, task.getClass());
+			RenormalizeByEsValueTask ctask = (RenormalizeByEsValueTask) task;
+			Assert.assertEquals(DcpContentObjectFields.DCP_CONTRIBUTORS, ctask.esField);
+			Assert.assertEquals("myproject", ctask.esValues[0]);
+			Assert.assertEquals("myproject2", ctask.esValues[1]);
 			Assert.assertEquals(tested.providerService, ctask.providerService);
 			Assert.assertEquals(tested.searchClientService, ctask.searchClientService);
 		}
@@ -370,10 +376,11 @@ public class DcpTaskFactoryTest {
 			Map<String, Object> config = new HashMap<String, Object>();
 			config.put(DcpTaskFactory.CFG_CONTRIBUTOR_CODE, Arrays.asList(new String[] { "myproject", "myproject2" }));
 			Task task = tested.createTask(DcpTaskTypes.RENORMALIZE_BY_CONTRIBUTOR_CODE.getTaskType(), config);
-			Assert.assertEquals(RenormalizeByContributorCodeTask.class, task.getClass());
-			RenormalizeByContributorCodeTask ctask = (RenormalizeByContributorCodeTask) task;
-			Assert.assertEquals("myproject", ctask.contributorCodes[0]);
-			Assert.assertEquals("myproject2", ctask.contributorCodes[1]);
+			Assert.assertEquals(RenormalizeByEsValueTask.class, task.getClass());
+			RenormalizeByEsValueTask ctask = (RenormalizeByEsValueTask) task;
+			Assert.assertEquals(DcpContentObjectFields.DCP_CONTRIBUTORS, ctask.esField);
+			Assert.assertEquals("myproject", ctask.esValues[0]);
+			Assert.assertEquals("myproject2", ctask.esValues[1]);
 			Assert.assertEquals(tested.providerService, ctask.providerService);
 			Assert.assertEquals(tested.searchClientService, ctask.searchClientService);
 		}

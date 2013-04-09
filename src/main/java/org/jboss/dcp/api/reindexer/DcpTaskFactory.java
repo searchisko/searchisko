@@ -17,6 +17,7 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 
+import org.jboss.dcp.api.DcpContentObjectFields;
 import org.jboss.dcp.api.service.ProviderService;
 import org.jboss.dcp.api.service.SearchClientService;
 import org.jboss.dcp.api.tasker.Task;
@@ -85,13 +86,13 @@ public class DcpTaskFactory implements TaskFactory {
 	}
 
 	private Task createRenormalizeByProjectCodeTask(Map<String, Object> taskConfig) throws TaskConfigurationException {
-		return new RenormalizeByProjectCodeTask(providerService, searchClientService, getMandatoryConfigStringArray(
-				taskConfig, CFG_PROJECT_CODE));
+		return new RenormalizeByEsValueTask(providerService, searchClientService, DcpContentObjectFields.DCP_PROJECT,
+				getMandatoryConfigStringArray(taskConfig, CFG_PROJECT_CODE));
 	}
 
 	private Task createRenormalizeByContributorCodeTask(Map<String, Object> taskConfig) throws TaskConfigurationException {
-		return new RenormalizeByContributorCodeTask(providerService, searchClientService, getMandatoryConfigStringArray(
-				taskConfig, CFG_CONTRIBUTOR_CODE));
+		return new RenormalizeByEsValueTask(providerService, searchClientService, DcpContentObjectFields.DCP_CONTRIBUTORS,
+				getMandatoryConfigStringArray(taskConfig, CFG_CONTRIBUTOR_CODE));
 	}
 
 	private Task createReindexFromPersistenceTask(Map<String, Object> taskConfig) throws TaskConfigurationException {
