@@ -1,0 +1,71 @@
+    {
+      "description": "Issues from JIRA running at issues.jboss.org collected by jbossorg_jira river",
+      "dcp_type": "issue",
+      "input_preprocessors": [
+        {
+          "name": "test one source field",
+          "class": "org.jboss.elasticsearch.tools.content.ESLookupValuePreprocessor",
+          "settings": {
+            "index_name"       : "dcp_projects",
+            "index_type"       : "project",
+            "source_field"     : "project_key",
+            "idx_search_field" : "type_specific_code.jbossorg_jira",
+            "result_mapping"   : [{
+		            "idx_result_field" : "code",
+		            "target_field"     : "dcp_project"
+	            },{
+		            "idx_result_field" : "name",
+		            "target_field"     : "dcp_project_name",
+		            "value_default"    : "{project_name}"
+	            }
+            ]
+          }
+        },{ 
+          "name"     : "test with source bases",
+          "class"    : "org.jboss.elasticsearch.tools.content.ESLookupValuePreprocessor",
+          "settings" : {
+              "index_name"       : "dcp_contributors",
+              "index_type"       : "contributor",
+              "source_field"     : "email_address",
+              "idx_search_field" : "email",
+              "result_mapping"   : [{
+                "idx_result_field" : "code",
+                "target_field"     : "dcp_contributor",
+                "value_default"    : "{display_name} <{email_address}>"
+              }],
+              "source_bases"     : ["reporter", "assignee", "comments.comment_author", "comments.comment_updater"]
+          } 
+        },{
+          "name"     : "test with source value so not loaded",
+          "class"    : "org.jboss.elasticsearch.tools.content.ESLookupValuePreprocessor",
+          "settings" : {
+              "index_name"       : "dcp_roles",
+              "index_type"       : "role",
+              "source_value"     : "{feed}.{author}",
+              "idx_search_field" : "type_specific_code.jbossorg_blog",
+              "result_mapping"   : [{
+                "idx_result_field" : "code",
+                "target_field"     : "dcp_contributors"
+              }]
+          }
+        },{ 
+          "name"     : "DCP contributors collector",
+          "class"    : "org.jboss.elasticsearch.tools.content.ValuesCollectingPreprocessor",
+          "settings" : {
+              "target_field"  : "dcp_contributors",
+              "source_fields" : ["reporter.dcp_contributor","assignee.dcp_contributor", "comments.comment_author.dcp_contributor", "comments.comment_updater.dcp_contributor"]
+          } 
+        },{ 
+          "name"     : "DCP max activity date extractor",
+          "class"    : "org.jboss.elasticsearch.tools.content.MaxTimestampPreprocessor",
+          "settings" : {
+            "source_field" : "dcp_activity_dates",
+            "target_field" : "dcp_last_activity_date"
+          } 
+        }
+      ],
+      "index": {
+        "name": "data_jbossorg_jira",
+        "type": "jbossorg_jira_issue"
+      }
+    }

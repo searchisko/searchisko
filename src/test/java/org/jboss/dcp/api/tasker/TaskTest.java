@@ -50,7 +50,8 @@ public class TaskTest {
 				}
 			});
 			tested.run();
-			Mockito.verify(tested.context).changeTaskStatus(TASK_ID, TaskStatus.FAILOVER, "my runtime exception message");
+			Mockito.verify(tested.context).changeTaskStatus(TASK_ID, TaskStatus.FAILOVER,
+					"ERROR: Task execution interrupted due java.lang.RuntimeException: my runtime exception message");
 		}
 
 		// case - null pointer exception
@@ -63,7 +64,7 @@ public class TaskTest {
 			});
 			tested.run();
 			Mockito.verify(tested.context).changeTaskStatus(TASK_ID, TaskStatus.FAILOVER,
-					"Task finished due NullPointerException, see log file for stacktrace");
+					"ERROR: Task execution interrupted due NullPointerException, see DCP log file for stacktrace");
 		}
 
 		// case - checked exception
@@ -75,7 +76,8 @@ public class TaskTest {
 				}
 			});
 			tested.run();
-			Mockito.verify(tested.context).changeTaskStatus(TASK_ID, TaskStatus.FINISHED_ERROR, "my exception message");
+			Mockito.verify(tested.context).changeTaskStatus(TASK_ID, TaskStatus.FINISHED_ERROR,
+					"ERROR: Task finished due exception: my exception message");
 		}
 
 		// case - interrupted

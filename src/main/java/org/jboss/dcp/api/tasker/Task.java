@@ -69,14 +69,14 @@ public abstract class Task extends Thread {
 		} catch (InterruptedIOException e) {
 			writeStatus(TaskStatus.FAILOVER, "Task execution was interrupted");
 		} catch (RuntimeException e) {
-			String msg = e.getMessage();
+			String msg = "Task execution interrupted due " + e.getClass().getName() + ": " + e.getMessage();
 			if (e instanceof NullPointerException) {
-				msg = "Task finished due NullPointerException, see log file for stacktrace";
+				msg = "Task execution interrupted due NullPointerException, see DCP log file for stacktrace";
 				log.log(Level.SEVERE, "Task finished due NullPointerException", e);
 			}
-			writeStatus(TaskStatus.FAILOVER, msg);
+			writeStatus(TaskStatus.FAILOVER, "ERROR: " + msg);
 		} catch (Exception e) {
-			writeStatus(TaskStatus.FINISHED_ERROR, e.getMessage());
+			writeStatus(TaskStatus.FINISHED_ERROR, "ERROR: Task finished due exception: " + e.getMessage());
 		} finally {
 			log.fine("Finished task " + taskId);
 		}

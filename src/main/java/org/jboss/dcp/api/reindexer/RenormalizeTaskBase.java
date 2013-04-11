@@ -47,8 +47,9 @@ public abstract class RenormalizeTaskBase extends ReindexingTaskBase {
 	}
 
 	@Override
-	protected void validateTaskConfiguration() throws Exception {
+	protected boolean validateTaskConfiguration() throws Exception {
 		loadIndexNamesAndTypesForWholeContent();
+		return !indexNames.isEmpty();
 	}
 
 	@Override
@@ -80,7 +81,8 @@ public abstract class RenormalizeTaskBase extends ReindexingTaskBase {
 				providerService.runPreprocessors(dcpContentType, ProviderService.extractPreprocessors(typeDef, dcpContentType),
 						content);
 			} catch (InvalidDataException e) {
-				writeTaskLog("Data error from preprocessors execution so document " + id + " is skipped: " + e.getMessage());
+				writeTaskLog("ERROR: Data error from preprocessors execution so document " + id + " is skipped: "
+						+ e.getMessage());
 				return;
 			}
 			// put content back into search subsystem
@@ -91,7 +93,8 @@ public abstract class RenormalizeTaskBase extends ReindexingTaskBase {
 
 	@Override
 	protected void performPostReindexingProcessing(Client client) {
-		client.admin().indices().flush(new FlushRequest(getIndexNamesAsArray())).actionGet();
+		if (indexNames.size() > 0)
+			client.admin().indices().flush(new FlushRequest(getIndexNamesAsArray())).actionGet();
 	}
 
 	/**

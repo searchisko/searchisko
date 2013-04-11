@@ -48,36 +48,37 @@ public abstract class ReindexingTaskBase extends Task {
 	public void performTask() throws Exception {
 
 		try {
-			validateTaskConfiguration();
-
-			Client client = searchClientService.getClient();
-
-			SearchRequestBuilder srb = prepareSearchRequest(client);
-			srb.setScroll(new TimeValue(ES_SCROLL_KEEPALIVE)).setSearchType(SearchType.SCAN);
-
-			SearchResponse scrollResp = srb.execute().actionGet();
-
 			int i = 0;
-			if (scrollResp.hits().totalHits() > 0) {
-				scrollResp = executeESScrollSearchNextRequest(client, scrollResp);
-				while (scrollResp.hits().hits().length > 0) {
-					BulkRequestBuilder brb = client.prepareBulk();
-					for (SearchHit hit : scrollResp.getHits()) {
+			if (validateTaskConfiguration()) {
+
+				Client client = searchClientService.getClient();
+
+				SearchRequestBuilder srb = prepareSearchRequest(client);
+				srb.setScroll(new TimeValue(ES_SCROLL_KEEPALIVE)).setSearchType(SearchType.SCAN);
+
+				SearchResponse scrollResp = srb.execute().actionGet();
+
+				if (scrollResp.hits().totalHits() > 0) {
+					scrollResp = executeESScrollSearchNextRequest(client, scrollResp);
+					while (scrollResp.hits().hits().length > 0) {
+						BulkRequestBuilder brb = client.prepareBulk();
+						for (SearchHit hit : scrollResp.getHits()) {
+							if (isCanceledOrInterrupted()) {
+								writeTaskLog("Processed " + i + " documents then cancelled.");
+								return;
+							}
+							i++;
+							performHitProcessing(client, brb, hit);
+						}
+						brb.execute().actionGet();
 						if (isCanceledOrInterrupted()) {
 							writeTaskLog("Processed " + i + " documents then cancelled.");
 							return;
 						}
-						i++;
-						performHitProcessing(client, brb, hit);
+						scrollResp = executeESScrollSearchNextRequest(client, scrollResp);
 					}
-					brb.execute().actionGet();
-					if (isCanceledOrInterrupted()) {
-						writeTaskLog("Processed " + i + " documents then cancelled.");
-						return;
-					}
-					scrollResp = executeESScrollSearchNextRequest(client, scrollResp);
+					performPostReindexingProcessing(client);
 				}
-				performPostReindexingProcessing(client);
 			}
 			writeTaskLog("Processed " + i + " documents.");
 		} catch (SettingsException e) {
@@ -88,9 +89,10 @@ public abstract class ReindexingTaskBase extends Task {
 	/**
 	 * Validate task configuration, called before peindexing
 	 * 
+	 * @return true if we can continue with processing
 	 * @throws Exception if configuration is not valid
 	 */
-	protected abstract void validateTaskConfiguration() throws Exception;
+	protected abstract boolean validateTaskConfiguration() throws Exception;
 
 	/**
 	 * Prepare search request to get ES documents to be reindexed.

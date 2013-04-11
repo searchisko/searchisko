@@ -11,9 +11,9 @@ import org.jboss.dcp.api.service.ProviderService;
 import org.jboss.dcp.api.service.SearchClientService;
 
 /**
- * Task used to update document in ES search indices by selecting them oved values in defined field field. Used for
- * example when project name is changed (so we reindex over project code in dcp_project field), or contributor
- * configuration is splitted (so we reindex over dcp_contributors value).
+ * Task used to update document in ES search indices by selecting them over values in defined field. Used for example
+ * when project name is changed (so we reindex over project code in dcp_project field), or contributor configuration is
+ * splitted (so we reindex over dcp_contributors value).
  * <p>
  * All documents for given value in given field are loaded from all ES indices (only indices where DCP content is
  * stored), all preprocessors are applied to content, and then it is stored back to the ES index.

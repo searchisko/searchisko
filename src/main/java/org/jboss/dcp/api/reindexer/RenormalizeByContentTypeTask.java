@@ -43,13 +43,14 @@ public class RenormalizeByContentTypeTask extends ReindexingTaskBase {
 	}
 
 	@Override
-	protected void validateTaskConfiguration() throws Exception {
+	protected boolean validateTaskConfiguration() throws Exception {
 		typeDef = providerService.findContentType(dcpContentType);
 		if (typeDef == null) {
 			throw new Exception("Configuration not found for dcp_content_type " + dcpContentType);
 		}
 		indexName = ProviderService.extractIndexName(typeDef, dcpContentType);
 		indexType = ProviderService.extractIndexType(typeDef, dcpContentType);
+		return true;
 	}
 
 	@Override
@@ -66,7 +67,8 @@ public class RenormalizeByContentTypeTask extends ReindexingTaskBase {
 			providerService.runPreprocessors(dcpContentType, ProviderService.extractPreprocessors(typeDef, dcpContentType),
 					content);
 		} catch (InvalidDataException e) {
-			writeTaskLog("Data error from preprocessors execution so document " + id + " is skipped: " + e.getMessage());
+			writeTaskLog("ERROR: Data error from preprocessors execution so document " + id + " is skipped: "
+					+ e.getMessage());
 			return;
 		}
 		// put content back into search subsystem

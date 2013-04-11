@@ -18,6 +18,8 @@ import javax.inject.Inject;
 import javax.inject.Named;
 
 import org.jboss.dcp.api.DcpContentObjectFields;
+import org.jboss.dcp.api.service.ContributorService;
+import org.jboss.dcp.api.service.ProjectService;
 import org.jboss.dcp.api.service.ProviderService;
 import org.jboss.dcp.api.service.SearchClientService;
 import org.jboss.dcp.api.tasker.Task;
@@ -38,6 +40,10 @@ import org.jboss.dcp.persistence.service.ContentPersistenceService;
 @Singleton
 public class DcpTaskFactory implements TaskFactory {
 
+	public static final String CFG_PROJECT_ID_VALUE = "project_id_value";
+	public static final String CFG_PROJECT_ID_TYPE = "project_id_type";
+	public static final String CFG_CONTRIBUTOR_ID_VALUE = "contributor_id_value";
+	public static final String CFG_CONTRIBUTOR_ID_TYPE = "contributor_id_type";
 	public static final String CFG_DCP_CONTENT_TYPE = "dcp_content_type";
 	public static final String CFG_PROJECT_CODE = "project_code";
 	public static final String CFG_CONTRIBUTOR_CODE = "contributor_code";
@@ -69,9 +75,15 @@ public class DcpTaskFactory implements TaskFactory {
 		case RENORMALIZE_BY_CONTENT_TYPE:
 			return createRenormalizeByContentTypeTask(taskConfig);
 		case RENORMALIZE_BY_PROJECT_CODE:
-			return createRenormalizeByProjectCodeTask(taskConfig);
+			return createRenormalizeByEsValueTask(taskConfig, CFG_PROJECT_CODE, DcpContentObjectFields.DCP_PROJECT);
 		case RENORMALIZE_BY_CONTRIBUTOR_CODE:
-			return createRenormalizeByContributorCodeTask(taskConfig);
+			return createRenormalizeByEsValueTask(taskConfig, CFG_CONTRIBUTOR_CODE, DcpContentObjectFields.DCP_CONTRIBUTORS);
+		case RENORMALIZE_BY_CONTRIBUTOR_LOOKUP_ID:
+			return createRenormalizeByEsLookedUpValuesTask(taskConfig, ContributorService.SEARCH_INDEX_NAME,
+					ContributorService.SEARCH_INDEX_TYPE, CFG_CONTRIBUTOR_ID_TYPE, CFG_CONTRIBUTOR_ID_VALUE);
+		case RENORMALIZE_BY_PROJECT_LOOKUP_ID:
+			return createRenormalizeByEsLookedUpValuesTask(taskConfig, ProjectService.SEARCH_INDEX_NAME,
+					ProjectService.SEARCH_INDEX_TYPE, CFG_PROJECT_ID_TYPE, CFG_PROJECT_ID_VALUE);
 		}
 		throw new UnsupportedTaskException(taskType);
 	}
@@ -85,14 +97,18 @@ public class DcpTaskFactory implements TaskFactory {
 		return new RenormalizeByContentTypeTask(providerService, searchClientService, dcpContentType);
 	}
 
-	private Task createRenormalizeByProjectCodeTask(Map<String, Object> taskConfig) throws TaskConfigurationException {
-		return new RenormalizeByEsValueTask(providerService, searchClientService, DcpContentObjectFields.DCP_PROJECT,
-				getMandatoryConfigStringArray(taskConfig, CFG_PROJECT_CODE));
+	private Task createRenormalizeByEsValueTask(Map<String, Object> taskConfig, String taskConfigField, String esField)
+			throws TaskConfigurationException {
+		return new RenormalizeByEsValueTask(providerService, searchClientService, esField, getMandatoryConfigStringArray(
+				taskConfig, taskConfigField));
 	}
 
-	private Task createRenormalizeByContributorCodeTask(Map<String, Object> taskConfig) throws TaskConfigurationException {
-		return new RenormalizeByEsValueTask(providerService, searchClientService, DcpContentObjectFields.DCP_CONTRIBUTORS,
-				getMandatoryConfigStringArray(taskConfig, CFG_CONTRIBUTOR_CODE));
+	private Task createRenormalizeByEsLookedUpValuesTask(Map<String, Object> taskConfig, String lookupIndex,
+			String lookupType, String taskConfigFieldLookupField, String taskConfigFieldValues)
+			throws TaskConfigurationException {
+		return new RenormalizeByEsLookedUpValuesTask(providerService, searchClientService, lookupIndex, lookupType,
+				getMandatoryConfigString(taskConfig, taskConfigFieldLookupField), getMandatoryConfigStringArray(taskConfig,
+						taskConfigFieldValues));
 	}
 
 	private Task createReindexFromPersistenceTask(Map<String, Object> taskConfig) throws TaskConfigurationException {
@@ -163,14 +179,4 @@ public class DcpTaskFactory implements TaskFactory {
 		}
 	}
 
-	private String getConfigString(Map<String, Object> taskConfig, String propertyName) throws TaskConfigurationException {
-		if (taskConfig == null)
-			throw new TaskConfigurationException(propertyName + " configuration property must be defined");
-
-		Object val = taskConfig.get(propertyName);
-
-		if (val == null || val.toString().trim().isEmpty())
-			return null;
-		return val.toString().trim();
-	}
 }
