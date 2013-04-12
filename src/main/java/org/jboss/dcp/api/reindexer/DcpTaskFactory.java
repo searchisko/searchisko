@@ -31,7 +31,6 @@ import org.jboss.dcp.persistence.service.ContentPersistenceService;
 /**
  * {@link TaskFactory} for DCP tasks. It's CDI singleton bean because needs to inject some other DCP components to pass
  * them into tasks. <br>
- * TODO TASKS types and configuration documentation in REST API doc
  * 
  * @author Vlastimil Elias (velias at redhat dot com)
  */

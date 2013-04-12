@@ -111,6 +111,7 @@ public class TaskStatusInfo {
 		}
 	}
 
+	@JsonIgnore
 	public Map<String, Object> getTaskConfig() {
 		try {
 			return SearchUtils.convertToJsonMap(taskConfigSerialized);
@@ -143,7 +144,6 @@ public class TaskStatusInfo {
 		this.taskType = taskType;
 	}
 
-	@JsonIgnore
 	public String getTaskConfigSerialized() {
 		return taskConfigSerialized;
 	}
