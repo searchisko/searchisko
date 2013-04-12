@@ -102,7 +102,7 @@ public class ReindexFromPersistenceTask extends Task {
 				}
 				// delete old entries from index which are not in persistence store anymore (so they was not updated during this
 				// reindexing run)
-				client.admin().indices().flush(new FlushRequest(indexName)).actionGet();
+				client.admin().indices().flush(new FlushRequest(indexName).refresh(true)).actionGet();
 				FilterBuilder filterTime = FilterBuilders.rangeFilter("_timestamp").lt(new Date(startTimestamp));
 				client.prepareDeleteByQuery(indexName).setTypes(indexType)
 						.setQuery(QueryBuilders.filteredQuery(QueryBuilders.matchAllQuery(), filterTime)).execute().actionGet();

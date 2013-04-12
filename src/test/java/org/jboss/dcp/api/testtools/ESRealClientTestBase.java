@@ -208,12 +208,12 @@ public abstract class ESRealClientTestBase {
 	}
 
 	/**
-	 * Flush search index - use it after you insert new documents and before you try to search/get them to be sure they
-	 * are in index.
+	 * Flush and Refresh search index - use it after you insert new documents and before you try to search/get them to be
+	 * sure they are in index and visible for search.
 	 * 
 	 * @param indexName
 	 */
 	public void indexFlush(String indexName) {
-		client.admin().indices().flush(new FlushRequest(indexName)).actionGet();
+		client.admin().indices().flush(new FlushRequest(indexName).refresh(true)).actionGet();
 	}
 }
