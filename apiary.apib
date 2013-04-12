@@ -1181,9 +1181,9 @@ JSON with task configuration document. Available task types and related configur
 Get all content of 'provider type' passed in task configuration from DCP persistent store (so given provider type must be defined as persistent) and store/update it into DCP search index.  
 
 ```
-	{
-	  "dcp_content_type" : "jbossorg_blog"  
-	}
+{
+  "dcp_content_type" : "jbossorg_blog"  
+}
 ```
 
 
@@ -1191,9 +1191,9 @@ Get all content of 'provider type' passed in task configuration from DCP persist
 Get all content of 'provider type' passed in task configuration from DCP search index, run all data normalizations on it, and update it back into DCP search index.  
 
 ``` 
-	{
-	  "dcp_content_type" : "jbossorg_blog"  
-	}
+{
+  "dcp_content_type" : "jbossorg_blog"  
+}
 ```
 
 
@@ -1201,9 +1201,9 @@ Get all content of 'provider type' passed in task configuration from DCP search 
 Get all content with `dcp_project` matching values passed in task configuration from DCP search indices, run all data normalizations on it, and update it back into DCP search index. Used for example when project code or project name changes in DCP project configuration, so we need to update content in search indices for it. 
 
 ``` 
-	{
-	  "project_code" : ["jbosstools", "jbossas7"]  
-	}
+{
+  "project_code" : ["jbosstools", "jbossas7"]  
+}
 ```
 
 
@@ -1211,10 +1211,10 @@ Get all content with `dcp_project` matching values passed in task configuration 
 Get all content which is bound to some `dcp_project` over defined values of defined normalization identifier passed in task configuration from DCP search indices, run all data normalizations on it, and update it back into DCP search index. Used mainly when new project mapping identifier is added into DCP project configuration in `type_specific_code` section, so we need to update content in search indices to be correctly bound to this project. 
 
 ``` 
-	{
-	  "project_id_type" : "type_specific_code.jbossorg_jira",
-	  "project_id_value" : ["JBIDE","AS7"]  
-	}
+{
+  "project_id_type" : "type_specific_code.jbossorg_jira",
+  "project_id_value" : ["JBIDE","AS7"]  
+}
 ```
 	
 
@@ -1222,19 +1222,19 @@ Get all content which is bound to some `dcp_project` over defined values of defi
 Get all content which is bound to some contributor over defined values of defined normalization identifier passed in task configuration from DCP search indices, run all data normalizations on it, and update it back into DCP search index. Used mainly when new contributor mapping identifier is added into DCP project configuration in `email` or `type_specific_code` section, so we need to update content in search indices to be correctly bound to this project. 
  
 ```
-	{
-	  "contributor_id_type" : "email",
-	  "contributor_id_value" : ["john.doe@gmail.com","john.doe@hotmail.com"]  
-	}
+{
+  "contributor_id_type" : "email",
+  "contributor_id_value" : ["john.doe@gmail.com","john.doe@hotmail.com"]  
+}
 ```
 
 * `renormalize_by_contributor_code`
 Get all content where `dcp_contributors` contains value passed in task configuration from DCP search indices, run all data normalizations on it, and update it back into DCP search index. Used for example when contributor code is changed in DCP contributor configuration, or some normalization identifier is removed from DCP contributor configuration (one normalized contributor is splitted into more), so we need to update content in search indices for it.
 
 ``` 
-	{
-	  "contributor_code" : ["John Doe <john@doe.org>"]  
-	}
+{
+  "contributor_code" : ["John Doe <john@doe.org>"]  
+}
 ```
 
 
