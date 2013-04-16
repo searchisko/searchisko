@@ -46,7 +46,8 @@ Some operation calls on REST API need to be authenticated by the provider. The c
 
 DCP provides JSONP technique. If you want to use JSONP just add `callback` parameter to your request.
 
-On Search API it's not needed to use JSONP and client can use search API directly because response contains `Access-Control-Allow-Origin` HTTP header. 
+It's not necessary to use JSONP on Search API. Response contains `Access-Control-Allow-Origin` 
+HTTP header, so client browser can use search API directly.
 
 ---
 
