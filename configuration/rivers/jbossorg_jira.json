@@ -37,7 +37,9 @@
             "dcp_created"           : {"jira_field" : "fields.created"},
             "updated"               : {"jira_field" : "fields.updated"},
             "resolutiondate"        : {"jira_field" : "fields.resolutiondate"},
-            "dcp_description"       : {"jira_field" : "fields.description"},
+            "dcp_description"       : {"jira_field" : "dcp_description"},
+            "dcp_content"           : {"jira_field" : "fields.description"},
+            "dcp_content_content-type" : {"jira_field" : "dcp_content_content-type"},
             "summary"               : {"jira_field" : "fields.summary"},
             "tags"                  : {"jira_field" : "fields.labels"},
             "dcp_tags"              : {"jira_field" : "fields.labels"},
@@ -74,12 +76,21 @@
                     "dcp_type"              : "issue",
                     "dcp_content_provider"  : "jbossorg",
                     "dcp_content_type"      : "jbossorg_jira_issue",
-                    "dcp_title"             : "{key} - {fields.summary}"
+                    "dcp_title"             : "{key} - {fields.summary}",
+                    "dcp_content_content-type" : "text/plain"
                  } 
             },{ 
                 "name"     : "DCP Updated filler",
                 "class"    : "org.jboss.elasticsearch.tools.content.AddCurrentTimestampPreprocessor",
                 "settings" : { "field" : "dcp_updated" }
+            },{ 
+                "name"     : "DCP description trimmer",
+                "class"    : "org.jboss.elasticsearch.tools.content.TrimStringValuePreprocessor",
+                "settings" : {
+                    "source_field" : "fields.description",
+                    "target_field" : "dcp_description",
+                    "max_size" : 400
+                } 
             },{ 
                 "name"     : "DCP activity dates collector",
                 "class"    : "org.jboss.elasticsearch.tools.content.ValuesCollectingPreprocessor",
