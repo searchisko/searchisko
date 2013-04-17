@@ -33,7 +33,7 @@ inside DCP during push. Those data fields are prefixed by `dcp_`:
 'Comment data structure' description:
 
 * `comment_id` - unique identifier of the comment from source system. Optional.
-* `comment_body` - iext of the comment
+* `comment_body` - text of the comment
 * `comment_author` - info about contributor who created comment. Object which contains at least `dcp_contributor` field with normalized DCP contributor identifier.
 * `comment_updater` - info about contributor who updated comment. Object which contains at least `dcp_contributor` field with normalized DCP contributor identifier. 
 * `comment_created` - timestamp (ISO string) when the comment was created in the source system.
