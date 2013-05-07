@@ -1,0 +1,139 @@
+{
+    "type" : "remote",
+    "remote" : {
+        "urlGetDocuments"       : "https://community-dev.jboss.org/data-api/content.jspa?spaceId={space}&type=forum&updatedAfter={updatedAfter}&maxSize=50",
+        "getDocsResFieldDocuments"  : "items",
+        "urlGetSpaces"					: "https://community-dev.jboss.org/data-api/spaces.jspa",
+        "getSpacesResField"			: "spaces",
+        "timeout"               : "20s",
+        "indexUpdatePeriod"     : "10m",
+        "indexFullUpdatePeriod" : "10d",
+        "maxIndexingThreads"    : 2
+    },
+    "index" : {
+        "index"             : "data_jbossorg_sbs_forum",
+        "type"              : "jbossorg_sbs_forum",
+        "remote_field_document_id" : "id",
+	      "remote_field_updated"     : "published",
+        "field_space_key"   : "space_key",
+        "field_document_id" : "dcp_id",
+        "fields" : {
+            "dcp_content_id"        : {"remote_field" : "id_remote"},
+            "dcp_type"              : {"remote_field" : "dcp_type"},
+            "dcp_updated"           : {"remote_field" : "dcp_updated"},
+            "dcp_content_provider"  : {"remote_field" : "dcp_content_provider"},
+            "dcp_content_type"      : {"remote_field" : "dcp_content_type"},
+            "dcp_activity_dates"    : {"remote_field" : "dcp_activity_dates"},
+            "dcp_last_activity_date": {"remote_field" : "dcp_last_activity_date"},
+            "dcp_project"           : {"remote_field" : "dcp_project"},
+            "dcp_project_name"      : {"remote_field" : "dcp_project_name"},
+            "dcp_url_view"					: {"remote_field" : "url"},
+            "dcp_contributors"      : {"remote_field" : "dcp_contributors"},
+            "dcp_title"             : {"remote_field" : "title"},
+            "dcp_created"           : {"remote_field" : "published"},
+            "dcp_description"       : {"remote_field" : "dcp_description"},
+            "dcp_content"           : {"remote_field" : "content"},
+            "dcp_content_content-type" : {"remote_field" : "dcp_content_content-type"},
+            "tags"                  : {"remote_field" : "tags"},
+            "dcp_tags"              : {"remote_field" : "tags"}
+        },
+        "value_filters" : {
+            "user" : {
+                "email"           : "email_address",
+                "full_name"       : "display_name",
+                "dcp_contributor" : "dcp_contributor" 
+            }
+        },
+        "comment_mode"   : "embedded",
+        "remote_field_comments" : "comments",
+        "field_comments" : "dcp_comments",
+        "comment_fields" : {
+            "comment_body"    : {"remote_field" : "content"},
+            "comment_author"  : {"remote_field" : "authors", "value_filter" : "user"},
+            "comment_created" : {"remote_field" : "published"},
+            "comment_updated" : {"remote_field" : "published"}
+        },
+        "preprocessors" : [
+            {
+                "name"     : "DCP values filler",
+                "class"    : "org.jboss.elasticsearch.tools.content.AddMultipleValuesPreprocessor",
+                "settings" : {
+                    "id_remote"             : "{id}",
+                    "id"                    : "jbossorg_sbs_forum-{id}",
+                    "dcp_type"              : "forumthread",
+                    "dcp_content_provider"  : "jbossorg",
+                    "dcp_content_type"      : "jbossorg_sbs_forum",
+                    "dcp_content_content-type" : "text/html"
+                 } 
+            },{ 
+                "name"     : "DCP Updated filler",
+                "class"    : "org.jboss.elasticsearch.tools.content.AddCurrentTimestampPreprocessor",
+                "settings" : { "field" : "dcp_updated" }
+            },{ 
+                "name"     : "DCP description trimmer",
+                "class"    : "org.jboss.elasticsearch.tools.content.TrimStringValuePreprocessor",
+                "settings" : {
+                    "source_field" : "content",
+                    "target_field" : "dcp_description",
+                    "max_size" : 400
+                } 
+            },{ 
+                "name"     : "DCP activity dates collector",
+                "class"    : "org.jboss.elasticsearch.tools.content.ValuesCollectingPreprocessor",
+                "settings" : {
+                    "target_field"  : "dcp_activity_dates",
+                    "source_fields" : ["published","updated","comments.published"]
+                } 
+            },{ 
+                "name"     : "DCP max activity date extractor",
+                "class"    : "org.jboss.elasticsearch.tools.content.MaxTimestampPreprocessor",
+                "settings" : {
+                    "source_field" : "dcp_activity_dates",
+                    "target_field" : "dcp_last_activity_date"
+                } 
+            },{ 
+                "name"     : "DCP projects mapper",
+                "class"    : "org.jboss.elasticsearch.tools.content.ESLookupValuePreprocessor",
+                "settings" : {
+                    "index_name"       : "dcp_projects",
+                    "index_type"       : "project",
+                    "source_field"     : "spaceKey",
+                    "idx_search_field" : "type_specific_code.jbossorg_sbs",
+                    "result_mapping"   : [{
+		                    "idx_result_field" : "code",
+		                    "target_field"     : "dcp_project"
+	                    },{
+						            "idx_result_field" : "name",
+						            "target_field"     : "dcp_project_name"
+					            }
+                    ]
+                } 
+            },{ 
+                "name"     : "DCP contributors mapper",
+                "class"    : "org.jboss.elasticsearch.tools.content.ESLookupValuePreprocessor",
+                "settings" : {
+                    "index_name"       : "dcp_contributors",
+                    "index_type"       : "contributor",
+                    "source_field"     : "email",
+                    "idx_search_field" : "email",
+                    "result_mapping"   : [{
+	                    "idx_result_field" : "code",
+	                    "target_field"     : "dcp_contributor",
+	                    "value_default"    : "{full_name} <{email}>"
+                    }],
+                    "source_bases"     : ["authors","comments.authors"]
+                } 
+            },{ 
+                "name"     : "DCP contributors collector",
+                "class"    : "org.jboss.elasticsearch.tools.content.ValuesCollectingPreprocessor",
+                "settings" : {
+                    "target_field"  : "dcp_contributors",
+                    "source_fields" : ["authors.dcp_contributor","comments.authors.dcp_contributor"]
+                } 
+            }
+        ]
+    },
+    "activity_log" : {
+        "index":"stats_jbossorg_sbs_forum_river"
+    }
+}

@@ -13,7 +13,6 @@
         "index"             : "data_jbossorg_jira",
         "type"              : "jbossorg_jira_issue",
         "jira_field_issue_document_id" : "dcp_id",
-        "field_river_name"  : "river_name",
         "field_project_key" : "project_key",
         "field_issue_key"   : "dcp_content_id",
         "field_jira_url"    : "dcp_url_view",
@@ -57,7 +56,6 @@
             "name" : { "name" : "name" }
         },
         "comment_mode"   : "embedded",
-        "comment_type"   : "jira_issue_comment", 
         "field_comments" : "dcp_comments",
         "comment_fields" : {
             "comment_id"      : {"jira_field" : "id"},
@@ -117,10 +115,10 @@
 		                    "idx_result_field" : "code",
 		                    "target_field"     : "dcp_project"
 	                    },{
-				            "idx_result_field" : "name",
-				            "target_field"     : "dcp_project_name",
-				            "value_default"    : "{fields.project.name}"
-			            }
+						            "idx_result_field" : "name",
+						            "target_field"     : "dcp_project_name",
+						            "value_default"    : "{fields.project.name}"
+					            }
                     ]
                 } 
             },{ 

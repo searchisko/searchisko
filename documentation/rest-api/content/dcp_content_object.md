@@ -12,7 +12,7 @@ inside DCP during push. Those data fields are prefixed by `dcp_`:
 * `dcp_id` - content id unique in the whole DCP platform - system field, always necessary. It is constructed during the 'Content Push API' operation from `dcp_content_type` and `dcp_content_id`.
 * `dcp_content_provider` - identification of the provider that stored the given data into the platform - system field, always necessary - eg. 'jbossorg', 'seam_project' etc.
 * `dcp_content_type` - identifier of the provider defined content type for 'Content Push API'. It is unique in the whole DCP so it starts with `dcp_content_provider`, eg. 'jbossorg_jira_issue', 'jbossorg_blog' etc. 
-* `dcp_content_id` -  content identifier is passed in by the provider, it must be unique for the given `dcp_content_type`.
+* `dcp_content_id` -  content identifier passed in by the provider, it must be unique for the given `dcp_content_type`.
 * `dcp_updated` - date of last content update in DCP - system field, always necessary, assigned in 'Content Push API'.
 * `dcp_project` - normalized DCP wide identifier of the project - system field - it is used for the project facet and filter in the Search API.
 * `dcp_project_name` - human readable name of project based on `dcp_project` identifier - system field. 

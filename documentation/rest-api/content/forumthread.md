@@ -1,0 +1,39 @@
+Discussion forum threads related to projects
+============================================
+
+**dcp\_type = "forumthread"**
+
+This data type stored in DCP contains informations from project's discussion forums.
+Contains data from [JBoss Community Forum](http://community.jboss.org/threads) and other systems used by distinct projects. 
+
+## Data structure
+
+### Standard DCP fields
+<table border="1">
+<thead>
+  <th>Field</th>
+  <th>Example value</th>
+  <th width="63%">Description</th>
+</thead>
+<tbody>
+<tr><td>dcp_title</td><td>Load image from outside the web context in JBoss AS 7</td><td>Thread title</td></tr>
+<tr><td>dcp_url_view</td><td>https://community.jboss.org/thread/227893</td><td>URL of forum thread view</td></tr>
+<tr><td>dcp_description</td><td></td><td>Shorted description created from forum question, containing only clear text</td></tr>
+<tr><td>dcp_content</td><td></td><td>Full rendered forum question. May contain HTML tags</td></tr>
+<tr><td>dcp_created</td><td>2013-01-02T06:18:52.000-0500</td><td>Timestamp when thread was started</td></tr>
+<tr><td>dcp_comments</td><td></td><td>All replies to the forum question are stored as DCP comments</td></tr>
+</tbody>
+</table>
+
+### Custom fields
+<table border="1">
+<thead>
+  <th>Field</th>
+  <th>Example value</th>
+  <th width="63%">Description</th>
+</thead>
+<tbody>
+<tr><td>tags</td><td>["ruby 1.9", "ruby", "postgresql"]</td><td>Array of tags in original forum thread</td></tr>
+</tbody>
+</table>
+

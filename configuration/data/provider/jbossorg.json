@@ -91,6 +91,7 @@
     "jbossorg_jira_issue": {
       "description": "Issues from JIRA running at issues.jboss.org collected by jbossorg_jira river",
       "dcp_type": "issue",
+      "dcp_content_content-type" : "text/plain",
       "input_preprocessors": [
         {
           "name": "DCP project mapper - project_key to dcp_project mapping",
@@ -144,6 +145,17 @@
       "index": {
         "name": "data_jbossorg_jira",
         "type": "jbossorg_jira_issue"
+      }
+    },
+    "jbossorg_sbs_forum": {
+      "description": "Forum threads from SBS running at community.jboss.org collected by jbossorg_sbs_forum river",
+      "dcp_type": "forumthread",
+      "dcp_content_content-type" : "text/html",
+      "input_preprocessors": [
+      ],
+    	"index": {
+        "name": "data_jbossorg_sbs_forum",
+        "type": "jbossorg_sbs_forum"
       }
     }
   }
