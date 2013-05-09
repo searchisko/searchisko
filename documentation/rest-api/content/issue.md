@@ -70,27 +70,14 @@ Description of data fields for the issue record:
 <tr><td>updated</td><td>Date when the issue was last time updated in the source issue tracking system.</td></tr>
 <tr><td>resolutiondate</td><td>Date when the issue was resolved in the source issue tracking system</td></tr>
 <tr><td>tags</td><td>Tags from the source issue tracking system. (`Labels` field in case of JIRA)</td></tr>
-<tr><td>reporter</td><td>Info about contributor who created issue. 'Contributor data structure' is described below.</td></tr>
-<tr><td>assignee</td><td>Info about contributor responsible for issue solution. 'Contributor data structure' is described below.</td></tr>
+<tr><td>reporter</td><td>Info about contributor who created issue. 'Contributor data structure' used here.</td></tr>
+<tr><td>assignee</td><td>Info about contributor responsible for issue solution. 'Contributor data structure' used here.</td></tr>
 <tr><td>fix_versions</td><td>Array of object describing version where the issue is fixed. Object contains `name` field only for now, with version name.</td></tr>
 <tr><td>components</td><td>Array of object describing component of project the issue is for. Object contains `name` field only for now, with component name.</td></tr>
 <tr><td>dcp_comments</td><td>Array of comment for issue. 'Comment data structure' is described below.</td></tr>
 </tbody>
 </table>
 **Note:** some standard DCP [system fields](dcp_content_object.md) prefixed by `dcp_` are not described here. Description may be found in general documentation for "DCP Content object".  	
-
-'Contributor data structure' description:
-<table border="1">
-<thead>
-  <th>Field</th>
-  <th width="63%">Description</th>
-</thead>
-<tbody>
-<tr><td>email_address</td><td>Optional. Contributor email address from the source issue tracking system. Used to lookup normalized value for `dcp_contributor` field during data push.</td></tr>
-<tr><td>display_name</td><td>Optional. Contributor display name from the source issue tracking system.</td></tr>
-<tr><td>dcp_contributor</td><td>Normalized DCP contributor identifier.</td></tr>
-</tbody>
-</table>
 
 'Comment data structure' description:
 <table border="1">
@@ -101,8 +88,8 @@ Description of data fields for the issue record:
 <tbody>
 <tr><td>comment_id</td><td>Identifier of the comment from source system. Optional.</td></tr>
 <tr><td>comment_body</td><td>Text of the comment</td></tr>
-<tr><td>comment_author</td><td>Info about contributor who created comment. 'Contributor data structure' is described above.</td></tr>
-<tr><td>comment_updater</td><td>Info about contributor who updated comment. 'Contributor data structure' is described above.</td></tr>
+<tr><td>comment_author</td><td>Info about contributor who created comment. 'Contributor data structure' used here.</td></tr>
+<tr><td>comment_updater</td><td>Info about contributor who updated comment. 'Contributor data structure' used here.</td></tr>
 <tr><td>comment_created</td><td>Date when the comment was created in the source issue tracking system.</td></tr>
 <tr><td>comment_updated</td><td>Date when the comment was updated in the source issue tracking system.</td></tr>
 </tbody>

@@ -35,7 +35,8 @@
             "dcp_content"           : {"remote_field" : "content"},
             "dcp_content_content-type" : {"remote_field" : "dcp_content_content-type"},
             "tags"                  : {"remote_field" : "tags"},
-            "dcp_tags"              : {"remote_field" : "tags"}
+            "dcp_tags"              : {"remote_field" : "tags"},
+            "authors"               : {"remote_field" : "authors", "value_filter" : "user"}
         },
         "value_filters" : {
             "user" : {
@@ -49,16 +50,21 @@
         "field_comments" : "dcp_comments",
         "comment_fields" : {
             "comment_body"    : {"remote_field" : "content"},
-            "comment_author"  : {"remote_field" : "authors", "value_filter" : "user"},
+            "comment_author"  : {"remote_field" : "author", "value_filter" : "user"},
             "comment_created" : {"remote_field" : "published"},
             "comment_updated" : {"remote_field" : "published"}
         },
         "preprocessors" : [
             {
+                "name"     : "Remote id copy",
+                "class"    : "org.jboss.elasticsearch.tools.content.AddMultipleValuesPreprocessor",
+                "settings" : {
+                    "id_remote"             : "{id}"
+                 } 
+            },{
                 "name"     : "DCP values filler",
                 "class"    : "org.jboss.elasticsearch.tools.content.AddMultipleValuesPreprocessor",
                 "settings" : {
-                    "id_remote"             : "{id}",
                     "id"                    : "jbossorg_sbs_forum-{id}",
                     "dcp_type"              : "forumthread",
                     "dcp_content_provider"  : "jbossorg",
@@ -70,10 +76,25 @@
                 "class"    : "org.jboss.elasticsearch.tools.content.AddCurrentTimestampPreprocessor",
                 "settings" : { "field" : "dcp_updated" }
             },{ 
+                "name"     : "comment body HTML stripper",
+                "class"    : "org.jboss.elasticsearch.tools.content.StripHtmlPreprocessor",
+                "settings" : {
+                    "source_field" : "content",
+                    "target_field" : "content",
+                    "source_bases" : ["comments"]
+                } 
+            },{ 
+                "name"     : "DCP description HTML stripper",
+                "class"    : "org.jboss.elasticsearch.tools.content.StripHtmlPreprocessor",
+                "settings" : {
+                    "source_field" : "content",
+                    "target_field" : "dcp_description"
+                } 
+            },{ 
                 "name"     : "DCP description trimmer",
                 "class"    : "org.jboss.elasticsearch.tools.content.TrimStringValuePreprocessor",
                 "settings" : {
-                    "source_field" : "content",
+                    "source_field" : "dcp_description",
                     "target_field" : "dcp_description",
                     "max_size" : 400
                 } 
@@ -121,14 +142,14 @@
 	                    "target_field"     : "dcp_contributor",
 	                    "value_default"    : "{full_name} <{email}>"
                     }],
-                    "source_bases"     : ["authors","comments.authors"]
+                    "source_bases"     : ["authors","comments.author"]
                 } 
             },{ 
                 "name"     : "DCP contributors collector",
                 "class"    : "org.jboss.elasticsearch.tools.content.ValuesCollectingPreprocessor",
                 "settings" : {
                     "target_field"  : "dcp_contributors",
-                    "source_fields" : ["authors.dcp_contributor","comments.authors.dcp_contributor"]
+                    "source_fields" : ["authors.dcp_contributor","comments.author.dcp_contributor"]
                 } 
             }
         ]

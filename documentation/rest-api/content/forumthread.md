@@ -21,7 +21,7 @@ Contains data from [JBoss Community Forum](http://community.jboss.org/threads) a
 <tr><td>dcp_description</td><td></td><td>Shorted description created from forum question, containing only clear text</td></tr>
 <tr><td>dcp_content</td><td></td><td>Full rendered forum question. May contain HTML tags</td></tr>
 <tr><td>dcp_created</td><td>2013-01-02T06:18:52.000-0500</td><td>Timestamp when thread was started</td></tr>
-<tr><td>dcp_comments</td><td></td><td>All replies to the forum question are stored as DCP comments</td></tr>
+<tr><td>dcp_comments</td><td></td><td>All replies to the forum question are stored as DCP comments using 'Comment data structure'</td></tr>
 </tbody>
 </table>
 
@@ -34,6 +34,6 @@ Contains data from [JBoss Community Forum](http://community.jboss.org/threads) a
 </thead>
 <tbody>
 <tr><td>tags</td><td>["ruby 1.9", "ruby", "postgresql"]</td><td>Array of tags in original forum thread</td></tr>
+<tr><td>authors</td><td></td><td>Array of 'Contributor data structure' objects with information about thread question author</td></tr>
 </tbody>
 </table>
-

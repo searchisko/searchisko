@@ -34,10 +34,23 @@ inside DCP during push. Those data fields are prefixed by `dcp_`:
 
 * `comment_id` - unique identifier of the comment from source system. Optional.
 * `comment_body` - text of the comment
-* `comment_author` - info about contributor who created comment. Object which contains at least `dcp_contributor` field with normalized DCP contributor identifier.
-* `comment_updater` - info about contributor who updated comment. Object which contains at least `dcp_contributor` field with normalized DCP contributor identifier. 
+* `comment_author` - info about Contributor who created comment. 'Contributor data structure' is described below.
+* `comment_updater` - optional info about Contributor who updated comment. 'Contributor data structure' is described below. 
 * `comment_created` - timestamp (ISO string) when the comment was created in the source system.
-* `comment_updated` -  timestamp (ISO string) when the comment was updated in the source system.
+* `comment_updated` -  optional timestamp (ISO string) when the comment was updated in the source system.
+
+'Contributor data structure' description:
+<table border="1">
+<thead>
+  <th>Field</th>
+  <th width="63%">Description</th>
+</thead>
+<tbody>
+<tr><td>dcp_contributor</td><td>Normalized DCP contributor identifier.</td></tr>
+<tr><td>email_address</td><td>Optional. Contributor email address from the source system. May be used to lookup normalized value for `dcp_contributor` field during data push.</td></tr>
+<tr><td>display_name</td><td>Optional. Contributor display name from the source system.</td></tr>
+</tbody>
+</table>
 
 
 DCP Content described by example:
@@ -70,8 +83,8 @@ DCP Content described by example:
         {
           "comment_id"      : "1254652",
           "comment_body"    : "Whole comment text.",
-          "comment_author"  : {"dcp_contributor": "John Doe <john@doe.org>"},
-          "comment_updater" : {"dcp_contributor": "John Doe <john@doe.org>"},
+          "comment_author"  : {"dcp_contributor": "John Doe <john@doe.org>", "email_address" : "john@doe.org", "display_name" : "John Doe"},
+          "comment_updater" : {"dcp_contributor": "John Doe <john@doe.org>", "email_address" : "john@doe.org", "display_name" : "John Doe"},
           "comment_created" : "2012-11-27T13:55Z",
           "comment_updated" : "2012-11-27T14:22Z"
         }
