@@ -51,8 +51,7 @@
         "comment_fields" : {
             "comment_body"    : {"remote_field" : "content"},
             "comment_author"  : {"remote_field" : "author", "value_filter" : "user"},
-            "comment_created" : {"remote_field" : "published"},
-            "comment_updated" : {"remote_field" : "published"}
+            "comment_created" : {"remote_field" : "published"}
         },
         "preprocessors" : [
             {
@@ -75,6 +74,28 @@
                 "name"     : "DCP Updated filler",
                 "class"    : "org.jboss.elasticsearch.tools.content.AddCurrentTimestampPreprocessor",
                 "settings" : { "field" : "dcp_updated" }
+            },{
+                "name"     : "published timestamp convertor",
+                "class"    : "org.jboss.elasticsearch.river.remote.content.LongToTimestampValuePreprocessor",
+                "settings" : {
+                    "source_field" : "published",
+                    "target_field" : "published"
+                } 
+            },{
+                "name"     : "updated timestamp convertor",
+                "class"    : "org.jboss.elasticsearch.river.remote.content.LongToTimestampValuePreprocessor",
+                "settings" : {
+                    "source_field" : "updated",
+                    "target_field" : "updated"
+                } 
+            },{
+                "name"     : "comments timestamp convertor",
+                "class"    : "org.jboss.elasticsearch.river.remote.content.LongToTimestampValuePreprocessor",
+                "settings" : {
+                    "source_field" : "published",
+                    "target_field" : "published",
+                    "source_bases" : ["comments"]
+                } 
             },{ 
                 "name"     : "comment body HTML stripper",
                 "class"    : "org.jboss.elasticsearch.tools.content.StripHtmlPreprocessor",
