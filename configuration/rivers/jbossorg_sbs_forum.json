@@ -1,10 +1,11 @@
 {
     "type" : "remote",
     "remote" : {
-        "urlGetDocuments"       : "https://community-dev.jboss.org/data-api/content.jspa?spaceId={space}&type=forum&updatedAfter={updatedAfter}&maxSize=50",
+        "urlGetDocuments"       : "https://community-dev.jboss.org/data-api/content.jspa?spaceId={space}&type=forum&updatedAfter={updatedAfter}&maxSize=100",
         "getDocsResFieldDocuments"  : "items",
         "urlGetSpaces"					: "https://community-dev.jboss.org/data-api/spaces.jspa",
         "getSpacesResField"			: "spaces",
+        "username" 							: "dcp-sbs-integration",
         "timeout"               : "20s",
         "indexUpdatePeriod"     : "10m",
         "indexFullUpdatePeriod" : "10d",
@@ -14,7 +15,7 @@
         "index"             : "data_jbossorg_sbs_forum",
         "type"              : "jbossorg_sbs_forum",
         "remote_field_document_id" : "id",
-	      "remote_field_updated"     : "published",
+	      "remote_field_updated"     : "updated",
         "field_space_key"   : "space_key",
         "field_document_id" : "dcp_id",
         "fields" : {

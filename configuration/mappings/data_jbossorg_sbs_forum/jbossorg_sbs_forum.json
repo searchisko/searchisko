@@ -4,7 +4,30 @@
         "properties" : {
             "space_key" : {"type" : "string", "analyzer" : "keyword"},
             "source"    : {"type" : "string", "analyzer" : "keyword"},
-            "tags" : {"type" : "string", "index" : "no"}
+            "tags"      : {"type" : "string", "index" : "no"},
+            "authors" : {
+                "type" : "object",
+                "properties" : {
+                    "email_address" : {"type" : "string", "index" : "no"},
+                    "display_name"  : {"type" : "string", "index" : "no"},
+                    "dcp_contributor" : {"type" : "string", "index" : "no"}
+                }                    
+            },
+            "dcp_comments" : {
+                "type" : "object",
+                "properties" : {
+                    "comment_body": {"type" : "string", "store":"yes"},
+                    "comment_created" : {"type" : "date", "index" : "no"},
+				            "comment_author" : {
+				                "type" : "object",
+				                "properties" : {
+				                    "email_address" : {"type" : "string", "index" : "no"},
+				                    "display_name"  : {"type" : "string", "index" : "no"},
+				                    "dcp_contributor" : {"type" : "string", "index" : "no"}
+				                }     
+				            }
+                }    
+            }
         }
     }
 }

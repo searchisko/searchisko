@@ -74,6 +74,7 @@
 		<resteasy.version>2.3.3.Final-redhat-1</resteasy.version>
 		<structured-content-tools.version>1.2.6</structured-content-tools.version>
 		<elasticsearch-river-jira.version>1.2.6</elasticsearch-river-jira.version>
+    <elasticsearch-river-remote.version>1.0.0</elasticsearch-river-remote.version>
     <jackson.version>1.8.0</jackson.version>
 	</properties>
 
@@ -490,6 +491,11 @@
           <artifactId>elasticsearch-river-jira</artifactId>
           <version>${elasticsearch-river-jira.version}</version>
         </dependency>
+        <dependency>
+          <groupId>org.jboss.elasticsearch</groupId>
+          <artifactId>elasticsearch-river-remote</artifactId>
+          <version>${elasticsearch-river-remote.version}</version>
+        </dependency>
       </dependencies>
 			<build>
 				<resources>
@@ -543,6 +549,11 @@
 					<artifactId>elasticsearch-river-jira</artifactId>
 					<version>${elasticsearch-river-jira.version}</version>
 				</dependency>
+        <dependency>
+          <groupId>org.jboss.elasticsearch</groupId>
+          <artifactId>elasticsearch-river-remote</artifactId>
+          <version>${elasticsearch-river-remote.version}</version>
+        </dependency>
 			</dependencies>
 			<build>
 				<resources>
