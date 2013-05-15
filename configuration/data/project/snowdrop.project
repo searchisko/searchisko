@@ -3,7 +3,8 @@
   "name": "Snowdrop",
   "type_specific_code" : {
     "jbossorg_blog": ["SNOWDROP"],
-    "jbossorg_jira": [""],
+    "jbossorg_jira": ["SNOWDROP"],
+    "jbossorg_sbs" : ["2082","2197","2277"],
     "jbossorg_mailing_list": "",
     "jbossorg_project_info": "snowdrop"
   }

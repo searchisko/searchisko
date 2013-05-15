@@ -4,6 +4,7 @@
   "type_specific_code" : {
     "jbossorg_blog": [""],
     "jbossorg_jira": ["SWAP"],
+    "jbossorg_sbs" : ["2023"],
     "jbossorg_mailing_list": "",
     "jbossorg_project_info": "portletswap"
   }

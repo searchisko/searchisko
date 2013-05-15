@@ -4,6 +4,7 @@
   "type_specific_code" : {
     "jbossorg_blog": ["savara"],
     "jbossorg_jira": ["SAVARA"],
+    "jbossorg_sbs" : ["2124","2125"],
     "jbossorg_mailing_list": "",
     "jbossorg_project_info": "savara"
   }

@@ -4,6 +4,7 @@
   "type_specific_code" : {
     "jbossorg_blog": [""],
     "jbossorg_jira": ["PRESSGANG"],
+    "jbossorg_sbs" : ["2200","2282"],
     "jbossorg_mailing_list": "",
     "jbossorg_project_info": "pressgang"
   }

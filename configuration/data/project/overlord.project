@@ -4,6 +4,7 @@
   "type_specific_code" : {
     "jbossorg_blog": ["soagovernance"],
     "jbossorg_jira": ["SOAG", "SRAMP"],
+    "jbossorg_sbs" : ["2122","2123"],
     "jbossorg_mailing_list": "",
     "jbossorg_project_info": "overlord"
   }

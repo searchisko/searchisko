@@ -3,7 +3,8 @@
   "name": "JBoss Application Server 7",
   "type_specific_code" : {
     "jbossorg_blog": ["dimitris", "mywiki", "clustering_blog", "donnamishelly", "jasongreene", "managetheboss", "irtjbossas7", "irtas7", "irtjbossas7cs", "vardlokkur"],
-    "jbossorg_jira": [""],
+    "jbossorg_jira": ["JBAS","AS7"],
+    "jbossorg_sbs" : ["2279","2225","2070","2071","2075","2076","2077","2078","2079","2080","2081","2083","2084","2085","2086","2089","2090","2091","2092","2093","2094","2095","2100","2101","2102","2103","2109","2110","2196","2229","2230"],
     "jbossorg_mailing_list": "",
     "jbossorg_project_info": "jbossas"
   }

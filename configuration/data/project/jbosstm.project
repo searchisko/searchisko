@@ -4,6 +4,7 @@
   "type_specific_code" : {
     "jbossorg_blog": ["transactions"],
     "jbossorg_jira": ["JBTM"],
+    "jbossorg_sbs" : ["2040","2041"],
     "jbossorg_mailing_list": "",
     "jbossorg_project_info": "jbosstm"
   }

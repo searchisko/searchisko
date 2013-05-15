@@ -4,6 +4,7 @@
   "type_specific_code" : {
     "jbossorg_blog": ["jbossesb"],
     "jbossorg_jira": ["JBESB"],
+    "jbossorg_sbs" : ["2031","2032"],
     "jbossorg_mailing_list": "",
     "jbossorg_project_info": "jbossesb"
   }

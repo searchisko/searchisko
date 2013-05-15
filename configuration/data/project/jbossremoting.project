@@ -4,6 +4,7 @@
   "type_specific_code" : {
     "jbossorg_blog": ["dmlloyd_rem", "ron_sigal"],
     "jbossorg_jira": ["JBREM"],
+    "jbossorg_sbs" : ["2050","2051"],
     "jbossorg_mailing_list": "",
     "jbossorg_project_info": "jbossremoting"
   }

@@ -4,6 +4,7 @@
   "type_specific_code" : {
     "jbossorg_blog": ["blacktie"],
     "jbossorg_jira": ["BLACKTIE"],
+    "jbossorg_sbs" : ["2038","2039"],
     "jbossorg_mailing_list": "",
     "jbossorg_project_info": "blacktie"
   }

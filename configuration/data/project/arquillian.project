@@ -4,6 +4,7 @@
   "type_specific_code" : {
     "jbossorg_blog": ["arquillian"],
     "jbossorg_jira": ["ARQ", "ARQGRA", "ARQRUSH"],
+    "jbossorg_sbs" : ["2191","2192"],
     "jbossorg_mailing_list": "",
     "jbossorg_project_info": "arquillian"
   }

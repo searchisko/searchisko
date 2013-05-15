@@ -4,6 +4,7 @@
   "type_specific_code" : {
     "jbossorg_blog": ["rik_ansikter", "bleathem", "pavolpitonak", "mkblog"],
     "jbossorg_jira": ["RF", "RFPL", "AJSF", "RFSBOX"],
+    "jbossorg_sbs" : ["2024","2025","2289"],
     "jbossorg_mailing_list": "",
     "jbossorg_project_info": "richfaces"
   }

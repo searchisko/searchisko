@@ -4,6 +4,7 @@
   "type_specific_code" : {
     "jbossorg_blog": [""],
     "jbossorg_jira": ["JBPROFILER"],
+    "jbossorg_sbs" : ["2137","2138"],
     "jbossorg_mailing_list": "",
     "jbossorg_project_info": "jbossprofiler"
   }

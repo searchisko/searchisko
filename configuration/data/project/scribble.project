@@ -4,6 +4,7 @@
   "type_specific_code" : {
     "jbossorg_blog": [""],
     "jbossorg_jira": ["SCRIBBLE"],
+    "jbossorg_sbs" : ["2222","2223"],
     "jbossorg_mailing_list": "",
     "jbossorg_project_info": "scribble"
   }

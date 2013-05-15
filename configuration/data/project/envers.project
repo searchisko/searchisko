@@ -4,6 +4,7 @@
   "type_specific_code" : {
     "jbossorg_blog": ["adamw"],
     "jbossorg_jira": ["ENVERS"],
+    "jbossorg_sbs" : ["2033"],
     "jbossorg_mailing_list": "",
     "jbossorg_project_info": "envers"
   }

@@ -4,6 +4,7 @@
   "type_specific_code" : {
     "jbossorg_blog": ["drools", "javadude", "anton"],
     "jbossorg_jira": ["DROOLS", "JBRULES"],
+    "jbossorg_sbs" : ["2220","2221"],
     "jbossorg_mailing_list": "",
     "jbossorg_project_info": "drools"
   }

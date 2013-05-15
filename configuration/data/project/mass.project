@@ -4,6 +4,7 @@
   "type_specific_code" : {
     "jbossorg_blog": ["mass"],
     "jbossorg_jira": ["MASS"],
+    "jbossorg_sbs" : [],
     "jbossorg_mailing_list": "",
     "jbossorg_project_info": "mass"
   }

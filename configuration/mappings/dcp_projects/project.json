@@ -11,6 +11,7 @@
                 "properties" : {
 		            "jbossorg_blog" : {"type" : "string", "analyzer" : "keyword"},
 		            "jbossorg_jira" : {"type" : "string", "analyzer" : "keyword"},
+		            "jbossorg_sbs" : {"type" : "string", "analyzer" : "keyword"},
 		            "jbossorg_mailing_list" : {"type" : "string", "analyzer" : "keyword"},
 		            "jbossorg_project_info" : {"type" : "string", "analyzer" : "keyword"}
 	            }

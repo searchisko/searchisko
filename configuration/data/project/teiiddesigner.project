@@ -4,6 +4,7 @@
   "type_specific_code" : {
     "jbossorg_blog": ["teiiddesigner"],
     "jbossorg_jira": ["TEIIDDES"],
+    "jbossorg_sbs" : ["2131","2132"],
     "jbossorg_mailing_list": "",
     "jbossorg_project_info": "teiiddesigner"
   }

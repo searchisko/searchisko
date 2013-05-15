@@ -4,6 +4,7 @@
   "type_specific_code" : {
     "jbossorg_blog": ["boxgrinder"],
     "jbossorg_jira": ["BG", "BGBUILD", "BGREST"],
+    "jbossorg_sbs" : ["2232"],
     "jbossorg_mailing_list": "",
     "jbossorg_project_info": "boxgrinder"
   }

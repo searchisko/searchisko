@@ -4,6 +4,7 @@
   "type_specific_code" : {
     "jbossorg_blog": ["belasblog"],
     "jbossorg_jira": ["JGRP"],
+    "jbossorg_sbs" : ["2241"],
     "jbossorg_mailing_list": "",
     "jbossorg_project_info": "jgroups"
   }

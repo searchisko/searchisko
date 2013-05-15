@@ -4,6 +4,7 @@
   "type_specific_code" : {
     "jbossorg_blog": ["jsfunit"],
     "jbossorg_jira": ["JSFUNIT"],
+    "jbossorg_sbs" : ["2133"],
     "jbossorg_mailing_list": "",
     "jbossorg_project_info": "jsfunit"
   }

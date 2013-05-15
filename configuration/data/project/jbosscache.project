@@ -4,6 +4,7 @@
   "type_specific_code" : {
     "jbossorg_blog": ["jbosscache_new"],
     "jbossorg_jira": ["JBCACHE"],
+    "jbossorg_sbs" : ["2052","2053","2054","2055","2056"],
     "jbossorg_mailing_list": "",
     "jbossorg_project_info": "jbosscache"
   }

@@ -4,6 +4,7 @@
   "type_specific_code" : {
     "jbossorg_blog": [""],
     "jbossorg_jira": ["SG"],
+    "jbossorg_sbs" : ["2195"],
     "jbossorg_mailing_list": "",
     "jbossorg_project_info": "stormgrind"
   }

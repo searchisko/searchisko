@@ -4,6 +4,7 @@
   "type_specific_code" : {
     "jbossorg_blog": [""],
     "jbossorg_jira": ["MODCLUSTER"],
+    "jbossorg_sbs" : ["2113","2231"],
     "jbossorg_mailing_list": "",
     "jbossorg_project_info": "mod_cluster"
   }

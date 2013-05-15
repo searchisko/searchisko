@@ -4,6 +4,7 @@
   "type_specific_code" : {
     "jbossorg_blog": ["jbossdna"],
     "jbossorg_jira": ["DNA"],
+    "jbossorg_sbs" : [],
     "jbossorg_mailing_list": "",
     "jbossorg_project_info": "dna"
   }

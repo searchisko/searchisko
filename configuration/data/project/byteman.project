@@ -4,6 +4,7 @@
   "type_specific_code" : {
     "jbossorg_blog": ["byteman"],
     "jbossorg_jira": ["BYTEMAN"],
+    "jbossorg_sbs" : ["2068","2069"],
     "jbossorg_mailing_list": "",
     "jbossorg_project_info": "byteman"
   }

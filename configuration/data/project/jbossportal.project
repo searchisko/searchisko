@@ -4,6 +4,7 @@
   "type_specific_code" : {
     "jbossorg_blog": ["jbossportal", "bdawidowicz", "andypembertononj"],
     "jbossorg_jira": ["JBPORTAL"],
+    "jbossorg_sbs" : ["2011","2012","2013","2014"],
     "jbossorg_mailing_list": "",
     "jbossorg_project_info": "jbossportal"
   }

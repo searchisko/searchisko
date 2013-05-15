@@ -4,6 +4,7 @@
   "type_specific_code" : {
     "jbossorg_blog": [""],
     "jbossorg_jira": ["JBJCA"],
+    "jbossorg_sbs" : ["2098","2099"],
     "jbossorg_mailing_list": "",
     "jbossorg_project_info": "ironjacamar"
   }
