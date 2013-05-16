@@ -394,7 +394,7 @@ public class FeedRestServiceTest {
 		SearchResponse sr = Mockito.mock(SearchResponse.class);
 		SearchHits searchHits = Mockito.mock(SearchHits.class);
 		Mockito.when(searchHits.getHits()).thenReturn(hitsArray);
-		Mockito.when(sr.hits()).thenReturn(searchHits);
+		Mockito.when(sr.getHits()).thenReturn(searchHits);
 		Mockito.when(
 				tested.searchService.performSearch(Mockito.eq(qs), Mockito.notNull(String.class),
 						Mockito.eq(StatsRecordType.FEED))).thenReturn(sr);

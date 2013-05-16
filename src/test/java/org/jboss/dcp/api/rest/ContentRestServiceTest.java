@@ -412,20 +412,24 @@ public class ContentRestServiceTest extends ESRealClientTestBase {
 					tested.getAllContent("known", null, null, null));
 
 			// case - something found, no from and size param used
-			indexInsertDocument(INDEX_NAME, INDEX_TYPE, "known-1", "{\"name\":\"test1\",\"dcp_content_id\":\"1\"}");
-			indexInsertDocument(INDEX_NAME, INDEX_TYPE, "known-2", "{\"name\":\"test2\",\"dcp_content_id\":\"2\"}");
-			indexInsertDocument(INDEX_NAME, INDEX_TYPE, "known-3", "{\"name\":\"test3\",\"dcp_content_id\":\"3\"}");
-			indexInsertDocument(INDEX_NAME, INDEX_TYPE, "known-4", "{\"name\":\"test4\",\"dcp_content_id\":\"4\"}");
+			indexInsertDocument(INDEX_NAME, INDEX_TYPE, "known-1",
+					"{\"name\":\"test1\", \"dcp_updated\" : 0,\"dcp_content_id\":\"1\"}");
+			indexInsertDocument(INDEX_NAME, INDEX_TYPE, "known-2",
+					"{\"name\":\"test2\",\"dcp_updated\":0,\"dcp_content_id\":\"2\"}");
+			indexInsertDocument(INDEX_NAME, INDEX_TYPE, "known-3",
+					"{\"name\":\"test3\",\"dcp_updated\":0,\"dcp_content_id\":\"3\"}");
+			indexInsertDocument(INDEX_NAME, INDEX_TYPE, "known-4",
+					"{\"name\":\"test4\",\"dcp_updated\":0,\"dcp_content_id\":\"4\"}");
 			indexFlush(INDEX_NAME);
 			TestUtils
 					.assetStreamingOutputContent(
-							"{\"total\":4,\"hits\":[{\"id\":\"1\",\"data\":{\"name\":\"test1\",\"dcp_content_id\":\"1\"}},{\"id\":\"2\",\"data\":{\"name\":\"test2\",\"dcp_content_id\":\"2\"}},{\"id\":\"3\",\"data\":{\"name\":\"test3\",\"dcp_content_id\":\"3\"}},{\"id\":\"4\",\"data\":{\"name\":\"test4\",\"dcp_content_id\":\"4\"}}]}",
+							"{\"total\":4,\"hits\":[{\"id\":\"1\",\"data\":{\"name\":\"test1\",\"dcp_content_id\":\"1\",\"dcp_updated\":0}},{\"id\":\"2\",\"data\":{\"name\":\"test2\",\"dcp_content_id\":\"2\",\"dcp_updated\":0}},{\"id\":\"3\",\"data\":{\"name\":\"test3\",\"dcp_content_id\":\"3\",\"dcp_updated\":0}},{\"id\":\"4\",\"data\":{\"name\":\"test4\",\"dcp_content_id\":\"4\",\"dcp_updated\":0}}]}",
 							tested.getAllContent("known", null, null, null));
 
 			// case - something found, from and size param used
 			TestUtils
 					.assetStreamingOutputContent(
-							"{\"total\":4,\"hits\":[{\"id\":\"2\",\"data\":{\"name\":\"test2\",\"dcp_content_id\":\"2\"}},{\"id\":\"3\",\"data\":{\"name\":\"test3\",\"dcp_content_id\":\"3\"}}]}",
+							"{\"total\":4,\"hits\":[{\"id\":\"2\",\"data\":{\"name\":\"test2\",\"dcp_content_id\":\"2\",\"dcp_updated\":0}},{\"id\":\"3\",\"data\":{\"name\":\"test3\",\"dcp_content_id\":\"3\",\"dcp_updated\":0}}]}",
 							tested.getAllContent("known", 1, 2, null));
 
 			// case - sort param used

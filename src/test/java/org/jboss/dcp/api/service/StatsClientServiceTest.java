@@ -18,6 +18,7 @@ import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.search.ShardSearchFailure;
 import org.elasticsearch.client.Client;
+import org.elasticsearch.common.text.StringText;
 import org.elasticsearch.rest.RestStatus;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
@@ -244,16 +245,16 @@ public class StatsClientServiceTest {
 		SearchHits hitsMock = Mockito.mock(SearchHits.class);
 		SearchHit[] hitsValues = new SearchHit[5];
 		for (int i = 0; i < hitsValues.length; i++) {
-			hitsValues[i] = new InternalSearchHit(i, "idx" + i, "type", null, null);
+			hitsValues[i] = new InternalSearchHit(i, "idx" + i, new StringText("type"), null, null);
 		}
 		Mockito.when(hitsMock.totalHits()).thenReturn(129l);
 		Mockito.when(hitsMock.maxScore()).thenReturn(29.3f);
-		Mockito.when(hitsMock.hits()).thenReturn(hitsValues);
-		Mockito.when(searchResponseMock.hits()).thenReturn(hitsMock);
+		Mockito.when(hitsMock.getHits()).thenReturn(hitsValues);
+		Mockito.when(searchResponseMock.getHits()).thenReturn(hitsMock);
 		Mockito.when(searchResponseMock.status()).thenReturn(RestStatus.OK);
-		Mockito.when(searchResponseMock.tookInMillis()).thenReturn(456l);
-		Mockito.when(searchResponseMock.successfulShards()).thenReturn(2);
-		Mockito.when(searchResponseMock.failedShards()).thenReturn(1);
+		Mockito.when(searchResponseMock.getTookInMillis()).thenReturn(456l);
+		Mockito.when(searchResponseMock.getSuccessfulShards()).thenReturn(2);
+		Mockito.when(searchResponseMock.getFailedShards()).thenReturn(1);
 		Mockito.when(searchResponseMock.getShardFailures()).thenReturn(
 				new ShardSearchFailure[] { new ShardSearchFailure("test reason", null) });
 

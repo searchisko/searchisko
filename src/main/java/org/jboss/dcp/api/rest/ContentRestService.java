@@ -139,7 +139,7 @@ public class ContentRestService extends RestServiceBase {
 			GetResponse getResponse = searchClientService.getClient().prepareGet(indexName, indexType, dcpContentId)
 					.execute().actionGet();
 
-			if (!getResponse.exists()) {
+			if (!getResponse.isExists()) {
 				return Response.status(Response.Status.NOT_FOUND).build();
 			}
 
@@ -219,7 +219,7 @@ public class ContentRestService extends RestServiceBase {
 			IndexResponse ir = searchClientService.getClient().prepareIndex(indexName, indexType, dcpContentId)
 					.setSource(content).execute().actionGet();
 			Map<String, String> retJson = new LinkedHashMap<String, String>();
-			if (ir.version() > 1) {
+			if (ir.getVersion() > 1) {
 				retJson.put("status", "update");
 				retJson.put("message", "Content was updated successfully.");
 			} else {

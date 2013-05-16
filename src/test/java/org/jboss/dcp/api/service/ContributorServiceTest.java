@@ -359,7 +359,7 @@ public class ContributorServiceTest extends ESRealClientTestBase {
 			// case - search from empty index
 			{
 				SearchResponse sr = tested.search("test@test.org");
-				Assert.assertEquals(0, sr.hits().getTotalHits());
+				Assert.assertEquals(0, sr.getHits().getTotalHits());
 			}
 
 			indexInsertDocument(ContributorService.SEARCH_INDEX_NAME, ContributorService.SEARCH_INDEX_TYPE, "10",
@@ -372,12 +372,12 @@ public class ContributorServiceTest extends ESRealClientTestBase {
 			// case - search existing
 			{
 				SearchResponse sr = tested.search("test@test.org");
-				Assert.assertEquals(1, sr.hits().getTotalHits());
-				Assert.assertEquals("20", sr.hits().hits()[0].getId());
+				Assert.assertEquals(1, sr.getHits().getTotalHits());
+				Assert.assertEquals("20", sr.getHits().getHits()[0].getId());
 
 				sr = tested.search("me@test.org");
-				Assert.assertEquals(1, sr.hits().getTotalHits());
-				Assert.assertEquals("10", sr.hits().hits()[0].getId());
+				Assert.assertEquals(1, sr.getHits().getTotalHits());
+				Assert.assertEquals("10", sr.getHits().getHits()[0].getId());
 			}
 
 		} finally {

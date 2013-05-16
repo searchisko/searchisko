@@ -52,7 +52,7 @@
                     ]
                 }
             },
-            "scope":"_global_"
+            "global":true
         },
         "per_dcp_type_counts":{
             "terms":{
@@ -106,7 +106,7 @@
                     ]
                 }
             },
-            "scope":"_global_"
+            "global":true
         },
         "top_contributors":{
             "terms":{
@@ -160,7 +160,7 @@
                     ]
                 }
             },
-            "scope":"_global_"
+            "global":true
         },
         "top_contributors_filter":{
             "terms":{
@@ -222,7 +222,7 @@
                     ]
                 }
             },
-            "scope":"_global_"
+            "global":true
         },
         "tag_cloud":{
             "terms":{
@@ -276,7 +276,7 @@
                     ]
                 }
             },
-            "scope":"_global_"
+            "global":true
         },
         "activity_dates_histogram":{
             "date_histogram":{

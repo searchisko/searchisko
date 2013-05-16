@@ -19,7 +19,7 @@
                     ]
                 }
             },
-            "scope":"_global_"
+            "global":true
         },
         "top_contributors_filter":{
             "terms":{
@@ -47,7 +47,7 @@
                     ]
                 }
             },
-            "scope":"_global_"
+            "global":true
         }
     }
 }

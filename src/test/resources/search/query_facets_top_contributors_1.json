@@ -19,7 +19,7 @@
                     ]
                 }
             },
-            "scope":"_global_"
+            "global":true
         }
     }
 }

@@ -174,14 +174,14 @@ public class StatsClientService extends ElasticsearchClientService {
 		Map<String, Object> source = new HashMap<String, Object>();
 
 		source.put(FIELD_RESPONSE_UUID, responseUuid);
-		source.put("took", resp.tookInMillis());
-		source.put("timed_out", resp.timedOut());
-		source.put("total_hits", resp.hits().totalHits());
-		source.put("max_score", resp.hits().maxScore());
-		source.put("shards_successful", resp.successfulShards());
-		source.put("shards_failed", resp.failedShards());
+		source.put("took", resp.getTookInMillis());
+		source.put("timed_out", resp.isTimedOut());
+		source.put("total_hits", resp.getHits().totalHits());
+		source.put("max_score", resp.getHits().maxScore());
+		source.put("shards_successful", resp.getSuccessfulShards());
+		source.put("shards_failed", resp.getFailedShards());
 		source.put(FIELD_STATUS, resp.status().name());
-		if (resp.failedShards() > 0) {
+		if (resp.getFailedShards() > 0) {
 			for (ShardSearchFailure ssf : resp.getShardFailures()) {
 				source.put("shard_failure", ssf.reason());
 			}
@@ -189,9 +189,9 @@ public class StatsClientService extends ElasticsearchClientService {
 
 		addQuery(source, querySettings);
 
-		if (resp.hits().totalHits() > 0) {
+		if (resp.getHits().totalHits() > 0) {
 			List<String> hitIds = new ArrayList<String>();
-			for (SearchHit hit : resp.hits().hits()) {
+			for (SearchHit hit : resp.getHits().getHits()) {
 				hitIds.add(hit.getId());
 			}
 			source.put("returned_hits", hitIds.size());

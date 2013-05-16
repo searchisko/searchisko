@@ -56,7 +56,7 @@ public class ContributorService implements EntityService {
 	public void init() {
 		try {
 			Client client = searchClientService.getClient();
-			if (!client.admin().indices().prepareExists(SEARCH_INDEX_NAME).execute().actionGet().exists()) {
+			if (!client.admin().indices().prepareExists(SEARCH_INDEX_NAME).execute().actionGet().isExists()) {
 				log.info("Contributor search index called '" + SEARCH_INDEX_NAME
 						+ "' doesn't exists. Creating it together with mapping for type '" + SEARCH_INDEX_TYPE + "'");
 				client.admin().indices().prepareCreate(SEARCH_INDEX_NAME).execute().actionGet();

@@ -200,8 +200,8 @@ public abstract class ESRealClientTestBase {
 	 */
 	public Map<String, Object> indexGetDocument(String indexName, String documentType, String id) {
 		GetResponse r = client.get((new GetRequest(indexName, documentType, id))).actionGet();
-		if (r != null && r.exists()) {
-			return r.sourceAsMap();
+		if (r != null && r.isExists()) {
+			return r.getSourceAsMap();
 		}
 		return null;
 

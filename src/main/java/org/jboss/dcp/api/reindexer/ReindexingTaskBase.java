@@ -58,9 +58,9 @@ public abstract class ReindexingTaskBase extends Task {
 
 				SearchResponse scrollResp = srb.execute().actionGet();
 
-				if (scrollResp.hits().totalHits() > 0) {
+				if (scrollResp.getHits().totalHits() > 0) {
 					scrollResp = executeESScrollSearchNextRequest(client, scrollResp);
-					while (scrollResp.hits().hits().length > 0) {
+					while (scrollResp.getHits().getHits().length > 0) {
 						BulkRequestBuilder brb = client.prepareBulk();
 						for (SearchHit hit : scrollResp.getHits()) {
 							if (isCanceledOrInterrupted()) {

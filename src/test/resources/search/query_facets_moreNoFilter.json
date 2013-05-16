@@ -5,21 +5,21 @@
                 "field":"dcp_project",
                 "size":500
             },
-            "scope":"_global_"
+            "global":true
         },
         "top_contributors":{
             "terms":{
                 "field":"dcp_contributors",
                 "size":100
             },
-            "scope":"_global_"
+            "global":true
         },
         "tag_cloud":{
             "terms":{
                 "field":"dcp_tags",
                 "size":50
             },
-            "scope":"_global_"
+            "global":true
         },
         "activity_dates_histogram":{
             "date_histogram":{
