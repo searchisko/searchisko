@@ -26,13 +26,12 @@ as an inspiration. You will have your own content.
 + [blogpost](content/blogpost.md) the data about blog posts related to the project
 + [issue](content/issue.md) the data from project's issue tracker (JIRA, Bugzilla, 
   etc...) about project bugs, feature requests etc.
-+ [forumthread](content/forumthread.md) the data from project's discussion forum   
++ [forumthread](content/forumthread.md) the data from project's discussion forum
++ [article](content/article.md) articles from project's wiki etc.
 
 Other data types considered in the future:
 
 + mailing list email
-+ discussion forum thread
-+ wiki page
 + documentation page
 + source code repository commit
 + IRC/IM conversation

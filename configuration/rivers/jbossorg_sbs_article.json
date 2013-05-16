@@ -1,7 +1,7 @@
 {
     "type" : "remote",
     "remote" : {
-        "urlGetDocuments"       : "https://community.jboss.org/data-api/content.jspa?spaceId={space}&type=forum&updatedAfter={updatedAfter}&maxSize=100",
+        "urlGetDocuments"       : "https://community.jboss.org/data-api/content.jspa?spaceId={space}&type=document&updatedAfter={updatedAfter}&maxSize=100",
         "getDocsResFieldDocuments"  : "items",
         "urlGetSpaces"					: "https://community.jboss.org/data-api/spaces.jspa",
         "getSpacesResField"			: "spaces",
@@ -12,8 +12,8 @@
         "maxIndexingThreads"    : 2
     },
     "index" : {
-        "index"             : "data_jbossorg_sbs_forum",
-        "type"              : "jbossorg_sbs_forum",
+        "index"             : "data_jbossorg_sbs_article",
+        "type"              : "jbossorg_sbs_article",
         "remote_field_document_id" : "id",
 	      "remote_field_updated"     : "updated",
         "field_space_key"   : "space_key",
@@ -65,10 +65,10 @@
                 "name"     : "DCP values filler",
                 "class"    : "org.jboss.elasticsearch.tools.content.AddMultipleValuesPreprocessor",
                 "settings" : {
-                    "id"                    : "jbossorg_sbs_forum-{id}",
-                    "dcp_type"              : "forumthread",
+                    "id"                    : "jbossorg_sbs_article-{id}",
+                    "dcp_type"              : "article",
                     "dcp_content_provider"  : "jbossorg",
-                    "dcp_content_type"      : "jbossorg_sbs_forum",
+                    "dcp_content_type"      : "jbossorg_sbs_article",
                     "dcp_content_content-type" : "text/html"
                  } 
             },{ 
@@ -177,6 +177,6 @@
         ]
     },
     "activity_log" : {
-        "index":"stats_jbossorg_sbs_forum_river"
+        "index":"stats_jbossorg_sbs_article_river"
     }
 }

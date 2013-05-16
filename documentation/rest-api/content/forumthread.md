@@ -19,11 +19,12 @@ Contains data from [JBoss Community Forum](http://community.jboss.org/threads) a
 <tr><td>dcp_title</td><td>Load image from outside the web context in JBoss AS 7</td><td>Thread title</td></tr>
 <tr><td>dcp_url_view</td><td>https://community.jboss.org/thread/227893</td><td>URL of forum thread view</td></tr>
 <tr><td>dcp_description</td><td></td><td>Shorted description created from forum question, containing only clear text</td></tr>
-<tr><td>dcp_content</td><td></td><td>Full rendered forum question. May contain HTML tags</td></tr>
+<tr><td>dcp_content</td><td></td><td>Full rendered forum question. May contain HTML tags or some wiki syntax as defined by `dcp_content_content-type`.</td></tr>
 <tr><td>dcp_created</td><td>2013-01-02T06:18:52.000-0500</td><td>Timestamp when thread was started</td></tr>
 <tr><td>dcp_comments</td><td></td><td>All replies to the forum question are stored as DCP comments using 'Comment data structure'</td></tr>
 </tbody>
 </table>
+**Note:** some standard DCP [system fields](dcp_content_object.md) prefixed by `dcp_` are not described here. Description may be found in general documentation for "DCP Content object".
 
 ### Custom fields
 <table border="1">

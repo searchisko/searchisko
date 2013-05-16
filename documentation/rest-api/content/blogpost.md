@@ -23,7 +23,7 @@ It's mainly related to the [JBoss Community Planet](http://planet.jboss.org) blo
 <tr><td>dcp_created</td><td>2013-01-02T06:18:52.000-0500</td><td>Timestamp when blog post was published</td></tr>
 </tbody>
 </table>
-
+**Note:** some standard DCP [system fields](dcp_content_object.md) prefixed by `dcp_` are not described here. Description may be found in general documentation for "DCP Content object".
 
 ### Custom fields
 <table border="1">
