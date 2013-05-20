@@ -5,4 +5,4 @@ This folder contains documentation for the Distributed Contribution Platform (DC
 
 * [DCP Basic Principles and Architecture](basic_principles_and_architecture.md)
 * [DCP Development Info](development.md)
-* [DCP REST API and date types](rest-api/README.md)
+* [DCP REST API and data types](rest-api/README.md)
