@@ -28,7 +28,7 @@ given script.
 
 2. Connect to Openshift Console
 		
-		ssh 5da3d60fa1034d1887eb4b8792c1bee2@dcp-jbossorgdev.rhcloud.com
+		ssh 5163d7b25973ca8ae4001fcf@dcp-jbossorgdev.rhcloud.com
 
 3. Stop EAP and remove all DCP data
 
@@ -36,12 +36,12 @@ given script.
 		rm -rf ~/app-root/data/search
 		
 		mysql dcp;
-		delete from Config; delete from Contributor; delete from Project; delete from Provider;
+		delete from Config; delete from Contributor; delete from Project; delete from Provider; delete from TaskStatusInfo;
 		exit;
 
 4. Start EAP and push all init data
 
-		ctl_app start
+		ctl_app start or do git push to openshift repo
 		# Wait till app is up - visit main page of DCP
 		cd ~/app-root/repo/configuration
 		./init_all_noriver.sh http://${OPENSHIFT_JBOSSEAP_IP}:8080
