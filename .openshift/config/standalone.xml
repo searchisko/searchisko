@@ -74,6 +74,7 @@
 				<level name="ERROR" />
 			</logger>
             <logger category="org.jboss.dcp.api.service.SearchService">
+                <!-- Log executed queries in JSON format (Elasticsearch Query DSL) -->
 				<level name="TRACE" />
 			</logger>
 			<root-logger>
