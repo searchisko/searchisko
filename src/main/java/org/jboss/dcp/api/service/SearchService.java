@@ -134,8 +134,14 @@ public class SearchService {
 			if (typeDef == null) {
 				throw new IllegalArgumentException("type");
 			}
-			srb.setIndices(ProviderService.extractSearchIndices(typeDef, type));
-			srb.setTypes(ProviderService.extractIndexType(typeDef, type));
+            String[] queryIndices = ProviderService.extractSearchIndices(typeDef, type);
+            String queryType = ProviderService.extractIndexType(typeDef, type);
+			srb.setIndices(queryIndices);
+			srb.setTypes(queryType);
+            if (log.isLoggable(Level.FINE)) {
+                log.log(Level.FINE, "Query indices: {0}", Arrays.asList(queryIndices).toString());
+                log.log(Level.FINE, "Query indices type: {0}", queryType);
+            }
 		} else {
 			List<String> dcpTypesRequested = null;
 			if (querySettings.getFilters() != null) {
@@ -171,7 +177,11 @@ public class SearchService {
 				}
 				indexNamesCache.put(prepareIndexNamesCacheKey(dcpTypesRequested, isDcpTypeFacet), indexNames);
 			}
-			srb.setIndices(indexNames.toArray(new String[indexNames.size()]));
+            String[] queryIndices = indexNames.toArray(new String[indexNames.size()]);
+			srb.setIndices(queryIndices);
+            if (log.isLoggable(Level.FINE)) {
+                log.log(Level.FINE, "Query indices: {0}", Arrays.asList(queryIndices).toString());
+            }
 		}
 	}
 
