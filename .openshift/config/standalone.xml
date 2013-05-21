@@ -73,6 +73,9 @@
 			<logger category="jacorb.config">
 				<level name="ERROR" />
 			</logger>
+            <logger category="org.jboss.dcp.api.service.SearchService">
+				<level name="TRACE" />
+			</logger>
 			<root-logger>
 				<level name="INFO" />
 				<handlers>
