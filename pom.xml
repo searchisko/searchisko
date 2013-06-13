@@ -54,6 +54,14 @@
 			<timezone>+1</timezone>
 			<url>http://community.jboss.org/people/velias</url>
 		</developer>
+        <developer>
+            <id>lvlcek</id>
+            <name>Lukáš Vlček</name>
+            <organization>Red Hat</organization>
+            <organizationUrl>http://www.redhat.com</organizationUrl>
+            <timezone>+1</timezone>
+            <url>http://community.jboss.org/people/lvlcek</url>
+        </developer>
 	</developers>
 
 	<properties>
@@ -540,8 +548,15 @@
 			<properties>
 				<es.client.embedded.data.path>${OPENSHIFT_DATA_DIR}</es.client.embedded.data.path>
 				<es.network.host>${OPENSHIFT_INTERNAL_IP}</es.network.host>
-        <persistence.xml.jta-data-source>java:jboss/datasources/MysqlDS</persistence.xml.jta-data-source>
-        <persistence.xml.hibernate.dialect>org.hibernate.dialect.MySQLDialect</persistence.xml.hibernate.dialect>
+                <persistence.xml.jta-data-source>java:jboss/datasources/MysqlDS</persistence.xml.jta-data-source>
+                <persistence.xml.hibernate.dialect>org.hibernate.dialect.MySQLDialect</persistence.xml.hibernate.dialect>
+                <!--
+                    We need Elasticsearch version where issue #3166 is fixed. This is either v1.0.0 or v0.90.2.
+                    See https://github.com/elasticsearch/elasticsearch/issues/3166
+                    Until these are officially released, we have to use custom manual build (1.0.0 SNAPSHOT).
+                    IMPORTANT: Make sure this version of Elasticsearch is available in local MVN repo on OpenShift.
+                -->
+                <org.elasticsearch.version>1.0.0.Beta1-SNAPSHOT</org.elasticsearch.version>
 			</properties>
 			<dependencies>
 				<dependency>
