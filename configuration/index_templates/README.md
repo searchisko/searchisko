@@ -8,4 +8,4 @@ and definitions of common dcp content document fields applied to all mappings.
 How to copy to OpenShift:
 
 	zip -r index_templates.zip **
-	scp index_templates.zip 5da3d60fa1034d1887eb4b8792c1bee2@dcp-jbossorgdev.rhcloud.com:~/app-root/data/
+	scp index_templates.zip 5163d7b25973ca8ae4001fcf@dcp-jbossorgdev.rhcloud.com:~/app-root/data/

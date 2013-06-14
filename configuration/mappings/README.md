@@ -7,4 +7,4 @@ subfolder is name of ElasticSearch type in given index with .json suffix added.
 How to copy to OpenShift:
 
 	zip -r mappings.zip **
-	scp mappings.zip 5da3d60fa1034d1887eb4b8792c1bee2@dcp-jbossorgdev.rhcloud.com:~/app-root/data/
+	scp mappings.zip 5163d7b25973ca8ae4001fcf@dcp-jbossorgdev.rhcloud.com:~/app-root/data/

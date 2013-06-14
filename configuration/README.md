@@ -34,19 +34,31 @@ given script.
 
 		ctl_app stop
 		rm -rf ~/app-root/data/search
-		
+
+4. Delete data in the database
+
+		# Recently, OpenShift does not seem to allow to stop only the app, but it stops the database as well,
+		# we have to first start the app to make the database available.
+
+		ctl_app start or do git push to openshift repo
+
 		mysql dcp;
 		delete from Config; delete from Contributor; delete from Project; delete from Provider; delete from TaskStatusInfo;
 		exit;
 
-4. Start EAP and push all init data
+5. Push all init data
 
-		ctl_app start or do git push to openshift repo
 		# Wait till app is up - visit main page of DCP
 		cd ~/app-root/repo/configuration
 		./init_all_noriver.sh http://${OPENSHIFT_JBOSSEAP_IP}:8080
 
-5. Start Rivers
+5.5 Push other init data
+
+        # If you have any additional init data, push them.
+        # For example if you have list of contributors or passwords for rivers.
+        # (Such init data is typically not shared in public repo)
+
+6. Start Rivers
 
 		cd ~/app-root/repo/configuration/rivers/
 		./init_rivers.sh
