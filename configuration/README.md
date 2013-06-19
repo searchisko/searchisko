@@ -30,7 +30,7 @@ given script.
 		
 		ssh 5163d7b25973ca8ae4001fcf@dcp-jbossorgdev.rhcloud.com
 
-3. Stop EAP and remove all DCP data
+3. Stop EAP and the database and remove all DCP cluster data
 
 		ctl_app stop
 		rm -rf ~/app-root/data/search

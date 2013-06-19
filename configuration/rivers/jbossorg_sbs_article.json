@@ -15,7 +15,7 @@
         "index"             : "data_jbossorg_sbs_article",
         "type"              : "jbossorg_sbs_article",
         "remote_field_document_id" : "id",
-	      "remote_field_updated"     : "updated",
+        "remote_field_updated"     : "updated",
         "field_space_key"   : "space_key",
         "field_document_id" : "dcp_id",
         "fields" : {
@@ -28,13 +28,14 @@
             "dcp_last_activity_date": {"remote_field" : "dcp_last_activity_date"},
             "dcp_project"           : {"remote_field" : "dcp_project"},
             "dcp_project_name"      : {"remote_field" : "dcp_project_name"},
-            "dcp_url_view"					: {"remote_field" : "url"},
+            "dcp_url_view"			: {"remote_field" : "url"},
             "dcp_contributors"      : {"remote_field" : "dcp_contributors"},
             "dcp_title"             : {"remote_field" : "title"},
             "dcp_created"           : {"remote_field" : "published"},
             "dcp_description"       : {"remote_field" : "dcp_description"},
             "dcp_content"           : {"remote_field" : "content"},
             "dcp_content_content-type" : {"remote_field" : "dcp_content_content-type"},
+            "dcp_content_plaintext" : {"remote_field" : "dcp_content_plaintext"},
             "tags"                  : {"remote_field" : "tags"},
             "dcp_tags"              : {"remote_field" : "tags"},
             "authors"               : {"remote_field" : "authors", "value_filter" : "user"}
@@ -110,13 +111,13 @@
                 "class"    : "org.jboss.elasticsearch.tools.content.StripHtmlPreprocessor",
                 "settings" : {
                     "source_field" : "content",
-                    "target_field" : "dcp_description"
+                    "target_field" : "dcp_content_plaintext"
                 } 
             },{ 
                 "name"     : "DCP description trimmer",
                 "class"    : "org.jboss.elasticsearch.tools.content.TrimStringValuePreprocessor",
                 "settings" : {
-                    "source_field" : "dcp_description",
+                    "source_field" : "dcp_content_plaintext",
                     "target_field" : "dcp_description",
                     "max_size" : 400
                 } 

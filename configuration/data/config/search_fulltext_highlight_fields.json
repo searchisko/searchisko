@@ -9,7 +9,7 @@
         "number_of_fragments":"3",
         "fragment_offset":"20"
     },
-    "dcp_content":{
+    "dcp_content_plaintext":{
         "fragment_size":"150",
         "number_of_fragments":"3",
         "fragment_offset":"20"

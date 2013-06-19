@@ -9,12 +9,6 @@
           "tokenizer" : "standard",
           "filter" : ["word_delimiter","standard","lowercase","asciifolding","stop","kstem"]
         },
-        "default_html_strip": {
-          "type": "custom",
-          "char_filter": ["html_strip"],
-          "tokenizer": "standard",
-          "filter": ["word_delimiter","standard","lowercase","asciifolding","stop","kstem"]
-        },
         "dcp_project_name" : {
           "type": "standard"
         }
@@ -40,17 +34,19 @@
         "dcp_content_id" : {"type" : "string", "analyzer" : "keyword"},
         "dcp_id" : {"type" : "string", "analyzer" : "keyword"},
         "dcp_type" : {"type" : "string", "analyzer" : "keyword", "store":"yes"},
-        "dcp_title" : {"type" : "string", "store":"yes"},
+        "dcp_title" : {"type" : "string", "store":"yes", "term_vector" : "with_positions_offsets"},
         "dcp_url_view" : {"type" : "string", "store":"yes"},
-        "dcp_description" : {"type" : "string", "store":"yes"},
-        "dcp_content" : {"type" : "string", "analyzer" : "default_html_strip"},
+        "dcp_description" : {"type" : "string", "store":"yes", "term_vector" : "with_positions_offsets"},
+        "dcp_content" : {"type" : "string", "index" : "no"},
+        "dcp_content_content-type" : {"type" : "string", "analyzer" : "keyword"},
+        "dcp_content_plaintext" : {"type" : "string", "term_vector" : "with_positions_offsets"},
         "dcp_updated" : {"type" : "date"},
         "dcp_project" : {"type" : "string", "analyzer" : "keyword", "store":"yes"},
         "dcp_project_name" : {"type" : "string", "analyzer" : "dcp_project_name", "store":"yes"},
         "dcp_contributors" : {
             "type" : "multi_field",
             "fields" : {
-                "fulltext" : {"type" : "string", "index" : "analyzed"},
+                "fulltext" : {"type" : "string", "index" : "analyzed", "term_vector" : "with_positions_offsets"},
                 "dcp_contributors" : {"type" : "string", "analyzer" : "keyword", "store":"yes"}
             }
          },             
@@ -62,7 +58,7 @@
   	      "type" : "object",
   	      "properties" : {
   	          "comment_id" : {"type" : "string", "index" : "no"},
-  	          "comment_body": {"type" : "string", "store":"yes"},
+  	          "comment_body": {"type" : "string", "store":"yes", "term_vector" : "with_positions_offsets"},
   	          "comment_created" : {"type" : "date", "index" : "no"},
   	          "comment_updated" : {"type" : "date", "index" : "no"},
   	          "comment_author" : {

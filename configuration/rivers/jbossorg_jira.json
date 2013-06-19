@@ -39,6 +39,7 @@
             "dcp_description"       : {"jira_field" : "dcp_description"},
             "dcp_content"           : {"jira_field" : "fields.description"},
             "dcp_content_content-type" : {"jira_field" : "dcp_content_content-type"},
+            "dcp_content_plaintext" : {"jira_field" : "fields.description"},
             "summary"               : {"jira_field" : "fields.summary"},
             "tags"                  : {"jira_field" : "fields.labels"},
             "dcp_tags"              : {"jira_field" : "fields.labels"},
