@@ -28,5 +28,10 @@
         "fragment_size":"150",
         "number_of_fragments":"3",
         "fragment_offset":"20"
+    },
+    "dcp_tags":{
+        "fragment_size":"-1",
+        "number_of_fragments":"0",
+        "fragment_offset":"0"
     }
 }

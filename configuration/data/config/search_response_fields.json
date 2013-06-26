@@ -9,6 +9,7 @@
         "dcp_project_name",
         "dcp_tags",
         "dcp_contributors",
+        "dcp_created",
         "dcp_last_activity_date"
     ]
 }
