@@ -12,8 +12,6 @@
         "dcp_project_name" : {
           "type": "standard"
         },
-        // "dcp_tags" analyzer is similar to "keyword" analyzer except it also apply "lowercase" and "unique" filters
-        // this makes it match if the query is not lowercase and does not score for a single term more then once
         "dcp_tags" : {
           "type" : "custom",
           "tokenizer" : "keyword",
