@@ -32,6 +32,10 @@
     "dcp_tags":{
         "fragment_size":"-1",
         "number_of_fragments":"0",
-        "fragment_offset":"0"
+        "fragment_offset":"0",
+        // "dcp_tag" matches as a whole keyword, thus we can leave out highlighting tags,
+        // this makes it easier to apply specific highlighting on the client side later if needed
+        "pre_tags" : [""],
+        "post_tags" : [""]
     }
 }

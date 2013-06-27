@@ -11,6 +11,13 @@
         },
         "dcp_project_name" : {
           "type": "standard"
+        },
+        // "dcp_tags" analyzer is similar to "keyword" analyzer except it also apply "lowercase" and "unique" filters
+        // this makes it match if the query is not lowercase and does not score for a single term more then once
+        "dcp_tags" : {
+          "type" : "custom",
+          "tokenizer" : "keyword",
+          "filter" : ["lowercase", "unique", "trim"]
         }
       },
       "filter" : {
@@ -50,7 +57,7 @@
                 "dcp_contributors" : {"type" : "string", "analyzer" : "keyword", "store":"yes"}
             }
          },             
-        "dcp_tags" : {"type" : "string", "analyzer" : "keyword", "store":"yes"},
+        "dcp_tags" : {"type" : "string", "analyzer" : "dcp_tags", "store":"yes"},
         "dcp_created" : {"type" : "date", "store":"yes"},
         "dcp_last_activity_date" : {"type" : "date", "store":"yes"},
         "dcp_activity_dates" : {"type" : "date"},
