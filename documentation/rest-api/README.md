@@ -9,9 +9,9 @@ registered providers over 'Content Push API' and searched over 'Search API' and
 'Query Suggestions API'.
 
 The DCP content can be characterized by a type (e.g. e-mails, blog posts, forum 
-posts, issues, etc...). Content for one *dcp_type* can originate from distinct source 
+posts, issues, etc...). Content for one *sys_type* can originate from distinct source
 systems (e.g. an issue may be from JIRA or Bugzilla). 
-Each *dcp_type* has its own logical structure and will require specific fields 
+Each *sys_type* has its own logical structure and will require specific fields
 to be filled. All types also share some common [system data fields](content/dcp_content_object.md).
 
 You can find a description of each content type available in the DCP in the
@@ -20,7 +20,7 @@ You can find a description of each content type available in the DCP in the
 **Note:** If you run your own instance of the DCP, consider the documents in this folder 
 as an inspiration. You will have your own content.
 
-###List of available *dcp_type*s
+###List of available *sys_type*s
 
 + [project_info](content/project_info.md) the basic data about the [community project](https://www.jboss.org/projects.html). 
 + [blogpost](content/blogpost.md) the data about blog posts related to the project

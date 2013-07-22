@@ -7,7 +7,7 @@
       "and" : {
         "filters" : [ {
           "terms" : {
-            "dcp_project" : [ "pr1" ]
+            "sys_project" : [ "pr1" ]
           }
         } ]
       }

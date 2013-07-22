@@ -2,7 +2,7 @@
     "facets":{
         "activity_dates_histogram":{
             "date_histogram":{
-                "field":"dcp_activity_dates",
+                "field":"sys_activity_dates",
                 "interval":"hour"
             }
         }

@@ -8,14 +8,10 @@
     "shards_successful":2,
     "took":456,
     "filters_activity_date_interval":"quarter",
-    "filters_dcp_types":[
-        "issue",
-        "blogpost"
-    ],
-    "query_string":"my query",
-    "shards_failed":1,
     "date":"2012-12-21T12:12:12.121Z",
     "type":"search",
+    "query_string":"my query",
+    "shards_failed":1,
     "returned_hits":5,
     "total_hits":129,
     "filters_activity_date_to":"1990-09-30T00:09:25.465Z",
@@ -25,6 +21,10 @@
     ],
     "max_score":29.3,
     "shard_failure":"test reason",
+    "filters_sys_types":[
+        "issue",
+        "blogpost"
+    ],
     "filters_activity_date_from":"1990-09-30T00:07:45.465Z",
     "filters_contributors":[
         "John Doe <john@doe.org>",
@@ -35,6 +35,7 @@
         "jbossas7",
         "jbpm"
     ],
+    "filters_sys_content_provider":"jbossorg",
     "filters_size":12,
     "filters_content_type":"jbossorg_jira_issue",
     "query_fields":[
@@ -43,7 +44,6 @@
     ],
     "query_highlight":true,
     "response_uuid":"uuid",
-    "filters_dcp_content_provider":"jbossorg",
     "hits_id":[
         "idx0",
         "idx1",

@@ -1,16 +1,19 @@
 #!/bin/bash
 
-## This script uses DCP REST API
+## This script uses system REST API to configure
+##   - query fields (including boost value)
+##   - response fields
+##   - highlight fields
 ##
-## You can use first commandline parameter to change base URL of DCP API call (/v1/rest/... is appended automatically to this base URL)
-## You can use second commandline parameter to change DCP username
-## You can use third commandline parameter to change DCP password
+## You can use first commandline parameter to change base URL of system API call (/v1/rest/... is appended automatically to this base URL)
+## You can use second commandline parameter to change system username
+## You can use third commandline parameter to change system password
 
 clear
 
-dcpurl=https://dcp-jbossorgdev.rhcloud.com
+sysurl=https://dcp-jbossorgdev.rhcloud.com
 if [ -n "$1" ]; then
-  dcpurl=$1
+  sysurl=$1
 fi
 
 username=jbossorg
@@ -24,9 +27,9 @@ if [ -n "$3" ]; then
 fi
 
 outputfile=output.txt
-dcpapi=${dcpurl}/v1/rest/config/
+sysapi=${sysurl}/v1/rest/config/
 
-echo "Pushing configuration documents to DCP API via ${dcpapi}"
+echo "Pushing configuration documents to system API via ${sysapi}"
 echo -n "" > $outputfile
 
 for filename in *.json;
@@ -34,7 +37,7 @@ do
 	code="${filename%.*}"
 	echo -ne "Pushing $code"
 
-	output=$(curl -i -s -o $outputfile --user ${username}:${password} -w "%{http_code}" -H "Content-Type: application/json" -X POST -d@$filename ${dcpapi}$code)
+	output=$(curl -i -s -o $outputfile --user ${username}:${password} -w "%{http_code}" -H "Content-Type: application/json" -X POST -d@$filename ${sysapi}$code)
 
 	if [ "$output" == "200" ]; then
 	  echo " [OK]"

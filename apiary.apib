@@ -5,29 +5,29 @@ HOST: http://dcp.jboss.org/v1
 # Overview
 
 **Distributed Contribution Platform** is a system intended to store and search/retrieve information related to distinct JBoss Community OSS projects, aggregated from various source systems. 
-This system is necessary to support/extend synergy of JBoss Community in the era of more distributed development environment, when project teams tends to use third party systems instead of systems provided and maintained by JBoss Community Team.
+This system is necessary to support/extend synergy of JBoss Community in the era of more distributed development environment, when project teams tend to use third party systems instead of systems provided and maintained by JBoss Community Team.
 
 Distributed Contribution Platform main design attributes:
 
 * high availability of services (both for common runtime and platform upgrade time)
-* simple, quick and flexible search of stored informations
-* possibility to store informations with guaranteed long term persistence for data sources where it is hard or impossible to obtain informations again (eg. blog posts obtained over RSS protocol)
+* simple, quick and flexible search of stored information
+* possibility to store information with guaranteed long term persistence for data sources where it is hard or impossible to obtain information again (eg. blog posts obtained over RSS protocol)
 * high flexibility of stored information structures
 * openness and easy use by other community members
 
-To support synergy, informations stored into DCP will be normalized in these areas:
+To support synergy, information stored into DCP will be normalized in these areas:
 
-* information type - so all pieces of informations of same type (blog post, issue, commit) originated from distinct systems can be obtained by one search request
-* project - so all informations/contributions related to one project can be obtained by one search request
-* contributor - so all informations/contributions performed by one contributor can be simply obtained by one search request
-* tags - so you can obtain all pieces of informations tagged with same value
-* activity date - so you can filter/analyze informations/contributions by dates when they was created/updated   
+* information type - so all pieces of information of same type (blog post, issue, commit) originated from distinct systems can be obtained by one search request
+* project - so all information/contributions related to one project can be obtained by one search request
+* contributor - so all information/contributions performed by one contributor can be simply obtained by one search request
+* tags - so you can obtain all pieces of information tagged with same value
+* activity date - so you can filter/analyze information/contributions by dates when they was created/updated
 
-**Distributed Contribution Platform** provides **REST API** for informations manipulation and search/retrieve described in this document.
+**Distributed Contribution Platform** is implemented on top of [Searchisko](https://github.com/searchisko/searchisko-api) and provides **REST API** for information manipulation and search/retrieve described in this document.
 
-[Data structures used on this API are described here](https://github.com/jbossorg/dcp-api/blob/master/documentation/rest-api/).
+[Data structures used on this API are described here](https://github.com/searchisko/searchisko-api/blob/master/documentation/rest-api/).
 
-[This document describes structure of main content object](https://github.com/jbossorg/dcp-api/blob/master/documentation/rest-api/content/dcp_content_object.md) which can be pushed to and retrieved or searched from DCP.
+[This document describes structure of main content object](https://github.com/searchisko/searchisko-api/blob/master/documentation/rest-api/content/dcp_content_object.md) which can be pushed to and retrieved or searched from DCP.
 
 # Authentication
 
@@ -53,32 +53,32 @@ HTTP header, so client browser can use search API directly.
 
 --
 Content Push API
-This part of API is primarily used by *content providers* to manipulate [content](https://github.com/jbossorg/dcp-api/blob/master/documentation/rest-api/content/dcp_content_object.md) in DCP. 
+This part of API is primarily used by *content providers* to manipulate [content](https://github.com/searchisko/searchisko-api/blob/master/documentation/rest-api/content/dcp_content_object.md) in DCP.
 
-Each provider has set of 'provider types' defined in DCP, which are passed on this API as `{dcp_content_type}` URL path part.
+Each provider has set of 'provider types' defined in DCP, which are passed on this API as `{sys_content_type}` URL path part.
 'Provider type' is one type of content object stored into DCP by given provider (eg. issue from provider's issue tracking system, blog post from provider's blogging system etc).
-To manipulate content objects over this API provider must use identifiers unique for given 'provider type'. These identifiers are referred as `{dcp_content_id}` url path part in API documentation.      
+To manipulate content objects over this API provider must use identifiers unique for given 'provider type'. These identifiers are referred as `{sys_content_id}` url path part in API documentation.
 --
 
 Get one content object of specified 'provider type' and 'provider id' from DCP.
-GET /rest/content/{dcp_content_type}/{dcp_content_id}
+GET /rest/content/{sys_content_type}/{sys_content_id}
 < 200
 < Content-Type: application/json
 {
   "tags": ["Content_tag1", "tag2", "tag3"],
-  "dcp_content_provider": "jbossorg",
-  "dcp_content_type": "jbossorg_jira_issue",
-  "dcp_content_id": "AS7-1254",
-  "dcp_id": "jbossorg_jira_issue-AS7-1254",
-  "dcp_type": "issue",
-  "dcp_title": "AS7-1254 - Set the port_range on JGroups stacks to 1",
-  "dcp_url_view": "https://issues.jboss.org/browse/AS7-1254",
-  "dcp_description": "Set the port_range on JGroups stacks to 1 to lock down the ports.",
-  "dcp_updated": "2012-12-06T06:34:55.000Z",
-  "dcp_project": "as7",
-  "dcp_contributors": ["John Doe <john@doe.org>", "Pat Mat <pat@mat.org>"],
-  "dcp_activity_dates": ["2012-12-06T06:34:55.000Z", "2012-12-05T01:48:05.000Z"],
-  "dcp_tags": ["Content_tag1", "tag2", "tag3", "user_defined_additional_tag"]
+  "sys_content_provider": "jbossorg",
+  "sys_content_type": "jbossorg_jira_issue",
+  "sys_content_id": "AS7-1254",
+  "sys_id": "jbossorg_jira_issue-AS7-1254",
+  "sys_type": "issue",
+  "sys_title": "AS7-1254 - Set the port_range on JGroups stacks to 1",
+  "sys_url_view": "https://issues.jboss.org/browse/AS7-1254",
+  "sys_description": "Set the port_range on JGroups stacks to 1 to lock down the ports.",
+  "sys_updated": "2012-12-06T06:34:55.000Z",
+  "sys_project": "as7",
+  "sys_contributors": ["John Doe <john@doe.org>", "Pat Mat <pat@mat.org>"],
+  "sys_activity_dates": ["2012-12-06T06:34:55.000Z", "2012-12-05T01:48:05.000Z"],
+  "sys_tags": ["Content_tag1", "tag2", "tag3", "user_defined_additional_tag"]
 }
 
 
@@ -88,7 +88,7 @@ Get all content objects of the specified 'provider type'.
 
 * `from` index of the first content object returned in the results array. The default value is 0 (start from begin of list).
 * `size` of returned results array. Default is 10.
-* `sort` you can use 'asc' or 'desc' value to sort results by date of last update of content object in DCP (`dcp_updated` field).   
+* `sort` you can use 'asc' or 'desc' value to sort results by date of last update of content object in DCP (`sys_updated` field).
 
 ##### Response content
 The response contains a JSON structure with overall number of the content objects of specified 'provider type' in `total` field, and an array of the content objects in `hits` field. The content of the array depends on `from` and `size` request parameters.
@@ -108,7 +108,7 @@ Each record in the array contains `id` field with 'provider id' of the content o
 }
 ```
 
-GET /rest/content/{dcp_content_type}{?from,size,sort}
+GET /rest/content/{sys_content_type}{?from,size,sort}
 < 200
 < Content-Type: application/json
 {
@@ -118,26 +118,26 @@ GET /rest/content/{dcp_content_type}{?from,size,sort}
       "id": "AS7-1254",
       "data": {
         "tags": ["Content_tag1", "tag2", "tag3"],
-        "dcp_content_provider": "jbossorg",
-        "dcp_content_type": "jbossorg_jira_issue",
-        "dcp_content_id": "AS7-1254",
-        "dcp_id": "jbossorg_jira_issue-AS7-1254",
-        "dcp_type": "issue",
-        "dcp_title": "AS7-1254 - Set the port_range on JGroups stacks to 1",
-        "dcp_url_view": "https://issues.jboss.org/browse/AS7-1254",
-        "dcp_description": "Set the port_range on JGroups stacks to 1 to lock down the ports.",
-        "dcp_updated": "2012-12-06T06:34:55.000Z",
-        "dcp_project": "as7",
-        "dcp_contributors": ["John Doe <john@doe.org>", "Pat Mat <pat@mat.org>"],
-        "dcp_activity_dates": ["2012-12-06T06:34:55.000Z", "2012-12-05T01:48:05.000Z"],
-        "dcp_tags": ["Content_tag1", "tag2", "tag3", "user_defined_additional_tag"]
+        "sys_content_provider": "jbossorg",
+        "sys_content_type": "jbossorg_jira_issue",
+        "sys_content_id": "AS7-1254",
+        "sys_id": "jbossorg_jira_issue-AS7-1254",
+        "sys_type": "issue",
+        "sys_title": "AS7-1254 - Set the port_range on JGroups stacks to 1",
+        "sys_url_view": "https://issues.jboss.org/browse/AS7-1254",
+        "sys_description": "Set the port_range on JGroups stacks to 1 to lock down the ports.",
+        "sys_updated": "2012-12-06T06:34:55.000Z",
+        "sys_project": "as7",
+        "sys_contributors": ["John Doe <john@doe.org>", "Pat Mat <pat@mat.org>"],
+        "sys_activity_dates": ["2012-12-06T06:34:55.000Z", "2012-12-05T01:48:05.000Z"],
+        "sys_tags": ["Content_tag1", "tag2", "tag3", "user_defined_additional_tag"]
       }
     }
   ]
 }
 
 Push the content object into DCP. The content is updated in DCP if exists  or is inserted if does not. 
-The data normalizations are performed during this request processing and the content object is extended by the DCP system data fields - the performed normalization tasks depend on the configuration for the given `dcp_content_type`.
+The data normalizations are performed during this request processing and the content object is extended by the DCP system data fields - the performed normalization tasks depend on the configuration for the given `sys_content_type`.
 
 *Provider authentication required.*
 
@@ -154,7 +154,7 @@ The response contains a JSON structure with a `status` field containing 'insert'
 }
 ```
 
-POST /rest/content/{dcp_content_type}/{dcp_content_id}
+POST /rest/content/{sys_content_type}/{sys_content_id}
 > Accept: application/json
 < 200
 < Content-Type: application/json
@@ -171,7 +171,7 @@ Delete defined content object from DCP.
 
 * `ignore_missing` if set to 'true' then __200 (OK)__ is returned instead of __404 (Not Found)__ if deleted content object doesn't exists in DCP.  
  
-DELETE /rest/content/{dcp_content_type}/{dcp_content_id}{?ignore_missing}
+DELETE /rest/content/{sys_content_type}/{sys_content_id}{?ignore_missing}
 < 200
 < Content-Type: plain/text
 Content deleted successfully.
@@ -179,7 +179,7 @@ Content deleted successfully.
 
 --
 Search API
-This part of the API is used by all systems that need to use [content](https://github.com/jbossorg/dcp-api/tree/master/documentation/rest-api/) stored in DCP.
+This part of the API is used by all systems that need to use [content](https://github.com/searchisko/searchisko-api/tree/master/documentation/rest-api/) stored in DCP.
 --
 
 Search contributions based on input parameters
@@ -191,17 +191,17 @@ Search contributions based on input parameters
 * `sortBy` sort result. Value can be `old` (to sort content from oldest to newest activity) or `new` (to sort from newest to oldest activity). Sorting by fulltext score is used if param is not provided.
 * `from` start index or returned entries. Default value is 0. Useful together with `size` for results pagination.
 * `size` maximal number of returned entries. Default is 10, maximal value is 500.
-* `facet` you can specify name of [facet](http://www.elasticsearch.org/guide/reference/api/search/facets/) you want to include in response. Available facet names are: `top_contributors`, `activity_dates_histogram`, `per_project_counts`, `per_dcp_type_counts`, `tag_cloud`. This param can be used multiple times to get more facet data in the response.
-* `field` you can use this param multiple times to specify which [fields](http://www.elasticsearch.org/guide/reference/api/search/fields.html) from search index will be returned in results. If not used then predefined set of basic `dcp_xx` fields is returned. If you want complete documents use `_source` value for this param. Be careful about performance impact of this param, consult DCP administrators if necessary! 
-* `content_provider` filters result only to data provided by specified provider - `dcp_content_provider` field
-* `type` filters result only to specific `dcp_content_type`
-* `dcp_type` filters result only to specific `dcp_type`, This param can be used multiple times to get results for more types.
-* `tag` filters result to specific tag defined in `dcp_tags` field. This param can be used multiple times to get results for more tags.
-* `project` filters result to specific project defined in `dcp_project` field. This param can be used multiple times to get results for more projects.
+* `facet` you can specify name of [facet](http://www.elasticsearch.org/guide/reference/api/search/facets/) you want to include in response. Available facet names are: `top_contributors`, `activity_dates_histogram`, `per_project_counts`, `per_sys_type_counts`, `tag_cloud`. This param can be used multiple times to get more facet data in the response.
+* `field` you can use this param multiple times to specify which [fields](http://www.elasticsearch.org/guide/reference/api/search/fields.html) from search index will be returned in results. If not used then predefined set of basic `sys_xx` fields is returned. If you want complete documents use `_source` value for this param. Be careful about performance impact of this param, consult DCP administrators if necessary!
+* `content_provider` filters result only to data provided by specified provider - `sys_content_provider` field
+* `type` filters result only to specific `sys_content_type`
+* `sys_type` filters result only to specific `sys_type`, This param can be used multiple times to get results for more types.
+* `tag` filters result to specific tag defined in `sys_tags` field. This param can be used multiple times to get results for more tags.
+* `project` filters result to specific project defined in `sys_project` field. This param can be used multiple times to get results for more projects.
 * `activity_date_interval` filters results only for data with some activity in defined period before now. Available values `year`, `quarter`, `month`, `week`, `day`. 
-* `activity_date_from` filters results only for data with some activity (field `dcp_activity_dates`) after given date. ISO format used, eg. `2012-12-21T12:12:12Z`. Ignored if `activity_date_interval` is used.
-* `activity_date_to` filters results only for data with some activity (field `dcp_activity_dates`) before given date. ISO format used, eg. `2012-12-21T12:12:12Z`. Ignored if `activity_date_interval` is used.
-* `contributor` filters results only for data with activity from given contributor (field `dcp_contributors`), This param can be used multiple times to get results for more contributors.
+* `activity_date_from` filters results only for data with some activity (field `sys_activity_dates`) after given date. ISO format used, eg. `2012-12-21T12:12:12Z`. Ignored if `activity_date_interval` is used.
+* `activity_date_to` filters results only for data with some activity (field `sys_activity_dates`) before given date. ISO format used, eg. `2012-12-21T12:12:12Z`. Ignored if `activity_date_interval` is used.
+* `contributor` filters results only for data with activity from given contributor (field `sys_contributors`), This param can be used multiple times to get results for more contributors.
 
 ##### Response content
 
@@ -225,17 +225,17 @@ Search contributions based on input parameters
 			    "_id": "jbossorg_jira_issue-AEROGEAR-2",
 			    "_score": 1,
 			    "fields": {
-			        "dcp_last_activity_date": "2012-01-10T15:29:02.000Z",
-			        "dcp_project": "aerogear",
-			        "dcp_project_name": "Aerogear",
-			        "dcp_description": "At the bottom of the current site is a feed of aerogear tweets. This needs to be expanded to include multiple sources. The RichFaces project does this, but I think they needed to use a good feed aggregator to get a single stream.",
-			        "dcp_title": "AEROGEAR-2 - Project page needs a consolidated feed of various content, not just tweets",
-			        "dcp_url_view": "https://issues.jboss.org/browse/AEROGEAR-2",
-			        "dcp_contributors": [
+			        "sys_last_activity_date": "2012-01-10T15:29:02.000Z",
+			        "sys_project": "aerogear",
+			        "sys_project_name": "Aerogear",
+			        "sys_description": "At the bottom of the current site is a feed of aerogear tweets. This needs to be expanded to include multiple sources. The RichFaces project does this, but I think they needed to use a good feed aggregator to get a single stream.",
+			        "sys_title": "AEROGEAR-2 - Project page needs a consolidated feed of various content, not just tweets",
+			        "sys_url_view": "https://issues.jboss.org/browse/AEROGEAR-2",
+			        "sys_contributors": [
 			            "Jay Balunas <tech4j@gmail.com>",
 			            "Wesley Hales <wesleyhales@gmail.com>"
 			        ],
-			        "dcp_type": "issue"
+			        "sys_type": "issue"
 			    }
 			 },{
          ...
@@ -259,7 +259,7 @@ Description of important response fields:
 * `hits/hits/highlight` highlights of fulltext matching in given document, see `query_highlight` request parameter
 * `facets` values from facets, see `facet` request parameter
 
-GET /rest/search?{query,query_highlight,sortBy,from,size,facet,field,content_provider,type,dcp_type,tag,project,activity_date_interval,activity_date_from,activity_date_to,contributor}
+GET /rest/search?{query,query_highlight,sortBy,from,size,facet,field,content_provider,type,sys_type,tag,project,activity_date_interval,activity_date_from,activity_date_to,contributor}
 < 200
 < Content-Type: application/json
 < Access-Control-Allow-Origin: *
@@ -303,7 +303,7 @@ PUT /rest/search/{search_result_uuid}/{hit_id}?{session_id}
 Suggestions API - Query
 It can return suggestions for given user query such as *query completion*, *did you mean*, ... etc.
 
-Returned JSON contains two highlevel objects:
+Returned JSON contains two high-level objects:
 
 ```
 {
@@ -534,11 +534,11 @@ GET /rest/suggestions/project?query=gin&size=2
                 "_id":"jbossorg_project_info-jbossmessaging",
                 "_score":0.37307936,
                 "fields": {
-                    "dcp_project":"jbossmessaging",
-                    "dcp_project_name":"JBoss Messaging"
+                    "sys_project":"jbossmessaging",
+                    "sys_project_name":"JBoss Messaging"
                 },
                 "highlight": {
-                    "dcp_project_name.ngram":["JBoss Messa<em>gin</em>g"]
+                    "sys_project_name.ngram":["JBoss Messa<em>gin</em>g"]
                 }
             },
             {
@@ -547,11 +547,11 @@ GET /rest/suggestions/project?query=gin&size=2
                 "_id":"jbossorg_project_info-maven-jboss-retro-plugin",
                 "_score":0.22255114,
                 "fields": {
-                    "dcp_project":"maven-jboss-retro-plugin",
-                    "dcp_project_name":"Maven jBoss-retro Plugin"
+                    "sys_project":"maven-jboss-retro-plugin",
+                    "sys_project_name":"Maven jBoss-retro Plugin"
                 },
                 "highlight": {
-                    "dcp_project_name.ngram":["Maven jBoss-retro Plu<em>gin</em>"]
+                    "sys_project_name.ngram":["Maven jBoss-retro Plu<em>gin</em>"]
                 }
             }]
         }
@@ -573,8 +573,8 @@ GET /rest/suggestions/project?query=gin&size=2
                 "_id":"jbossorg_project_info-jbossmessaging",
                 "_score":0.14913967,
                 "fields": {
-                    "dcp_project":"jbossmessaging",
-                    "dcp_project_name":"JBoss Messaging"
+                    "sys_project":"jbossmessaging",
+                    "sys_project_name":"JBoss Messaging"
                 }
             },
             {
@@ -583,8 +583,8 @@ GET /rest/suggestions/project?query=gin&size=2
                 "_id":"jbossorg_project_info-shrinkwrap",
                 "_score":0.125,
                 "fields": {
-                    "dcp_project":"shrinkwrap",
-                    "dcp_project_name":"Shrinkwrap"
+                    "sys_project":"shrinkwrap",
+                    "sys_project_name":"Shrinkwrap"
                 }
             }]
         }
@@ -594,7 +594,7 @@ GET /rest/suggestions/project?query=gin&size=2
 
 --
 Feed API
-This part of the API is used by all systems that want to consume [content](https://github.com/jbossorg/dcp-api/tree/master/documentation/rest-api/) 
+This part of the API is used by all systems that want to consume [content](https://github.com/searchisko/searchisko-api/tree/master/documentation/rest-api/)
 stored in DCP as feed in [Atom Syndication Format](http://tools.ietf.org/html/rfc4287). 
 Request parameters can be used to filter feed content by distinct criteria.
 --
@@ -603,12 +603,12 @@ Get Atom feed with filtered content.
 
 ##### Request parameters
 
-* `project` filters feed to specific project defined in `dcp_project` field. This param can be used multiple times to get feed for more projects.
-* `contributor` filters feed only for data with activity from given contributor (field `dcp_contributors`). This param can be used multiple times to get feed for more contributors.
-* `dcp_type` filters feed only to specific `dcp_type`, This param can be used multiple times to get feed for more types.
-* `tag` filters feed to specific tag defined in `dcp_tags` field. This param can be used multiple times to get feed for more tags.
-* `type` filters feed only to specific `dcp_content_type`
-* `content_provider` filters feed only to data provided by specified provider - `dcp_content_provider` field
+* `project` filters feed to specific project defined in `sys_project` field. This param can be used multiple times to get feed for more projects.
+* `contributor` filters feed only for data with activity from given contributor (field `sys_contributors`). This param can be used multiple times to get feed for more contributors.
+* `sys_type` filters feed only to specific `sys_type`, This param can be used multiple times to get feed for more types.
+* `tag` filters feed to specific tag defined in `sys_tags` field. This param can be used multiple times to get feed for more tags.
+* `type` filters feed only to specific `sys_content_type`
+* `content_provider` filters feed only to data provided by specified provider - `sys_content_provider` field
 * `query` full text query string
 * `sortBy` sort result. If not used then date of last content modification is 
   used to include content in feed. You can use `new-create` value here to 
@@ -616,7 +616,7 @@ Get Atom feed with filtered content.
 * `feed_title` optional param allows to customize title of generated feed. By default it's generated from the filter criteria used for feed.  
 
 
-GET /rest/feed?{project,contributor,dcp_type,tag,type,content_provider,query,sortBy,feed_title}
+GET /rest/feed?{project,contributor,sys_type,tag,type,content_provider,query,sortBy,feed_title}
 < 200
 < Content-Type: application/atom+xml
 < Access-Control-Allow-Origin: *
@@ -629,7 +629,7 @@ GET /rest/feed?{project,contributor,dcp_type,tag,type,content_provider,query,sor
 	  <entry>
 	     <title>AS7-1254 - Set the port_range on JGroups stacks to 1</title>
 	     <link href="https://issues.jboss.org/browse/AS7-1254" />
-	     <id>dcp:content:jbossorg_jira_issue-AS7-1254</id>
+	     <id>searchisko:content:jbossorg_jira_issue-AS7-1254</id>
 	     <published>2012-12-06T06:34:55.000Z</published>
 	     <updated>2012-12-06T06:34:55.000Z</updated>
 	     <summary>Set the port_range on JGroups stacks to 1 to lock down the ports.</summary>
@@ -648,7 +648,7 @@ This part of the API allows to manage configurations of *content providers*. *Co
 
 This part of the API is used by 'DCP administrators', some operations can be used by *content providers* alone too.
 
-[Data structure used on this API is documented here](https://github.com/jbossorg/dcp-api/blob/master/documentation/rest-api/management/content_provider.md).
+[Data structure used on this API is documented here](https://github.com/searchisko/searchisko-api/blob/master/documentation/rest-api/management/content_provider.md).
 --
 
 Get configuration for provider of given name.
@@ -665,16 +665,16 @@ GET /rest/provider/{name}
   "type": {
     "jbossorg_blog": {
       "description" : "Blog posts pushed into DCP by Borg system - planet.jboss.org",
-      "dcp_type": "blogpost",
-      "dcp_content_content-type" : "text/html",
+      "sys_type": "blogpost",
+      "sys_content_content-type" : "text/html",
 	    "persist" : true,
       "input_preprocessors": [
         {
-          "name": "DCP project mapper - feed to dcp_project mapping",
+          "name": "DCP project mapper - feed to sys_project mapping",
           "class": "org.jboss.elasticsearch.tools.content.ESLookupValuePreprocessor",
           "settings": {
-            "target_field": "dcp_project",
-            "index_name": "dcp_projects",
+            "target_field": "sys_project",
+            "index_name": "sys_projects",
             "idx_search_field": "type_specific_code.jbossorg_blog",
             "idx_result_field": "code",
             "source_field": "feed",
@@ -690,15 +690,15 @@ GET /rest/provider/{name}
     },
     "jbossorg_project_info": {
       "description" : "Informations about projects (name, links, icons, licenses used etc) pushed into DCP by Magnolia CMS",
-      "dcp_type": "project_info",
+      "sys_type": "project_info",
       "search_all_excluded" : "true",
       "input_preprocessors": [
         {
-          "name": "DCP project mapper - nodePath to dcp_project mapping",
+          "name": "DCP project mapper - nodePath to sys_project mapping",
           "class": "org.jboss.elasticsearch.tools.content.ESLookupValuePreprocessor",
           "settings": {
-            "target_field": "dcp_project",
-            "index_name": "dcp_projects",
+            "target_field": "sys_project",
+            "index_name": "sys_projects",
             "idx_search_field": "type_specific_code.jbossorg_project_info",
             "idx_result_field": "code",
             "source_field": "nodePath",
@@ -797,10 +797,10 @@ DELETE /rest/provider/{name}
 --
 Management API - projects
 
-This part of the API allows to manage configurations of *projects*. This configuration is used by preprocessors in 'Content Push API' to normalize project identifier for `dcp_project` field.
+This part of the API allows to manage configurations of *projects*. This configuration is used by preprocessors in 'Content Push API' to normalize project identifier for `sys_project` field.
 This part of the API is used by 'DCP administrators'. Get operations can be used without authentication.
 
-[Data structure used on this API is documented here](https://github.com/jbossorg/dcp-api/blob/master/documentation/rest-api/management/project.md).
+[Data structure used on this API is documented here](https://github.com/searchisko/searchisko-api/blob/master/documentation/rest-api/management/project.md).
 --
 
 Get project configuration for given project code.
@@ -907,10 +907,10 @@ DELETE /rest/project/{code}
 --
 Management API - contributors
 
-This part of the API allows to manage configurations of *contributors*. This configuration contains distinct informations/identifiers used by preprocessors in 'Content Push API' to normalize project identifier for `dcp_contributors` field.
+This part of the API allows to manage configurations of *contributors*. This configuration contains distinct information/identifiers used by preprocessors in 'Content Push API' to normalize project identifier for `sys_contributors` field.
 This part of the API is used by 'DCP administrators' only.
 
-[Data structure used on this API is documented here](https://github.com/jbossorg/dcp-api/blob/master/documentation/rest-api/management/contributor.md).
+[Data structure used on this API is documented here](https://github.com/searchisko/searchisko-api/blob/master/documentation/rest-api/management/contributor.md).
 --
 
 Get contributor configuration for given `id`.
@@ -1035,7 +1035,7 @@ Management API - configuration
 
 This part of the API is used by 'DCP administrators' to manage DCP configuration documents.
 Configuration documents use distinct structures depending on DCP feature they configure. 
-They are referenced from DCP code by defined `id`. For list of supported confioguration document id's and related configuration document structure see [`config_` prefixed files in managemet part of DCP documentation](https://github.com/jbossorg/dcp-api/blob/master/documentation/rest-api/management/).
+They are referenced from DCP code by defined `id`. For list of supported configuration document id's and related configuration document structure see [`config_` prefixed files in management part of DCP documentation](https://github.com/searchisko/searchisko-api/blob/master/documentation/rest-api/management/).
 --
 
 Get configuration document for given `id`.
@@ -1121,8 +1121,8 @@ DELETE /rest/config/{id}
 Management API - content reindexation tasks
 
 This part of the API is used by 'DCP administrators' to operate long running reindexation tasks.
-These task are used to refres search indices in case of contributor or project mapping change. 
-Special task type is used to put content from peristent store into search indices also. 
+These task are used to refresh search indices in case of contributor or project mapping change.
+Special task type is used to put content from persistent store into search indices also.
 --
 
 List all task types available in DCP. Task types are used in some other calls.
@@ -1183,7 +1183,7 @@ Get all content of 'provider type' passed in task configuration from DCP persist
 
 ```
 {
-  "dcp_content_type" : "jbossorg_blog"  
+  "sys_content_type" : "jbossorg_blog"
 }
 ```
 
@@ -1193,13 +1193,13 @@ Get all content of 'provider type' passed in task configuration from DCP search 
 
 ``` 
 {
-  "dcp_content_type" : "jbossorg_blog"  
+  "sys_content_type" : "jbossorg_blog"
 }
 ```
 
 
 * `renormalize_by_project_code`
-Get all content with `dcp_project` matching values passed in task configuration from DCP search indices, run all data normalizations on it, and update it back into DCP search index. Used for example when project code or project name changes in DCP project configuration, so we need to update content in search indices for it. 
+Get all content with `sys_project` matching values passed in task configuration from DCP search indices, run all data normalizations on it, and update it back into DCP search index. Used for example when project code or project name changes in DCP project configuration, so we need to update content in search indices for it.
 
 ``` 
 {
@@ -1209,7 +1209,7 @@ Get all content with `dcp_project` matching values passed in task configuration 
 
 
  * `renormalize_by_project_lookup_id`
-Get all content which is bound to some `dcp_project` over defined values of defined normalization identifier passed in task configuration from DCP search indices, run all data normalizations on it, and update it back into DCP search index. Used mainly when new project mapping identifier is added into DCP project configuration in `type_specific_code` section, so we need to update content in search indices to be correctly bound to this project. 
+Get all content which is bound to some `sys_project` over defined values of defined normalization identifier passed in task configuration from DCP search indices, run all data normalizations on it, and update it back into DCP search index. Used mainly when new project mapping identifier is added into DCP project configuration in `type_specific_code` section, so we need to update content in search indices to be correctly bound to this project.
 
 ``` 
 {
@@ -1230,7 +1230,7 @@ Get all content which is bound to some contributor over defined values of define
 ```
 
 * `renormalize_by_contributor_code`
-Get all content where `dcp_contributors` contains value passed in task configuration from DCP search indices, run all data normalizations on it, and update it back into DCP search index. Used for example when contributor code is changed in DCP contributor configuration, or some normalization identifier is removed from DCP contributor configuration (one normalized contributor is splitted into more), so we need to update content in search indices for it.
+Get all content where `sys_contributors` contains value passed in task configuration from DCP search indices, run all data normalizations on it, and update it back into DCP search index. Used for example when contributor code is changed in DCP contributor configuration, or some normalization identifier is removed from DCP contributor configuration (one normalized contributor is split into more), so we need to update content in search indices for it.
 
 ``` 
 {

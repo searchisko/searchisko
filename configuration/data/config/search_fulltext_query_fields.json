@@ -1,10 +1,10 @@
 {
-    "dcp_title":"2.5",
-    "dcp_description":"",
-    "dcp_content_plaintext":"",
+    "sys_title":"2.5",
+    "sys_description":"",
+    "sys_content_plaintext":"",
     "_all":"",
-    "dcp_project_name":"0.5",
-    "dcp_tags":"0.5",
-    "dcp_contributors.fulltext":"",
+    "sys_project_name":"0.5",
+    "sys_tags":"0.5",
+    "sys_contributors.fulltext":"",
     "comment_body":""
 }

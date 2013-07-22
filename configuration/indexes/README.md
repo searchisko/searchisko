@@ -1,10 +1,10 @@
 This folder contains definitions of search indexes, 
 see [http://www.elasticsearch.org/guide/reference/api/admin-indices-create-index.html](http://www.elasticsearch.org/guide/reference/api/admin-indices-create-index.html)
 
-Note that prefixes are used to distinguish different indices types:
+Note that prefixes are used to distinguish different index types:
  
-* `data_`  - prefix for indices with searchable DCP content (index template data_defaults.json is applied)
-* `dcp_`   - prefix for indices with DCP system data (projects and contributors mapping definitions)
+* `data_`  - prefix for indices with searchable content (index template data_defaults.json is applied)
+* `sys_`   - prefix for indices with system data (projects and contributors mapping definitions)
 * `stats_` - prefix for indices with statistics/activity log data
 
 How to copy to OpenShift:

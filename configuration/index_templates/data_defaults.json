@@ -9,10 +9,10 @@
           "tokenizer" : "standard",
           "filter" : ["word_delimiter","standard","lowercase","asciifolding","stop","kstem"]
         },
-        "dcp_project_name" : {
+        "sys_project_name" : {
           "type": "standard"
         },
-        "dcp_tags" : {
+        "sys_tags" : {
           "type" : "custom",
           "tokenizer" : "keyword",
           "filter" : ["lowercase", "unique", "trim"]
@@ -34,32 +34,32 @@
       "_timestamp" : { "enabled" : true },
       "include_in_all" : false,    
       "properties": {
-        "dcp_content_provider" : {"type" : "string", "analyzer" : "keyword"},
-        "dcp_content_type"     : {"type" : "string", "analyzer" : "keyword"},
-        "dcp_content_id" : {"type" : "string", "analyzer" : "keyword"},
-        "dcp_id" : {"type" : "string", "analyzer" : "keyword"},
-        "dcp_type" : {"type" : "string", "analyzer" : "keyword", "store":"yes"},
-        "dcp_title" : {"type" : "string", "store":"yes", "term_vector" : "with_positions_offsets"},
-        "dcp_url_view" : {"type" : "string", "store":"yes"},
-        "dcp_description" : {"type" : "string", "store":"yes", "term_vector" : "with_positions_offsets"},
-        "dcp_content" : {"type" : "string", "index" : "no"},
-        "dcp_content_content-type" : {"type" : "string", "analyzer" : "keyword"},
-        "dcp_content_plaintext" : {"type" : "string", "term_vector" : "with_positions_offsets"},
-        "dcp_updated" : {"type" : "date"},
-        "dcp_project" : {"type" : "string", "analyzer" : "keyword", "store":"yes"},
-        "dcp_project_name" : {"type" : "string", "analyzer" : "dcp_project_name", "store":"yes"},
-        "dcp_contributors" : {
+        "sys_content_provider" : {"type" : "string", "analyzer" : "keyword"},
+        "sys_content_type"     : {"type" : "string", "analyzer" : "keyword"},
+        "sys_content_id" : {"type" : "string", "analyzer" : "keyword"},
+        "sys_id" : {"type" : "string", "analyzer" : "keyword"},
+        "sys_type" : {"type" : "string", "analyzer" : "keyword", "store":"yes"},
+        "sys_title" : {"type" : "string", "store":"yes", "term_vector" : "with_positions_offsets"},
+        "sys_url_view" : {"type" : "string", "store":"yes"},
+        "sys_description" : {"type" : "string", "store":"yes", "term_vector" : "with_positions_offsets"},
+        "sys_content" : {"type" : "string", "index" : "no"},
+        "sys_content_content-type" : {"type" : "string", "analyzer" : "keyword"},
+        "sys_content_plaintext" : {"type" : "string", "term_vector" : "with_positions_offsets"},
+        "sys_updated" : {"type" : "date"},
+        "sys_project" : {"type" : "string", "analyzer" : "keyword", "store":"yes"},
+        "sys_project_name" : {"type" : "string", "analyzer" : "sys_project_name", "store":"yes"},
+        "sys_contributors" : {
             "type" : "multi_field",
             "fields" : {
                 "fulltext" : {"type" : "string", "index" : "analyzed", "term_vector" : "with_positions_offsets"},
-                "dcp_contributors" : {"type" : "string", "analyzer" : "keyword", "store":"yes"}
+                "sys_contributors" : {"type" : "string", "analyzer" : "keyword", "store":"yes"}
             }
          },             
-        "dcp_tags" : {"type" : "string", "analyzer" : "dcp_tags", "store":"yes"},
-        "dcp_created" : {"type" : "date", "store":"yes"},
-        "dcp_last_activity_date" : {"type" : "date", "store":"yes"},
-        "dcp_activity_dates" : {"type" : "date"},
-        "dcp_comments" : {
+        "sys_tags" : {"type" : "string", "analyzer" : "sys_tags", "store":"yes"},
+        "sys_created" : {"type" : "date", "store":"yes"},
+        "sys_last_activity_date" : {"type" : "date", "store":"yes"},
+        "sys_activity_dates" : {"type" : "date"},
+        "sys_comments" : {
   	      "type" : "object",
   	      "properties" : {
   	          "comment_id" : {"type" : "string", "index" : "no"},
@@ -69,13 +69,13 @@
   	          "comment_author" : {
   	              "type" : "object",
   	              "properties" : {
-  	                  "dcp_contributor" : {"type" : "string", "index" : "no"}
+  	                  "sys_contributor" : {"type" : "string", "index" : "no"}
   	              }                    
   	          },
   	          "comment_updater" : {
   	              "type" : "object",
   	              "properties" : {
-  	                  "dcp_contributor" : {"type" : "string", "index" : "no"}
+  	                  "sys_contributor" : {"type" : "string", "index" : "no"}
   	              }                    
   	          }
 	      }    

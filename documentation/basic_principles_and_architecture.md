@@ -82,7 +82,7 @@ be visible/searchable over the basic search GUI. They will be available over a c
 API by users who need them.
  
 ### Flexible normalization process
-Normalization of the values for `dcp_contributors` and `dcp_project` field must be 
+Normalization of the values for `sys_contributors` and `sys_project` field must be
 flexible enough to handle distinct identifiers sent from distinct systems to the normalized unique ones.
 
 Normalization process for contributors:
@@ -95,7 +95,7 @@ Normalization process for contributors:
   (rest-api/management/contributor.md)
 * an external content provider passes the contributor identifier in an arbitrary document 
   field. The DCP Push API looks for the contributor identifier in the mapping and stores it
-  into the `dcp_contributors` field before storing the document in the DCP.  
+  into the `sys_contributors` field before storing the document in the DCP.
 * when the mapping definition for some contributor changes, all affected 
   documents in the DCP search indices must be reindexed. Because documents stored 
   in the DCP contain all the original input fields no external data sources need to be 
@@ -108,7 +108,7 @@ The same principle is used for project identifier normalization, see
 ### Long-term content persistence support
 Guaranteed long-term persistence of content is necessary for some data sources
 where it's hard or impossible to obtain the content again in the future. One example 
-is blog posts obtained usng the RSS protocol. The DCP supports this via the "Persistence back-end" 
+is blog posts obtained using the RSS protocol. The DCP supports this via the "Persistence back-end"
 component. The "Reindexator" component is able to rebuild search indices from data stored here.
  
 ### Zero downtime upgrade process
@@ -161,7 +161,7 @@ Main actions performed during document POST request handling:
 
 * authentication - only an authorized request can insert data - the 
   authorization is performed over "content provider identifier" and "password"
-* content processing necessary to produce defined 'dcp_type' document - based on 
+* content processing necessary to produce defined 'sys_type' document - based on
   configuration for given 'provider content type' - adds 'system data fields' with 
   the values transformed using the 'data normalization' process etc.
 * storage routing - based on the 'provider content type' configuration - stores 
@@ -191,7 +191,7 @@ We also need to implement some form of Quality of Service (QoS) handing here - f
 from unauthorized/unknown systems so they do not degrade the performance of the authorized/known systems.
 
 Part of this API will be the "Project list" operation that allows you to obtain the list of project
-identifiers and related project names used in platform normalized field dcp_project.
+identifiers and related project names used in platform normalized field `sys_project`.
  
 ### Search Back-end
 

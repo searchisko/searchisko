@@ -10,7 +10,7 @@ see [ElasticSearch Highlight documentation](http://www.elasticsearch.org/guide/r
 Example:
 
 	{
-	  "dcp_title": { "fragment_size" : "-1", "number_of_fragments" : "0", "fragment_offset" : "0"},
-	  "dcp_description":  { "fragment_size" : "-1", "number_of_fragments" : "3", "fragment_offset" : "20"},
-	  "dcp_contributors.fulltext":  { "fragment_size" : "-1", "number_of_fragments" : "0", "fragment_offset" : "0"}
+	  "sys_title": { "fragment_size" : "-1", "number_of_fragments" : "0", "fragment_offset" : "0"},
+	  "sys_description":  { "fragment_size" : "-1", "number_of_fragments" : "3", "fragment_offset" : "20"},
+	  "sys_contributors.fulltext":  { "fragment_size" : "-1", "number_of_fragments" : "0", "fragment_offset" : "0"}
 	}

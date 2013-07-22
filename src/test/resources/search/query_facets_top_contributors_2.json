@@ -2,7 +2,7 @@
     "facets":{
         "top_contributors":{
             "terms":{
-                "field":"dcp_contributors",
+                "field":"sys_contributors",
                 "size":100
             },
             "facet_filter":{
@@ -10,7 +10,7 @@
                     "filters":[
                         {
                             "terms":{
-                                "dcp_tags":[
+                                "sys_tags":[
                                     "tag1",
                                     "tag2"
                                 ]
@@ -23,7 +23,7 @@
         },
         "top_contributors_filter":{
             "terms":{
-                "field":"dcp_contributors",
+                "field":"sys_contributors",
                 "size":30
             },
             "facet_filter":{
@@ -31,7 +31,7 @@
                     "filters":[
                         {
                             "terms":{
-                                "dcp_tags":[
+                                "sys_tags":[
                                     "tag1",
                                     "tag2"
                                 ]
@@ -39,7 +39,7 @@
                         },
                         {
                             "terms":{
-                                "dcp_contributors":[
+                                "sys_contributors":[
                                     "John Doe <john@doe.org>"
                                 ]
                             }

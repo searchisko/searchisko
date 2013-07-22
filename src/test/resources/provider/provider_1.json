@@ -4,7 +4,7 @@
     "super_provider" : "false",
     "type"     : {
         "provider1_issue" : {
-            "dcp_type"  : "issue",
+            "sys_type"  : "issue",
             "input_preprocessors" : 
             [ 
             ],
@@ -14,7 +14,7 @@
             }
         },
         "provider1_mailing" : {
-            "dcp_type"  : "mailing",
+            "sys_type"  : "mailing",
             "input_preprocessors" : 
             [ 
                 { 

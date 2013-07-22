@@ -2,17 +2,17 @@ Project
 =======
 
 Project configuration is used by preprocessors in 'Content Push API' to 
-normalize project identifier for `dcp_project` field.
+normalize project identifier for `sys_project` field.
 It's managed over 'Management API - projects'.
 
 To allow searches for normalization processing by preprocessors, 
 project configuration documents are stored in the DCP back-end 
-ElasticSearch search index named `dcp_projects` as type named `project`.
+ElasticSearch search index named `sys_projects` as type named `project`.
 
 Project configuration fields:
 
 * `code` - DCP wide unique project identifier. It is stored into 
-  `dcp_project` field in content pushed into DCP and used as project 
+  `sys_project` field in content pushed into DCP and used as project
   identifier for Search API filters.
 * `name` - project name 
 * `description` - description of the project.

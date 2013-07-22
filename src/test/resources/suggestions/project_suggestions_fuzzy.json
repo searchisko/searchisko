@@ -2,24 +2,24 @@
     "size" : 5,
     "query" : {
         "flt" : {
-            "fields" : [ "dcp_project_name", "dcp_project_name.ngram" ],
+            "fields" : [ "sys_project_name", "sys_project_name.ngram" ],
             "like_text" : "JBoss",
             "max_query_terms" : 10,
             "analyzer" : "whitespace_lowercase"
         }
     },
-    "fields" : [ "dcp_project", "dcp_project_name" ],
+    "fields" : [ "sys_project", "sys_project_name" ],
     "highlight" : {
         "fields" : {
-            "dcp_project_name" : {
+            "sys_project_name" : {
                 "fragment_size" : 1,
                 "number_of_fragments" : 0
             },
-            "dcp_project_name.ngram" : {
+            "sys_project_name.ngram" : {
                 "fragment_size" : 1,
                 "number_of_fragments" : 0
             },
-            "dcp_project_name.edgengram" : {
+            "sys_project_name.edgengram" : {
                 "fragment_size" : 1,
                 "number_of_fragments" : 0
             }

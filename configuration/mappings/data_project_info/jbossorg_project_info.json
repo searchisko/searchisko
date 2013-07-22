@@ -34,10 +34,10 @@
             "buildLink" : {"type" : "string", "index" : "no"},
             "hudsonLink" : {"type" : "string", "index" : "no"},
 
-            "dcp_project_name" : {
+            "sys_project_name" : {
                 "type" : "multi_field",
                 "fields" : {
-                  "dcp_project_name" : {"type" : "string", "analyzer" : "dcp_project_name", "store":"yes"},
+                  "sys_project_name" : {"type" : "string", "analyzer" : "sys_project_name", "store":"yes"},
                   "ngram" : {"type" : "string", "analyzer" : "ngram", "store":"yes", "term_vector" : "with_positions_offsets"},
                   "edgengram" : {"type" : "string", "analyzer" : "edgengram", "store":"yes", "term_vector" : "with_positions_offsets"}
                 }

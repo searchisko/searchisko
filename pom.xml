@@ -3,14 +3,14 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<groupId>org.jboss.dcp</groupId>
+	<groupId>org.searchisko</groupId>
 	<artifactId>api</artifactId>
 	<packaging>war</packaging>
 	<version>1.0</version>
-	<name>Distributed Contribution Platform API</name>
-	<description>API for Distributed Contribution Platform</description>
+	<name>Searchisko</name>
+	<description>Searchisko - service that allows to index, search, retrieve and aggregate content from configurable resources</description>
 
-	<url>http://dcp.jboss.org</url>
+	<url>http://searchisko.org</url>
 
 	<inceptionYear>2012</inceptionYear>
 	<licenses>
@@ -22,9 +22,9 @@
 	</licenses>
 
 	<scm>
-		<connection>scm:git:git://github.com/jbossorg/dcp-api</connection>
-		<developerConnection>scm:git:ssh://github.com/jbossorg/dcp-api</developerConnection>
-		<url>https://github.com/jbossorg/dcp-api</url>
+		<connection>scm:git:git://github.com/searchisko/searchisko-api</connection>
+		<developerConnection>scm:git:ssh://github.com/searchisko/searchisko-api</developerConnection>
+		<url>https://github.com/searchisko/searchisko-api</url>
 	</scm>
 
 	<ciManagement>

@@ -8,5 +8,5 @@ This configuration document contains array with default set of fields returned f
 Example:
 
 	{
-	  "search_response_fields" : ["_id","dcp_type","dcp_title","dcp_url_view", "dcp_description", "dcp_project", "dcp_project_name", "dcp_tags", "dcp_contributors", "dcp_created", "dcp_last_activity_date" ]
+	  "search_response_fields" : ["_id","sys_type","sys_title","sys_url_view", "sys_description", "sys_project", "sys_project_name", "sys_tags", "sys_contributors", "sys_created", "sys_last_activity_date" ]
 	}

@@ -6,9 +6,9 @@
             "source"      : {"type" : "string", "analyzer" : "keyword"},
             "project_name" : {"type" : "string", "index" : "no"},
             "issue_type" : {"type" : "string", "index" : "no"},
-            "dcp_issue_type" : {"type" : "string", "analyzer" : "keyword", "include_in_all" : true},
+            "sys_issue_type" : {"type" : "string", "analyzer" : "keyword", "include_in_all" : true},
             "status" : {"type" : "string", "index" : "no"},
-            "dcp_issue_status" : {"type" : "string", "analyzer" : "keyword", "include_in_all" : true},
+            "sys_issue_status" : {"type" : "string", "analyzer" : "keyword", "include_in_all" : true},
             "updated" : {"type" : "date", "index" : "no"},
             "resolutiondate" : {"type" : "date", "index" : "no"},
             "summary" : {"type" : "string", "index" : "no"},
@@ -25,7 +25,7 @@
                     "name" : {"type" : "string", "index" : "no", "include_in_all" : true}
                  }
             },
-            "dcp_comments" : {
+            "sys_comments" : {
                 "type" : "object",
                 "properties" : {
                     "comment_id" : {"type" : "string", "index" : "no"},
@@ -37,7 +37,7 @@
 		                "properties" : {
 		                    "email_address" : {"type" : "string", "index" : "no"},
 		                    "display_name"  : {"type" : "string", "index" : "no"},
-		                    "dcp_contributor" : {"type" : "string", "index" : "no"}
+		                    "sys_contributor" : {"type" : "string", "index" : "no"}
 		                }                    
 		            },
 		            "comment_updater" : {
@@ -45,7 +45,7 @@
 		                "properties" : {
 		                    "email_address" : {"type" : "string", "index" : "no"},
 		                    "display_name"  : {"type" : "string", "index" : "no"},
-		                    "dcp_contributor" : {"type" : "string", "index" : "no"}
+		                    "sys_contributor" : {"type" : "string", "index" : "no"}
 		                }                    
 		            }
                 }    
@@ -55,7 +55,7 @@
                 "properties" : {
                     "email_address" : {"type" : "string", "index" : "no"},
                     "display_name"  : {"type" : "string", "index" : "no"},
-                    "dcp_contributor" : {"type" : "string", "index" : "no"}
+                    "sys_contributor" : {"type" : "string", "index" : "no"}
                 }                    
             },
             "assignee" : {
@@ -63,7 +63,7 @@
                 "properties" : {
                     "email_address" : {"type" : "string", "index" : "no"},
                     "display_name"  : {"type" : "string", "index" : "no"},
-                    "dcp_contributor" : {"type" : "string", "index" : "no"}
+                    "sys_contributor" : {"type" : "string", "index" : "no"}
                 }                    
             } 
         }

@@ -12,37 +12,37 @@
     "index" : {
         "index"             : "data_jbossorg_jira",
         "type"              : "jbossorg_jira_issue",
-        "jira_field_issue_document_id" : "dcp_id",
+        "jira_field_issue_document_id" : "prep_id",
         "field_project_key" : "project_key",
-        "field_issue_key"   : "dcp_content_id",
-        "field_jira_url"    : "dcp_url_view",
+        "field_issue_key"   : "sys_content_id",
+        "field_jira_url"    : "sys_url_view",
         "fields" : {
-            "dcp_id"                : {"jira_field" : "dcp_id"},
-            "dcp_type"              : {"jira_field" : "dcp_type"},
-            "dcp_updated"           : {"jira_field" : "dcp_updated"},
-            "dcp_content_provider"  : {"jira_field" : "dcp_content_provider"},
-            "dcp_content_type"      : {"jira_field" : "dcp_content_type"},
-            "dcp_activity_dates"    : {"jira_field" : "dcp_activity_dates"},
-            "dcp_last_activity_date": {"jira_field" : "dcp_last_activity_date"},
-            "dcp_project"           : {"jira_field" : "dcp_project"},
-            "dcp_project_name"      : {"jira_field" : "dcp_project_name"},
-            "dcp_contributors"      : {"jira_field" : "dcp_contributors"},
+            "sys_id"                : {"jira_field" : "prep_id"},
+            "sys_type"              : {"jira_field" : "prep_type"},
+            "sys_updated"           : {"jira_field" : "prep_updated"},
+            "sys_content_provider"  : {"jira_field" : "prep_content_provider"},
+            "sys_content_type"      : {"jira_field" : "prep_content_type"},
+            "sys_activity_dates"    : {"jira_field" : "prep_activity_dates"},
+            "sys_last_activity_date": {"jira_field" : "prep_last_activity_date"},
+            "sys_project"           : {"jira_field" : "prep_project"},
+            "sys_project_name"      : {"jira_field" : "prep_project_name"},
+            "sys_contributors"      : {"jira_field" : "prep_contributors"},
             "project_name"          : {"jira_field" : "fields.project.name"},
             "issue_type"            : {"jira_field" : "fields.issuetype.name"},
-            "dcp_issue_type"        : {"jira_field" : "dcp_issue_type"},
-            "dcp_title"             : {"jira_field" : "dcp_title"},
+            "sys_issue_type"        : {"jira_field" : "prep_issue_type"},
+            "sys_title"             : {"jira_field" : "prep_title"},
             "status"                : {"jira_field" : "fields.status.name"},
-            "dcp_issue_status"      : {"jira_field" : "dcp_issue_status"},
-            "dcp_created"           : {"jira_field" : "fields.created"},
+            "sys_issue_status"      : {"jira_field" : "prep_issue_status"},
+            "sys_created"           : {"jira_field" : "fields.created"},
             "updated"               : {"jira_field" : "fields.updated"},
             "resolutiondate"        : {"jira_field" : "fields.resolutiondate"},
-            "dcp_description"       : {"jira_field" : "dcp_description"},
-            "dcp_content"           : {"jira_field" : "fields.description"},
-            "dcp_content_content-type" : {"jira_field" : "dcp_content_content-type"},
-            "dcp_content_plaintext" : {"jira_field" : "fields.description"},
+            "sys_description"       : {"jira_field" : "prep_description"},
+            "sys_content"           : {"jira_field" : "fields.description"},
+            "sys_content_content-type" : {"jira_field" : "prep_content_content-type"},
+            "sys_content_plaintext" : {"jira_field" : "fields.description"},
             "summary"               : {"jira_field" : "fields.summary"},
             "tags"                  : {"jira_field" : "fields.labels"},
-            "dcp_tags"              : {"jira_field" : "fields.labels"},
+            "sys_tags"              : {"jira_field" : "fields.labels"},
             "reporter"              : {"jira_field" : "fields.reporter", "value_filter" : "user"},
             "assignee"              : {"jira_field" : "fields.assignee", "value_filter" : "user"},
             "fix_versions"          : {"jira_field" : "fields.fixVersions", "value_filter" : "name"},
@@ -52,12 +52,12 @@
             "user" : {
                 "emailAddress" : "email_address",
                 "displayName"  : "display_name",
-                "dcp_contributor" : "dcp_contributor" 
+                "prep_contributor" : "sys_contributor"
             },
             "name" : { "name" : "name" }
         },
         "comment_mode"   : "embedded",
-        "field_comments" : "dcp_comments",
+        "field_comments" : "sys_comments",
         "comment_fields" : {
             "comment_id"      : {"jira_field" : "id"},
             "comment_body"    : {"jira_field" : "body"},
@@ -68,88 +68,88 @@
         },
         "preprocessors" : [
             {
-                "name"     : "DCP values filler",
+                "name"     : "Values filler",
                 "class"    : "org.jboss.elasticsearch.tools.content.AddMultipleValuesPreprocessor",
                 "settings" : {
-                    "dcp_id"                : "jbossorg_jira_issue-{key}",
-                    "dcp_type"              : "issue",
-                    "dcp_content_provider"  : "jbossorg",
-                    "dcp_content_type"      : "jbossorg_jira_issue",
-                    "dcp_title"             : "{key} - {fields.summary}",
-                    "dcp_content_content-type" : "text/plain"
+                    "prep_id"                : "jbossorg_jira_issue-{key}",
+                    "prep_type"              : "issue",
+                    "prep_content_provider"  : "jbossorg",
+                    "prep_content_type"      : "jbossorg_jira_issue",
+                    "prep_title"             : "{key} - {fields.summary}",
+                    "prep_content_content-type" : "text/plain"
                  } 
             },{ 
-                "name"     : "DCP Updated filler",
+                "name"     : "Updated filler",
                 "class"    : "org.jboss.elasticsearch.tools.content.AddCurrentTimestampPreprocessor",
-                "settings" : { "field" : "dcp_updated" }
+                "settings" : { "field" : "prep_updated" }
             },{ 
-                "name"     : "DCP description trimmer",
+                "name"     : "Description trimmer",
                 "class"    : "org.jboss.elasticsearch.tools.content.TrimStringValuePreprocessor",
                 "settings" : {
                     "source_field" : "fields.description",
-                    "target_field" : "dcp_description",
+                    "target_field" : "prep_description",
                     "max_size" : 400
                 } 
             },{ 
-                "name"     : "DCP activity dates collector",
+                "name"     : "Activity dates collector",
                 "class"    : "org.jboss.elasticsearch.tools.content.ValuesCollectingPreprocessor",
                 "settings" : {
-                    "target_field"  : "dcp_activity_dates",
+                    "target_field"  : "prep_activity_dates",
                     "source_fields" : ["fields.created","fields.updated","fields.resolutiondate", "fields.comment.comments.created", "fields.comment.comments.updated"]
                 } 
             },{ 
-                "name"     : "DCP max activity date extractor",
+                "name"     : "Max activity date extractor",
                 "class"    : "org.jboss.elasticsearch.tools.content.MaxTimestampPreprocessor",
                 "settings" : {
-                    "source_field" : "dcp_activity_dates",
-                    "target_field" : "dcp_last_activity_date"
+                    "source_field" : "prep_activity_dates",
+                    "target_field" : "prep_last_activity_date"
                 } 
             },{ 
-                "name"     : "DCP projects mapper",
+                "name"     : "Projects mapper",
                 "class"    : "org.jboss.elasticsearch.tools.content.ESLookupValuePreprocessor",
                 "settings" : {
-                    "index_name"       : "dcp_projects",
+                    "index_name"       : "sys_projects",
                     "index_type"       : "project",
                     "source_field"     : "fields.project.key",
                     "idx_search_field" : "type_specific_code.jbossorg_jira",
                     "result_mapping"   : [{
 		                    "idx_result_field" : "code",
-		                    "target_field"     : "dcp_project"
+		                    "target_field"     : "prep_project"
 	                    },{
 						            "idx_result_field" : "name",
-						            "target_field"     : "dcp_project_name",
+						            "target_field"     : "prep_project_name",
 						            "value_default"    : "{fields.project.name}"
 					            }
                     ]
                 } 
             },{ 
-                "name"     : "DCP contributors mapper",
+                "name"     : "Contributors mapper",
                 "class"    : "org.jboss.elasticsearch.tools.content.ESLookupValuePreprocessor",
                 "settings" : {
-                    "index_name"       : "dcp_contributors",
+                    "index_name"       : "sys_contributors",
                     "index_type"       : "contributor",
                     "source_field"     : "emailAddress",
                     "idx_search_field" : "email",
                     "result_mapping"   : [{
 	                    "idx_result_field" : "code",
-	                    "target_field"     : "dcp_contributor",
+	                    "target_field"     : "prep_contributor",
 	                    "value_default"    : "{displayName} <{emailAddress}>"
                     }],
                     "source_bases"     : ["fields.reporter", "fields.assignee", "fields.comment.comments.author", "fields.comment.comments.updateAuthor"]
                 } 
             },{ 
-                "name"     : "DCP contributors collector",
+                "name"     : "Contributors collector",
                 "class"    : "org.jboss.elasticsearch.tools.content.ValuesCollectingPreprocessor",
                 "settings" : {
-                    "target_field"  : "dcp_contributors",
-                    "source_fields" : ["fields.reporter.dcp_contributor","fields.assignee.dcp_contributor", "fields.comment.comments.author.dcp_contributor", "fields.comment.comments.updateAuthor.dcp_contributor"]
+                    "target_field"  : "prep_contributors",
+                    "source_fields" : ["fields.reporter.prep_contributor","fields.assignee.prep_contributor", "fields.comment.comments.author.prep_contributor", "fields.comment.comments.updateAuthor.prep_contributor"]
                 } 
             },{
                 "name"     : "Issue Type Normalizer",
                 "class"    : "org.jboss.elasticsearch.tools.content.SimpleValueMapMapperPreprocessor",
                 "settings" : {
                     "source_field"  : "fields.issuetype.name",
-                    "target_field"  : "dcp_issue_type",
+                    "target_field"  : "prep_issue_type",
                     "value_default" : "Other",
                     "value_mapping" : {
                        "Feature Request" : "Enhancement",
@@ -162,7 +162,7 @@
                 "class"    : "org.jboss.elasticsearch.tools.content.SimpleValueMapMapperPreprocessor",
                 "settings" : {
                     "source_field"  : "fields.status.name",
-                    "target_field"  : "dcp_issue_status",
+                    "target_field"  : "prep_issue_status",
                     "value_default" : "In Progress",
                     "value_mapping": {
                         "Open":"Open",

@@ -1,19 +1,19 @@
 #!/bin/bash
 
-## This script uses DCP REST API
+## This script uses system REST API to push projects data
 ##
-## You can use first commandline parameter to change base URL of DCP API call (/v1/rest/... is appended automatically to this base URL)
-## You can use second commandline parameter to change DCP username
-## You can use third commandline parameter to change DCP password
+## You can use first commandline parameter to change base URL of system API call (/v1/rest/... is appended automatically to this base URL)
+## You can use second commandline parameter to change system username
+## You can use third commandline parameter to change system password
 
 clear
 
-dcpurl=https://dcp-jbossorgdev.rhcloud.com
+sysurl=https://dcp-jbossorgdev.rhcloud.com
 if [ -n "${OPENSHIFT_JBOSSEAP_IP}" ]; then
-  dcpurl=http://${OPENSHIFT_JBOSSEAP_IP}:8080
+  sysurl=http://${OPENSHIFT_JBOSSEAP_IP}:8080
 fi
 if [ -n "$1" ]; then
-  dcpurl=$1
+  sysurl=$1
 fi
 
 username=jbossorg
@@ -27,9 +27,9 @@ if [ -n "$3" ]; then
 fi
 
 outputfile=output.txt
-dcpprojectapi=${dcpurl}/v1/rest/project/
+sysprojectapi=${sysurl}/v1/rest/project/
 
-echo "Pushing projects to DCP API via ${dcpprojectapi}"
+echo "Pushing projects to system API via ${sysprojectapi}"
 echo -n "" > $outputfile
 
 for filename in *.project;
@@ -37,7 +37,7 @@ do
 	code="${filename%.*}"
 	echo -ne "Pushing $code"
 
-	output=$(curl -i -s -o $outputfile --user ${username}:${password} -w "%{http_code}" -H "Content-Type: application/json" -X POST -d@$code.project ${dcpprojectapi}$code)
+	output=$(curl -i -s -o $outputfile --user ${username}:${password} -w "%{http_code}" -H "Content-Type: application/json" -X POST -d@$code.project ${sysprojectapi}$code)
 
 	if [ "$output" == "200" ]; then
 	  echo " [OK]"

@@ -1,8 +1,8 @@
 #!/bin/bash
 
-## This script uses ElasticSearch 'search' cluster node http connector
+## This script uses Elasticsearch 'search' cluster node http connector
 ##
-## You can use first commandline parameter or OPENSHIFT_INTERNAL_IP system property to change IP/domainname of ElasticSearch http connector. Default is: localhost
+## You can use first commandline parameter or OPENSHIFT_INTERNAL_IP system property to change IP/domainname of Elasticsearch http connector. Default is: localhost
 ## You can use second commandline parameter to change port of ElasticSearch http connector. Default is: 15000
 
 clear

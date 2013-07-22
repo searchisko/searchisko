@@ -7,7 +7,7 @@
       "and" : {
         "filters" : [ {
           "terms" : {
-            "dcp_tags" : [ "tg1" ]
+            "sys_tags" : [ "tg1" ]
           }
         } ]
       }

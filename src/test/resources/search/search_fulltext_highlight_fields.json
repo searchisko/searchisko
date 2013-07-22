@@ -1,15 +1,15 @@
 {
-    "dcp_title":{
+    "sys_title":{
         "fragment_size":"-1",
         "number_of_fragments":"0",
         "fragment_offset":"0"
     },
-    "dcp_description":{
+    "sys_description":{
         "fragment_size":"2",
         "number_of_fragments":"3",
         "fragment_offset":"20"
     },
-    "dcp_contributors.fulltext":{
+    "sys_contributors.fulltext":{
         "fragment_size":5,
         "number_of_fragments":10,
         "fragment_offset":30

@@ -1,8 +1,8 @@
-This folder contains definitions of ElasticSearch mappings for distinct 
+This folder contains definitions of Elasticsearch mappings for distinct
 search types, see [http://www.elasticsearch.org/guide/reference/api/admin-indices-put-mapping.html](http://www.elasticsearch.org/guide/reference/api/admin-indices-put-mapping.html)
 
 Subfolder is name of index where given mapping is used, name of file in 
-subfolder is name of ElasticSearch type in given index with .json suffix added.
+subfolder is name of Elasticsearch type in given index with .json suffix added.
 
 How to copy to OpenShift:
 

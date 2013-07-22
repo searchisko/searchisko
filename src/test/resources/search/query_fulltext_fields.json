@@ -2,11 +2,11 @@
     "query_string":{
         "query":"my query string",
         "fields":[
-            "dcp_contributors.fulltext",
-            "dcp_project_name^2.0",
-            "dcp_description",
-            "dcp_title^2.5",
-            "dcp_tags^1.5"
+            "sys_description",
+            "sys_tags^1.5",
+            "sys_contributors.fulltext",
+            "sys_project_name^2.0",
+            "sys_title^2.5"
         ]
     }
 }

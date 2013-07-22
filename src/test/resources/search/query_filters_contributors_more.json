@@ -7,7 +7,7 @@
       "and" : {
         "filters" : [ {
           "terms" : {
-            "dcp_contributors" : [ "tg1", "tg2", "tg3", "tg4" ]
+            "sys_contributors" : [ "tg1", "tg2", "tg3", "tg4" ]
           }
         } ]
       }

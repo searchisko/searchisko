@@ -10,10 +10,10 @@
                 "properties" : {
                     "email_address" : {"type" : "string", "index" : "no"},
                     "display_name"  : {"type" : "string", "index" : "no"},
-                    "dcp_contributor" : {"type" : "string", "index" : "no"}
+                    "sys_contributor" : {"type" : "string", "index" : "no"}
                 }                    
             },
-            "dcp_comments" : {
+            "sys_comments" : {
                 "type" : "object",
                 "properties" : {
                     "comment_body": {"type" : "string", "store":"yes"},
@@ -23,7 +23,7 @@
 				                "properties" : {
 				                    "email_address" : {"type" : "string", "index" : "no"},
 				                    "display_name"  : {"type" : "string", "index" : "no"},
-				                    "dcp_contributor" : {"type" : "string", "index" : "no"}
+				                    "sys_contributor" : {"type" : "string", "index" : "no"}
 				                }     
 				            }
                 }    

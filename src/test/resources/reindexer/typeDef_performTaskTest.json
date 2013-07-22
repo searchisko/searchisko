@@ -1,21 +1,21 @@
     {
       "description": "Issues from JIRA running at issues.jboss.org collected by jbossorg_jira river",
-      "dcp_type": "issue",
+      "sys_type": "issue",
       "input_preprocessors": [
         {
           "name": "test one source field",
           "class": "org.jboss.elasticsearch.tools.content.ESLookupValuePreprocessor",
           "settings": {
-            "index_name"       : "dcp_projects",
+            "index_name"       : "sys_projects",
             "index_type"       : "project",
-            "source_field"     : "dcp_contributors",
+            "source_field"     : "sys_contributors",
             "idx_search_field" : "type_specific_code.jbossorg_jira",
             "result_mapping"   : [{
 		            "idx_result_field" : "code",
-		            "target_field"     : "dcp_project"
+		            "target_field"     : "sys_project"
 	            },{
 		            "idx_result_field" : "name",
-		            "target_field"     : "dcp_project_name",
+		            "target_field"     : "sys_project_name",
 		            "value_default"    : "{project_name}"
 	            }
             ]
@@ -24,28 +24,28 @@
           "name"     : "test with source value so not loaded",
           "class"    : "org.jboss.elasticsearch.tools.content.ESLookupValuePreprocessor",
           "settings" : {
-              "index_name"       : "dcp_projects",
+              "index_name"       : "sys_projects",
               "index_type"       : "project",
               "source_value"     : "{feed}.{author}",
               "idx_search_field" : "type_specific_code.jbossorg_jira",
               "result_mapping"   : [{
                 "idx_result_field" : "code",
-                "target_field"     : "dcp_contributors"
+                "target_field"     : "sys_contributors"
               }]
           }
         },{ 
-          "name"     : "DCP contributors collector",
+          "name"     : "Contributors collector",
           "class"    : "org.jboss.elasticsearch.tools.content.ValuesCollectingPreprocessor",
           "settings" : {
-              "target_field"  : "dcp_contributors",
-              "source_fields" : ["reporter.dcp_contributor","assignee.dcp_contributor", "comments.comment_author.dcp_contributor", "comments.comment_updater.dcp_contributor"]
+              "target_field"  : "sys_contributors",
+              "source_fields" : ["reporter.sys_contributor","assignee.sys_contributor", "comments.comment_author.sys_contributor", "comments.comment_updater.sys_contributor"]
           } 
         },{ 
-          "name"     : "DCP max activity date extractor",
+          "name"     : "Max activity date extractor",
           "class"    : "org.jboss.elasticsearch.tools.content.MaxTimestampPreprocessor",
           "settings" : {
-            "source_field" : "dcp_activity_dates",
-            "target_field" : "dcp_last_activity_date"
+            "source_field" : "sys_activity_dates",
+            "target_field" : "sys_last_activity_date"
           } 
         }
       ],

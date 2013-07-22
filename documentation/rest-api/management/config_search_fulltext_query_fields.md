@@ -9,9 +9,9 @@ Value is float value representing 'boost' for this field. If value is empty no b
 Example:
 
 	{
-	  "dcp_title": "2.5",
-	  "dcp_description": "",
-	  "dcp_project_name": "2",
-	  "dcp_tags":"1.5",
-	  "dcp_contributors.fulltext": ""
+	  "sys_title": "2.5",
+	  "sys_description": "",
+	  "sys_project_name": "2",
+	  "sys_tags":"1.5",
+	  "sys_contributors.fulltext": ""
 	}
