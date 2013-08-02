@@ -6,7 +6,7 @@
 	<groupId>org.searchisko</groupId>
 	<artifactId>api</artifactId>
 	<packaging>war</packaging>
-	<version>1.0</version>
+	<version>1.0.Beta-01</version>
 	<name>Searchisko</name>
 	<description>Searchisko - service that allows to index, search, retrieve and aggregate content from configurable resources</description>
 
