@@ -33,7 +33,7 @@ import org.searchisko.api.tasker.UnsupportedTaskException;
 
 /**
  * Long running Tasks execution related REST API.
- * 
+ *
  * @author Vlastimil Elias (velias at redhat dot com)
  */
 @RequestScoped
@@ -49,11 +49,11 @@ public class TaskRestService extends RestServiceBase {
 	@Produces(MediaType.APPLICATION_JSON)
 	@CORSSupport
 	public Object getTypes() {
-		try {
+//		try {
 			return taskService.getTaskManager().listSupportedTaskTypes();
-		} catch (Exception e) {
-			return createErrorResponse(e);
-		}
+//		} catch (Exception e) {
+//			return createErrorResponse(e);
+//		}
 	}
 
 	@GET
@@ -62,7 +62,7 @@ public class TaskRestService extends RestServiceBase {
 	@CORSSupport
 	public Object getTasks(@QueryParam("taskType") String taskType, @QueryParam("taskStatus") String[] taskStatus,
 			@QueryParam("from") Integer from, @QueryParam("size") Integer size) {
-		try {
+//		try {
 			List<TaskStatus> taskStatusFilter = null;
 			if (taskStatus != null && taskStatus.length > 0) {
 				taskStatusFilter = new ArrayList<TaskStatus>();
@@ -74,9 +74,9 @@ public class TaskRestService extends RestServiceBase {
 			}
 			return taskService.getTaskManager().listTasks(taskType, taskStatusFilter, from != null ? from : 0,
 					size != null ? size : 0);
-		} catch (Exception e) {
-			return createErrorResponse(e);
-		}
+//		} catch (Exception e) {
+//			return createErrorResponse(e);
+//		}
 	}
 
 	@GET
@@ -84,15 +84,15 @@ public class TaskRestService extends RestServiceBase {
 	@Produces(MediaType.APPLICATION_JSON)
 	@CORSSupport
 	public Object getTask(@PathParam("taskId") String taskId) {
-		try {
+//		try {
 			TaskStatusInfo tsi = taskService.getTaskManager().getTaskStatusInfo(taskId);
 			if (tsi != null)
 				return tsi;
 			else
 				return Response.status(Status.NOT_FOUND).build();
-		} catch (Exception e) {
-			return createErrorResponse(e);
-		}
+//		} catch (Exception e) {
+//			return createErrorResponse(e);
+//		}
 	}
 
 	@POST
@@ -108,8 +108,8 @@ public class TaskRestService extends RestServiceBase {
 					.entity("Configuration is invalid for used taskType: " + e.getMessage()).build();
 		} catch (UnsupportedTaskException e) {
 			return Response.status(Status.BAD_REQUEST).entity("Used taskType is not supported").build();
-		} catch (Exception e) {
-			return createErrorResponse(e);
+//		} catch (Exception e) {
+//			return createErrorResponse(e);
 		}
 	}
 
@@ -117,12 +117,12 @@ public class TaskRestService extends RestServiceBase {
 	@Path("/task/{taskId}")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Object cancelTask(@PathParam("taskId") String id) {
-		try {
+//		try {
 			boolean ret = taskService.getTaskManager().cancelTask(id);
 			return Response.ok(ret ? "Task canceled" : "Task not canceled").build();
-		} catch (Exception e) {
-			return createErrorResponse(e);
-		}
+//		} catch (Exception e) {
+//			return createErrorResponse(e);
+//		}
 	}
 
 }

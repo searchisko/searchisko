@@ -29,6 +29,8 @@ import org.elasticsearch.indices.IndexMissingException;
 import org.searchisko.api.annotations.header.CORSSupport;
 import org.searchisko.api.annotations.security.GuestAllowed;
 import org.searchisko.api.model.QuerySettings;
+import org.searchisko.api.rest.exception.BadFieldException;
+import org.searchisko.api.rest.exception.RequiredFieldException;
 import org.searchisko.api.service.SearchService;
 import org.searchisko.api.service.StatsRecordType;
 import org.searchisko.api.util.QuerySettingsParser;
@@ -36,11 +38,11 @@ import org.searchisko.api.util.SearchUtils;
 
 /**
  * Search REST API.
- * 
+ *
  * @author Libor Krzyzanek
  * @author Vlastimil Elias (velias at redhat dot com)
  * @author Lukas Vlcek
- * 
+ *
  */
 @RequestScoped
 @Path("/search")
@@ -64,7 +66,7 @@ public class SearchRestService extends RestServiceBase {
 		try {
 
 			if (uriInfo == null) {
-				throw new Exception("Incorrect call, uriInfo param is null");
+                throw new BadFieldException("uriInfo");
 			}
 			MultivaluedMap<String, String> params = uriInfo.getQueryParameters();
 			querySettings = querySettingsParser.parseUriParams(params);
@@ -75,11 +77,11 @@ public class SearchRestService extends RestServiceBase {
 			af.put("uuid", responseUuid);
 			return createResponse(searchResponse, af);
 		} catch (IllegalArgumentException e) {
-			return createBadFieldDataResponse(e.getMessage());
+            throw new BadFieldException("unknown", e);
 		} catch (IndexMissingException e) {
 			return Response.status(Response.Status.NOT_FOUND).build();
-		} catch (Exception e) {
-			return createErrorResponse(e);
+//		} catch (Exception e) {
+//			return createErrorResponse(e);
 		}
 	}
 
@@ -113,18 +115,18 @@ public class SearchRestService extends RestServiceBase {
 			@PathParam("hit_id") String contentId, @QueryParam("session_id") String sessionId) {
 
 		if ((uuid = SearchUtils.trimToNull(uuid)) == null) {
-			return createRequiredFieldResponse("search_result_uuid");
+            throw new RequiredFieldException("search_result_uuid");
 		}
 		if ((contentId = SearchUtils.trimToNull(contentId)) == null) {
-			return createRequiredFieldResponse("hit_id");
+            throw new RequiredFieldException("hit_id");
 		}
 		sessionId = SearchUtils.trimToNull(sessionId);
-		try {
+//		try {
 			boolean result = searchService.writeSearchHitUsedStatisticsRecord(uuid, contentId, sessionId);
 			return Response.ok(result ? "statistics record accepted" : "statistics record ignored").build();
-		} catch (Exception e) {
-			return createErrorResponse(e);
-		}
+//		} catch (Exception e) {
+//			return createErrorResponse(e);
+//		}
 	}
 
 }

@@ -45,7 +45,7 @@ import org.mockito.Mockito;
 
 /**
  * Unit test for {@link FeedRestService}
- * 
+ *
  * @author Vlastimil Elias (velias at redhat dot com)
  */
 public class FeedRestServiceTest {
@@ -146,7 +146,7 @@ public class FeedRestServiceTest {
 	}
 
 	@Test
-	public void feed() throws IOException {
+	public void feed() throws IOException, URISyntaxException {
 		FeedRestService tested = getTested();
 		tested.querySettingsParser = Mockito.mock(QuerySettingsParser.class);
 		tested.searchService = Mockito.mock(SearchService.class);
@@ -331,7 +331,7 @@ public class FeedRestServiceTest {
 	}
 
 	@Test
-	public void feed_errorhandling() throws IOException {
+	public void feed_errorhandling() throws IOException, URISyntaxException {
 		FeedRestService tested = getTested();
 		tested.querySettingsParser = Mockito.mock(QuerySettingsParser.class);
 		tested.searchService = Mockito.mock(SearchService.class);

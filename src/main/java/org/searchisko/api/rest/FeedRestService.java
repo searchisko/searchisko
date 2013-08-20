@@ -31,6 +31,7 @@ import org.searchisko.api.annotations.security.GuestAllowed;
 import org.searchisko.api.model.QuerySettings;
 import org.searchisko.api.model.QuerySettings.Filters;
 import org.searchisko.api.model.SortByValue;
+import org.searchisko.api.rest.exception.BadFieldException;
 import org.searchisko.api.service.SearchService;
 import org.searchisko.api.service.StatsRecordType;
 import org.searchisko.api.service.SystemInfoService;
@@ -46,10 +47,10 @@ import org.jboss.resteasy.plugins.providers.atom.Person;
 
 /**
  * Feed REST API.
- * 
+ *
  * @author Libor Krzyzanek
  * @author Vlastimil Elias (velias at redhat dot com)
- * 
+ *
  */
 @RequestScoped
 @Path("/feed")
@@ -81,13 +82,13 @@ public class FeedRestService extends RestServiceBase {
 	@Produces(MediaType.APPLICATION_ATOM_XML)
 	@GuestAllowed
 	@CORSSupport
-	public Object feed(@Context UriInfo uriInfo) {
+	public Object feed(@Context UriInfo uriInfo) throws URISyntaxException {
 
 		QuerySettings querySettings = null;
 		try {
 
 			if (uriInfo == null) {
-				throw new Exception("Incorrect call, uriInfo param is null");
+                throw new BadFieldException("uriInfo");
 			}
 			MultivaluedMap<String, String> params = uriInfo.getQueryParameters();
 			querySettings = querySettingsParser.parseUriParams(params);
@@ -100,17 +101,17 @@ public class FeedRestService extends RestServiceBase {
 
 			return createAtomResponse(querySettings, searchResponse, uriInfo);
 		} catch (IllegalArgumentException e) {
-			return createBadFieldDataResponse(e.getMessage());
+            throw new BadFieldException("unknown", e);
 		} catch (IndexMissingException e) {
 			return Response.status(Response.Status.NOT_FOUND).build();
-		} catch (Exception e) {
-			return createErrorResponse(e);
+//		} catch (Exception e) {
+//			return createErrorResponse(e);
 		}
 	}
 
 	/**
 	 * Patch query settings to search correct values necessary for feeds.
-	 * 
+	 *
 	 * @param querySettings
 	 */
 	protected void patchQuerySettings(QuerySettings querySettings) {

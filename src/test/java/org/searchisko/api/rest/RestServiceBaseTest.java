@@ -12,8 +12,6 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.logging.Logger;
 
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.core.StreamingOutput;
 
@@ -21,16 +19,16 @@ import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.common.xcontent.ToXContent;
 import org.elasticsearch.common.xcontent.XContentBuilder;
-import org.searchisko.api.testtools.TestUtils;
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
+import org.searchisko.api.testtools.TestUtils;
 
 /**
  * Unit test for {@link RestServiceBase}.
- * 
+ *
  * @author Vlastimil Elias (velias at redhat dot com)
  */
 public class RestServiceBaseTest {
@@ -94,27 +92,5 @@ public class RestServiceBaseTest {
 				so);
 
 		TestUtils.assetStreamingOutputContent("{\"testfield\":\"testvalue\"}", tested.createResponse(srMock, null));
-	}
-
-	@Test
-	public void createRequiredFieldResponse() {
-		RestServiceBase tested = getTested();
-		Response r = TestUtils.assertResponseStatus(tested.createRequiredFieldResponse("myfield"), Status.BAD_REQUEST);
-		Assert.assertEquals("Required parameter 'myfield' not set", r.getEntity());
-	}
-
-	@Test
-	public void createBadFieldDataResponse() {
-		RestServiceBase tested = getTested();
-		Response r = TestUtils.assertResponseStatus(tested.createBadFieldDataResponse("myfield"), Status.BAD_REQUEST);
-		Assert.assertEquals("Parameter 'myfield' has bad value", r.getEntity());
-	}
-
-	@Test
-	public void createErrorResponse() {
-		RestServiceBase tested = getTested();
-		Response r = TestUtils.assertResponseStatus(tested.createErrorResponse(new Exception("my exception")),
-				Status.INTERNAL_SERVER_ERROR);
-		Assert.assertEquals("Error [java.lang.Exception]: my exception", r.getEntity());
 	}
 }

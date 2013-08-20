@@ -5,30 +5,38 @@
  */
 package org.searchisko.api.rest;
 
-import org.searchisko.api.annotations.header.CORSSupport;
-import org.searchisko.api.annotations.security.GuestAllowed;
-import org.searchisko.api.annotations.security.ProviderAllowed;
-import org.searchisko.api.service.ProjectService;
-import org.searchisko.persistence.service.EntityService;
+import java.security.Principal;
+import java.util.Map;
 
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
-import javax.ws.rs.*;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.SecurityContext;
-import java.security.Principal;
-import java.util.Map;
+
+import org.searchisko.api.annotations.header.CORSSupport;
+import org.searchisko.api.annotations.security.GuestAllowed;
+import org.searchisko.api.annotations.security.ProviderAllowed;
+import org.searchisko.api.rest.exception.RequiredFieldException;
+import org.searchisko.api.service.ProjectService;
+import org.searchisko.persistence.service.EntityService;
 
 /**
  * Project REST API
- * 
+ *
  * @author Libor Krzyzanek
- * 
+ *
  */
 @RequestScoped
 @Path("/project")
@@ -51,7 +59,7 @@ public class ProjectRestService extends RestEntityServiceBase {
 
 	/**
 	 * Get all projects. If user is authenticated then all data are returned otherwise sensitive data are removed.
-	 * 
+	 *
 	 * @see #fieldsToRemove
 	 */
 	@GET
@@ -63,15 +71,15 @@ public class ProjectRestService extends RestEntityServiceBase {
 	public Object getAll(@QueryParam("from") Integer from, @QueryParam("size") Integer size) {
 		Principal principal = securityContext.getUserPrincipal();
 
-		try {
+//		try {
 			if (principal == null) {
 				return entityService.getAll(from, size, fieldsToRemove);
 			} else {
 				return entityService.getAll(from, size, null);
 			}
-		} catch (Exception e) {
-			return createErrorResponse(e);
-		}
+//		} catch (Exception e) {
+//			return createErrorResponse(e);
+//		}
 	}
 
 	@GET
@@ -108,7 +116,7 @@ public class ProjectRestService extends RestEntityServiceBase {
 	public Object create(@PathParam("id") String id, Map<String, Object> data) {
 
 		if (id == null || id.isEmpty()) {
-			return createRequiredFieldResponse("id");
+            throw new RequiredFieldException("id");
 		}
 
 		String codeFromData = (String) data.get(ProjectService.CODE);
@@ -121,12 +129,12 @@ public class ProjectRestService extends RestEntityServiceBase {
 					.entity("Code in URL must be same as '" + ProjectService.CODE + "' field in data.").build();
 		}
 
-		try {
+//		try {
 			entityService.create(id, data);
 			return createResponseWithId(id);
-		} catch (Exception e) {
-			return createErrorResponse(e);
-		}
+//		} catch (Exception e) {
+//			return createErrorResponse(e);
+//		}
 	}
 
 }

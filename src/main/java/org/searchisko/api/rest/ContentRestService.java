@@ -35,16 +35,18 @@ import org.searchisko.api.ContentObjectFields;
 import org.searchisko.api.annotations.header.CORSSupport;
 import org.searchisko.api.annotations.security.GuestAllowed;
 import org.searchisko.api.annotations.security.ProviderAllowed;
+import org.searchisko.api.rest.exception.BadFieldException;
+import org.searchisko.api.rest.exception.RequiredFieldException;
 import org.searchisko.api.service.ProviderService;
 import org.searchisko.api.service.SearchClientService;
 import org.searchisko.persistence.service.ContentPersistenceService;
 
 /**
  * REST API for Content
- * 
+ *
  * @author Libor Krzyzanek
  * @author Vlastimil Elias (velias at redhat dot com)
- * 
+ *
  */
 @RequestScoped
 @Path("/content/{type}")
@@ -70,12 +72,12 @@ public class ContentRestService extends RestServiceBase {
 	public Object getAllContent(@PathParam("type") String type, @QueryParam("from") Integer from,
 			@QueryParam("size") Integer size, @QueryParam("sort") String sort) {
 		if (type == null || type.isEmpty()) {
-			return createRequiredFieldResponse("type");
+//			return createRequiredFieldResponse("type");
 		}
 		try {
 			Map<String, Object> typeDef = providerService.findContentType(type);
 			if (typeDef == null) {
-				return createBadFieldDataResponse("type");
+                throw new BadFieldException("type");
 			}
 
 			String indexName = ProviderService.extractIndexName(typeDef, type);
@@ -106,8 +108,8 @@ public class ContentRestService extends RestServiceBase {
 			return new ESDataOnlyResponse(response, ContentObjectFields.SYS_CONTENT_ID);
 		} catch (IndexMissingException e) {
 			return Response.status(Response.Status.NOT_FOUND).build();
-		} catch (Exception e) {
-			return createErrorResponse(e);
+//		} catch (Exception e) {
+//			return createErrorResponse(e);
 		}
 	}
 
@@ -120,15 +122,15 @@ public class ContentRestService extends RestServiceBase {
 
 		// validation
 		if (contentId == null || contentId.isEmpty()) {
-			return createRequiredFieldResponse("contentId");
+			throw new RequiredFieldException("contentId");
 		}
 		if (type == null || type.isEmpty()) {
-			return createRequiredFieldResponse("type");
+            throw new RequiredFieldException("type");
 		}
 		try {
 			Map<String, Object> typeDef = providerService.findContentType(type);
 			if (typeDef == null) {
-				return createBadFieldDataResponse("type");
+                throw new BadFieldException("type");
 			}
 
 			String sysContentId = providerService.generateSysId(type, contentId);
@@ -146,8 +148,8 @@ public class ContentRestService extends RestServiceBase {
 			return createResponse(getResponse);
 		} catch (IndexMissingException e) {
 			return Response.status(Response.Status.NOT_FOUND).build();
-		} catch (Exception e) {
-			return createErrorResponse(e);
+//		} catch (Exception e) {
+//			return createErrorResponse(e);
 		}
 	}
 
@@ -160,19 +162,19 @@ public class ContentRestService extends RestServiceBase {
 
 		// validation
 		if (contentId == null || contentId.isEmpty()) {
-			return createRequiredFieldResponse("contentId");
+            throw new RequiredFieldException("contentId");
 		}
 		if (type == null || type.isEmpty()) {
-			return createRequiredFieldResponse("type");
+            throw new RequiredFieldException("type");
 		}
 		if (content == null || content.isEmpty()) {
 			return Response.status(Status.BAD_REQUEST).entity("Some content for pushing must be defined").build();
 		}
-		try {
+//		try {
 			Map<String, Object> provider = providerService.findProvider(getProvider());
 			Map<String, Object> typeDef = ProviderService.extractContentType(provider, type);
 			if (typeDef == null) {
-				return createBadFieldDataResponse("type");
+                throw new BadFieldException("type");
 			}
 
 			String sysContentId = providerService.generateSysId(type, contentId);
@@ -227,9 +229,9 @@ public class ContentRestService extends RestServiceBase {
 				retJson.put("message", "Content was inserted successfully.");
 			}
 			return Response.ok(retJson).build();
-		} catch (Exception e) {
-			return createErrorResponse(e);
-		}
+//		} catch (Exception e) {
+//			return createErrorResponse(e);
+//		}
 	}
 
 	@DELETE
@@ -240,16 +242,16 @@ public class ContentRestService extends RestServiceBase {
 
 		// validation
 		if (contentId == null || contentId.isEmpty()) {
-			return createRequiredFieldResponse("contentId");
+			throw new RequiredFieldException("contentId");
 		}
 		if (type == null || type.isEmpty()) {
-			return createRequiredFieldResponse("type");
+			throw new RequiredFieldException("type");
 		}
-		try {
+//		try {
 			Map<String, Object> provider = providerService.findProvider(getProvider());
 			Map<String, Object> typeDef = ProviderService.extractContentType(provider, type);
 			if (typeDef == null) {
-				return createBadFieldDataResponse("type");
+				throw new BadFieldException("type");
 			}
 
 			String sysContentId = providerService.generateSysId(type, contentId);
@@ -269,8 +271,8 @@ public class ContentRestService extends RestServiceBase {
 			} else {
 				return Response.ok("Content deleted successfully.").build();
 			}
-		} catch (Exception e) {
-			return createErrorResponse(e);
-		}
+//		} catch (Exception e) {
+//			return createErrorResponse(e);
+//		}
 	}
 }

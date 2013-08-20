@@ -5,28 +5,36 @@
  */
 package org.searchisko.api.rest;
 
-import org.searchisko.api.annotations.header.CORSSupport;
-import org.searchisko.api.annotations.security.ProviderAllowed;
-import org.searchisko.api.service.ProviderService;
-import org.searchisko.api.service.SecurityService;
+import java.util.Map;
 
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
-import javax.ws.rs.*;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.SecurityContext;
-import java.util.Map;
+
+import org.searchisko.api.annotations.header.CORSSupport;
+import org.searchisko.api.annotations.security.ProviderAllowed;
+import org.searchisko.api.rest.exception.RequiredFieldException;
+import org.searchisko.api.service.ProviderService;
+import org.searchisko.api.service.SecurityService;
 
 /**
  * Provider REST API
- * 
+ *
  * @author Libor Krzyzanek
  * @author Vlastimil Elias (velias at redhat dot com)
- * 
+ *
  */
 @RequestScoped
 @Path("/provider")
@@ -54,11 +62,11 @@ public class ProviderRestService extends RestEntityServiceBase {
 	@Produces(MediaType.APPLICATION_JSON)
     @CORSSupport
 	public Object getAll(@QueryParam("from") Integer from, @QueryParam("size") Integer size) {
-		try {
+//		try {
 			return entityService.getAll(from, size, FIELDS_TO_REMOVE);
-		} catch (Exception e) {
-			return createErrorResponse(e);
-		}
+//		} catch (Exception e) {
+//			return createErrorResponse(e);
+//		}
 	}
 
 	@GET
@@ -70,12 +78,12 @@ public class ProviderRestService extends RestEntityServiceBase {
 	public Object get(@PathParam("id") String id) {
 
 		if (id == null || id.isEmpty()) {
-			return createRequiredFieldResponse("id");
+            throw new RequiredFieldException("id");
 		}
 
 		// check Provider name. Only provider with same name or superprovider has access.
 		String provider = securityContext.getUserPrincipal().getName();
-		try {
+//		try {
 			Map<String, Object> entity = entityService.get(id);
 
 			if (entity == null)
@@ -87,9 +95,9 @@ public class ProviderRestService extends RestEntityServiceBase {
 				}
 			}
 			return ESDataOnlyResponse.removeFields(entity, FIELDS_TO_REMOVE);
-		} catch (Exception e) {
-			return createErrorResponse(e);
-		}
+//		} catch (Exception e) {
+//			return createErrorResponse(e);
+//		}
 	}
 
 	@POST
@@ -111,7 +119,7 @@ public class ProviderRestService extends RestEntityServiceBase {
 	public Object create(@PathParam("id") String id, Map<String, Object> data) {
 
 		if (id == null || id.isEmpty()) {
-			return createRequiredFieldResponse("id");
+            throw new RequiredFieldException("id");
 		}
 
 		String nameFromData = (String) data.get(ProviderService.NAME);
@@ -124,7 +132,7 @@ public class ProviderRestService extends RestEntityServiceBase {
 					.entity("Name in URL must be same as '" + ProviderService.NAME + "' field in data.").build();
 		}
 
-		try {
+//		try {
 			// do not update password hash if entity exists already!
 			Map<String, Object> entity = providerService.get(id);
 			if (entity != null) {
@@ -134,9 +142,9 @@ public class ProviderRestService extends RestEntityServiceBase {
 			}
 			providerService.create(id, data);
 			return createResponseWithId(id);
-		} catch (Exception e) {
-			return createErrorResponse(e);
-		}
+//		} catch (Exception e) {
+//			return createErrorResponse(e);
+//		}
 	}
 
 	@POST
@@ -145,11 +153,11 @@ public class ProviderRestService extends RestEntityServiceBase {
 	public Object changePassword(@PathParam("id") String id, String pwd) {
 
 		if (id == null || id.isEmpty()) {
-			return createRequiredFieldResponse("id");
+            throw new RequiredFieldException("id");
 		}
 
 		if (pwd == null || pwd.trim().isEmpty()) {
-			return createRequiredFieldResponse("pwd");
+            throw new RequiredFieldException("pwd");
 		}
 
 		// check Provider name. Only provider with same name or superprovider has access.

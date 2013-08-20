@@ -5,25 +5,34 @@
  */
 package org.searchisko.api.rest;
 
-import org.elasticsearch.action.search.*;
+import java.util.UUID;
+import java.util.logging.Logger;
+
+import javax.enterprise.context.RequestScoped;
+import javax.inject.Inject;
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.MultivaluedMap;
+import javax.ws.rs.core.UriInfo;
+
+import org.elasticsearch.action.search.MultiSearchRequestBuilder;
+import org.elasticsearch.action.search.MultiSearchResponse;
+import org.elasticsearch.action.search.SearchRequestBuilder;
+import org.elasticsearch.action.search.SearchType;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.searchisko.api.ContentObjectFields;
 import org.searchisko.api.annotations.header.CORSSupport;
 import org.searchisko.api.annotations.security.GuestAllowed;
 import org.searchisko.api.model.QuerySettings;
+import org.searchisko.api.rest.exception.BadFieldException;
+import org.searchisko.api.rest.exception.RequiredFieldException;
 import org.searchisko.api.service.SearchClientService;
 import org.searchisko.api.util.SearchUtils;
-
-import javax.enterprise.context.RequestScoped;
-import javax.inject.Inject;
-import javax.ws.rs.*;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.MultivaluedMap;
-import javax.ws.rs.core.UriInfo;
-import java.util.UUID;
-import java.util.logging.Logger;
 
 /**
  * Suggestions REST API.
@@ -63,20 +72,20 @@ public class SuggestionsRestService extends RestServiceBase {
     @CORSSupport
     public Object queryString(@Context UriInfo uriInfo) {
 
-        try {
+//        try {
             MultivaluedMap<String, String> params = uriInfo.getQueryParameters();
             String query = SearchUtils.trimToNull(params.getFirst(QuerySettings.QUERY_KEY));
             if (query == null) {
                 throw new IllegalArgumentException(QuerySettings.QUERY_KEY);
             }
 
-            throw new Exception("Method not implemented yet!");
+            throw new RuntimeException("Method not implemented yet!");
 
-        } catch (IllegalArgumentException e) {
-            return createBadFieldDataResponse(e.getMessage());
-        } catch (Exception e) {
-            return createErrorResponse(e);
-        }
+//        } catch (IllegalArgumentException e) {
+//            return createBadFieldDataResponse(e.getMessage());
+//        } catch (Exception e) {
+//            return createErrorResponse(e);
+//        }
     }
 
     @GET
@@ -89,7 +98,7 @@ public class SuggestionsRestService extends RestServiceBase {
         try {
 
             if (query == null) {
-                throw new IllegalArgumentException(QuerySettings.QUERY_KEY);
+                throw new RequiredFieldException(QuerySettings.QUERY_KEY);
             }
 
             if (size == null || size < 1) {
@@ -111,9 +120,9 @@ public class SuggestionsRestService extends RestServiceBase {
 
             return createResponse(searchResponse, responseUuid);
         } catch (IllegalArgumentException e) {
-            return createBadFieldDataResponse(e.getMessage());
-        } catch (Exception e) {
-            return createErrorResponse(e);
+            throw new BadFieldException("unknown", e);
+//        } catch (Exception e) {
+//            return createErrorResponse(e);
         }
     }
 

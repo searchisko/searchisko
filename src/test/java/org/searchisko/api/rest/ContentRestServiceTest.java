@@ -27,7 +27,7 @@ import org.mockito.Mockito;
 
 /**
  * Unit test for {@link ContentRestService}
- * 
+ *
  * @author Vlastimil Elias (velias at redhat dot com)
  */
 public class ContentRestServiceTest extends ESRealClientTestBase {
@@ -469,7 +469,7 @@ public class ContentRestServiceTest extends ESRealClientTestBase {
 	@SuppressWarnings("unchecked")
 	@Test
 	public void getContent() {
-		ContentRestService tested = getTested(false);
+		ContentRestService tested = getTested(true);
 
 		// case - invalid input parameters
 		TestUtils.assertResponseStatus(tested.getContent(null, "1"), Response.Status.BAD_REQUEST);
@@ -507,7 +507,7 @@ public class ContentRestServiceTest extends ESRealClientTestBase {
 
 	/**
 	 * Prepare tested instance with injected mocks.
-	 * 
+	 *
 	 * @param initEsClient - searchClientService is initialized from
 	 *          {@link ESRealClientTestBase#prepareSearchClientServiceMock()} if this is true, so do not forget to clean
 	 *          up client in finally!

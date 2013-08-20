@@ -28,10 +28,10 @@ import org.searchisko.persistence.service.EntityService;
 
 /**
  * Service related to Contributor
- * 
+ *
  * @author Libor Krzyzanek
  * @author Vlastimil Elias (velias at redhat dot com)
- * 
+ *
  */
 @Named
 @Stateless
@@ -87,7 +87,7 @@ public class ContributorService implements EntityService {
 
 	/**
 	 * Updates search index by current entity identified by id
-	 * 
+	 *
 	 * @param id
 	 * @param entity
 	 */
@@ -124,8 +124,8 @@ public class ContributorService implements EntityService {
 		searchClientService.getClient().prepareDelete(SEARCH_INDEX_NAME, SEARCH_INDEX_TYPE, id).execute().actionGet();
 	}
 
-	public SearchResponse search(String email) throws Exception {
-		try {
+	public SearchResponse search(String email) {
+//		try {
 			SearchRequestBuilder searchBuilder = searchClientService.getClient().prepareSearch(SEARCH_INDEX_NAME)
 					.setTypes(SEARCH_INDEX_TYPE);
 
@@ -138,8 +138,8 @@ public class ContributorService implements EntityService {
 			} catch (IndexMissingException e) {
 				return null;
 			}
-		} catch (Exception e) {
-			throw e;
-		}
+//		} catch (Exception e) {
+//			throw e;
+//		}
 	}
 }
