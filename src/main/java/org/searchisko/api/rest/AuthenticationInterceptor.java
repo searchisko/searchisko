@@ -13,11 +13,9 @@ import java.util.logging.Logger;
 
 import javax.inject.Inject;
 import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.ext.Provider;
 
-import org.searchisko.api.service.ProviderService;
 import org.jboss.resteasy.annotations.interception.SecurityPrecedence;
 import org.jboss.resteasy.annotations.interception.ServerInterceptor;
 import org.jboss.resteasy.core.ResourceMethod;
@@ -28,16 +26,17 @@ import org.jboss.resteasy.spi.HttpRequest;
 import org.jboss.resteasy.spi.ResteasyProviderFactory;
 import org.jboss.resteasy.spi.interception.PreProcessInterceptor;
 import org.jboss.resteasy.util.Base64;
+import org.searchisko.api.service.ProviderService;
 
 /**
  * Interceptor handle authentication via standard HTTP basic authentication header or via url parameters called
  * <code>provider</code> and <code>pwd</code> and store authenticated {@link Principal} into {@link SecurityContext} to
  * be used later by authorization interceptor {@link SecurityPreProcessInterceptor} if necessary. Authentication check
  * is done using {@link ProviderService#authenticate(String, String)}.
- * 
+ *
  * @author Libor Krzyzanek
  * @author Vlastimil Elias (velias at redhat dot com)
- * 
+ *
  */
 @Provider
 @ServerInterceptor
@@ -83,19 +82,6 @@ public class AuthenticationInterceptor implements PreProcessInterceptor {
 					log.log(Level.SEVERE, "Cannot encode authentication realm", e);
 				}
 
-			}
-		}
-
-		if (!authenticated) {
-			// Check username and password as query parameters
-			MultivaluedMap<String, String> queryParams = request.getUri().getQueryParameters();
-			if (queryParams != null) {
-				username = queryParams.getFirst("provider");
-				password = queryParams.getFirst("pwd");
-				if (username != null && !username.isEmpty() && password != null && !password.isEmpty()) {
-					authenticated = providerService.authenticate(username, password);
-					authenticationScheme = "CUSTOM";
-				}
 			}
 		}
 
