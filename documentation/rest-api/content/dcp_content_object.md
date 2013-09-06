@@ -31,20 +31,47 @@ inside DCP during push. Those data fields are prefixed by `sys_`:
 * `sys_comments` - Array of comment for issue. 'Comment data structure' is described below.
 
 
-'Comment data structure' description:
+### 'Comment data structure' description:
 
-* `comment_id` - unique identifier of the comment from source system. Optional.
-* `comment_body` - text of the comment
-* `comment_author` - info about Contributor who created comment. 'Contributor data structure' is described below.
-* `comment_updater` - optional info about Contributor who updated comment. 'Contributor data structure' is described below. 
-* `comment_created` - timestamp (ISO string) when the comment was created in the source system.
-* `comment_updated` -  optional timestamp (ISO string) when the comment was updated in the source system.
-
-'Contributor data structure' description:
 <table border="1">
 <thead>
   <th>Field</th>
-  <th width="63%">Description</th>
+  <th width="70%">Description</th>
+</thead>
+<tbody>
+<tr>
+  <td>comment_id</td>
+  <td>Optional. Unique identifier of the comment from source system.</td>
+</tr>
+<tr>
+  <td>comment_body</td>
+  <td>Text of the comment.</td>
+</tr>
+<tr>
+  <td>comment_author</td>
+  <td>Info about Contributor who created comment. 'Contributor data structure' is described below.</td>
+</tr>
+<tr>
+  <td>comment_updater</td>
+  <td>Optional. Info about Contributor who updated comment. 'Contributor data structure' is described below.</td>
+</tr>
+<tr>
+  <td>comment_created</td>
+  <td>Timestamp (ISO string) when the comment was created in the source system.</td>
+</tr>
+<tr>
+  <td>comment_updated</td>
+  <td>Optional. Timestamp (ISO string) when the comment was updated in the source system.</td>
+</tr>
+</tbody>
+</table>
+
+### 'Contributor data structure' description:
+
+<table border="1">
+<thead>
+  <th>Field</th>
+  <th width="70%">Description</th>
 </thead>
 <tbody>
 <tr>
@@ -63,12 +90,12 @@ inside DCP during push. Those data fields are prefixed by `sys_`:
 </table>
 
 
-DCP Content described by example:
+### DCP Content described by example:
+
+Free JSON Structure representing content. It can be one key - value pair or something more structured.
+It's defined only by content provider and must contain mandatory fields defined for given `sys_type`.
 
 	{
-	    Free JSON Structure representing content. It can be one key - value pair or something more structured.
-	    It's defined only by content provider and must contain mandatory fields defined for given 'sys_type'.
-	
 	    "tags": ["Content_tag1", "tag2", "tag3"],
 	
 	    "sys_content_provider": "jbossorg",
