@@ -27,11 +27,11 @@ as an inspiration. You will have your own content.
 + [issue](content/issue.md) the data from project's issue tracker (JIRA, Bugzilla, 
   etc...) about project bugs, feature requests etc.
 + [forumthread](content/forumthread.md) the data from project's discussion forum
-+ [article](content/article.md) articles from project's wiki etc.
++ [article](content/article.md) articles from project's wiki
++ [mailing_list_message](content/mailing_list_message.md) mbox message from project's mailing list
 
 Other data types considered in the future:
 
-+ mailing list email
 + documentation page
 + source code repository commit
 + IRC/IM conversation
