@@ -96,7 +96,7 @@ inside DCP during push. Those data fields are prefixed by `sys_`:
 </tr>
 <tr>
   <td>sys_comments</td>
-  <td>Array of comment for issue. 'Comment data structure' is described below.</td>
+  <td>Array of comment for issue. <a href="#comment-data-structure-description">'Comment data structure'</a> is described below.</td>
 </tr>
 </tbody>
 </table>
