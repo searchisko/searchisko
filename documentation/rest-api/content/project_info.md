@@ -7,7 +7,7 @@ A human readable view for the data you can ask is [here](http://www.jboss.org/pr
 
 This *sys_type* was created a result of this [feature request](https://issues.jboss.org/browse/ORG-1446 "Expose Project information as a HTTP API"). In the beginning Magnolia will submit all the data to DCP, but later some projects may be granted the permission to do the same thing for themselves.
 
-Also Magnolia will supply the results for the data before the DCP will be fully implemented. Both Magnolia and DCP (after it is implemented) will return the JSON structure as described in this aricle. After DCP is ready, the content will be served from it and the feature will be turned off on Magnolia. After the change each application that will take the data from Magnolia will just change the URL to DCP format.
+Also Magnolia will supply the results for the data before the DCP will be fully implemented. Both Magnolia and DCP (after it is implemented) will return the JSON structure as described in this article. After DCP is ready, the content will be served from it and the feature will be turned off on Magnolia. After the change each application that will take the data from Magnolia will just change the URL to DCP format.
 
 For now the data will be available on http(s)://www.jboss.org/rest/projectData. If you specify the *sys_content_id* in the URL, i.e. https://www.jboss.org/rest/projectData/gatein, you will receive the same structure, but with just one record.
 

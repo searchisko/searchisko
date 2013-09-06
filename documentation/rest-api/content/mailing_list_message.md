@@ -4,7 +4,7 @@ Mailing list messages related to projects
 **sys\_type = "mailing_list_message"**
 
 This data contains messages from mailing list. In out case we have public mailing list <https://lists.jboss.org/mailman/listinfo/>
-and we parse and index the data from internal Mailman archives (see [mbox_integration](https://lists.jboss.org/mailman/listinfo/) for source code).
+and we parse and index the data from internal Mailman archives (see [mbox_integration](https://github.com/searchisko/mbox_integration) for source code).
 
 ## Data structure
 
