@@ -16,7 +16,11 @@ and we parse and index the data from internal Mailman archives (see [mbox_integr
   <th width="63%">Description</th>
 </thead>
 <tbody>
-<tr><td>TDB</td><td>TBD</td><td>TBD</td></tr>
+<tr><td>sys_id</td><td>TBD</td><td>TBD</td></tr>
+<tr><td>sys_type</td><td>TBD</td><td>TBD</td></tr>
+<tr><td>sys_content_type</td><td>TBD</td><td>TBD</td></tr>
+<tr><td>sys_content_id</td><td>TBD</td><td>TBD</td></tr>
+<tr><td>sys_url_view</td><td>TBD</td><td>TBD</td></tr>
 </tbody>
 </table>
 **Note:** some standard DCP [system fields](dcp_content_object.md) prefixed by `sys_` are not described here.
@@ -30,14 +34,52 @@ Description may be found in general documentation for "DCP Content object".
   <th width="63%">Description</th>
 </thead>
 <tbody>
-<tr><td>TBD</td><td>TDB</td><td>TDB</td></tr>
+<tr><td>author</td><td>Pete Muir <pmuir@redhat.com></td><td>Originator of the message. See <a href="http://tools.ietf.org/html/rfc2822#section-3.6.2">3.6.2. Originator fields</a>.</td></tr>
+<tr><td>to</td><td></td><td>Value of recipient field <code>To</code>. See <a href="http://tools.ietf.org/html/rfc2822#section-3.6.3">3.6.3. Destination address fields</a></td></tr>
+<tr><td>message_id_original</td><td></td><td>Original value of <code>Message-Id</code> field. See <a href="http://tools.ietf.org/html/rfc2822#section-3.6.4">3.6.4. Identification fields</a>. Note that message can be sent to many mailing lists so this value may not be unique across document collection.</td></tr>
+<tr><td>message_id</td><td></td><td>${message_id_original} with optional suffix. This should be unique identifier of the message across whole document collection.</td></tr>
+<tr><td>references</td><td></td><td>Content of <code>References</code> field. See <a href="http://tools.ietf.org/html/rfc2822#section-3.6.4">3.6.4. Identification fields</a>.</td></tr>
+<tr><td>subject_original</td><td></td><td>Content of <code>Subject</code> field. See <a href="http://tools.ietf.org/html/rfc2822#section-3.6.5">3.6.5. Informational fields</a>.</td></tr>
+<tr><td>subject</td><td></td><td>Cleared value of ${subject_original} field (removed 'RE:' and similar tokens).</td></tr>
+<tr><td>date</td><td></td><td>Value of <code>Date</code> field. See <a href="http://tools.ietf.org/html/rfc2822#section-3.6.1">3.6.1. The origination date field</a>.</td></tr>
+<tr><td>message_snippet</td><td></td><td>A short snippet from message body.</td></tr>
+<tr><td>first_text_message</td><td></td><td></td></tr>
+<tr><td>first_text_message_without_quotes</td><td></td><td></td></tr>
+<tr><td>text_messages</td><td></td><td></td></tr>
+<tr><td>text_messages_cnt</td><td></td><td></td></tr>
+<tr><td>html_messages</td><td></td><td></td></tr>
+<tr><td>html_messages_cnt</td><td></td><td></td></tr>
+<tr><td>message_attachments</td><td></td><td>TBD</td></tr>
+<tr><td>message_attachments_cnt</td><td></td><td></td></tr>
 </tbody>
 </table>
 
+<table border="1">
+<thead>
+  <th>Field</th>
+  <th>Example value</th>
+  <th width="63%">Description</th>
+</thead>
+<tbody>
+<tr><td>content_type</td><td></td><td></td></tr>
+<tr><td>filename</td><td></td><td></td></tr>
+<tr><td>content</td><td></td><td></td></tr>
+</tbody>
+</table>
 
 ### Example of mailing list message data structure:
 
     {
+        "sys_id" : "",
+        "sys_type" : "",
+        "sys_content_type" : "",
+        "sys_content_id" : "",
+        "sys_url_view" : "http://lists.jboss.org/pipermail/cdi-dev/2012-October/003128.html",
+        "sys_title" : "${subject}",
+        "sys_content" : "?",
+        "sys_created" : "${date}",
+        "sys_description" : "${message_snippet}",
+
         "author" : "Pete Muir <pmuir@redhat.com>",
         "to" : [ "cdi-dev <cdi-dev@lists.jboss.org>" ],
         "subject_original" : "[cdi-dev] Fwd: JSR-346 Public Review Draft",
@@ -54,8 +96,12 @@ Description may be found in general documentation for "DCP Content object".
         "html_messages_cnt" : 0,
         "message_attachments" : [ {
             "content_type" : "application/pdf",
-            "filename" : "some.pdf",
+            "filename" : "cdi-spec.pdf",
+            "content" : "Extracted content of this attachment in plain text. All formatting and images are dropped."
+        }, {
+            "content_type" : "application/zip",
+            "filename" : "cdi-api-1.1-PRD.zip",
             "content" : "Extracted content of this attachment in plain text. All formatting and images are dropped."
         } ],
-        "message_attachments_cnt" : 1
+        "message_attachments_cnt" : 2
     }
