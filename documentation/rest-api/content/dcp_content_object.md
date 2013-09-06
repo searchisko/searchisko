@@ -8,28 +8,98 @@ restriction how many key value pairs must be defined or in what structure.
 Some system data fields are defined by DCP, some are added into the content
 inside DCP during push. Those data fields are prefixed by `sys_`:
 
-* `sys_type` - DCP wide normalized content type - eg. mailing list email, issue, blogpost, IRC post, commit, discussion thread - system field, always necessary.
-* `sys_id` - content id unique in the whole DCP platform - system field, always necessary. It is constructed during the 'Content Push API' operation from `sys_content_type` and `sys_content_id`.
-* `sys_content_provider` - identification of the provider that stored the given data into the platform - system field, always necessary - eg. 'jbossorg', 'seam_project' etc.
-* `sys_content_type` - identifier of the provider defined content type for 'Content Push API'. It is unique in the whole DCP so it starts with `sys_content_provider`, eg. 'jbossorg_jira_issue', 'jbossorg_blog' etc.
-* `sys_content_id` -  content identifier passed in by the provider, it must be unique for the given `sys_content_type`.
-* `sys_updated` - date of last content update in DCP - system field, always necessary, assigned in 'Content Push API'.
-* `sys_project` - normalized DCP wide identifier of the project - system field - it is used for the project facet and filter in the Search API.
-* `sys_project_name` - human readable name of project based on `sys_project` identifier - system field.
-* `sys_contributors` - array of contributing persons, no duplicities in array, persons identifiers normalized during push into DCP - each person represented as string `Name Surname <primaryemail@email.com>` - in Search API used for persons facet and filter.
-* `sys_activity_dates` - array of timestamps (ISO string) representing some activity on the content (when the content was created or changed etc. in source system) - in the Search API used for the time facet and filter.
-* `sys_created` - timestamp (ISO string) representing creation of the content in source system (it's min value from `sys_activity_dates`), used for sorting on search API.
-* `sys_last_activity_date` - timestamp (ISO string) representing last activity on the content (it's max value from `sys_activity_dates`), used for sorting on search API.
-* `sys_title` - content title - used to present the document in the basic search GUI results - it can be directly set by the content provider during the push operation.
-* `sys_url_view` - URL where the document can be viewed in its original system in human readable form - used to open the document from the basic search GUI - can be directly set by the content provider during the push.
-* `sys_description` - short text representing the content (up to 400 characters) - used to show the content in the basic search GUI results for queries that do not produce highlights - it can be directly set by the content provider during the push, no html formatting.
-* `sys_content` - complete text representing whole content - it can be directly set by the content provider during the push, may contain html formatting. Basic search GUI may use it in search result detail view.
-* `sys_content_content-type` - MIME identifier of content type stored in the `sys_content` field eg. `text/plain`, `text/html`, `text/x-markdown`. Must be negotiated with DCP Admins so fulltext search analyzer for `sys_content` is set correctly.
-* `sys_content_plaintext` - if `sys_content` is provided then this field is populated automatically by transformations (thus `dcp_content_content-type` value is important). The goal is to have the content without any markup - Search API fulltext search runs against it and this field is also used for highlighted snippets.
-* `sys_tags` - array of tags (Strings) - in the Search API used for facet (tag cloud) and filter - it is not directly pushed by the content provider because we plan a mechanism for additional user defined tags, so we need to rewrite this field internally. The content provider should use `tags` field instead.
-* `tags` - tags provided by content provider
-* `sys_comments` - Array of comment for issue. 'Comment data structure' is described below.
-
+<table border="1">
+<thead>
+  <th>Field</th>
+  <th width="70%">Description</th>
+</thead>
+<tbody>
+<tr>
+  <td>sys_type</td>
+  <td>DCP wide normalized content type - eg. mailing list email, issue, blogpost, IRC post, commit, discussion thread - system field, always necessary.</td>
+</tr>
+<tr>
+  <td>sys_id</td>
+  <td>Content id unique in the whole DCP platform - system field, always necessary. It is constructed during the 'Content Push API' operation from <code>sys_content_type</code> and <code>sys_content_id</code>.</td>
+</tr>
+<tr>
+  <td>sys_content_provider</td>
+  <td>Identification of the provider that stored the given data into the platform - system field, always necessary - eg. 'jbossorg', 'seam_project' etc.</td>
+</tr>
+<tr>
+  <td>sys_content_type</td>
+  <td>Identifier of the provider defined content type for 'Content Push API'. It is unique in the whole DCP so it starts with <code>sys_content_provider</code>, eg. 'jbossorg_jira_issue', 'jbossorg_blog' etc.</td>
+</tr>
+<tr>
+  <td>sys_content_id</td>
+  <td>Content identifier passed in by the provider, it must be unique for the given <code>sys_content_type</code>.</td>
+</tr>
+<tr>
+  <td>sys_updated</td>
+  <td>Date of last content update in DCP - system field, always necessary, assigned in 'Content Push API'.</td>
+</tr>
+<tr>
+  <td>sys_project</td>
+  <td>Normalized DCP wide identifier of the project - system field - it is used for the project facet and filter in the Search API.</td>
+</tr>
+<tr>
+  <td>sys_project_name</td>
+  <td>Human readable name of project based on <code>sys_project</code> identifier - system field.</td>
+</tr>
+<tr>
+  <td>sys_contributors</td>
+  <td>Array of contributing persons, no duplicities in array, persons identifiers normalized during push into DCP - each person represented as string <code>Name Surname <primaryemail@email.com></code> - in Search API used for persons facet and filter.</td>
+</tr>
+<tr>
+  <td>sys_activity_dates</td>
+  <td>Array of timestamps (ISO string) representing some activity on the content (when the content was created or changed etc. in source system) - in the Search API used for the time facet and filter.</td>
+</tr>
+<tr>
+  <td>sys_created</td>
+  <td>Timestamp (ISO string) representing creation of the content in source system (it's min value from <code>sys_activity_dates</code>), used for sorting on search API.</td>
+</tr>
+<tr>
+  <td>sys_last_activity_date</td>
+  <td>Timestamp (ISO string) representing last activity on the content (it's max value from <code>sys_activity_dates</code>), used for sorting on search API.</td>
+</tr>
+<tr>
+  <td>sys_title</td>
+  <td>Content title - used to present the document in the basic search GUI results - it can be directly set by the content provider during the push operation.</td>
+</tr>
+<tr>
+  <td>sys_url_view</td>
+  <td>URL where the document can be viewed in its original system in human readable form - used to open the document from the basic search GUI - can be directly set by the content provider during the push.</td>
+</tr>
+<tr>
+  <td>sys_description</td>
+  <td>Short text representing the content (up to 400 characters) - used to show the content in the basic search GUI results for queries that do not produce highlights - it can be directly set by the content provider during the push, no html formatting.</td>
+</tr>
+<tr>
+  <td>sys_content</td>
+  <td>Complete text representing whole content - it can be directly set by the content provider during the push, may contain html formatting. Basic search GUI may use it in search result detail view.</td>
+</tr>
+<tr>
+  <td>sys_content_content-type</td>
+  <td>MIME identifier of content type stored in the <code>sys_content</code> field eg. <code>text/plain</code>, <code>text/html</code>, <code>text/x-markdown</code>. Must be negotiated with DCP Admins so fulltext search analyzer for <code>sys_content</code> is set correctly.</td>
+</tr>
+<tr>
+  <td>sys_content_plaintext</td>
+  <td>If <code>sys_content</code> is provided then this field is populated automatically by transformations (thus <code>dcp_content_content-type</code> value is important). The goal is to have the content without any markup - Search API fulltext search runs against it and this field is also used for highlighted snippets.</td>
+</tr>
+<tr>
+  <td>sys_tags</td>
+  <td>Array of tags (Strings) - in the Search API used for facet (tag cloud) and filter - it is not directly pushed by the content provider because we plan a mechanism for additional user defined tags, so we need to rewrite this field internally. The content provider should use <code>tags</code> field instead.</td>
+</tr>
+<tr>
+  <td>tags</td>
+  <td>Tags provided by content provider.</td>
+</tr>
+<tr>
+  <td>sys_comments</td>
+  <td>Array of comment for issue. 'Comment data structure' is described below.</td>
+</tr>
+</tbody>
+</table>
 
 ### 'Comment data structure' description:
 
