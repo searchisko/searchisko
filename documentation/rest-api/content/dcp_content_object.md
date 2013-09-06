@@ -6,9 +6,9 @@ This document describes main content object which can be pushed to and retrieved
 DCP Content object is a JSON document with a free structure. There is no 
 restriction how many key value pairs must be defined or in what structure.
 Some system data fields are defined by DCP, some are added into the content
-inside DCP during push. Those data fields are prefixed by `dcp_`:
+inside DCP during push. Those data fields are prefixed by `sys_`:
 
-* `sys_type` - DCP wide normalized content type - eg. mailing-list email, issue, blogpost, IRC post, commit, discussion thread - system field, always necessary.
+* `sys_type` - DCP wide normalized content type - eg. mailing list email, issue, blogpost, IRC post, commit, discussion thread - system field, always necessary.
 * `sys_id` - content id unique in the whole DCP platform - system field, always necessary. It is constructed during the 'Content Push API' operation from `sys_content_type` and `sys_content_id`.
 * `sys_content_provider` - identification of the provider that stored the given data into the platform - system field, always necessary - eg. 'jbossorg', 'seam_project' etc.
 * `sys_content_type` - identifier of the provider defined content type for 'Content Push API'. It is unique in the whole DCP so it starts with `sys_content_provider`, eg. 'jbossorg_jira_issue', 'jbossorg_blog' etc.
@@ -47,9 +47,18 @@ inside DCP during push. Those data fields are prefixed by `dcp_`:
   <th width="63%">Description</th>
 </thead>
 <tbody>
-<tr><td>sys_contributor</td><td>Normalized DCP contributor identifier.</td></tr>
-<tr><td>email_address</td><td>Optional. Contributor email address from the source system. May be used to lookup normalized value for `sys_contributor` field during data push.</td></tr>
-<tr><td>display_name</td><td>Optional. Contributor display name from the source system.</td></tr>
+<tr>
+  <td>sys_contributor</td>
+  <td>Normalized DCP contributor identifier.</td>
+</tr>
+<tr>
+  <td>email_address</td>
+  <td>Optional. Contributor email address from the source system. May be used to lookup normalized value for <code>sys_contributor</code> field during data push.</td>
+</tr>
+<tr>
+  <td>display_name</td>
+  <td>Optional. Contributor display name from the source system.</td>
+</tr>
 </tbody>
 </table>
 
