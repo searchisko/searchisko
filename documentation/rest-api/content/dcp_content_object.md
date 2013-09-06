@@ -49,11 +49,11 @@ inside DCP during push. Those data fields are prefixed by `sys_`:
 </tr>
 <tr>
   <td>comment_author</td>
-  <td>Info about Contributor who created comment. 'Contributor data structure' is described below.</td>
+  <td>Info about Contributor who created comment. <a href="#contributor-data-structure-description">'Contributor data structure'</a> is described below.</td>
 </tr>
 <tr>
   <td>comment_updater</td>
-  <td>Optional. Info about Contributor who updated comment. 'Contributor data structure' is described below.</td>
+  <td>Optional. Info about Contributor who updated comment. <a href="#contributor-data-structure-description">'Contributor data structure'</a> is described below.</td>
 </tr>
 <tr>
   <td>comment_created</td>
