@@ -16,11 +16,16 @@ and we parse and index the data from internal Mailman archives (see [mbox_integr
   <th width="63%">Description</th>
 </thead>
 <tbody>
-<tr><td>sys_id</td><td>TBD</td><td>TBD</td></tr>
-<tr><td>sys_type</td><td>TBD</td><td>TBD</td></tr>
-<tr><td>sys_content_type</td><td>TBD</td><td>TBD</td></tr>
-<tr><td>sys_content_id</td><td>TBD</td><td>TBD</td></tr>
-<tr><td>sys_url_view</td><td>TBD</td><td>TBD</td></tr>
+<tr><td>sys_content_id</td><td></td><td>${message_id}</td></tr>
+<tr><td>sys_project</td><td></td><td>Derived from ${project} field.</td></tr>
+<tr><td>sys_project_name</td><td></td><td>Derived from ${project} field.</td></tr>
+<tr><td>sys_url_view</td><td></td><td>URL where this message can be accessed. Needs to be provided. Typically this is URL to mailman archive entry.</td></tr>
+<tr><td>sys_created</td><td></td><td>${date}</td></tr>
+<tr><td>sys_title</td><td></td><td>${subject}</td></tr>
+<tr><td>sys_description</td><td></td><td>${message_snippet}</td></tr>
+<tr><td>sys_content</td><td></td><td>${...}</td></tr>
+<tr><td>sys_activity_dates</td><td></td><td>Derived from ${date} field.</td></tr>
+<tr><td>sys_last_activity_date</td><td></td><td>Derived from ${date} field.</td></tr>
 </tbody>
 </table>
 **Note:** some standard DCP [system fields](dcp_content_object.md) prefixed by `sys_` are not described here.
@@ -42,17 +47,23 @@ Description may be found in general documentation for "DCP Content object".
 <tr><td>subject_original</td><td></td><td>Content of <code>Subject</code> field. See <a href="http://tools.ietf.org/html/rfc2822#section-3.6.5">3.6.5. Informational fields</a>.</td></tr>
 <tr><td>subject</td><td></td><td>Cleared value of ${subject_original} field (removed 'RE:' and similar tokens).</td></tr>
 <tr><td>date</td><td></td><td>Value of <code>Date</code> field. See <a href="http://tools.ietf.org/html/rfc2822#section-3.6.1">3.6.1. The origination date field</a>.</td></tr>
-<tr><td>message_snippet</td><td></td><td>A short snippet from message body.</td></tr>
-<tr><td>first_text_message</td><td></td><td></td></tr>
-<tr><td>first_text_message_without_quotes</td><td></td><td></td></tr>
-<tr><td>text_messages</td><td></td><td></td></tr>
-<tr><td>text_messages_cnt</td><td></td><td></td></tr>
-<tr><td>html_messages</td><td></td><td></td></tr>
-<tr><td>html_messages_cnt</td><td></td><td></td></tr>
-<tr><td>message_attachments</td><td></td><td>TBD</td></tr>
-<tr><td>message_attachments_cnt</td><td></td><td></td></tr>
+<tr>
+  <td>message_snippet</td><td></td>
+  <td>A short snippet from message body. The content can be taken from <code>first_text_message_without_quotes</code>, <code>first_text_message</code> or <code>first_html_message</code> (in this order).</td>
+</tr>
+<tr><td>first_text_message</td><td></td><td>Content of the first <code>text/plain</code> message.</td></tr>
+<tr><td>first_text_message_without_quotes</td><td></td><td>Similar to <code>first_text_message</code> but quotes are stripped out.</td></tr>
+<tr><td>first_html_message</td><td></td><td>First <code>test/html</code> message from the body. Populated <b>only iff</b> <code>first_test_message</code> is not available.</td></tr>
+<tr><td>text_messages</td><td></td><td>If the body contains other <code>text/plain</code> messages than the <code>first_text_message</code> then they are stored in array here.</td></tr>
+<tr><td>text_messages_cnt</td><td></td><td>Number of items in <code>text_messages</code>.</td></tr>
+<tr><td>html_messages</td><td></td><td>If the body contains other <code>text/html</code> messages than the <code>first_text_message</code> then they are stored in array here.</td></tr>
+<tr><td>html_messages_cnt</td><td></td><td>Number of items in <code>html_messages</code>.</td></tr>
+<tr><td>message_attachments</td><td></td><td>Array of parsed attachments.</td></tr>
+<tr><td>message_attachments_cnt</td><td></td><td>Number of parsed attachments.</td></tr>
 </tbody>
 </table>
+
+#### Message attachment fields
 
 <table border="1">
 <thead>
@@ -63,21 +74,26 @@ Description may be found in general documentation for "DCP Content object".
 <tbody>
 <tr><td>content_type</td><td></td><td></td></tr>
 <tr><td>filename</td><td></td><td></td></tr>
-<tr><td>content</td><td></td><td></td></tr>
+<tr><td>content</td><td></td><td>Extracted plain text content from the attachment.</td></tr>
 </tbody>
 </table>
 
 ### Example of mailing list message data structure:
 
     {
-        "sys_id" : "",
-        "sys_type" : "",
-        "sys_content_type" : "",
-        "sys_content_id" : "",
+        "sys_id" : "Provided by Searchisko",
+        "sys_type" : "Provided by Searchisko",
+        "sys_content_type" : "Provided by Searchisko",
+        "sys_content_id" : "Provided by Searchisko",
+        "sys_project" : "Extracted from `sys_projects` by Searchisko preprocessor.",
+        "sys_project_name" : "Extracted from `sys_projects` by Searchisko preprocessor.",
         "sys_url_view" : "http://lists.jboss.org/pipermail/cdi-dev/2012-October/003128.html",
+        "sys_content_content-type" : "`text/plain` or `text/html`",
         "sys_title" : "${subject}",
         "sys_content" : "?",
         "sys_created" : "${date}",
+        "sys_activity_dates" : "[${date}]",
+        "sys_last_activity_date" : "${date}",
         "sys_description" : "${message_snippet}",
 
         "author" : "Pete Muir <pmuir@redhat.com>",
