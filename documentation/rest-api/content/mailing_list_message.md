@@ -20,10 +20,12 @@ and we parse and index the data from internal Mailman archives (see [mbox_integr
 <tr><td>sys_project</td><td></td><td>Derived from ${project} field.</td></tr>
 <tr><td>sys_project_name</td><td></td><td>Derived from ${project} field.</td></tr>
 <tr><td>sys_url_view</td><td></td><td>URL where this message can be accessed. Needs to be provided. Typically this is URL to mailman archive entry.</td></tr>
-<tr><td>sys_created</td><td></td><td>${date}</td></tr>
 <tr><td>sys_title</td><td></td><td>${subject}</td></tr>
 <tr><td>sys_description</td><td></td><td>${message_snippet}</td></tr>
-<tr><td>sys_content</td><td></td><td>${...}</td></tr>
+<tr><td>sys_content</td><td></td><td>Derived from <code>*text/html_message(s)</code>.</td></tr>
+<tr><td>sys_content_content-type</td><td></td><td>Relevant value for <code>sys_content</code>.</td></tr>
+<tr><td>sys_contributors</td><td></td><td>Derived from ${author} field.</td></tr>
+<tr><td>sys_created</td><td></td><td>${date}</td></tr>
 <tr><td>sys_activity_dates</td><td></td><td>Derived from ${date} field.</td></tr>
 <tr><td>sys_last_activity_date</td><td></td><td>Derived from ${date} field.</td></tr>
 </tbody>

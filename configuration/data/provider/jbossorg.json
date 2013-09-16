@@ -262,6 +262,73 @@
         "name": "data_jbossorg_sbs_article",
         "type": "jbossorg_sbs_article"
       }
+    },
+    "jbossorg_mailing_list": {
+        "description" : "Mails from project mailing list, public archive under https://lists.jboss.org/mailman/listinfo/",
+        "sys_type" : "mailing_list_message",
+        "input_preprocessors": [
+            {
+                "name" : "Map important fields",
+                "class" : "org.jboss.elasticsearch.tools.content.AddMultipleValuesPreprocessor",
+                "settings" : {
+                    "sys_content_id" : "{message_id}",
+                    "sys_created" : "{date}",
+                    "sys_title" : "{subject}",
+                    "sys_description" : "{message_snippet}"
+                }
+            },{
+                "name"     : "Projects mapper",
+                "class"    : "org.jboss.elasticsearch.tools.content.ESLookupValuePreprocessor",
+                "settings" : {
+                    "index_name"       : "sys_projects",
+                    "index_type"       : "project",
+                    "source_field"     : "project",
+                    "idx_search_field" : "type_specific_code.jbossorg_mailing_list",
+                    "result_mapping"   : [
+                        {
+                            "idx_result_field" : "code",
+                            "target_field"     : "sys_project"
+                        },{
+                            "idx_result_field" : "name",
+                            "target_field"     : "sys_project_name"
+                        }
+                    ]
+                }
+            },{
+                "name"     : "Contributors mapper",
+                "class"    : "org.jboss.elasticsearch.tools.content.ESLookupValuePreprocessor",
+                "settings" : {
+                    "index_name"       : "sys_contributors",
+                    "index_type"       : "contributor",
+                    "source_field"     : "email",
+                    "idx_search_field" : "email",
+                    "result_mapping"   : [{
+                        "idx_result_field" : "code",
+                        "target_field"     : "sys_contributor",
+                        "value_default"    : "{author}"
+                    }],
+                    "source_bases"     : ["author"]
+                }
+            },{
+                "name"     : "Date collector",
+                "class"    : "org.jboss.elasticsearch.tools.content.ValuesCollectingPreprocessor",
+                "settings" : {
+                    "target_field"  : "sys_activity_dates",
+                    "source_fields" : ["sys_created"]
+                }
+            },{
+                "name"     : "Max activity date extractor",
+                "class"    : "org.jboss.elasticsearch.tools.content.MaxTimestampPreprocessor",
+                "settings" : {
+                    "source_field" : "sys_activity_dates",
+                    "target_field" : "sys_last_activity_date"
+                }
+            }
+        ],
+        "index" : {
+            "name" : "data_jbossorg_mailing_list",
+            "type" : "jbossorg_mailing_list_message"
+        }
     }
   }
 }

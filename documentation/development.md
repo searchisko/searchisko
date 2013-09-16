@@ -50,12 +50,12 @@ You can use [Eclipse with JBoss Tools](http://www.jboss.org/tools) or
 The DCP REST API is then available at [`http://localhost:8080/v1/rest/`](http://localhost:8080/v1/rest/)  
 The ElasticSearch search node REST API is available at [`http://localhost:15000/`](http://localhost:15000/)  
 
-**Note**: When you use the standard configuration of the embedded h2 database from JBoss EAP 6 then data is lost 
+**Note #1**: When you use the standard configuration of the embedded h2 database from JBoss EAP 6 then data is lost
 when EAP is shutdown/restarted. To persist the data simply open the `standalone.xml` EAP configuration file, locate 
 `<connection-url>jdbc:h2:mem:test;DB_CLOSE_DELAY=-1</connection-url>` and change it to `<connection-url>jdbc:h2:test</connection-url>`.
 Data is then persisted in the `$EAP6HOME/bin/test.h2.db` file so you can delete it manually if necessary.
 
-**Note#2**: You might get the following exception when `ROOT.war` is deployed:
+**Note #2**: You might get the following exception when `ROOT.war` is deployed:
 
 
 	JBAS018038: Root contexts can not be deployed when the virtual host configuration has the welcome root enabled, disable it and redeploy
@@ -68,6 +68,11 @@ and change it to:
 
 	<virtual-server name="default-host" enable-welcome-root="false">
 
+**Note #3**: You might need to bind EAP to externally available address to make it visible from other machines.
+One way how to do this is via CL parameter when starting the server. For example if we need to bind the server to
+IP `10.34.2.178`:
+
+    ./bin/standalone.sh -b 10.34.2.178
 
 #### OpenShift
 

@@ -1,0 +1,35 @@
+{
+    "jbossorg_mailing_list_message" : {
+        "_all" : {"enabled" : false},
+        "properties" : {
+            "project"      : { "type" : "string", "index" : "no" },
+            "mail_list"    : { "type" : "string", "index" : "no" },
+            "message_id"   : { "type" : "string", "store" : "yes", "index" : "not_analyzed" },
+            "message_id_original" : { "type" : "string", "store" : "yes", "index" : "not_analyzed" },
+            "in_reply_to"  : { "type" : "string", "store" : "yes", "index" : "not_analyzed" },
+            "references"   : { "type" : "string", "store" : "yes", "index" : "not_analyzed" },
+            "subject_original" : { "type" : "string", "store" : "yes", "term_vector" : "with_positions_offsets" },
+            "subject" : { "type" : "string", "store" : "yes", "term_vector" : "with_positions_offsets" },
+            "message_snippet" : { "type" : "string", "store" : "yes", "index" : "no" },
+            "first_text_message_without_quotes" : { "type" : "string", "store" : "yes", "term_vector" : "with_positions_offsets" },
+            "first_text_message" : { "type" : "string", "store" : "yes", "term_vector" : "with_positions_offsets" },
+            "first_html_message" : { "type" : "string", "store" : "yes", "term_vector" : "with_positions_offsets" },
+            "text_messages"  : { "type" : "string", "term_vector" : "with_positions_offsets" },
+            "html_messages"  : { "type" : "string", "term_vector" : "with_positions_offsets" },
+            "text_messages_cnt" : { "type" : "integer" },
+            "html_messages_cnt" : { "type" : "integer" },
+            "message_attachments" : {
+                "type" : "object",
+                "properties" : {
+                    "content_type" : { "type" : "string" },
+                    "filename" : { "type" : "string" },
+                    "content" : { "type" : "string", "term_vector" : "with_positions_offsets" }
+                }
+            },
+            "message_attachments_cnt" : { "type" : "integer" },
+            "date" : { "type" : "date", "store" : "yes" },
+            "author" : { "type" : "string" },
+            "to" : { "type" : "string" }
+        }
+    }
+}
