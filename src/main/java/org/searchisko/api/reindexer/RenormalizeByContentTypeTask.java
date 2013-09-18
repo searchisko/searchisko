@@ -77,7 +77,8 @@ public class RenormalizeByContentTypeTask extends ReindexingTaskBase {
 
 	@Override
 	protected void performPostReindexingProcessing(Client client) {
-		client.admin().indices().flush(new FlushRequest(indexName).refresh(true)).actionGet();
+        client.admin().indices().prepareFlush(indexName).execute().actionGet();
+        client.admin().indices().prepareRefresh(indexName).execute().actionGet();
 	}
 
 }

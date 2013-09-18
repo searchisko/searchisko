@@ -69,7 +69,7 @@ public class RenormalizeByEsValueTaskTest extends ESRealClientTestBase {
 				Mockito.reset(tested.providerService);
 				configProviderServiceMock(tested, preprocessorsDef);
 				tested.performTask();
-				indexFlush(indexName);
+				indexFlushAndRefresh(indexName);
 				Mockito.verify(tested.providerService, Mockito.times(0)).runPreprocessors(Mockito.eq(sysContentType),
 						Mockito.eq(preprocessorsDef), Mockito.anyMap());
 				Mockito.verify(contextMock).writeTaskLog(Mockito.anyString(), Mockito.eq("Processed 0 documents."));
@@ -95,7 +95,7 @@ public class RenormalizeByEsValueTaskTest extends ESRealClientTestBase {
 						"{\"id\" : \"tt7\", \"sys_contributors\" : \"project 1\", \"sys_content_type\" : \"tt2\"}");
 				indexInsertDocument(indexName, typeName, "tt-8",
 						"{\"id\" : \"tt8\", \"sys_contributors\" : \"project 3\", \"sys_content_type\" : \"tt\"}");
-				indexFlush(indexName);
+				indexFlushAndRefresh(indexName);
 
 				Mockito.reset(tested.providerService, contextMock);
 				configProviderServiceMock(tested, preprocessorsDef);
@@ -113,7 +113,7 @@ public class RenormalizeByEsValueTaskTest extends ESRealClientTestBase {
 
 				tested.performTask();
 
-				indexFlush(indexName);
+				indexFlushAndRefresh(indexName);
 				// check preprocessors was called for all documents in index
 				Assert.assertEquals("yes", indexGetDocument(indexName, typeName, "tt-1").get("called"));
 				Assert.assertNotNull(indexGetDocument(indexName, typeName, "tt-2").get("called"));
@@ -150,7 +150,7 @@ public class RenormalizeByEsValueTaskTest extends ESRealClientTestBase {
 
 				tested.performTask();
 
-				indexFlush(indexName);
+				indexFlushAndRefresh(indexName);
 				// check preprocessors was called for all documents in index
 				Assert.assertEquals("yes", indexGetDocument(indexName, typeName, "tt-1").get("called2"));
 				Assert.assertNotNull(indexGetDocument(indexName, typeName, "tt-2").get("called2"));

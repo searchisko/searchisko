@@ -130,7 +130,8 @@ public class RenormalizeByEsLookedUpValuesTask extends Task {
 										}
 										scrollResp = executeESScrollSearchNextRequest(client, scrollResp);
 									}
-									client.admin().indices().flush(new FlushRequest(indexName).refresh(true)).actionGet();
+                                    client.admin().indices().prepareFlush(indexName).execute().actionGet();
+                                    client.admin().indices().prepareRefresh(indexName).execute().actionGet();
 								}
 								writeTaskLog("Processed " + i + " documents.");
 							}

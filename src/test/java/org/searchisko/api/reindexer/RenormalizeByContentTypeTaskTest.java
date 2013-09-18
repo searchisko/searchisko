@@ -67,7 +67,7 @@ public class RenormalizeByContentTypeTaskTest extends ESRealClientTestBase {
 				Mockito.reset(tested.providerService);
 				configProviderServiceMock(tested, preprocessorsDef);
 				tested.performTask();
-				indexFlush(indexName);
+				indexFlushAndRefresh(indexName);
 				Mockito.verify(tested.providerService, Mockito.times(1)).findContentType(sysContentType);
 				Mockito.verify(tested.providerService, Mockito.times(0)).runPreprocessors(Mockito.eq(sysContentType),
 						Mockito.eq(preprocessorsDef), Mockito.anyMap());
@@ -81,7 +81,7 @@ public class RenormalizeByContentTypeTaskTest extends ESRealClientTestBase {
 				indexInsertDocument(indexName, typeName, "tt-4", "{\"id\" : \"tt4\"}");
 				indexInsertDocument(indexName, typeName, "tt-5", "{\"id\" : \"tt5\"}");
 				indexInsertDocument(indexName, typeName, "tt-6", "{\"id\" : \"tt6\"}");
-				indexFlush(indexName);
+				indexFlushAndRefresh(indexName);
 
 				Mockito.reset(tested.providerService);
 				configProviderServiceMock(tested, preprocessorsDef);
@@ -103,7 +103,7 @@ public class RenormalizeByContentTypeTaskTest extends ESRealClientTestBase {
 
 				tested.performTask();
 
-				indexFlush(indexName);
+				indexFlushAndRefresh(indexName);
 				// check preprocessors was called for all documents in index
 				Assert.assertTrue("May be empty but is " + s, s.isEmpty());
 				Assert.assertEquals("yes", indexGetDocument(indexName, typeName, "tt-1").get("called"));

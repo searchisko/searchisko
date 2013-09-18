@@ -16,7 +16,7 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 
-import org.elasticsearch.common.UUID;
+import org.elasticsearch.common.Strings;
 import org.searchisko.api.tasker.TaskFactory;
 import org.searchisko.api.tasker.TaskManager;
 import org.searchisko.api.tasker.TaskPersister;
@@ -49,7 +49,7 @@ public class TaskService {
 			log.log(Level.INFO, "Starting TaskManager");
 			String nodeId = System.getProperty("jboss.node.name");
 			if (nodeId == null || nodeId.trim().isEmpty())
-				nodeId = UUID.randomBase64UUID();
+				nodeId = Strings.randomBase64UUID();
 			taskManager = new TaskManager(nodeId, taskFactory, taskPersister);
 			taskManager.startTasksExecution();
 		} else {

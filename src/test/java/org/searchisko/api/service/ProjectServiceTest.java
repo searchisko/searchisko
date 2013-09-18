@@ -313,7 +313,7 @@ public class ProjectServiceTest extends ESRealClientTestBase {
 					"{\"name\":\"test2\",\"idx\":\"2\"}");
 			indexInsertDocument(ProjectService.SEARCH_INDEX_NAME, ProjectService.SEARCH_INDEX_TYPE, "30",
 					"{\"name\":\"test3\",\"idx\":\"3\"}");
-			indexFlush(ProjectService.SEARCH_INDEX_NAME);
+			indexFlushAndRefresh(ProjectService.SEARCH_INDEX_NAME);
 			// case - index exists and record deleted
 			{
 				Mockito.reset(tested.entityService);

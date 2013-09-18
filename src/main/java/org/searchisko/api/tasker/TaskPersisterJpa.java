@@ -25,7 +25,7 @@ import javax.persistence.criteria.Expression;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 
-import org.elasticsearch.common.UUID;
+import org.elasticsearch.common.Strings;
 
 /**
  * JPA based implementation of {@link TaskPersister}. Uses shared RDBMS to persist tasks and synchronize execution in
@@ -52,7 +52,7 @@ public class TaskPersisterJpa implements TaskPersister {
 
 	@Override
 	public String createTask(String taskType, Map<String, Object> taskConfig) {
-		String id = UUID.randomBase64UUID();
+		String id = Strings.randomBase64UUID();
 		TaskStatusInfo t = new TaskStatusInfo();
 		t.setId(id);
 		t.setTaskType(taskType);

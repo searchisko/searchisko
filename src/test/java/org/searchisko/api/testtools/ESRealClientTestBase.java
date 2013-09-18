@@ -13,7 +13,6 @@ import org.apache.commons.io.FileUtils;
 import org.elasticsearch.action.admin.cluster.health.ClusterHealthRequest;
 import org.elasticsearch.action.admin.indices.create.CreateIndexRequest;
 import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest;
-import org.elasticsearch.action.admin.indices.flush.FlushRequest;
 import org.elasticsearch.action.admin.indices.mapping.put.PutMappingRequest;
 import org.elasticsearch.action.get.GetRequest;
 import org.elasticsearch.action.get.GetResponse;
@@ -27,7 +26,7 @@ import org.mockito.Mockito;
 
 /**
  * Base class for unit tests which need to run some test against ElasticSearch cluster. You can use next pattern in your
- * unit test method to obtain testing client connected to inmemory ES cluster without any data.
+ * unit test method to obtain testing client connected to in-memory ES cluster without any data.
  * 
  * <pre>
  * try{
@@ -64,7 +63,7 @@ public abstract class ESRealClientTestBase {
 	private File tempFolder;
 
 	/**
-	 * Prepare SearchClientService against inmemory EC cluster for unit test. Do not forgot to call
+	 * Prepare SearchClientService against in-memory EC cluster for unit test. Do not forgot to call
 	 * {@link #finalizeESClientForUnitTest()} at the end of test!
 	 * 
 	 * @return
@@ -78,7 +77,7 @@ public abstract class ESRealClientTestBase {
 	}
 
 	/**
-	 * Prepare ES inmemory client for unit test. Do not forgot to call {@link #finalizeESClientForUnitTest()} at the end
+	 * Prepare ES in-memory client for unit test. Do not forgot to call {@link #finalizeESClientForUnitTest()} at the end
 	 * of test!
 	 * 
 	 * @return
@@ -105,8 +104,13 @@ public abstract class ESRealClientTestBase {
 			// Make sure that the index and metadata are not stored on the disk
 			// path.data folder is created but we make sure it is removed after test finishes
 			Settings settings = org.elasticsearch.common.settings.ImmutableSettings.settingsBuilder()
-					.put("index.store.type", "memory").put("gateway.type", "none").put("http.enabled", "false")
-					.put("path.data", tempFolderName).put("node.river", "_none_").build();
+					.put("index.store.type", "memory")
+                    .put("gateway.type", "none")
+                    .put("http.enabled", "false")
+					.put("path.data", tempFolderName)
+                    .put("node.river", "_none_")
+                    .put("index.number_of_shards", 1)
+                    .build();
 
 			node = NodeBuilder.nodeBuilder().settings(settings).local(true).node();
 
@@ -143,7 +147,7 @@ public abstract class ESRealClientTestBase {
 	}
 
 	/**
-	 * Delete index from inmemory client.
+	 * Delete index from in-memory client.
 	 * 
 	 * @param indexName
 	 */
@@ -156,7 +160,7 @@ public abstract class ESRealClientTestBase {
 	}
 
 	/**
-	 * Create index in inmemory client.
+	 * Create index in in-memory client.
 	 * 
 	 * @param indexName
 	 */
@@ -166,7 +170,7 @@ public abstract class ESRealClientTestBase {
 	}
 
 	/**
-	 * Create mapping inside index in inmemory client.
+	 * Create mapping inside index in in-memory client.
 	 * 
 	 * @param indexName to add mapping into
 	 * @param indexType to add mapping for
@@ -178,7 +182,7 @@ public abstract class ESRealClientTestBase {
 	}
 
 	/**
-	 * Insert document into inmemory client.
+	 * Insert document into in-memory client.
 	 * 
 	 * @param indexName
 	 * @param documentType
@@ -190,7 +194,7 @@ public abstract class ESRealClientTestBase {
 	}
 
 	/**
-	 * Get document from inmemory client.
+	 * Get document from in-memory client.
 	 * 
 	 * @param indexName
 	 * @param documentType
@@ -213,7 +217,8 @@ public abstract class ESRealClientTestBase {
 	 * 
 	 * @param indexName
 	 */
-	public void indexFlush(String indexName) {
-		client.admin().indices().flush(new FlushRequest(indexName).refresh(true)).actionGet();
+	public void indexFlushAndRefresh(String indexName) {
+		client.admin().indices().prepareFlush(indexName).execute().actionGet();
+		client.admin().indices().prepareRefresh(indexName).execute().actionGet();
 	}
 }

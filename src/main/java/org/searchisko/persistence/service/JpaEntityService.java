@@ -20,7 +20,7 @@ import javax.persistence.criteria.Root;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.StreamingOutput;
 
-import org.elasticsearch.common.UUID;
+import org.elasticsearch.common.Strings;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentFactory;
 import org.searchisko.api.rest.ESDataOnlyResponse;
@@ -126,7 +126,7 @@ public class JpaEntityService<T> implements EntityService {
 
 	@Override
 	public String create(Map<String, Object> entity) {
-		String id = UUID.randomBase64UUID();
+		String id = Strings.randomBase64UUID();
 		create(id, entity);
 		return id;
 	}

@@ -94,7 +94,8 @@ public abstract class RenormalizeTaskBase extends ReindexingTaskBase {
 	@Override
 	protected void performPostReindexingProcessing(Client client) {
 		if (indexNames.size() > 0)
-			client.admin().indices().flush(new FlushRequest(getIndexNamesAsArray()).refresh(true)).actionGet();
+        client.admin().indices().prepareFlush(getIndexNamesAsArray()).execute().actionGet();
+        client.admin().indices().prepareRefresh(getIndexNamesAsArray()).execute().actionGet();
 	}
 
 	/**

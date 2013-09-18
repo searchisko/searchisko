@@ -102,7 +102,7 @@ public class ContentRestServiceTest extends ESRealClientTestBase {
 						Response.Status.OK);
 				Assert.assertEquals("insert", ((Map<String, String>) r.getEntity()).get("status"));
 				Mockito.verify(tested.providerService).runPreprocessors(sys_content_type, PREPROCESSORS, content);
-				indexFlush(INDEX_NAME);
+				indexFlushAndRefresh(INDEX_NAME);
 				Map<String, Object> doc = indexGetDocument(INDEX_NAME, INDEX_TYPE,
 						tested.providerService.generateSysId(sys_content_type, "1"));
 				Assert.assertNotNull(doc);
@@ -133,7 +133,7 @@ public class ContentRestServiceTest extends ESRealClientTestBase {
 						Response.Status.OK);
 				Assert.assertEquals("insert", ((Map<String, String>) r.getEntity()).get("status"));
 				Mockito.verify(tested.providerService).runPreprocessors(sys_content_type, PREPROCESSORS, content);
-				indexFlush(INDEX_NAME);
+				indexFlushAndRefresh(INDEX_NAME);
 				Map<String, Object> doc = indexGetDocument(INDEX_NAME, INDEX_TYPE,
 						tested.providerService.generateSysId(sys_content_type, "2"));
 				Assert.assertNotNull(doc);
@@ -161,7 +161,7 @@ public class ContentRestServiceTest extends ESRealClientTestBase {
 						Response.Status.OK);
 				Assert.assertEquals("update", ((Map<String, String>) r.getEntity()).get("status"));
 				Mockito.verify(tested.providerService).runPreprocessors(sys_content_type, PREPROCESSORS, content);
-				indexFlush(INDEX_NAME);
+				indexFlushAndRefresh(INDEX_NAME);
 				Map<String, Object> doc = indexGetDocument(INDEX_NAME, INDEX_TYPE,
 						tested.providerService.generateSysId(sys_content_type, "1"));
 				Assert.assertNotNull(doc);
@@ -202,7 +202,7 @@ public class ContentRestServiceTest extends ESRealClientTestBase {
 				Response r = TestUtils.assertResponseStatus(tested.pushContent(sys_content_type, "1", content),
 						Response.Status.OK);
 				Assert.assertEquals("insert", ((Map<String, String>) r.getEntity()).get("status"));
-				indexFlush(INDEX_NAME);
+				indexFlushAndRefresh(INDEX_NAME);
 				Map<String, Object> doc = indexGetDocument(INDEX_NAME, INDEX_TYPE,
 						tested.providerService.generateSysId(sys_content_type, "1"));
 				Assert.assertNotNull(doc);
@@ -235,7 +235,7 @@ public class ContentRestServiceTest extends ESRealClientTestBase {
 				Response r = TestUtils.assertResponseStatus(tested.pushContent(sys_content_type, "2", content),
 						Response.Status.OK);
 				Assert.assertEquals("insert", ((Map<String, String>) r.getEntity()).get("status"));
-				indexFlush(INDEX_NAME);
+				indexFlushAndRefresh(INDEX_NAME);
 				Map<String, Object> doc = indexGetDocument(INDEX_NAME, INDEX_TYPE,
 						tested.providerService.generateSysId(sys_content_type, "2"));
 				Assert.assertNotNull(doc);
@@ -264,7 +264,7 @@ public class ContentRestServiceTest extends ESRealClientTestBase {
 				Response r = TestUtils.assertResponseStatus(tested.pushContent(sys_content_type, "1", content),
 						Response.Status.OK);
 				Assert.assertEquals("update", ((Map<String, String>) r.getEntity()).get("status"));
-				indexFlush(INDEX_NAME);
+				indexFlushAndRefresh(INDEX_NAME);
 				Map<String, Object> doc = indexGetDocument(INDEX_NAME, INDEX_TYPE,
 						tested.providerService.generateSysId(sys_content_type, "1"));
 				Assert.assertNotNull(doc);
@@ -334,7 +334,7 @@ public class ContentRestServiceTest extends ESRealClientTestBase {
 				indexDelete(INDEX_NAME);
 				indexCreate(INDEX_NAME);
 				indexInsertDocument(INDEX_NAME, INDEX_TYPE, "known-2", "{\"test2\":\"test2\"}");
-				indexFlush(INDEX_NAME);
+				indexFlushAndRefresh(INDEX_NAME);
 				TestUtils.assertResponseStatus(tested.deleteContent("known", "1", null), Response.Status.NOT_FOUND);
 				TestUtils.assertResponseStatus(tested.deleteContent("persist", "1", null), Response.Status.NOT_FOUND);
 				Assert.assertNotNull(indexGetDocument(INDEX_NAME, INDEX_TYPE, "known-2"));
@@ -348,7 +348,7 @@ public class ContentRestServiceTest extends ESRealClientTestBase {
 				Mockito.reset(tested.contentPersistenceService);
 				indexInsertDocument(INDEX_NAME, INDEX_TYPE, "known-1", "{\"test1\":\"test1\"}");
 				indexInsertDocument(INDEX_NAME, INDEX_TYPE, "persist-1", "{\"test1\":\"testper1\"}");
-				indexFlush(INDEX_NAME);
+				indexFlushAndRefresh(INDEX_NAME);
 				TestUtils.assertResponseStatus(tested.deleteContent("known", "1", null), Response.Status.OK);
 				Assert.assertNull(indexGetDocument(INDEX_NAME, INDEX_TYPE, "known-1"));
 				TestUtils.assertResponseStatus(tested.deleteContent("persist", "1", null), Response.Status.OK);
@@ -420,7 +420,7 @@ public class ContentRestServiceTest extends ESRealClientTestBase {
 					"{\"name\":\"test3\",\"sys_updated\":0,\"sys_content_id\":\"3\"}");
 			indexInsertDocument(INDEX_NAME, INDEX_TYPE, "known-4",
 					"{\"name\":\"test4\",\"sys_updated\":0,\"sys_content_id\":\"4\"}");
-			indexFlush(INDEX_NAME);
+			indexFlushAndRefresh(INDEX_NAME);
 			TestUtils
 					.assetStreamingOutputContent(
 							"{\"total\":4,\"hits\":[" +
@@ -443,7 +443,7 @@ public class ContentRestServiceTest extends ESRealClientTestBase {
 			// case - sort param used
 			indexInsertDocument(INDEX_NAME, INDEX_TYPE, "known-5",
 					"{\"name\":\"test5\", \"sys_updated\" : 1,\"sys_content_id\":\"5\"}");
-			indexFlush(INDEX_NAME);
+			indexFlushAndRefresh(INDEX_NAME);
 			// on ASC our record with id 5 is last, so we set from=4
 			TestUtils
 					.assetStreamingOutputContent(

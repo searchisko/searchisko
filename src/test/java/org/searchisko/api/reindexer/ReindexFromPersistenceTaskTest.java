@@ -52,7 +52,7 @@ public class ReindexFromPersistenceTaskTest extends ESRealClientTestBase {
 			{
 				tested.contentPersistenceService = getContentPersistenceServiceMock(false);
 				tested.performTask();
-				indexFlush(indexName);
+				indexFlushAndRefresh(indexName);
 				Assert.assertNotNull(indexGetDocument(indexName, typeName, "tt-1"));
 				Assert.assertNotNull(indexGetDocument(indexName, typeName, "tt-2"));
 				Assert.assertNotNull(indexGetDocument(indexName, typeName, "tt-3"));
@@ -72,7 +72,7 @@ public class ReindexFromPersistenceTaskTest extends ESRealClientTestBase {
 				configProviderServiceMock(tested, preprocessorsDef);
 				tested.contentPersistenceService = getContentPersistenceServiceMock(true);
 				tested.performTask();
-				indexFlush(indexName);
+				indexFlushAndRefresh(indexName);
 				Assert.assertNotNull(indexGetDocument(indexName, typeName, "tt-1"));
 				Assert.assertNotNull(indexGetDocument(indexName, typeName, "tt-2"));
 				Assert.assertNotNull(indexGetDocument(indexName, typeName, "tt-3"));

@@ -313,7 +313,7 @@ public class ContributorServiceTest extends ESRealClientTestBase {
 					"{\"name\":\"test2\",\"idx\":\"2\"}");
 			indexInsertDocument(ContributorService.SEARCH_INDEX_NAME, ContributorService.SEARCH_INDEX_TYPE, "30",
 					"{\"name\":\"test3\",\"idx\":\"3\"}");
-			indexFlush(ContributorService.SEARCH_INDEX_NAME);
+			indexFlushAndRefresh(ContributorService.SEARCH_INDEX_NAME);
 			// case - index exists and record deleted
 			{
 				Mockito.reset(tested.entityService);
@@ -368,7 +368,7 @@ public class ContributorServiceTest extends ESRealClientTestBase {
 					"{\"name\":\"test2\",\"idx\":\"2\",\"email\":\"test@test.org\"}");
 			indexInsertDocument(ContributorService.SEARCH_INDEX_NAME, ContributorService.SEARCH_INDEX_TYPE, "30",
 					"{\"name\":\"test3\",\"idx\":\"3\",\"email\":\"he@test.org\"}");
-			indexFlush(ContributorService.SEARCH_INDEX_NAME);
+			indexFlushAndRefresh(ContributorService.SEARCH_INDEX_NAME);
 			// case - search existing
 			{
 				SearchResponse sr = tested.search("test@test.org");
