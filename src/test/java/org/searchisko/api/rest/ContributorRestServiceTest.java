@@ -20,7 +20,7 @@ import org.mockito.Mockito;
 
 /**
  * Unit test for {@link ContributorRestService}.
- * 
+ *
  * @author Vlastimil Elias (velias at redhat dot com)
  */
 public class ContributorRestServiceTest {
@@ -74,12 +74,12 @@ public class ContributorRestServiceTest {
 
 	@Test
 	public void getAll_permissions() {
-		TestUtils.assertPermissionSuperProvider(ContributorRestService.class, "getAll", Integer.class, Integer.class);
+		TestUtils.assertPermissionGuest(ContributorRestService.class, "getAll", Integer.class, Integer.class);
 	}
 
 	@Test
 	public void get_permissions() {
-		TestUtils.assertPermissionSuperProvider(ContributorRestService.class, "get", String.class);
+		TestUtils.assertPermissionGuest(ContributorRestService.class, "get", String.class);
 	}
 
 	@Test
