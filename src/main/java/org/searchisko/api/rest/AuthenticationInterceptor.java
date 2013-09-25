@@ -29,10 +29,10 @@ import org.jboss.resteasy.util.Base64;
 import org.searchisko.api.service.ProviderService;
 
 /**
- * Interceptor handle authentication via standard HTTP basic authentication header or via url parameters called
- * <code>provider</code> and <code>pwd</code> and store authenticated {@link Principal} into {@link SecurityContext} to
- * be used later by authorization interceptor {@link SecurityPreProcessInterceptor} if necessary. Authentication check
- * is done using {@link ProviderService#authenticate(String, String)}.
+ * Interceptor handle authentication via standard HTTP basic authentication header and store
+ * authenticated {@link Principal} into {@link SecurityContext} to be used later by authorization
+ * interceptor {@link SecurityPreProcessInterceptor} if necessary. Authentication check is done
+ * using {@link ProviderService#authenticate(String, String)}.
  *
  * @author Libor Krzyzanek
  * @author Vlastimil Elias (velias at redhat dot com)

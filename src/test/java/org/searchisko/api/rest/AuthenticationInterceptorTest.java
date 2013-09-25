@@ -30,9 +30,6 @@ import org.searchisko.api.service.ProviderService;
  */
 public class AuthenticationInterceptorTest {
 
-	String uname = "uname";
-	String pwd = "pwd";
-
 	private AuthenticationInterceptor getTested() {
 		AuthenticationInterceptor tested = new AuthenticationInterceptor();
 		tested.providerService = Mockito.mock(ProviderService.class);

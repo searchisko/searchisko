@@ -54,6 +54,9 @@ public class ContributorRestService extends RestEntityServiceBase {
 		}
 	}
 
+    /*
+    // Commented out as there should be better implementation of it
+    // as a part of https://github.com/searchisko/searchisko/issues/5
     @GET
     @Path("/")
     @Override
@@ -61,7 +64,7 @@ public class ContributorRestService extends RestEntityServiceBase {
     @CORSSupport
     @Produces(MediaType.APPLICATION_JSON)
     public Object getAll(@QueryParam("from") Integer from, @QueryParam("size") Integer size) {
-        return super.getAll(from, size);    //To change body of overridden methods use File | Settings | File Templates.
+        return super.getAll(from, size);
     }
 
     @GET
@@ -71,6 +74,7 @@ public class ContributorRestService extends RestEntityServiceBase {
     @CORSSupport
     @Produces(MediaType.APPLICATION_JSON)
     public Object get(@PathParam("id") String id) {
-        return super.get(id);    //To change body of overridden methods use File | Settings | File Templates.
+        return super.get(id);
     }
+    */
 }

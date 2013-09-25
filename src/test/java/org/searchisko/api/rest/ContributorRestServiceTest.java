@@ -74,12 +74,16 @@ public class ContributorRestServiceTest {
 
 	@Test
 	public void getAll_permissions() {
-		TestUtils.assertPermissionGuest(ContributorRestService.class, "getAll", Integer.class, Integer.class);
+		TestUtils.assertPermissionSuperProvider(ContributorRestService.class, "getAll", Integer.class, Integer.class);
+        // Will be part of https://github.com/searchisko/searchisko/issues/5
+		// TestUtils.assertPermissionGuest(ContributorRestService.class, "getAll", Integer.class, Integer.class);
 	}
 
 	@Test
 	public void get_permissions() {
-		TestUtils.assertPermissionGuest(ContributorRestService.class, "get", String.class);
+		TestUtils.assertPermissionSuperProvider(ContributorRestService.class, "get", String.class);
+        // Will be part of https://github.com/searchisko/searchisko/issues/5
+		// TestUtils.assertPermissionGuest(ContributorRestService.class, "get", String.class);
 	}
 
 	@Test
