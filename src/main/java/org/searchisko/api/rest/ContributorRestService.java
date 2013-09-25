@@ -5,26 +5,27 @@
  */
 package org.searchisko.api.rest;
 
+import javax.annotation.PostConstruct;
+import javax.enterprise.context.RequestScoped;
+import javax.inject.Inject;
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.MediaType;
+
 import org.elasticsearch.action.search.SearchResponse;
 import org.searchisko.api.annotations.header.CORSSupport;
 import org.searchisko.api.annotations.security.GuestAllowed;
 import org.searchisko.api.annotations.security.ProviderAllowed;
 import org.searchisko.api.service.ContributorService;
 
-import javax.annotation.PostConstruct;
-import javax.enterprise.context.RequestScoped;
-import javax.inject.Inject;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.MediaType;
-
 /**
  * Contributor REST API
- * 
+ *
  * @author Libor Krzyzanek
- * 
+ *
  */
 @RequestScoped
 @Path("/contributor")
@@ -53,4 +54,23 @@ public class ContributorRestService extends RestEntityServiceBase {
 		}
 	}
 
+    @GET
+    @Path("/")
+    @Override
+    @GuestAllowed
+    @CORSSupport
+    @Produces(MediaType.APPLICATION_JSON)
+    public Object getAll(@QueryParam("from") Integer from, @QueryParam("size") Integer size) {
+        return super.getAll(from, size);    //To change body of overridden methods use File | Settings | File Templates.
+    }
+
+    @GET
+    @Path("/{id}")
+    @Override
+    @GuestAllowed
+    @CORSSupport
+    @Produces(MediaType.APPLICATION_JSON)
+    public Object get(@PathParam("id") String id) {
+        return super.get(id);    //To change body of overridden methods use File | Settings | File Templates.
+    }
 }

@@ -29,11 +29,11 @@ import org.elasticsearch.common.xcontent.XContentFactory;
 
 /**
  * Base for REST endpoint services.
- * 
+ *
  * @author Libor Krzyzanek
  * @author Vlastimil Elias (velias at redhat dot com)
  * @author Lukas Vlcek
- * 
+ *
  */
 public class RestServiceBase {
 
@@ -45,7 +45,7 @@ public class RestServiceBase {
 
 	/**
 	 * Get provider name based on security user principal
-	 * 
+	 *
 	 * @return
 	 */
 	public String getProvider() {
@@ -54,7 +54,7 @@ public class RestServiceBase {
 
 	/**
 	 * Create JAX-RS response based on elastic get response.
-	 * 
+	 *
 	 * @param response to process
 	 * @return source from elastic search response
 	 * @throws IOException
@@ -65,7 +65,7 @@ public class RestServiceBase {
 
 	/**
 	 * Create response structure with id field only.
-	 * 
+	 *
 	 * @param id value for id field
 	 * @return response with id field
 	 */
@@ -77,7 +77,7 @@ public class RestServiceBase {
 
 	/**
 	 * Create JAX-RS response based on elastic search response
-	 * 
+	 *
 	 * @param response elastic search response to return
 	 * @param additionalResponseFields map with additional fields added to the response root level object
 	 * @return JAX-RS response
@@ -103,7 +103,7 @@ public class RestServiceBase {
 
 	/**
 	 * Create response based on elastic multi search response (does not add UUID for now)
-	 * 
+	 *
 	 * @param response
 	 * @param responseUuid
 	 * @return
@@ -123,6 +123,7 @@ public class RestServiceBase {
 		};
 	}
 
+    // TODO: All of these should be using JAX-RS exception mappers
 	public Response createRequiredFieldResponse(String fieldName) {
 		log.log(Level.FINE, "Required parameter {0} not set", fieldName);
 		return Response.status(Status.BAD_REQUEST).entity("Required parameter '" + fieldName + "' not set").build();
@@ -149,6 +150,8 @@ public class RestServiceBase {
 				log.log(Level.FINE, "Exception trace.", ex);
 			}
 		}
+        // TODO: We need to find a way to do this per project stage. If we're in production we CERTAINLY don't want
+        // to be opening ourselves up to an exploit by providing a stack trace.
 		return Response.serverError().entity("Error [" + ex.getClass().getName() + "]: " + ex.getMessage()).build();
 	}
 }
