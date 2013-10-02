@@ -23,11 +23,11 @@ To support synergy, information stored into DCP will be normalized in these area
 * tags - so you can obtain all pieces of information tagged with same value
 * activity date - so you can filter/analyze information/contributions by dates when they was created/updated
 
-**Distributed Contribution Platform** is implemented on top of [Searchisko](https://github.com/searchisko/searchisko-api) and provides **REST API** for information manipulation and search/retrieve described in this document.
+**Distributed Contribution Platform** is implemented on top of [Searchisko](https://github.com/searchisko/searchisko) and provides **REST API** for information manipulation and search/retrieve described in this document.
 
-[Data structures used on this API are described here](https://github.com/searchisko/searchisko-api/blob/master/documentation/rest-api/).
+[Data structures used on this API are described here](https://github.com/searchisko/searchisko/blob/master/documentation/rest-api/).
 
-[This document describes structure of main content object](https://github.com/searchisko/searchisko-api/blob/master/documentation/rest-api/content/dcp_content_object.md) which can be pushed to and retrieved or searched from DCP.
+[This document describes structure of main content object](https://github.com/searchisko/searchisko/blob/master/documentation/rest-api/content/dcp_content_object.md) which can be pushed to and retrieved or searched from DCP.
 
 # Authentication
 
@@ -53,7 +53,7 @@ HTTP header, so client browser can use search API directly.
 
 --
 Content Push API
-This part of API is primarily used by *content providers* to manipulate [content](https://github.com/searchisko/searchisko-api/blob/master/documentation/rest-api/content/dcp_content_object.md) in DCP.
+This part of API is primarily used by *content providers* to manipulate [content](https://github.com/searchisko/searchisko/blob/master/documentation/rest-api/content/dcp_content_object.md) in DCP.
 
 Each provider has set of 'provider types' defined in DCP, which are passed on this API as `{sys_content_type}` URL path part.
 'Provider type' is one type of content object stored into DCP by given provider (eg. issue from provider's issue tracking system, blog post from provider's blogging system etc).
@@ -179,7 +179,7 @@ Content deleted successfully.
 
 --
 Search API
-This part of the API is used by all systems that need to use [content](https://github.com/searchisko/searchisko-api/tree/master/documentation/rest-api/) stored in DCP.
+This part of the API is used by all systems that need to use [content](https://github.com/searchisko/searchisko/tree/master/documentation/rest-api/) stored in DCP.
 --
 
 Search contributions based on input parameters
@@ -594,7 +594,7 @@ GET /rest/suggestions/project?query=gin&size=2
 
 --
 Feed API
-This part of the API is used by all systems that want to consume [content](https://github.com/searchisko/searchisko-api/tree/master/documentation/rest-api/)
+This part of the API is used by all systems that want to consume [content](https://github.com/searchisko/searchisko/tree/master/documentation/rest-api/)
 stored in DCP as feed in [Atom Syndication Format](http://tools.ietf.org/html/rfc4287). 
 Request parameters can be used to filter feed content by distinct criteria.
 --
@@ -648,7 +648,7 @@ This part of the API allows to manage configurations of *content providers*. *Co
 
 This part of the API is used by 'DCP administrators', some operations can be used by *content providers* alone too.
 
-[Data structure used on this API is documented here](https://github.com/searchisko/searchisko-api/blob/master/documentation/rest-api/management/content_provider.md).
+[Data structure used on this API is documented here](https://github.com/searchisko/searchisko/blob/master/documentation/rest-api/management/content_provider.md).
 --
 
 Get configuration for provider of given name.
@@ -800,7 +800,7 @@ Management API - projects
 This part of the API allows to manage configurations of *projects*. This configuration is used by preprocessors in 'Content Push API' to normalize project identifier for `sys_project` field.
 This part of the API is used by 'DCP administrators'. Get operations can be used without authentication.
 
-[Data structure used on this API is documented here](https://github.com/searchisko/searchisko-api/blob/master/documentation/rest-api/management/project.md).
+[Data structure used on this API is documented here](https://github.com/searchisko/searchisko/blob/master/documentation/rest-api/management/project.md).
 --
 
 Get project configuration for given project code.
@@ -910,7 +910,7 @@ Management API - contributors
 This part of the API allows to manage configurations of *contributors*. This configuration contains distinct information/identifiers used by preprocessors in 'Content Push API' to normalize project identifier for `sys_contributors` field.
 This part of the API is used by 'DCP administrators' only.
 
-[Data structure used on this API is documented here](https://github.com/searchisko/searchisko-api/blob/master/documentation/rest-api/management/contributor.md).
+[Data structure used on this API is documented here](https://github.com/searchisko/searchisko/blob/master/documentation/rest-api/management/contributor.md).
 --
 
 Get contributor configuration for given `id`.
@@ -1035,7 +1035,7 @@ Management API - configuration
 
 This part of the API is used by 'DCP administrators' to manage DCP configuration documents.
 Configuration documents use distinct structures depending on DCP feature they configure. 
-They are referenced from DCP code by defined `id`. For list of supported configuration document id's and related configuration document structure see [`config_` prefixed files in management part of DCP documentation](https://github.com/searchisko/searchisko-api/blob/master/documentation/rest-api/management/).
+They are referenced from DCP code by defined `id`. For list of supported configuration document id's and related configuration document structure see [`config_` prefixed files in management part of DCP documentation](https://github.com/searchisko/searchisko/blob/master/documentation/rest-api/management/).
 --
 
 Get configuration document for given `id`.
