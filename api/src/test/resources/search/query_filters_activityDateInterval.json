@@ -1,0 +1,25 @@
+{
+    "filtered":{
+        "query":{
+            "match_all":{
+
+            }
+        },
+        "filter":{
+            "and":{
+                "filters":[
+                    {
+                        "range":{
+                            "sys_activity_dates":{
+                                "from":"1973-12-25T08:03:07.545Z",
+                                "to":null,
+                                "include_lower":true,
+                                "include_upper":true
+                            }
+                        }
+                    }
+                ]
+            }
+        }
+    }
+}
