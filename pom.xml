@@ -517,8 +517,8 @@
 			</build>
 		</profile>
 		<profile>
-			<!-- development on internal dev machine (which is RHEL6 with standard installation of jboss EAP bundle) -->
-			<id>dcp-dev</id>
+			<!-- development on RHEL6 based dev machine with standard installation of jboss EAP bundle -->
+			<id>rhel6-dev</id>
 			<properties>
 				<es.client.embedded.data.path>/var/lib/jbossas/standalone/.dcp_data</es.client.embedded.data.path>
 				<persistence.xml.jta-data-source>java:jboss/datasources/ExampleDS</persistence.xml.jta-data-source>

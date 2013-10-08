@@ -25,7 +25,7 @@ used to build for different target environments (the `localhost` profile is acti
 * Embedded ElasticSearch nodes used with data stored in user home `.dcp_data` subfolder. Search node REST API on 15000 port. Statistics node REST API on 15100 port.  
 * Embedded [h2 database](http://www.h2database.com) used for persistence over `java:jboss/datasources/ExampleDS` datasource which is configured in JBoss EAP 6 by default. 
 
-#### dcp-dev
+#### rhel6-dev
 
 * build for development running on typical RHEL6 machine with installed standard JBoss EAP bundle.
 * Embedded ElasticSearch nodes used with data stored in `_EAP_HOME_/standalone/.dcp_data` subfolder. Search node REST API on 15000 port. Statistics node REST API on 15100 port.
@@ -80,7 +80,7 @@ IP `10.34.2.178`:
 
     ./bin/standalone.sh -b 10.34.2.178
 
-#### dcp-dev
+#### rhel6-dev
 
 No details yet. This is internal server.
 
