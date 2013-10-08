@@ -517,6 +517,35 @@
 			</build>
 		</profile>
 		<profile>
+			<!-- development on internal dev machine (which is RHEL6 with standard installation of jboss EAP bundle) -->
+			<id>dcp-dev</id>
+			<properties>
+				<es.client.embedded.data.path>/var/lib/jbossas/standalone/.dcp_data</es.client.embedded.data.path>
+				<persistence.xml.jta-data-source>java:jboss/datasources/ExampleDS</persistence.xml.jta-data-source>
+				<persistence.xml.hibernate.dialect>org.hibernate.dialect.H2Dialect</persistence.xml.hibernate.dialect>
+			</properties>
+			<dependencies>
+				<dependency>
+					<groupId>org.jboss.elasticsearch</groupId>
+					<artifactId>elasticsearch-river-jira</artifactId>
+					<version>${elasticsearch-river-jira.version}</version>
+				</dependency>
+				<dependency>
+					<groupId>org.jboss.elasticsearch</groupId>
+					<artifactId>elasticsearch-river-remote</artifactId>
+					<version>${elasticsearch-river-remote.version}</version>
+				</dependency>
+			</dependencies>
+			<build>
+				<resources>
+					<resource>
+						<filtering>true</filtering>
+						<directory>src/main/profiles/localhost</directory>
+					</resource>
+				</resources>
+			</build>
+		</profile>
+		<profile>
 			<id>skiptests</id>
 			<build>
 				<plugins>
