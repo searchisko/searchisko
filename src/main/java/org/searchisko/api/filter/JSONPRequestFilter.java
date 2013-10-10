@@ -37,14 +37,15 @@ import javax.servlet.http.HttpServletResponseWrapper;
  * https://raw.github.com/aerogear/as-quickstarts/master/kitchensink-html5-mobile/src/main
  * /java/org/jboss/as/quickstarts/html5_mobile/util/JSONPRequestFilter.java
  * </p>
- * 
- * 
+ *
  * @author balunasj
  * @author Libor Krzyzanek
  * @author Vlastimil Elias (velias at redhat dot com)
- * 
+ *
+ * @deprecated JSONP may not be supported in the future. Make sure your clients use CORS. See {@link org.searchisko.api.annotations.header.CORSSupport}.
  */
 @WebFilter("/*")
+@Deprecated
 public class JSONPRequestFilter implements Filter {
 	// The callback method to use
 	private static final String CALLBACK_METHOD = "callback";
