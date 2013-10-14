@@ -13,7 +13,6 @@ import java.util.logging.Logger;
 
 import javax.inject.Inject;
 import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.ext.Provider;
 
@@ -83,19 +82,6 @@ public class AuthenticationInterceptor implements PreProcessInterceptor {
 					log.log(Level.SEVERE, "Cannot encode authentication realm", e);
 				}
 
-			}
-		}
-
-		if (!authenticated) {
-			// Check username and password as query parameters
-			MultivaluedMap<String, String> queryParams = request.getUri().getQueryParameters();
-			if (queryParams != null) {
-				username = queryParams.getFirst("provider");
-				password = queryParams.getFirst("pwd");
-				if (username != null && !username.isEmpty() && password != null && !password.isEmpty()) {
-					authenticated = providerService.authenticate(username, password);
-					authenticationScheme = "CUSTOM";
-				}
 			}
 		}
 
