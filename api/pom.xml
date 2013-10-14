@@ -256,6 +256,9 @@
                             </Dependencies>
                         </manifestEntries>
                     </archive>
+                    <outputDirectory>${project.parent.basedir}/deployments</outputDirectory>
+                    <warName>ROOT</warName>
+                    <attachClasses>true</attachClasses>
                 </configuration>
             </plugin>
 
