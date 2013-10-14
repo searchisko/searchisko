@@ -12,7 +12,7 @@
 
     <artifactId>api</artifactId>
     <packaging>war</packaging>
-    <version>${project.parent.version}</version>
+    <version>1.0.Beta-01</version>
 
     <properties>
         <compileSource>1.7</compileSource>
@@ -235,13 +235,27 @@
         </resources>
 
         <plugins>
+            <!-- Prepare exploded WAR content so that we can replace tokens in html files during prepare-package phase -->
             <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-war-plugin</artifactId>
                 <version>2.1.1</version>
                 <configuration>
-                    <outputDirectory>../deployments</outputDirectory>
-                    <warName>ROOT</warName>
-                    <attachClasses>true</attachClasses>
+                    <failOnMissingWebXml>false</failOnMissingWebXml>
+                    <archive>
+                        <manifest>
+                            <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+                            <addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
+                        </manifest>
+                        <manifestEntries>
+                            <Build-Time>${buildNumber}</Build-Time>
+                            <Dependencies>
+                                org.jboss.resteasy.resteasy-jaxrs,
+                                org.jboss.resteasy.resteasy-cdi,
+                                org.apache.commons.codec
+                            </Dependencies>
+                        </manifestEntries>
+                    </archive>
                 </configuration>
             </plugin>
 
@@ -267,31 +281,10 @@
                 </configuration>
             </plugin>
 
-            <!-- Prepare exploded WAR content so that we can replace tokens in html files during prepare-package phase -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-war-plugin</artifactId>
-                <version>2.1.1</version>
-                <configuration>
-                    <failOnMissingWebXml>false</failOnMissingWebXml>
-                    <archive>
-                        <manifest>
-                            <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
-                            <addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
-                        </manifest>
-                        <manifestEntries>
-                            <Build-Time>${buildNumber}</Build-Time>
-                            <Dependencies>
-                                org.jboss.resteasy.resteasy-jaxrs,
-                                org.jboss.resteasy.resteasy-cdi,
-                                org.apache.commons.codec
-                            </Dependencies>
-                        </manifestEntries>
-                    </archive>
-                </configuration>
-            </plugin>
-            <plugin>
                 <artifactId>maven-surefire-plugin</artifactId>
+                <version>2.14</version>
                 <configuration>
                     <systemProperties>
                         <property>
@@ -409,10 +402,44 @@
         </profile>
         <profile>
             <id>production</id>
+            <!-- TODO: I think we need to flesh this one out a bit more -->
             <build>
                 <resources>
                     <resource>
                         <directory>src/main/profiles/production</directory>
+                    </resource>
+                </resources>
+            </build>
+        </profile>
+        <profile>
+            <!-- development on RHEL6 based dev machine with standard installation of jboss EAP bundle -->
+            <id>rhel6-dev</id>
+            <properties>
+                <es.client.embedded.data.path>/var/lib/jbossas/standalone/.dcp_data</es.client.embedded.data.path>
+                <persistence.xml.jta-data-source>java:jboss/datasources/SearchiskoDS</persistence.xml.jta-data-source>
+                <persistence.xml.hibernate.dialect>org.hibernate.dialect.H2Dialect</persistence.xml.hibernate.dialect>
+                <datasource.connection.url>jdbc:h2:mem:searchisko;DB_CLOSE_DELAY=-1</datasource.connection.url>
+                <datasource.driver>h2</datasource.driver>
+                <datasource.username>sa</datasource.username>
+                <datasource.password>sa</datasource.password>
+            </properties>
+            <dependencies>
+                <dependency>
+                    <groupId>org.jboss.elasticsearch</groupId>
+                    <artifactId>elasticsearch-river-jira</artifactId>
+                    <version>${elasticsearch-river-jira.version}</version>
+                </dependency>
+                <dependency>
+                    <groupId>org.jboss.elasticsearch</groupId>
+                    <artifactId>elasticsearch-river-remote</artifactId>
+                    <version>${elasticsearch-river-remote.version}</version>
+                </dependency>
+            </dependencies>
+            <build>
+                <resources>
+                    <resource>
+                        <filtering>true</filtering>
+                        <directory>src/main/profiles/localhost</directory>
                     </resource>
                 </resources>
             </build>
