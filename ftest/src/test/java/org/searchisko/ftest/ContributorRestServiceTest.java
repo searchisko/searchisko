@@ -5,17 +5,19 @@
  */
 package org.searchisko.ftest;
 
-import java.io.File;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
+
+import javax.ws.rs.client.Client;
+import javax.ws.rs.client.ClientBuilder;
+import javax.ws.rs.client.WebTarget;
+import javax.ws.rs.core.UriBuilder;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
-import org.jboss.resteasy.client.ProxyFactory;
-import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.jboss.shrinkwrap.resolver.api.maven.Maven;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.searchisko.api.rest.ContributorRestService;
@@ -32,31 +34,23 @@ public class ContributorRestServiceTest {
 
     @Deployment(testable = false)
     public static WebArchive createDeployment() {
-        final File[] runtimeDeps = Maven.resolver().loadPomFromFile("api/pom.xml").importRuntimeDependencies().resolve()
-//        final File[] runtimeDeps = Maven.resolver().loadPomFromFile("../api/pom.xml").importRuntimeDependencies().resolve()
-                .withTransitivity().asFile();
-        final WebArchive war = ShrinkWrap.create(WebArchive.class, "searchisko-contributorrestservice.war")
-                .addPackages(true, "org.searchisko.api")
-                .addPackages(true, "org.searchisko.persistence")
-                .addAsLibraries(runtimeDeps)
-                .addAsResource("META-INF/test-persistence.xml", "META-INF/persistence.xml")
-                .addAsWebInfResource(new File("src/test/resources/webapp/WEB-INF/web.xml"), "web.xml")
-                .addAsResource("systeminfo.properties", "systeminfo.properties")
-                // TODO: Add app.properties
-                .addAsWebInfResource(new File("src/test/resources/webapp/WEB-INF/searchisko-ds.xml"), "searchisko-ds.xml")
-                .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml");
-
-        return war;
+        return DeploymentHelpers.createDeployment();
     }
 
     @Test
-    public void assertServiceResponding(@ArquillianResource URL base) {
-        ContributorRestService proxy = ProxyFactory.create(ContributorRestService.class, base.toString());
+    public void assertServiceResponding(@ArquillianResource URL base) throws NoSuchMethodException, URISyntaxException {
 
-        assertNotNull(proxy.search("pmuir@redhat.com"));
+        final URI baseUri = new URI(base.toString() + "v1/rest/");
+        final Client client = ClientBuilder.newBuilder().build();
+        final WebTarget target = client.target(UriBuilder.fromUri(baseUri).clone().path(ContributorRestService.class)
+                .path(ContributorRestService.class, "search"));
+        final String response = target.queryParam("email", new String[] { "pmuir@redhat.com" }).request().get(String.class);
+
+        assertNotNull(response);
     }
 
 //	@Test
+    // TODO: This should be in a unit test
 //	public void search_permissions() throws Exception {
 //		TestUtils.assertPermissionGuest(ContributorRestService.class, "search", String.class);
 //	}
@@ -94,22 +88,26 @@ public class ContributorRestServiceTest {
 //	}
 //
 //	@Test
+    // TODO: This should be in a Unit test
 //	public void getAll_permissions() {
 //		TestUtils.assertPermissionSuperProvider(ContributorRestService.class, "getAll", Integer.class, Integer.class);
 //	}
 //
 //	@Test
+    // TODO: This should be in a Unit test
 //	public void get_permissions() {
 //		TestUtils.assertPermissionSuperProvider(ContributorRestService.class, "get", String.class);
 //	}
 //
 //	@Test
+    // TODO: This should be in a Unit test
 //	public void create_permissions() {
 //		TestUtils.assertPermissionSuperProvider(ContributorRestService.class, "create", String.class, Map.class);
 //		TestUtils.assertPermissionSuperProvider(ContributorRestService.class, "create", Map.class);
 //	}
 //
 //	@Test
+    // TODO: This should be in a Unit test
 //	public void delete_permissions() {
 //		TestUtils.assertPermissionSuperProvider(ContributorRestService.class, "delete", String.class);
 //	}

@@ -44,7 +44,7 @@ public class JpaHibernateContentPersistenceService implements ContentPersistence
     @Inject
     protected Logger log;
 
-    @Resource(name = "jboss/datasources/SearchiskoDS")
+    @Resource(name = "java:jboss/datasources/SearchiskoDS")
     protected DataSource searchiskoDs;
 
     @Override

@@ -29,7 +29,11 @@
     </parent>
 
     <artifactId>ftest</artifactId>
-    <version>${project.parent.version}</version>
+    <version>1.0.Beta-01</version>
+
+    <properties>
+        <es.client.embedded.data.path>${env.PWD}/.dcp_data</es.client.embedded.data.path>
+    </properties>
 
     <dependencyManagement>
         <dependencies>
@@ -51,8 +55,8 @@
         </dependency>
         <dependency>
             <groupId>org.jboss.resteasy</groupId>
-            <artifactId>resteasy-jaxrs</artifactId>
-            <version>${resteasy.version}</version>
+            <artifactId>resteasy-client</artifactId>
+            <version>${resteasy-client.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -86,7 +90,9 @@
     <build>
         <resources>
             <resource>
+                <directory>${project.basedir}/src/test/resources</directory>
                 <filtering>true</filtering>
+                <targetPath>${project.build.testOutputDirectory}</targetPath>
             </resource>
         </resources>
     </build>

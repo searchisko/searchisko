@@ -71,7 +71,7 @@ public class StatsConfiguration {
 
 	@PostConstruct
 	public void init() throws IOException {
-		Properties prop = SearchUtils.loadProperties("/stats_clinet_configuration.properties");
+		Properties prop = SearchUtils.loadProperties("/stats_client_configuration.properties");
 		enabled = Boolean.parseBoolean(prop.getProperty("stats.enabled", "true"));
 		useSearchCluster = Boolean.parseBoolean(prop.getProperty("stats.useSearchCluster", "true"));
 	}

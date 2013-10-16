@@ -95,7 +95,7 @@
         <elasticsearch-river-remote.version>1.2.1</elasticsearch-river-remote.version>
         <jackson.version>1.8.0</jackson.version>
         <version.shrinkwrap_resolver>2.0.0</version.shrinkwrap_resolver>
-        <resteasy-client.version>3.0.2.Final</resteasy-client.version>
+        <resteasy-client.version>3.0.4.Final</resteasy-client.version>
     </properties>
 
     <dependencyManagement>

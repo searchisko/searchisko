@@ -18,7 +18,7 @@ import org.junit.runner.RunWith;
  *
  * @author Vlastimil Elias (velias at redhat dot com)
  */
-@RunWith(Arquillian.class)
+//@RunWith(Arquillian.class)
 public class ContentRestServiceTest { //extends ESRealClientTestBase {
 
     private static final String INDEX_TYPE = "index_type";
