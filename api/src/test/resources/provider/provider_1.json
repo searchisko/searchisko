@@ -1,0 +1,43 @@
+{
+    "name"    : "provider1",
+    "pwd_hash" : "650317137dc889f1a8709f6985f73068b077e471",
+    "super_provider" : "false",
+    "type"     : {
+        "provider1_issue" : {
+            "sys_type"  : "issue",
+            "input_preprocessors" :
+            [
+            ],
+            "index": {
+                "name" : "idx_provider1_issue",
+                "type"  : "t_provider1_issue"
+            }
+        },
+        "provider1_mailing" : {
+            "sys_type"  : "mailing",
+            "input_preprocessors" :
+            [
+                {
+				    "name"     : "Value filler 1",
+				    "class"    : "org.jboss.elasticsearch.tools.content.AddValuePreprocessor",
+				    "settings" : {
+				        "field"  : "name1",
+				        "value"  : "value1"
+				    }
+				},
+				{
+				    "name"     : "Value filler 2",
+				    "class"    : "org.jboss.elasticsearch.tools.content.AddValuePreprocessor",
+				    "settings" : {
+				        "field"  : "name2",
+				        "value"  : "value2"
+				    }
+				}
+            ],
+            "index": {
+                "name" : "idx_provider1_mailing",
+                "type"  : "t_provider1_mailing"
+            }
+        }
+    }
+}

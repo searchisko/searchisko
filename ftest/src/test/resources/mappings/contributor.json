@@ -1,0 +1,10 @@
+{
+    "contributor" : {
+        "_timestamp"  : { "enabled" : true },
+        "_all" : {"enabled" : false},
+        "properties" : {
+            "code" : {"type" : "string", "analyzer" : "keyword"},
+            "email" : {"type" : "string", "analyzer" : "keyword"}
+        }
+    }
+}
