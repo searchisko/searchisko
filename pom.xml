@@ -96,6 +96,8 @@
         <jackson.version>1.8.0</jackson.version>
         <version.shrinkwrap_resolver>2.0.0</version.shrinkwrap_resolver>
         <resteasy-client.version>3.0.4.Final</resteasy-client.version>
+        <rest-assured.version>1.8.1</rest-assured.version>
+        <hamcrest.version>1.2.1</hamcrest.version>
     </properties>
 
     <dependencyManagement>
@@ -130,6 +132,19 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-war-plugin</artifactId>
                 <version>2.1.1</version>
+                <groupId>com.jayway.restassured</groupId>
+                <artifactId>rest-assured</artifactId>
+                <version>${rest-assured.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.hamcrest</groupId>
+                <artifactId>hamcrest-library</artifactId>
+                <version>${hamcrest.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.hamcrest</groupId>
+                <artifactId>hamcrest-core</artifactId>
+                <version>${hamcrest.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
