@@ -136,6 +136,7 @@ public class JpaHibernateContentPersistenceService implements ContentPersistence
      */
     protected boolean checkTableExists(String tableName) {
         if (TABLES_EXISTS.isEmpty()) {
+			// TODO: probably not Oracle compatible - document it
             final String sql = "select table_name from information_schema.tables where upper(table_schema) <> 'INFORMATION_SCHEMA'";
             List<String> allTables = this.executeListReturningSql(sql);
             for (String table : allTables) {
@@ -165,6 +166,7 @@ public class JpaHibernateContentPersistenceService implements ContentPersistence
             this.setParams(statement, params);
 
             statement.execute();
+			// TODO: we should throw an exception
         } catch (SQLException e) {
             log.severe(String.format("Error executing statement -- %s -- Error -- %s", sql, e.getMessage()));
         }
@@ -182,6 +184,7 @@ public class JpaHibernateContentPersistenceService implements ContentPersistence
                 }
             }
             return returnList;
+			// TODO: we should throw an exception
         } catch (SQLException e) {
             log.severe(String.format("Error executing statement -- %s -- Error -- %s", sql, e.getMessage()));
         }
@@ -198,6 +201,7 @@ public class JpaHibernateContentPersistenceService implements ContentPersistence
                     return rs.getString(1);
                 }
             }
+			// TODO: we should throw an exception
         } catch (SQLException e) {
             log.severe(String.format("Error executing statement -- %s -- Error -- %s", sql, e.getMessage()));
         }
