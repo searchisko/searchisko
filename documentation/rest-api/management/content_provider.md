@@ -23,6 +23,14 @@ Content provider configuration fields:
  * `index/type` - type for mapping in DCP internal ElasticSearch cluster content of this type is stored into.
  * `index/search_indices` - array with names of search indices in DCP internal ElasticSearch cluster used during searching for this content type. Optional, name from `index/name` field is used for search if this field is not defined.
 
+### Note:
+
+The idea behind having both `index/name` and `index/search_indices` defined is to allow for use of Elasticsearch
+[index aliases](http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/indices-aliases.html)
+for index scalability. In Elasticsearch it is possible to push new documents into index alias if that alias name refers
+to a single index only. So you can use the alias of name `index/name` for the index that new documents should go into and
+alias `index/search_indices` for all the indices that need to participate in search operations.
+
 Example of content provider configuration:
 
 	{
