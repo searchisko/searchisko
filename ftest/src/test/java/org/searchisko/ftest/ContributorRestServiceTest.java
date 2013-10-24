@@ -16,6 +16,7 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.junit.InSequence;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.searchisko.api.rest.ContributorRestService;
@@ -149,7 +150,7 @@ public class ContributorRestServiceTest {
                 post(new URL(context, restVersion + "contributor/{id}").toExternalForm());
     }
 
-    @Test @InSequence(7)
+    @Test @InSequence(7) @Ignore("Not implemented yet (we need to figure out how to do for updates)")
     public void assertAuthenticatedGet(@ArquillianResource URL context) throws MalformedURLException {
         given().
                 parameters("from", 0, "to", 100).
