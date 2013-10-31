@@ -1,0 +1,1258 @@
+HOST: http://dcp.jboss.org/v1
+
+--- Distributed Contribution Platform API v1 ---
+---
+# Overview
+
+**Distributed Contribution Platform** is a system intended to store and search/retrieve information related to distinct JBoss Community OSS projects, aggregated from various source systems. 
+This system is necessary to support/extend synergy of JBoss Community in the era of more distributed development environment, when project teams tend to use third party systems instead of systems provided and maintained by JBoss Community Team.
+
+Distributed Contribution Platform main design attributes:
+
+* high availability of services (both for common runtime and platform upgrade time)
+* simple, quick and flexible search of stored information
+* possibility to store information with guaranteed long term persistence for data sources where it is hard or impossible to obtain information again (eg. blog posts obtained over RSS protocol)
+* high flexibility of stored information structures
+* openness and easy use by other community members
+
+To support synergy, information stored into DCP will be normalized in these areas:
+
+* information type - so all pieces of information of same type (blog post, issue, commit) originated from distinct systems can be obtained by one search request
+* project - so all information/contributions related to one project can be obtained by one search request
+* contributor - so all information/contributions performed by one contributor can be simply obtained by one search request
+* tags - so you can obtain all pieces of information tagged with same value
+* activity date - so you can filter/analyze information/contributions by dates when they was created/updated
+
+**Distributed Contribution Platform** is implemented on top of [Searchisko](https://github.com/searchisko/searchisko) and provides **REST API** for information manipulation and search/retrieve described in this document.
+
+[Data structures used on this API are described here](https://github.com/searchisko/searchisko/blob/master/documentation/rest-api/).
+
+[This document describes structure of main content object](https://github.com/searchisko/searchisko/blob/master/documentation/rest-api/content/dcp_content_object.md) which can be pushed to and retrieved or searched from DCP.
+
+# Authentication
+
+Some operation calls on REST API need to be authenticated by the provider. The caller provides credentials by HTTP URL parameters `provider` and `pwd`, or via standard HTTP Basic authentication.
+
+# Description of usual server HTTP response codes
+
+* __200 ("OK")__ - the request was successful.
+* __400 ("Bad Request")__ - the request could not be understood or did not have some required parameters. The body of the HTTP response contains the description of the problem.
+* __401 ("Unauthorized")__ - authentication was required for the operation, but the credentials were not provided, or authentication failed.
+* __403 ("Forbidden")__ - user doesn't have permissions for the requested operation.
+* __404 ("Not Found")__ - resource was not found.
+* __500 ("Internal error")__ - internal application error or misconfiguration, it should be reported to administrators. The body of the HTTP response contains the description of problem.
+
+# Cross Domain Policy
+
+DCP provides JSONP technique. If you want to use JSONP just add `callback` parameter to your request.
+
+It's not necessary to use JSONP on Search API. Response contains `Access-Control-Allow-Origin` 
+HTTP header, so client browser can use search API directly.
+
+---
+
+--
+Content Push API
+This part of API is primarily used by *content providers* to manipulate [content](https://github.com/searchisko/searchisko/blob/master/documentation/rest-api/content/dcp_content_object.md) in DCP.
+
+Each provider has set of 'provider types' defined in DCP, which are passed on this API as `{sys_content_type}` URL path part.
+'Provider type' is one type of content object stored into DCP by given provider (eg. issue from provider's issue tracking system, blog post from provider's blogging system etc).
+To manipulate content objects over this API provider must use identifiers unique for given 'provider type'. These identifiers are referred as `{sys_content_id}` url path part in API documentation.
+--
+
+Get one content object of specified 'provider type' and 'provider id' from DCP.
+GET /rest/content/{sys_content_type}/{sys_content_id}
+< 200
+< Content-Type: application/json
+{
+  "tags": ["Content_tag1", "tag2", "tag3"],
+  "sys_content_provider": "jbossorg",
+  "sys_content_type": "jbossorg_jira_issue",
+  "sys_content_id": "AS7-1254",
+  "sys_id": "jbossorg_jira_issue-AS7-1254",
+  "sys_type": "issue",
+  "sys_title": "AS7-1254 - Set the port_range on JGroups stacks to 1",
+  "sys_url_view": "https://issues.jboss.org/browse/AS7-1254",
+  "sys_description": "Set the port_range on JGroups stacks to 1 to lock down the ports.",
+  "sys_updated": "2012-12-06T06:34:55.000Z",
+  "sys_project": "as7",
+  "sys_contributors": ["John Doe <john@doe.org>", "Pat Mat <pat@mat.org>"],
+  "sys_activity_dates": ["2012-12-06T06:34:55.000Z", "2012-12-05T01:48:05.000Z"],
+  "sys_tags": ["Content_tag1", "tag2", "tag3", "user_defined_additional_tag"]
+}
+
+
+Get all content objects of the specified 'provider type'.
+
+##### Request parameters
+
+* `from` index of the first content object returned in the results array. The default value is 0 (start from begin of list).
+* `size` of returned results array. Default is 10.
+* `sort` you can use 'asc' or 'desc' value to sort results by date of last update of content object in DCP (`sys_updated` field).
+
+##### Response content
+The response contains a JSON structure with overall number of the content objects of specified 'provider type' in `total` field, and an array of the content objects in `hits` field. The content of the array depends on `from` and `size` request parameters.
+Each record in the array contains `id` field with 'provider id' of the content object, and then `data` field with full content object structure:
+
+```
+{
+  "total": "1",
+  "hits": [
+    {
+      "id": "AS7-1254",
+      "data": {
+        //data object
+      }
+    }
+  ]
+}
+```
+
+GET /rest/content/{sys_content_type}{?from,size,sort}
+< 200
+< Content-Type: application/json
+{
+  "total": "1",
+  "hits": [
+    {
+      "id": "AS7-1254",
+      "data": {
+        "tags": ["Content_tag1", "tag2", "tag3"],
+        "sys_content_provider": "jbossorg",
+        "sys_content_type": "jbossorg_jira_issue",
+        "sys_content_id": "AS7-1254",
+        "sys_id": "jbossorg_jira_issue-AS7-1254",
+        "sys_type": "issue",
+        "sys_title": "AS7-1254 - Set the port_range on JGroups stacks to 1",
+        "sys_url_view": "https://issues.jboss.org/browse/AS7-1254",
+        "sys_description": "Set the port_range on JGroups stacks to 1 to lock down the ports.",
+        "sys_updated": "2012-12-06T06:34:55.000Z",
+        "sys_project": "as7",
+        "sys_contributors": ["John Doe <john@doe.org>", "Pat Mat <pat@mat.org>"],
+        "sys_activity_dates": ["2012-12-06T06:34:55.000Z", "2012-12-05T01:48:05.000Z"],
+        "sys_tags": ["Content_tag1", "tag2", "tag3", "user_defined_additional_tag"]
+      }
+    }
+  ]
+}
+
+Push the content object into DCP. The content is updated in DCP if exists  or is inserted if does not. 
+The data normalizations are performed during this request processing and the content object is extended by the DCP system data fields - the performed normalization tasks depend on the configuration for the given `sys_content_type`.
+
+*Provider authentication required.*
+
+##### Request content
+JSON with content object.
+
+##### Response content
+The response contains a JSON structure with a `status` field containing 'insert' or 'update' string and `message` field with a human readable description of the status.
+
+```
+{
+  "status":"insert",
+  "message":"Content was inserted successfully."
+}
+```
+
+POST /rest/content/{sys_content_type}/{sys_content_id}
+> Accept: application/json
+< 200
+< Content-Type: application/json
+{
+  "status":"insert",
+  "message":"Content was inserted successfully."
+}
+
+Delete defined content object from DCP.
+
+*Provider authentication required.* 
+
+##### Request parameters
+
+* `ignore_missing` if set to 'true' then __200 (OK)__ is returned instead of __404 (Not Found)__ if deleted content object doesn't exists in DCP.  
+ 
+DELETE /rest/content/{sys_content_type}/{sys_content_id}{?ignore_missing}
+< 200
+< Content-Type: plain/text
+Content deleted successfully.
+
+
+--
+Search API
+This part of the API is used by all systems that need to use [content](https://github.com/searchisko/searchisko/tree/master/documentation/rest-api/) stored in DCP.
+--
+
+Search contributions based on input parameters
+
+##### Request parameters
+
+* `query` full text query string
+* `query_highlight` when set to `true` and full text search is used over `query` param, then results contains data with query matches highlighted by `<span class='hlt'>***</span>`. 
+* `sortBy` sort result. Value can be `old` (to sort content from oldest to newest activity) or `new` (to sort from newest to oldest activity). Sorting by fulltext score is used if param is not provided.
+* `from` start index or returned entries. Default value is 0. Useful together with `size` for results pagination.
+* `size` maximal number of returned entries. Default is 10, maximal value is 500.
+* `facet` you can specify name of [facet](http://www.elasticsearch.org/guide/reference/api/search/facets/) you want to include in response. Available facet names are: `top_contributors`, `activity_dates_histogram`, `per_project_counts`, `per_sys_type_counts`, `tag_cloud`. This param can be used multiple times to get more facet data in the response.
+* `field` you can use this param multiple times to specify which [fields](http://www.elasticsearch.org/guide/reference/api/search/fields.html) from search index will be returned in results. If not used then predefined set of basic `sys_xx` fields is returned. If you want complete documents use `_source` value for this param. Be careful about performance impact of this param, consult DCP administrators if necessary!
+* `content_provider` filters result only to data provided by specified provider - `sys_content_provider` field
+* `type` filters result only to specific `sys_content_type`
+* `sys_type` filters result only to specific `sys_type`, This param can be used multiple times to get results for more types.
+* `tag` filters result to specific tag defined in `sys_tags` field. This param can be used multiple times to get results for more tags.
+* `project` filters result to specific project defined in `sys_project` field. This param can be used multiple times to get results for more projects.
+* `activity_date_interval` filters results only for data with some activity in defined period before now. Available values `year`, `quarter`, `month`, `week`, `day`. 
+* `activity_date_from` filters results only for data with some activity (field `sys_activity_dates`) after given date. ISO format used, eg. `2012-12-21T12:12:12Z`. Ignored if `activity_date_interval` is used.
+* `activity_date_to` filters results only for data with some activity (field `sys_activity_dates`) before given date. ISO format used, eg. `2012-12-21T12:12:12Z`. Ignored if `activity_date_interval` is used.
+* `contributor` filters results only for data with activity from given contributor (field `sys_contributors`), This param can be used multiple times to get results for more contributors.
+
+##### Response content
+
+```
+{
+  "uuid" : "f87e7875-85a1-42e3-a39e-e64d3f0e155d",
+  "took":3,
+  "timed_out":false,
+  "_shards":{
+    "total":5,
+    "successful":5,
+    "failed":0
+   },
+   "hits":{
+     "total":393,
+     "max_score":null,
+     "hits":[
+       {
+			    "_index": "data_jbossorg_jira",
+			    "_type": "jbossorg_jira_issue",
+			    "_id": "jbossorg_jira_issue-AEROGEAR-2",
+			    "_score": 1,
+			    "fields": {
+			        "sys_last_activity_date": "2012-01-10T15:29:02.000Z",
+			        "sys_project": "aerogear",
+			        "sys_project_name": "Aerogear",
+			        "sys_description": "At the bottom of the current site is a feed of aerogear tweets. This needs to be expanded to include multiple sources. The RichFaces project does this, but I think they needed to use a good feed aggregator to get a single stream.",
+			        "sys_title": "AEROGEAR-2 - Project page needs a consolidated feed of various content, not just tweets",
+			        "sys_url_view": "https://issues.jboss.org/browse/AEROGEAR-2",
+			        "sys_contributors": [
+			            "Jay Balunas <tech4j@gmail.com>",
+			            "Wesley Hales <wesleyhales@gmail.com>"
+			        ],
+			        "sys_type": "issue"
+			    }
+			 },{
+         ...
+       }
+     ]
+   },
+   "facets": {
+     ...
+   }
+}
+```
+
+Description of important response fields:  
+
+* `uuid` field holds unique identifier of search response (also written into search statistics record)
+* `hits` object containing info about search hits
+* `hits/total` total number of documents matching search request - search hits
+* `hits/hits` array with documents forming part of search hits matching `from` and `size` request parameters
+* `hits/hits/_id` unique identifier of document in DCP
+* `hits/hits/fields` document fields, see `field` request parameter
+* `hits/hits/highlight` highlights of fulltext matching in given document, see `query_highlight` request parameter
+* `facets` values from facets, see `facet` request parameter
+
+GET /rest/search?{query,query_highlight,sortBy,from,size,facet,field,content_provider,type,sys_type,tag,project,activity_date_interval,activity_date_from,activity_date_to,contributor}
+< 200
+< Content-Type: application/json
+< Access-Control-Allow-Origin: *
+{
+  "uuid" : "f87e7875-85a1-42e3-a39e-e64d3f0e155d",
+  "took":3,
+  "timed_out":false,
+  "_shards":{
+    "total":5,
+    "successful":5,
+    "failed":0
+   },
+   "hits":{
+     "total":393,
+     "max_score":null,
+     "hits":[]
+   }
+}
+
+
+Write statistics record about hit returned in search response was "useful" for
+user, eg. user clicked URL related with given hit or viewed hit detail. 
+These statistics records may be analyzed later to improve fulltext search engine 
+configuration to bring better search results for users. 
+
+##### Request parameters
+
+* `search_result_uuid` - value of `uuid` field from search response this statistics record is for 
+* `hit_id` - unique identifier of search hit document (`hits/hits[]/_id` field 
+in response) from given search response which was "useful" for user (eg. he clicked it 
+or viewed detail). Validation is performed during DCP side record write to ensure this 
+identifier was part of given search response. 
+* `session_id` - optional, identifier of user's frontend session to allow more precise user behavior analyze
+
+PUT /rest/search/{search_result_uuid}/{hit_id}?{session_id}
+< 200
+< Access-Control-Allow-Origin: *
+
+
+--
+Suggestions API - Query
+It can return suggestions for given user query such as *query completion*, *did you mean*, ... etc.
+
+Returned JSON contains two high-level objects:
+
+```
+{
+  "view" : { ... },
+  "model" : { ... }
+}
+```
+
+#### View
+
+The `view` represents the visual part of the query suggestions response.
+
+It *always* contains the section `search` that will *always* have only one option matching the incoming user query (`${query_string}`).
+
+It can then contain one or more additional sections (like `suggestions`, `filters`, `mails`, ... etc.). 
+
+##### Example
+
+```
+"view" : {
+  "search": {
+    "caption" : "Search",
+    "options" : ["${query_string}"]
+  },
+  "suggestions" : {
+    "caption" : " ... ",
+    "options" : [ ... ]
+  },
+  "filters" : {
+    "caption" : " ... ",
+    "options" : [ ... ]
+  },
+  ...
+}
+```
+
+#### Model
+
+The `model` represents possible "actions" that are relevant to the individual `option`s in the `view` part.
+This means both `view` and `model` parts have the same highlevel structure and each `option`
+in the `view` part has the corresponding "action" in the `model` part.
+
+##### Example
+
+```
+"model" : {
+  "search": { 
+    "search": { "query": "${query_string}" }
+  },
+  "suggestions" : [ ... ],
+  "filters" : [ ... ],
+  ...
+}
+```
+
+The individual actions are described using symbolic commands. An interpretation of these commands is up to the client. The following is just a recommendation about how client can interpret the commands:
+
+##### Commands
+
+`search` - execute a search for `query` value.
+
+`suggestion` - replace the text in the search field with the `value`'s value.
+
+`filter` - replace the current filters with provided filters.
+
+`filter_add` - enable provided filters (on top of currently active filters).
+
+... more TDB.
+--
+
+GET /rest/suggestions/query_string{?query}
+< 200
+< Content-Type: application/json
+< Access-Control-Allow-Origin: *
+{
+    "view": {
+        "search": {
+            "caption": "Search",
+            "options": ["${query_string}"]
+        },
+        "suggestions": {
+            "caption": "Query Completions",
+            "options": [
+                "option #1",
+                "option #2",
+                "..."
+            ]
+        },
+        "filters": {
+            "caption": "Filters",
+            "options": [
+                "option #1",
+                "option #2",
+                "..."
+            ]
+        },
+        "mails": {
+            "caption": "Mails",
+            "options": [
+                "option #1",
+                "option #2",
+                "..."
+            ]
+        }
+    },
+    "model" : {
+        "search": { 
+            "search": { "query": "${query_string}" }
+        },
+        "suggestions" : [
+            { "action #1": {} },
+            { "action #2": {} },
+            { }
+        ],
+        "filters": [
+            { "action #1": {} },
+            { "action #2": {} },
+            { }
+        ],
+        "mails": [
+            { "action #1": {} },
+            { "action #2": {} },
+            { }
+        ]
+    }
+}
+
+
+Example for user query 'Hiberna'.
+GET /rest/suggestions/query_string?query=Hiberna
+< 200
+< Access-Control-Allow-Origin: *
+< Content-Type: application/json
+{
+    "view": {
+        "search": {
+            "caption": "Search",
+            "options": ["Hiberna"]
+        },
+        "suggestions": {
+            "caption": "Query Completions",
+            "options": [
+                "<strong>Hiberna</strong>te",
+                "<strong>Hiberna</strong>te query",
+                "<strong>Hiberna</strong>te session"
+            ]
+        },
+        "filters": {
+            "caption": "Filters",
+            "options": [
+                "<strong>Add</strong> project filter for <strong>Hibernate</strong>",
+                "<strong>Add</strong> project filter for <strong>Infinispan</strong>",
+                "<strong>Search</strong> project <strong>Hibernate</strong> only"
+            ]
+        },
+        "mails": {
+            "caption": "Mails",
+            "options": [
+                "<strong>Add</strong> some Mails filter",
+                "Do some other fancy thing here",
+                "Or do something else"
+            ]
+        }
+    },
+    "model" : {
+        "search": { "search": { "query": "Hiberna" } },
+        "suggestions" : [
+            { "suggestion": { "value": "Hibernate" },         "search": { "query": "Hibernate" } },
+            { "suggestion": { "value": "Hibernate query" },   "search": { "query": "Hibernate query" } },
+            { "suggestion": { "value": "Hibernate session" }, "search": { "query": "Hibernate session" } }
+        ],
+        "filters": [
+            { "filter_add": [ "Hibernate" ] },
+            { "filter_add": [ "Infinispan" ] },
+            { "filter": [ "Hibernate" ] }
+        ],
+        "mails": [
+            { "filter_add": [ "foo" ] },
+            {},
+            {}
+        ]
+    }
+}
+
+--
+Suggestions API - Project
+It can return suggestions of project names for given user query.
+--
+
+Get suggestions for project name.
+
+GET /rest/suggestions/project?{query,size}
+< 200
+< Content-Type: application/json
+< Access-Control-Allow-Origin: *
+{
+    "responses" : [
+        {
+            "hits.hits" : [ ]
+        },
+        {
+            "hits.hits" : [ ] 
+        }
+    ]
+}
+
+
+Example: suggestions for query `gin`
+
+GET /rest/suggestions/project?query=gin&size=2
+< 200
+< Content-Type: application/json
+< Access-Control-Allow-Origin: *
+{
+    "uuid":"56f56a29-7a2e-4337-af2b-5b6ed9cf5000",
+    "responses": [{ 
+        "took":12,
+        "timed_out":false,
+        "_shards":{
+            "total":5,"successful":5,"failed":0
+        },
+        "hits":{
+            "total":6,
+            "max_score":0.37307936,
+            "hits": [{
+                "_index":"data_project_info",
+                "_type":"jbossorg_project_info",
+                "_id":"jbossorg_project_info-jbossmessaging",
+                "_score":0.37307936,
+                "fields": {
+                    "sys_project":"jbossmessaging",
+                    "sys_project_name":"JBoss Messaging"
+                },
+                "highlight": {
+                    "sys_project_name.ngram":["JBoss Messa<em>gin</em>g"]
+                }
+            },
+            {
+                "_index":"data_project_info",
+                "_type":"jbossorg_project_info",
+                "_id":"jbossorg_project_info-maven-jboss-retro-plugin",
+                "_score":0.22255114,
+                "fields": {
+                    "sys_project":"maven-jboss-retro-plugin",
+                    "sys_project_name":"Maven jBoss-retro Plugin"
+                },
+                "highlight": {
+                    "sys_project_name.ngram":["Maven jBoss-retro Plu<em>gin</em>"]
+                }
+            }]
+        }
+    },
+    {
+        "took":16,
+        "timed_out":false,
+        "_shards": {
+            "total":5,
+            "successful":5,
+            "failed":0
+        },
+        "hits": {
+            "total":21,
+            "max_score":0.14913967,
+            "hits": [{
+                "_index":"data_project_info",
+                "_type":"jbossorg_project_info",
+                "_id":"jbossorg_project_info-jbossmessaging",
+                "_score":0.14913967,
+                "fields": {
+                    "sys_project":"jbossmessaging",
+                    "sys_project_name":"JBoss Messaging"
+                }
+            },
+            {
+                "_index":"data_project_info",
+                "_type":"jbossorg_project_info",
+                "_id":"jbossorg_project_info-shrinkwrap",
+                "_score":0.125,
+                "fields": {
+                    "sys_project":"shrinkwrap",
+                    "sys_project_name":"Shrinkwrap"
+                }
+            }]
+        }
+    }]
+}
+
+
+--
+Feed API
+This part of the API is used by all systems that want to consume [content](https://github.com/searchisko/searchisko/tree/master/documentation/rest-api/)
+stored in DCP as feed in [Atom Syndication Format](http://tools.ietf.org/html/rfc4287). 
+Request parameters can be used to filter feed content by distinct criteria.
+--
+
+Get Atom feed with filtered content.
+
+##### Request parameters
+
+* `project` filters feed to specific project defined in `sys_project` field. This param can be used multiple times to get feed for more projects.
+* `contributor` filters feed only for data with activity from given contributor (field `sys_contributors`). This param can be used multiple times to get feed for more contributors.
+* `sys_type` filters feed only to specific `sys_type`, This param can be used multiple times to get feed for more types.
+* `tag` filters feed to specific tag defined in `sys_tags` field. This param can be used multiple times to get feed for more tags.
+* `type` filters feed only to specific `sys_content_type`
+* `content_provider` filters feed only to data provided by specified provider - `sys_content_provider` field
+* `query` full text query string
+* `sortBy` sort result. If not used then date of last content modification is 
+  used to include content in feed. You can use `new-create` value here to 
+  include content in feed by date of its creation (so later modifications are ignored and content is not included in feed again).
+* `feed_title` optional param allows to customize title of generated feed. By default it's generated from the filter criteria used for feed.  
+
+
+GET /rest/feed?{project,contributor,sys_type,tag,type,content_provider,query,sortBy,feed_title}
+< 200
+< Content-Type: application/atom+xml
+< Access-Control-Allow-Origin: *
+	<?xml version="1.0" encoding="utf-8"?>
+	<feed xmlns="http://www.w3.org/2005/Atom">
+	  <title>DCP whole content feed</title>
+	  <id>http://dcp.org/v1/rest/feed</id>
+	  <updated>2012-12-06T06:34:55.000Z</updated>
+	  <generator>DCP</generator>
+	  <entry>
+	     <title>AS7-1254 - Set the port_range on JGroups stacks to 1</title>
+	     <link href="https://issues.jboss.org/browse/AS7-1254" />
+	     <id>searchisko:content:jbossorg_jira_issue-AS7-1254</id>
+	     <published>2012-12-06T06:34:55.000Z</published>
+	     <updated>2012-12-06T06:34:55.000Z</updated>
+	     <summary>Set the port_range on JGroups stacks to 1 to lock down the ports.</summary>
+	     <author>
+	       <name>John Doe</name>
+	     </author>
+	  </entry>
+	</feed>
+
+
+
+--
+Management API - content providers
+
+This part of the API allows to manage configurations of *content providers*. *Content provider* is an entity which stores content into DCP (see Content Push API).
+
+This part of the API is used by 'DCP administrators', some operations can be used by *content providers* alone too.
+
+[Data structure used on this API is documented here](https://github.com/searchisko/searchisko/blob/master/documentation/rest-api/management/content_provider.md).
+--
+
+Get configuration for provider of given name.
+
+*Each authenticated provider can use this method to obtain own configuration.*
+GET /rest/provider/{name}
+< 200
+< Content-Type: application/json
+{
+  "name": "jborg",
+  "description" : "Provider used by JBoss Community Team to manage DCP and push content from core jboss.org systems",
+  "contact_email" : "help@jboss.org",
+  "super_provider": true,
+  "type": {
+    "jbossorg_blog": {
+      "description" : "Blog posts pushed into DCP by Borg system - planet.jboss.org",
+      "sys_type": "blogpost",
+      "sys_content_content-type" : "text/html",
+	    "persist" : true,
+      "input_preprocessors": [
+        {
+          "name": "DCP project mapper - feed to sys_project mapping",
+          "class": "org.jboss.elasticsearch.tools.content.ESLookupValuePreprocessor",
+          "settings": {
+            "target_field": "sys_project",
+            "index_name": "sys_projects",
+            "idx_search_field": "type_specific_code.jbossorg_blog",
+            "idx_result_field": "code",
+            "source_field": "feed",
+            "value_default": "unknown",
+            "index_type": "project"
+          }
+        }
+      ],
+      "index": {
+        "name": "jbossorg_blog",
+        "type": "jbossorg_blogpost"
+      }
+    },
+    "jbossorg_project_info": {
+      "description" : "Informations about projects (name, links, icons, licenses used etc) pushed into DCP by Magnolia CMS",
+      "sys_type": "project_info",
+      "search_all_excluded" : "true",
+      "input_preprocessors": [
+        {
+          "name": "DCP project mapper - nodePath to sys_project mapping",
+          "class": "org.jboss.elasticsearch.tools.content.ESLookupValuePreprocessor",
+          "settings": {
+            "target_field": "sys_project",
+            "index_name": "sys_projects",
+            "idx_search_field": "type_specific_code.jbossorg_project_info",
+            "idx_result_field": "code",
+            "source_field": "nodePath",
+            "value_default": "unknown",
+            "index_type": "project"
+          }
+        }
+      ],
+      "index": {
+        "name": "project_info",
+        "type": "jbossorg_project_info"
+      }
+    }
+  }
+}
+
+List provider definitions.
+
+##### Request parameters
+
+* `from` index of the first content object returned in the results array. The default value is 0 (start from begin of list).
+* `size` of returned results array. Default is 10.
+
+##### Response content
+The response contains a JSON structure with overall number of the providers in `total` field, and an array of the provider configuration data in `hits` field. The content of the array depends on `from` and `size` request parameters.
+Each record in the array contains `id` field with provider name and `data` field with full provider configuration structure:
+
+```
+{
+  "total": "1",
+  "hits": [
+    {
+      "id": "provider name",
+      "data": {
+        // content provider configuration object
+      }
+    }
+  ]
+}
+```
+
+GET /rest/provider{?from,size}
+< 200
+< Content-Type: application/json
+{
+  "total": "1",
+  "hits": [
+    {
+      "id": "jborg",
+      "data": {
+        "name": "jborg",
+        "description" : "Provider used by JBoss Community Team to manage DCP and push content from core jboss.org systems",
+        "contact_email" : "help@jboss.org"
+      }
+    }
+  ]
+}
+
+Create/update configuration for provider. `name` field inside of provider configuration structure is used as primary ID for update.  
+
+##### Request content
+JSON with provider configuration structure.
+
+##### Response content
+The response contains a JSON structure with `id` field returning `name` o provider.
+
+POST /rest/provider
+> Accept: application/json
+{
+  "name" : "jborg",
+  "description" : "Provider used by JBoss Community Team to manage DCP and push content from core jboss.org systems"
+}
+< 200
+< Content-Type: application/json
+{
+  "id":"jborg"
+}
+
+Change password for provider with given `name`.
+
+*Each authenticated provider can use this method to change his password.*
+
+##### Request content
+New password is posted in request body.
+
+POST /rest/provider/{name}/password
+> Accept: text/plain
+< 200
+
+
+Delete provider with given `name`.
+DELETE /rest/provider/{name}
+< 200
+
+
+--
+Management API - projects
+
+This part of the API allows to manage configurations of *projects*. This configuration is used by preprocessors in 'Content Push API' to normalize project identifier for `sys_project` field.
+This part of the API is used by 'DCP administrators'. Get operations can be used without authentication.
+
+[Data structure used on this API is documented here](https://github.com/searchisko/searchisko/blob/master/documentation/rest-api/management/project.md).
+--
+
+Get project configuration for given project code.
+
+*Authentication not required to use this method*
+GET /rest/project/{code}
+< 200
+< Content-Type: application/json
+{
+  "code": "jbosstools",
+  "name": "JBoss Tools",
+  "description" : "",
+  "type_specific_code" : {
+    "jbossorg_blog": ["jbosstools"],
+    "jbossorg_jira": ["JBIDE"],
+    "jbossorg_mailing_list": [],
+    "jbossorg_project_info": "/jbosstools"
+  }
+}
+
+List project definitions.
+
+*Authentication not required to use this method*
+
+##### Request parameters
+
+* `from` index of the first content object returned in the results array. The default value is 0 (start from begin of list).
+* `size` of returned results array. Default is 10.
+
+##### Response content
+The response contains a JSON structure with overall number of the projects in `total` field, and an array of the project configuration data in `hits` field. 
+The content of the array depends on `from` and `size` request parameters.
+Each record in the array contains `id` field with project code and `data` field with full provider configuration structure:
+
+```
+{
+  "total": "1",
+  "hits": [
+    {
+      "id": "project code",
+      "data": {
+        // project configuration object
+      }
+    }
+  ]
+}
+```
+
+GET /rest/project{?from,size}
+< 200
+< Content-Type: application/json
+{
+  "total": "1",
+  "hits": [
+    {
+      "id": "jbosstools",
+      "data": {
+    		  "code": "jbosstools",
+			  "name": "JBoss Tools",
+			  "description" : "",
+			  "type_specific_code" : {
+			    "jbossorg_blog": ["jbosstools"],
+			    "jbossorg_jira": ["JBIDE"],
+			    "jbossorg_mailing_list": "",
+			    "jbossorg_project_info": "/jbosstools"
+			  }
+			}
+    }
+  ]
+}
+
+Create/update project configuration. `code` field inside of project configuration structure is used as primary ID for update.  
+
+##### Request content
+JSON with project configuration structure.
+
+##### Response content
+The response contains a JSON structure with `id` field returning `code` o provider.
+
+POST /rest/project
+> Accept: application/json
+{
+  "code": "jbosstools",
+  "name": "JBoss Tools",
+  "description" : "",
+  "type_specific_code" : {
+    "jbossorg_blog": ["jbosstools"],
+    "jbossorg_jira": ["JBIDE"],
+    "jbossorg_mailing_list": "",
+    "jbossorg_project_info": "/jbosstools"
+  }
+}
+< 200
+< Content-Type: application/json
+{
+  "id":"jbosstools"
+}
+
+Delete project configuration for given project's `code`.
+DELETE /rest/project/{code}
+< 200
+
+
+--
+Management API - contributors
+
+This part of the API allows to manage configurations of *contributors*. This configuration contains distinct information/identifiers used by preprocessors in 'Content Push API' to normalize project identifier for `sys_contributors` field.
+This part of the API is used by 'DCP administrators' only.
+
+[Data structure used on this API is documented here](https://github.com/searchisko/searchisko/blob/master/documentation/rest-api/management/contributor.md).
+--
+
+Get contributor configuration for given `id`.
+
+GET /rest/contributor/{id}
+< 200
+< Content-Type: application/json
+{
+  "code" : "John Doe <john@doe.org>",
+  "email" : ["john@doe.org", "john.doe@gmail.com"]
+}
+
+Search contributor configuration for given email address.
+
+GET /rest/contributor/search?email={email}
+< 200
+< Content-Type: application/json
+{
+  "total": "1",
+  "hits": [
+    {
+      "id": "21",
+      "data": {
+				  "code" : "John Doe <john@doe.org>",
+				  "email" : ["john@doe.org", "john.doe@gmail.com"]
+				}
+			}
+    }
+  ]
+}
+
+List contributor definitions.
+
+##### Request parameters
+
+* `from` index of the first content object returned in the results array. The default value is 0 (start from begin of list).
+* `size` of returned results array. Default is 10.
+
+##### Response content
+The response contains a JSON structure with overall number of the contributor definitions in `total` field, and an array of the contributor configuration data in `hits` field. 
+The content of the array depends on `from` and `size` request parameters.
+Each record in the array contains `id` field with unique id for other REST operations, and `data` field with full contributor configuration structure:
+
+```
+{
+  "total": "1",
+  "hits": [
+    {
+      "id": "unique id in DCP",
+      "data": {
+        // contributor configuration object
+      }
+    }
+  ]
+}
+```
+
+GET /rest/contributor{?from,size}
+< 200
+< Content-Type: application/json
+{
+  "total": "1",
+  "hits": [
+    {
+      "id": "21",
+      "data": {
+				  "code" : "John Doe <john@doe.org>",
+				  "email" : ["john@doe.org", "john.doe@gmail.com"]
+				}
+			}
+    }
+  ]
+}
+
+Create new contributor configuration with generated `id`. 
+
+##### Request content
+JSON with contributor configuration structure.
+
+##### Response content
+The response contains a JSON structure with `id` generated for newly created record.
+
+POST /rest/contributor
+> Accept: application/json
+{
+  "code" : "John Doe <john@doe.org>",
+  "email" : ["john@doe.org","john.doe@gmail.com"]
+}
+< 200
+< Content-Type: application/json
+{
+  "id":"21"
+}
+
+Create/update contributor configuration for requested `id`. 
+
+##### Request content
+JSON with contributor configuration structure.
+
+##### Response content
+The response contains a JSON structure with `id`.
+
+POST /rest/contributor/{id}
+> Accept: application/json
+{
+  "code" : "John Doe <john@doe.org>",
+  "email" : ["john@doe.org", "john.doe@gmail.com"]
+}
+< 200
+< Content-Type: application/json
+{
+  "id":"22"
+}
+
+Delete contributor configuration with given `id`.
+DELETE /rest/contributor/{id}
+< 200
+
+
+--
+Management API - configuration
+
+This part of the API is used by 'DCP administrators' to manage DCP configuration documents.
+Configuration documents use distinct structures depending on DCP feature they configure. 
+They are referenced from DCP code by defined `id`. For list of supported configuration document id's and related configuration document structure see [`config_` prefixed files in management part of DCP documentation](https://github.com/searchisko/searchisko/blob/master/documentation/rest-api/management/).
+--
+
+Get configuration document for given `id`.
+
+GET /rest/config/{id}
+< 200
+< Content-Type: application/json
+{
+  "code1" : "sfehgsdg",
+  "code2" : "aerafa"
+}
+
+
+List all configuration documents.
+
+##### Request parameters
+
+* `from` index of the first document returned in the results array. The default value is 0 (start from begin of list).
+* `size` of returned results array. Default is 10.
+
+##### Response content
+The response contains a JSON structure with overall number of the configuration documents in `total` field, and an array of the configuration documents in `hits` field. 
+The content of the array depends on `from` and `size` request parameters.
+Each record in the array contains `id` field with unique id for other REST operations, and `data` field with full configuration document:
+
+```
+{
+  "total": "1",
+  "hits": [
+    {
+      "id": "unique id in DCP",
+      "data": {
+        // configuration document
+      }
+    }
+  ]
+}
+```
+
+GET /rest/config{?from,size}
+< 200
+< Content-Type: application/json
+{
+  "total": "1",
+  "hits": [
+    {
+      "id": "search_config_codes",
+      "data": {
+				  "code1" : "sfehgsdg",
+  				"code2" : "aerafa"
+				}
+			}
+    }
+  ]
+}
+
+Create/update configuration document for given `id`. 
+
+##### Request content
+JSON with configuration document.
+
+##### Response content
+The response contains a JSON structure with `id`.
+
+POST /rest/config/{id}
+> Accept: application/json
+{
+  "code1" : "sfehgsdg",
+  "code2" : "aerafa"
+}
+< 200
+< Content-Type: application/json
+{
+  "id":"22"
+}
+
+Delete configuration document with given `id`.
+DELETE /rest/config/{id}
+< 200
+
+
+--
+Management API - content reindexation tasks
+
+This part of the API is used by 'DCP administrators' to operate long running reindexation tasks.
+These task are used to refresh search indices in case of contributor or project mapping change.
+Special task type is used to put content from persistent store into search indices also.
+--
+
+List all task types available in DCP. Task types are used in some other calls.
+
+GET /rest/tasks/type
+< 200
+< Content-Type: application/json
+[  
+  "reindex_from_persistence"
+]
+
+
+List information about all tasks in system. More recent tasks on top.
+
+##### Request parameters
+
+* `from` index of the first task info returned in the results array. The default value is 0 (start from begin of list).
+* `size` of returned results array. Default is 10.
+* `taskType` optional filter over task type
+* `taskStatus` optional filter over task status, multiple values may be used. Allowed values `new`, `running`, `failover`, `canceled`, `finished_ok`, `finished_error`
+
+
+GET /rest/tasks/task{?taskType,taskStatus,from,size}
+< 200
+< Content-Type: application/json
+[
+  {
+    "id": "egde9g8d9fg8d9fg",
+    "taskType" : "reindex_from_persistence",
+    "taskStatus" : "NEW",
+    "taskCreatedAt" : "2013-03-27 12:24:35"
+  }
+]
+
+Get information about execution of task with given identifier.
+
+GET /rest/tasks/task/{taskId}
+< 200
+< Content-Type: application/json
+{
+  "id": "egde9g8d9fg8d9fg",
+  "taskType" : "reindex_from_persistence",
+  "taskStatus" : "FINISHED_OK",
+  "taskCreatedAt" : "2013-03-27 12:24:35",
+  "lastRunStartedAt" : "2013-03-27 12:25:05",
+  "lastRunFinishedAt" : "2013-03-27 12:27:47",
+  "runCount" : 1,
+  "processingLog" : ""
+}
+
+Create new task of given task type to be executed. 
+
+##### Request content
+JSON with task configuration document. Available task types and related configuration structures:
+
+* `reindex_from_persistence`
+Get all content of 'provider type' passed in task configuration from DCP persistent store (so given provider type must be defined as persistent) and store/update it into DCP search index.  
+
+```
+{
+  "sys_content_type" : "jbossorg_blog"
+}
+```
+
+
+* `renormalize_by_content_type`
+Get all content of 'provider type' passed in task configuration from DCP search index, run all data normalizations on it, and update it back into DCP search index.  
+
+``` 
+{
+  "sys_content_type" : "jbossorg_blog"
+}
+```
+
+
+* `renormalize_by_project_code`
+Get all content with `sys_project` matching values passed in task configuration from DCP search indices, run all data normalizations on it, and update it back into DCP search index. Used for example when project code or project name changes in DCP project configuration, so we need to update content in search indices for it.
+
+``` 
+{
+  "project_code" : ["jbosstools", "jbossas7"]  
+}
+```
+
+
+ * `renormalize_by_project_lookup_id`
+Get all content which is bound to some `sys_project` over defined values of defined normalization identifier passed in task configuration from DCP search indices, run all data normalizations on it, and update it back into DCP search index. Used mainly when new project mapping identifier is added into DCP project configuration in `type_specific_code` section, so we need to update content in search indices to be correctly bound to this project.
+
+``` 
+{
+  "project_id_type" : "type_specific_code.jbossorg_jira",
+  "project_id_value" : ["JBIDE","AS7"]  
+}
+```
+	
+
+ * `renormalize_by_contributor_lookup_id`
+Get all content which is bound to some contributor over defined values of defined normalization identifier passed in task configuration from DCP search indices, run all data normalizations on it, and update it back into DCP search index. Used mainly when new contributor mapping identifier is added into DCP project configuration in `email` or `type_specific_code` section, so we need to update content in search indices to be correctly bound to this project. 
+ 
+```
+{
+  "contributor_id_type" : "email",
+  "contributor_id_value" : ["john.doe@gmail.com","john.doe@hotmail.com"]  
+}
+```
+
+* `renormalize_by_contributor_code`
+Get all content where `sys_contributors` contains value passed in task configuration from DCP search indices, run all data normalizations on it, and update it back into DCP search index. Used for example when contributor code is changed in DCP contributor configuration, or some normalization identifier is removed from DCP contributor configuration (one normalized contributor is split into more), so we need to update content in search indices for it.
+
+``` 
+{
+  "contributor_code" : ["John Doe <john@doe.org>"]  
+}
+```
+
+
+##### Response content
+The response contains a JSON structure with `id` of created task.
+
+POST /rest/tasks/task/{taskType}
+> Accept: application/json
+{
+  "cfg_param_1" : "cfg value 1"
+}
+< 200
+< Content-Type: application/json
+{
+  "id":"egde9g8d9fg8d9fg"
+}
+
+Cancel execution of task with given `id`.
+DELETE /rest/tasks/task/{id}
+< 200
