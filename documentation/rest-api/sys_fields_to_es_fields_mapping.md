@@ -70,47 +70,45 @@ curl --user ${username}:${password} -X POST <host>:<port>/v1/rest/content/{sys_c
 ```
 where:
 
-- `{username}`/`{password}` are the content provider credentials (so this identify `sys_content_provider` value)
+- `{username}`/`{password}` are the content provider credentials (so this gives us the  `sys_content_provider` value)
 - `{sys_content_type}` is the document type defined by content provider
 - `{sys_content_id}` is a unique document id within `{sys_content_type}`
 
-Part of the document type definition within content provider configuration are names of Elasticsearch index and type which are used to index the new documents into. So once we know the content provider and document type we know where to index the document. We use provided `{sys_content_id}` to create `{sys_id}` which is used as a `{document_id}` value for underlying Elasticsearch index operation.
+Part of the document type definition within content provider configuration are names of Elasticsearch index and type which are used to index the new documents into. So once we know the content provider and document type we know which Elasticsearch `index`/`type` this document will be indexed into. We use provided `{sys_content_id}` to create `{sys_id}` which is used as a `{document_id}` value for underlying Elasticsearch index operation (see [DCP Content object](dcp_content_object.md) for more details).
 
-See [DCP Content object](dcp_content_object.md) for more details.
+When you index such document into Searchisko and [_search_](http://docs.jbossorg.apiary.io/#searchapi) for it later:
 
+```
+https://dcp-jbossorgdev.rhcloud.com/v1/rest/search?query=sys_id:jbossorg_sbs_forum-158696&field=_source
+```
+the response will look similar to the following:
 
 ```
 {
   "_index" : "data_jbossorg_sbs_forum",
   "_type" : "jbossorg_sbs_forum",
   "_id" : "jbossorg_sbs_forum-158696",
-  "_score" : 1.0,
+  "_score" : 12.10193,
   "_source" : {
-    "authors" : [ {
-      "display_name" : "yahya hugirat",
-      "email_address" : "hugirat@gmail.com",
-      "sys_contributor" : "yahya hugirat <hugirat@gmail.com>"
-    } ],
-    "source" : "jbossorg_sbs_forum",
-    "space_key" : "2193",
-    "sys_activity_dates" : [ "2010-11-10T03:32:05.804-0500" ],
-    "sys_content" : "<body><p>hi all,</p><p>i need to add an app to my test archive it is a html2pdf converter, is there a way to that?</p><p>i want to test a webservice that convert html pages to pdf.</p><p/><p>Best regards</p><p>Yahya</p></body>",
-    "sys_content_content-type" : "text/html",
+    "sys_id" : "jbossorg_sbs_forum-158696",
+    "sys_activity_dates" : [ "2010-11-10T00:00:00.0-0000" ],
+    "sys_content" : "Lorem ipsum dolor sit amet, consectetur adipisicing elit [...]",
+    "sys_content_content-type" : "text/plain",
     "sys_content_id" : "158696",
-    "sys_content_plaintext" : "hi all, i need to add an app to my test archive it is a html2pdf converter, is there a way to that? i want to test a webservice that convert html pages to pdf. Best regards Yahya",
+    "sys_content_plaintext" : "Lorem ipsum dolor sit amet, consectetur adipisicing elit [...]",
     "sys_content_provider" : "jbossorg",
     "sys_content_type" : "jbossorg_sbs_forum",
-    "sys_contributors" : [ "yahya hugirat <hugirat@gmail.com>", "Aslak Knutsen <aslak@4fs.no>" ],
-    "sys_created" : "2010-11-10T03:32:05.804-0500",
-    "sys_description" : "hi all, i need to add an app to my test archive it is a html2pdf converter, is there a way to that? i want to test a webservice that convert html pages to pdf. Best regards Yahya",
-    "sys_id" : "jbossorg_sbs_forum-158696",
-    "sys_last_activity_date" : "2010-11-11T06:02:10.306-0500",
+    "sys_contributors" : [ "John Doe <john.doe@mymail.com>" ],
+    "sys_created" : "2010-11-10T00:00:00.0-0000",
+    "sys_description" : "Lorem ipsum dolor sit amet ...",
+    "sys_last_activity_date" : "2010-11-10T00:00:00.0-0000",
     "sys_project" : "shrinkwrap",
     "sys_project_name" : "Shrinkwrap",
-    "sys_title" : "how to add a file to my archive?",
+    "sys_title" : "John's Lorem",
     "sys_type" : "forumthread",
-    "sys_updated" : "2013-10-24T12:11:45.635-04:00",
+    "sys_updated" : "2010-11-10T00:00:00.0-0000",
     "sys_url_view" : "https://community.jboss.org/thread/158696"
   }
 }
 ```
+Note that Searchisko did some modifications to the original document according to the [DCP configuration](https://github.com/searchisko/searchisko/tree/master/configuration) and [content provider configuration](https://github.com/searchisko/searchisko/tree/master/configuration/data/provider) for relevant `sys_content_provider` and particular `sys_content_type` input_preprocessors. For example it turned original `author` field into `sys_contributors` field containing full email address and name format (providing [contributors](https://github.com/searchisko/searchisko/tree/master/configuration/data/contributor) were configured accordingly) or it used original `date` value to populate several `sys_*` fields (e.g. `sys_activity_dates`, `sys_last_activity_date` or `sys_updated`) which are used at various occasions, like calculating `activity_dates_histogram` facet, sortBy by `old` or `new` … etc.
