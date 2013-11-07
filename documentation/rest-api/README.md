@@ -48,7 +48,7 @@ descriptions of document structures for the management API:
 + [contributor](management/contributor.md) - document type used by 'Management API - contributors'
 + [config_*](management)  - document types used by 'Management API - configuration' to configure DCP
 
-### [Expert] Mapping to Elasticsearch indices
+## [Expert] Mapping to Elasticsearch indices
 
 In the end of the day every indexed document is mapped and indexed into specific Elasticsearch index/type according on content provider configuration. Read more details about [Mapping from 'sys\_*' fields to Elasticsearch \_index, \_type and \_id fields](sys_fields_to_es_fields_mapping.md).
 
