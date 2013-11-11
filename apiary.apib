@@ -31,7 +31,7 @@ To support synergy, information stored into DCP will be normalized in these area
 
 # Authentication
 
-Some operation calls on REST API need to be authenticated by the provider. The caller provides credentials by HTTP URL parameters `provider` and `pwd`, or via standard HTTP Basic authentication.
+Some operation calls on REST API need to be authenticated by the provider. The caller provides credentials (`provider` and `pwd`) via standard HTTP Basic authentication.
 
 # Description of usual server HTTP response codes
 
@@ -44,10 +44,8 @@ Some operation calls on REST API need to be authenticated by the provider. The c
 
 # Cross Domain Policy
 
-DCP provides JSONP technique. If you want to use JSONP just add `callback` parameter to your request.
-
-It's not necessary to use JSONP on Search API. Response contains `Access-Control-Allow-Origin` 
-HTTP header, so client browser can use search API directly.
+* (Deprecated!) DCP provides JSONP technique. If you want to use JSONP just add `callback` parameter to your request.
+* CORS support: Response contains `Access-Control-Allow-Origin` HTTP header, so client browser can use search API directly.
 
 ---
 
