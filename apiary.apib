@@ -638,6 +638,22 @@ GET /rest/feed?{project,contributor,sys_type,tag,type,content_provider,query,sor
 	</feed>
 
 
+--
+User Authentication Status API
+
+When Searchisko is configured to work with authentication server (like SSO) then the following endpoint can be used to
+learn if user has been successfully authenticated.
+--
+
+Learn if user has been authenticated.
+
+GET /rest/auth/status
+< 200
+< Content-Type: application/json
+{
+  "authenticated":true
+}
+
 
 --
 Management API - content providers

@@ -192,6 +192,19 @@
             <version>${jackson.version}</version>
         </dependency>
 
+        <!-- SSO integration; JBoss.org custom (improved) CAS JAVA client -->
+        <dependency>
+            <groupId>org.jboss.community.cas</groupId>
+            <artifactId>cas-jboss-org-client</artifactId>
+            <version>1.2.6</version>
+            <exclusions>
+                <exclusion>
+                    <artifactId>commons-logging</artifactId>
+                    <groupId>commons-logging</groupId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
         <!-- Unit test dependencies -->
         <dependency>
             <groupId>junit</groupId>
@@ -357,6 +370,7 @@
             </plugin>
         </plugins>
     </build>
+
     <profiles>
         <profile>
             <!-- local development on localhost -->
@@ -365,6 +379,7 @@
                 <activeByDefault>true</activeByDefault>
             </activation>
             <properties>
+                <filter.name>localhost</filter.name>
                 <es.client.embedded.data.path>${env.PWD}/.dcp_data</es.client.embedded.data.path>
                 <persistence.xml.jta-data-source>java:jboss/datasources/SearchiskoDS</persistence.xml.jta-data-source>
                 <persistence.xml.hibernate.dialect>org.hibernate.dialect.H2Dialect</persistence.xml.hibernate.dialect>
@@ -378,6 +393,12 @@
                     <groupId>org.jboss.elasticsearch</groupId>
                     <artifactId>elasticsearch-river-jira</artifactId>
                     <version>${elasticsearch-river-jira.version}</version>
+                    <exclusions>
+                        <exclusion>
+                            <artifactId>commons-logging</artifactId>
+                            <groupId>commons-logging</groupId>
+                        </exclusion>
+                    </exclusions>
                 </dependency>
                 <dependency>
                     <groupId>org.jboss.elasticsearch</groupId>
@@ -386,10 +407,13 @@
                 </dependency>
             </dependencies>
             <build>
+                <filters>
+                    <filter>src/main/profiles/${filter.name}/sso.properties</filter>
+                </filters>
                 <resources>
                     <resource>
                         <filtering>true</filtering>
-                        <directory>src/main/profiles/localhost</directory>
+                        <directory>src/main/profiles/${filter.name}</directory>
                     </resource>
                 </resources>
             </build>
@@ -424,6 +448,7 @@
             <!-- development on RHEL6 based dev machine with standard installation of jboss EAP bundle -->
             <id>rhel6-dev</id>
             <properties>
+                <filter.name>rhel6-dev</filter.name>
                 <es.client.embedded.data.path>/var/lib/jbossas/standalone/.dcp_data</es.client.embedded.data.path>
                 <persistence.xml.jta-data-source>java:jboss/datasources/SearchiskoDS</persistence.xml.jta-data-source>
                 <persistence.xml.hibernate.dialect>org.hibernate.dialect.H2Dialect</persistence.xml.hibernate.dialect>
@@ -445,10 +470,13 @@
                 </dependency>
             </dependencies>
             <build>
+                <filters>
+                    <filter>src/main/profiles/${filter.name}/sso.properties</filter>
+                </filters>
                 <resources>
                     <resource>
                         <filtering>true</filtering>
-                        <directory>src/main/profiles/localhost</directory>
+                        <directory>src/main/profiles/${filter.name}</directory>
                     </resource>
                 </resources>
             </build>
@@ -460,6 +488,7 @@
             <!-- http://maven.apache.org/guides/mini/guide-building-for-different-environments.html -->
             <id>openshift</id>
             <properties>
+                <filter.name>openshift</filter.name>
                 <es.client.embedded.data.path>${env.OPENSHIFT_DATA_DIR}</es.client.embedded.data.path>
                 <es.network.host>${env.OPENSHIFT_INTERNAL_IP}</es.network.host>
                 <persistence.xml.jta-data-source>java:jboss/datasources/SearchiskoDS</persistence.xml.jta-data-source>
@@ -492,13 +521,48 @@
                         </configuration>
                     </plugin>
                 </plugins>
+                <filters>
+                    <filter>src/main/profiles/${filter.name}/sso.properties</filter>
+                </filters>
                 <resources>
                     <resource>
                         <filtering>true</filtering>
-                        <directory>src/main/profiles/openshift</directory>
+                        <directory>src/main/profiles/${filter.name}</directory>
                     </resource>
                 </resources>
             </build>
         </profile>
     </profiles>
+
+    <!-- Repository where enhanced CAS client can be found -->
+    <repositories>
+        <repository>
+            <id>jboss-public-repository-group</id>
+            <name>JBoss Public Repository Group</name>
+            <url>http://repository.jboss.org/nexus/content/groups/public/</url>
+            <layout>default</layout>
+            <releases>
+                <enabled>true</enabled>
+                <updatePolicy>never</updatePolicy>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+                <updatePolicy>never</updatePolicy>
+            </snapshots>
+        </repository>
+    </repositories>
+    <pluginRepositories>
+        <pluginRepository>
+            <id>jboss-public-repository-group</id>
+            <name>JBoss Public Repository Group</name>
+            <url>http://repository.jboss.org/nexus/content/groups/public/</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </pluginRepository>
+    </pluginRepositories>
+
 </project>
