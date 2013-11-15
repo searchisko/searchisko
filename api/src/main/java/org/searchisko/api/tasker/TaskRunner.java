@@ -28,17 +28,17 @@ public class TaskRunner extends Thread {
 
 	protected int maxRunningTasks = 2;
 
-	protected Map<String, Task> runningTasks = new HashMap<String, Task>();
+	protected final Map<String, Task> runningTasks = new HashMap<>();
 
 	protected TaskExecutionContext taskExecutionContextInstance = new TaskExecutionContextImpl();
 
 	/**
-	 * hertbeat period.
+	 * heartbeat period.
 	 */
 	protected long hbPeriod = 10000;
 
 	/**
-	 * last hertbeat timestamp
+	 * last heartbeat timestamp
 	 */
 	protected long lastHb;
 
@@ -101,7 +101,7 @@ public class TaskRunner extends Thread {
 
 	protected void removeFinished() {
 		synchronized (runningTasks) {
-			Set<String> rem = new HashSet<String>();
+			Set<String> rem = new HashSet<>();
 			for (String taskId : runningTasks.keySet()) {
 				if (!runningTasks.get(taskId).isAlive()) {
 					rem.add(taskId);
@@ -136,7 +136,7 @@ public class TaskRunner extends Thread {
 		if (lastHb < (now - hbPeriod)) {
 			lastHb = now;
 			try {
-				taskPersister.heartbeat(nodeId, new HashSet<String>(runningTasks.keySet()), hbPeriod * 5);
+				taskPersister.heartbeat(nodeId, new HashSet<>(runningTasks.keySet()), hbPeriod * 5);
 			} catch (Exception e) {
 				log.fine(e.getMessage());
 			}
