@@ -49,11 +49,7 @@ public class TaskRestService extends RestServiceBase {
 	@Produces(MediaType.APPLICATION_JSON)
 	@CORSSupport
 	public Object getTypes() {
-//		try {
-			return taskService.getTaskManager().listSupportedTaskTypes();
-//		} catch (Exception e) {
-//			return createErrorResponse(e);
-//		}
+		return taskService.getTaskManager().listSupportedTaskTypes();
 	}
 
 	@GET
@@ -62,21 +58,18 @@ public class TaskRestService extends RestServiceBase {
 	@CORSSupport
 	public Object getTasks(@QueryParam("taskType") String taskType, @QueryParam("taskStatus") String[] taskStatus,
 			@QueryParam("from") Integer from, @QueryParam("size") Integer size) {
-//		try {
-			List<TaskStatus> taskStatusFilter = null;
-			if (taskStatus != null && taskStatus.length > 0) {
-				taskStatusFilter = new ArrayList<TaskStatus>();
-				for (String s : taskStatus) {
-					TaskStatus ts = TaskStatus.fromString(s);
-					if (ts != null)
-						taskStatusFilter.add(ts);
-				}
+
+		List<TaskStatus> taskStatusFilter = null;
+		if (taskStatus != null && taskStatus.length > 0) {
+			taskStatusFilter = new ArrayList<TaskStatus>();
+			for (String s : taskStatus) {
+				TaskStatus ts = TaskStatus.fromString(s);
+				if (ts != null)
+					taskStatusFilter.add(ts);
 			}
-			return taskService.getTaskManager().listTasks(taskType, taskStatusFilter, from != null ? from : 0,
-					size != null ? size : 0);
-//		} catch (Exception e) {
-//			return createErrorResponse(e);
-//		}
+		}
+		return taskService.getTaskManager().listTasks(taskType, taskStatusFilter, from != null ? from : 0,
+				size != null ? size : 0);
 	}
 
 	@GET
@@ -84,15 +77,8 @@ public class TaskRestService extends RestServiceBase {
 	@Produces(MediaType.APPLICATION_JSON)
 	@CORSSupport
 	public Object getTask(@PathParam("taskId") String taskId) {
-//		try {
-			TaskStatusInfo tsi = taskService.getTaskManager().getTaskStatusInfo(taskId);
-			if (tsi != null)
-				return tsi;
-			else
-				return Response.status(Status.NOT_FOUND).build();
-//		} catch (Exception e) {
-//			return createErrorResponse(e);
-//		}
+		TaskStatusInfo tsi = taskService.getTaskManager().getTaskStatusInfo(taskId);
+		return tsi != null ? tsi : Response.status(Status.NOT_FOUND).build();
 	}
 
 	@POST
@@ -108,8 +94,6 @@ public class TaskRestService extends RestServiceBase {
 					.entity("Configuration is invalid for used taskType: " + e.getMessage()).build();
 		} catch (UnsupportedTaskException e) {
 			return Response.status(Status.BAD_REQUEST).entity("Used taskType is not supported").build();
-//		} catch (Exception e) {
-//			return createErrorResponse(e);
 		}
 	}
 
@@ -117,12 +101,8 @@ public class TaskRestService extends RestServiceBase {
 	@Path("/task/{taskId}")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Object cancelTask(@PathParam("taskId") String id) {
-//		try {
-			boolean ret = taskService.getTaskManager().cancelTask(id);
-			return Response.ok(ret ? "Task canceled" : "Task not canceled").build();
-//		} catch (Exception e) {
-//			return createErrorResponse(e);
-//		}
+		boolean ret = taskService.getTaskManager().cancelTask(id);
+		return Response.ok(ret ? "Task canceled" : "Task not canceled").build();
 	}
 
 }

@@ -10,7 +10,7 @@ import java.util.Map;
 import java.util.logging.Logger;
 
 /**
- * Task manager used to run longrunning tasks in distributed cluster - loadbalancing and failover supported.
+ * Task manager used to run long running tasks in distributed cluster - loadbalancing and failover supported.
  *
  * @author Vlastimil Elias (velias at redhat dot com)
  */

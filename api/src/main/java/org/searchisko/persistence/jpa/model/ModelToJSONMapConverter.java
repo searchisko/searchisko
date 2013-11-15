@@ -35,11 +35,9 @@ public interface ModelToJSONMapConverter<T> {
 	 *
 	 * @param jpaEntity to get value from
 	 * @return JSON Map structure from entity value
-	 * @throws JsonParseException
-	 * @throws JsonMappingException
 	 * @throws IOException
 	 */
-	public Map<String, Object> convertToJsonMap(T jpaEntity) throws JsonParseException, JsonMappingException, IOException;
+	public Map<String, Object> convertToJsonMap(T jpaEntity) throws IOException;
 
 	/**
 	 * Update value in JPA entity from jsonMapValue

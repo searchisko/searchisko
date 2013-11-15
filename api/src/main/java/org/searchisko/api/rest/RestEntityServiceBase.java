@@ -45,11 +45,7 @@ public class RestEntityServiceBase extends RestServiceBase {
 	@Path("/")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Object getAll(@QueryParam("from") Integer from, @QueryParam("size") Integer size) {
-//		try {
-			return entityService.getAll(from, size, null);
-//		} catch (Exception e) {
-//			return createErrorResponse(e);
-//		}
+		return entityService.getAll(from, size, null);
 	}
 
 	@GET
@@ -61,28 +57,20 @@ public class RestEntityServiceBase extends RestServiceBase {
             throw new RequiredFieldException("id");
 		}
 
-//		try {
-			Map<String, Object> ret = entityService.get(id);
-			if (ret == null) {
-				return Response.status(Response.Status.NOT_FOUND).build();
-			}
-			return ret;
-//		} catch (Exception e) {
-//			return createErrorResponse(e);
-//		}
+		Map<String, Object> ret = entityService.get(id);
+		if (ret == null) {
+			return Response.status(Response.Status.NOT_FOUND).build();
+		}
+		return ret;
 	}
 
 	protected Object getFiltered(String id, String[] fieldsToRemove) {
-//		try {
-			Map<String, Object> ret = entityService.get(id);
-			if (ret == null) {
-				return Response.status(Response.Status.NOT_FOUND).build();
-			} else {
-				return ESDataOnlyResponse.removeFields(ret, fieldsToRemove);
-			}
-//		} catch (Exception e) {
-//			return createErrorResponse(e);
-//		}
+		Map<String, Object> ret = entityService.get(id);
+		if (ret == null) {
+			return Response.status(Response.Status.NOT_FOUND).build();
+		} else {
+			return ESDataOnlyResponse.removeFields(ret, fieldsToRemove);
+		}
 	}
 
 	@POST
@@ -90,12 +78,8 @@ public class RestEntityServiceBase extends RestServiceBase {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	public Object create(Map<String, Object> data) {
-//		try {
-			String id = entityService.create(data);
-			return createResponseWithId(id);
-//		} catch (Exception e) {
-//			return createErrorResponse(e);
-//		}
+		String id = entityService.create(data);
+		return createResponseWithId(id);
 	}
 
 	@POST
@@ -108,12 +92,8 @@ public class RestEntityServiceBase extends RestServiceBase {
             throw new RequiredFieldException("id");
 		}
 
-//		try {
-			entityService.create(id, data);
-			return createResponseWithId(id);
-//		} catch (Exception e) {
-//			return createErrorResponse(e);
-//		}
+		entityService.create(id, data);
+		return createResponseWithId(id);
 	}
 
 	@DELETE
@@ -123,12 +103,8 @@ public class RestEntityServiceBase extends RestServiceBase {
             throw new RequiredFieldException("id");
 		}
 
-//		try {
-			entityService.delete(id);
-			return Response.ok().build();
-//		} catch (Exception e) {
-//			return createErrorResponse(e);
-//		}
+		entityService.delete(id);
+		return Response.ok().build();
 	}
 
 }

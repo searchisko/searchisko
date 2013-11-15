@@ -10,7 +10,7 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Interface for task persister component. It is used inside {@link TaskManager} to persist tasks informations.
+ * Interface for task persister component. It is used inside {@link TaskManager} to persist tasks information.
  *
  * @author Vlastimil Elias (velias at redhat dot com)
  */
@@ -66,7 +66,7 @@ public interface TaskPersister {
 	/**
 	 * Write new row into task log.
 	 *
-	 * @param message to be writen
+	 * @param message to be written
 	 */
 	public void writeTaskLog(String id, String message);
 
@@ -84,7 +84,7 @@ public interface TaskPersister {
 	 *
 	 * @param nodeId of current cluster node
 	 * @param runningTasksId identifiers of tasks currently running on this cluster node
-	 * @param failoverTimeout failover timeout in miliseconds. Must be accurate to this method call period (two or three
+	 * @param failoverTimeout failover timeout in milliseconds. Must be accurate to this method call period (two or three
 	 *          times higher!).
 	 */
 	public void heartbeat(String nodeId, Set<String> runningTasksId, long failoverTimeout);

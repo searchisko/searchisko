@@ -64,9 +64,7 @@ public abstract class Task extends Thread {
 			} else {
 				writeStatus(TaskStatus.FINISHED_OK, null);
 			}
-		} catch (InterruptedException e) {
-			writeStatus(TaskStatus.FAILOVER, "Task execution was interrupted");
-		} catch (InterruptedIOException e) {
+		} catch (InterruptedException | InterruptedIOException e) {
 			writeStatus(TaskStatus.FAILOVER, "Task execution was interrupted");
 		} catch (RuntimeException e) {
 			String msg = "Task execution interrupted due " + e.getClass().getName() + ": " + e.getMessage();

@@ -38,7 +38,7 @@ public abstract class StringValueConverter<T> extends CommonConverter<T> {
 	public abstract void setValue(T jpaEntity, String value);
 
 	@Override
-	public Map<String, Object> convertToJsonMap(T jpaEntity) throws JsonParseException, JsonMappingException, IOException {
+	public Map<String, Object> convertToJsonMap(T jpaEntity) throws IOException {
 		return convertToJsonMap(getValue(jpaEntity));
 	}
 

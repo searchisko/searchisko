@@ -71,15 +71,11 @@ public class ProjectRestService extends RestEntityServiceBase {
 	public Object getAll(@QueryParam("from") Integer from, @QueryParam("size") Integer size) {
 		Principal principal = securityContext.getUserPrincipal();
 
-//		try {
-			if (principal == null) {
-				return entityService.getAll(from, size, fieldsToRemove);
-			} else {
-				return entityService.getAll(from, size, null);
-			}
-//		} catch (Exception e) {
-//			return createErrorResponse(e);
-//		}
+		if (principal == null) {
+			return entityService.getAll(from, size, fieldsToRemove);
+		} else {
+			return entityService.getAll(from, size, null);
+		}
 	}
 
 	@GET
@@ -129,12 +125,8 @@ public class ProjectRestService extends RestEntityServiceBase {
 					.entity("Code in URL must be same as '" + ProjectService.CODE + "' field in data.").build();
 		}
 
-//		try {
-			entityService.create(id, data);
-			return createResponseWithId(id);
-//		} catch (Exception e) {
-//			return createErrorResponse(e);
-//		}
+		entityService.create(id, data);
+		return createResponseWithId(id);
 	}
 
 }

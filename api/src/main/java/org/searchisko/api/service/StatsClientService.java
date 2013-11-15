@@ -129,8 +129,7 @@ public class StatsClientService extends ElasticsearchClientService {
 	 * @param type of search performed - mandatory
 	 * @param ex exception from search attempt - mandatory
 	 * @param dateInMillis timestamp when search was performed
-	 * @param query search query performed
-	 * @param filters used for search - optional
+	 * @param querySettings client query settings
 	 */
 	public void writeStatisticsRecord(StatsRecordType type, ElasticSearchException ex, long dateInMillis,
 			QuerySettings querySettings) {
@@ -139,7 +138,7 @@ public class StatsClientService extends ElasticsearchClientService {
 			return;
 		}
 
-		Map<String, Object> source = new HashMap<String, Object>();
+		Map<String, Object> source = new HashMap<>();
 
 		source.put("exception", true);
 		source.put("exception_detailed_message", ex.getDetailedMessage());
@@ -171,7 +170,7 @@ public class StatsClientService extends ElasticsearchClientService {
 			return;
 		}
 
-		Map<String, Object> source = new HashMap<String, Object>();
+		Map<String, Object> source = new HashMap<>();
 
 		source.put(FIELD_RESPONSE_UUID, responseUuid);
 		source.put("took", resp.getTookInMillis());
@@ -190,7 +189,7 @@ public class StatsClientService extends ElasticsearchClientService {
 		addQuery(source, querySettings);
 
 		if (resp.getHits().totalHits() > 0) {
-			List<String> hitIds = new ArrayList<String>();
+			List<String> hitIds = new ArrayList<>();
 			for (SearchHit hit : resp.getHits().getHits()) {
 				hitIds.add(hit.getId());
 			}
@@ -216,7 +215,7 @@ public class StatsClientService extends ElasticsearchClientService {
 		}
 
 		if (source == null)
-			source = new HashMap<String, Object>();
+			source = new HashMap<>();
 
 		source.put(FIELD_TYPE, type.getSearchIndexedValue());
 		source.put(FIELD_DATE, DATE_TIME_FORMATTER_UTC.print(dateInMillis));

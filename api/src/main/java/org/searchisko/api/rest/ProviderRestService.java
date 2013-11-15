@@ -62,11 +62,7 @@ public class ProviderRestService extends RestEntityServiceBase {
 	@Produces(MediaType.APPLICATION_JSON)
     @CORSSupport
 	public Object getAll(@QueryParam("from") Integer from, @QueryParam("size") Integer size) {
-//		try {
-			return entityService.getAll(from, size, FIELDS_TO_REMOVE);
-//		} catch (Exception e) {
-//			return createErrorResponse(e);
-//		}
+		return entityService.getAll(from, size, FIELDS_TO_REMOVE);
 	}
 
 	@GET
@@ -83,21 +79,18 @@ public class ProviderRestService extends RestEntityServiceBase {
 
 		// check Provider name. Only provider with same name or superprovider has access.
 		String provider = securityContext.getUserPrincipal().getName();
-//		try {
-			Map<String, Object> entity = entityService.get(id);
 
-			if (entity == null)
-				return Response.status(Status.NOT_FOUND).build();
+		Map<String, Object> entity = entityService.get(id);
 
-			if (!provider.equals(entity.get(ProviderService.NAME))) {
-				if (!providerService.isSuperProvider(provider)) {
-					return Response.status(Status.FORBIDDEN).build();
-				}
+		if (entity == null)
+			return Response.status(Status.NOT_FOUND).build();
+
+		if (!provider.equals(entity.get(ProviderService.NAME))) {
+			if (!providerService.isSuperProvider(provider)) {
+				return Response.status(Status.FORBIDDEN).build();
 			}
-			return ESDataOnlyResponse.removeFields(entity, FIELDS_TO_REMOVE);
-//		} catch (Exception e) {
-//			return createErrorResponse(e);
-//		}
+		}
+		return ESDataOnlyResponse.removeFields(entity, FIELDS_TO_REMOVE);
 	}
 
 	@POST
@@ -132,19 +125,15 @@ public class ProviderRestService extends RestEntityServiceBase {
 					.entity("Name in URL must be same as '" + ProviderService.NAME + "' field in data.").build();
 		}
 
-//		try {
-			// do not update password hash if entity exists already!
-			Map<String, Object> entity = providerService.get(id);
-			if (entity != null) {
-				Object pwdhash = entity.get(ProviderService.PASSWORD_HASH);
-				if (pwdhash != null)
-					data.put(ProviderService.PASSWORD_HASH, pwdhash);
-			}
-			providerService.create(id, data);
-			return createResponseWithId(id);
-//		} catch (Exception e) {
-//			return createErrorResponse(e);
-//		}
+		// do not update password hash if entity exists already!
+		Map<String, Object> entity = providerService.get(id);
+		if (entity != null) {
+			Object pwdhash = entity.get(ProviderService.PASSWORD_HASH);
+			if (pwdhash != null)
+				data.put(ProviderService.PASSWORD_HASH, pwdhash);
+		}
+		providerService.create(id, data);
+		return createResponseWithId(id);
 	}
 
 	@POST

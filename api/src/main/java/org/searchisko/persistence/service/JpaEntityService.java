@@ -100,7 +100,7 @@ public class JpaEntityService<T> implements EntityService {
 		criteria.select(root);
 		final List<T> result = em.createQuery(criteria).getResultList();
 
-		List<Map<String, Object>> ret = new ArrayList<Map<String, Object>>();
+		List<Map<String, Object>> ret = new ArrayList<>();
 		try {
 			for (T row : result) {
 				ret.add(converter.convertToJsonMap(row));

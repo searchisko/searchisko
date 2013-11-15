@@ -62,7 +62,7 @@ public class TaskStatusInfo {
 	@Column(length = 65000)
 	protected String processingLog;
 
-	protected boolean cancelRequsted = false;
+	protected boolean cancelRequested = false;
 
 	/**
 	 * Timestamp of last heartbeat for this task. Used to failover tasks from failed cluater nodes.
@@ -94,7 +94,7 @@ public class TaskStatusInfo {
 	 */
 	public boolean startTaskExecution(String executionNodeId) {
 		if (taskStatus == TaskStatus.NEW || taskStatus == TaskStatus.FAILOVER) {
-			if (cancelRequsted) {
+			if (cancelRequested) {
 				taskStatus = TaskStatus.CANCELED;
 				return false;
 			} else {
@@ -209,12 +209,12 @@ public class TaskStatusInfo {
 		this.processingLog = processingLog;
 	}
 
-	public boolean isCancelRequsted() {
-		return cancelRequsted;
+	public boolean isCancelRequested() {
+		return cancelRequested;
 	}
 
-	public void setCancelRequsted(boolean cancelRequsted) {
-		this.cancelRequsted = cancelRequsted;
+	public void setCancelRequested(boolean cancelRequested) {
+		this.cancelRequested = cancelRequested;
 	}
 
 	public long getHeartbeat() {
@@ -230,7 +230,7 @@ public class TaskStatusInfo {
 		return "TaskStatusInfo [id=" + id + ", taskType=" + taskType + ", taskStatus=" + taskStatus
 				+ ", taskConfigSerialized=" + taskConfigSerialized + ", taskCreatedAt=" + taskCreatedAt + ", lastRunStartedAt="
 				+ lastRunStartedAt + ", runCount=" + runCount + ", lastRunFinishedAt=" + lastRunFinishedAt
-				+ ", executionNodeId=" + executionNodeId + ", cancelRequsted=" + cancelRequsted + "]";
+				+ ", executionNodeId=" + executionNodeId + ", cancelRequested=" + cancelRequested + "]";
 	}
 
 }

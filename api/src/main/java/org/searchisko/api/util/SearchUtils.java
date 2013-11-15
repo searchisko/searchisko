@@ -113,12 +113,9 @@ public class SearchUtils {
 	 *
 	 * @param jsonData string to convert
 	 * @return JSON MAP structure
-	 * @throws JsonParseException
-	 * @throws JsonMappingException
 	 * @throws IOException
 	 */
-	public static Map<String, Object> convertToJsonMap(String jsonData) throws JsonParseException, JsonMappingException,
-			IOException {
+	public static Map<String, Object> convertToJsonMap(String jsonData) throws IOException {
 		if (jsonData == null)
 			return null;
 		ObjectMapper mapper = new ObjectMapper();

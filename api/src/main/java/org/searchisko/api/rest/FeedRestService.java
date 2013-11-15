@@ -104,8 +104,6 @@ public class FeedRestService extends RestServiceBase {
             throw new BadFieldException("unknown", e);
 		} catch (IndexMissingException e) {
 			return Response.status(Response.Status.NOT_FOUND).build();
-//		} catch (Exception e) {
-//			return createErrorResponse(e);
 		}
 	}
 

@@ -105,7 +105,7 @@ public class SecurityPreProcessInterceptor implements PreProcessInterceptor, Acc
 				return (ProviderAllowed) declaring.getAnnotation(ProviderAllowed.class);
 			} else {
 				if (method.getDeclaringClass().isAnnotationPresent(ProviderAllowed.class)) {
-					return (ProviderAllowed) method.getDeclaringClass().getAnnotation(ProviderAllowed.class);
+					return method.getDeclaringClass().getAnnotation(ProviderAllowed.class);
 				}
 			}
 		}

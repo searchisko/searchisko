@@ -55,14 +55,14 @@ public class PersistenceBackendService {
 	@Named("providerServiceBackend")
 	@ApplicationScoped
 	public EntityService produceProviderService() {
-		JpaEntityService<Provider> serv = new JpaEntityService<Provider>(em, new ProviderConverter(), Provider.class);
+		JpaEntityService<Provider> serv = new JpaEntityService<>(em, new ProviderConverter(), Provider.class);
 
 		if (appConfigurationService.getAppConfiguration().isProviderCreateInitData()) {
 			final String initialProviderName = "jbossorg";
 			Map<String, Object> initialProvider = serv.get(initialProviderName);
 			if (initialProvider == null) {
 				log.info("Provider entity doesn't exists. Creating initial entity for first authentication.");
-				Map<String, Object> jbossorgEntity = new HashMap<String, Object>();
+				Map<String, Object> jbossorgEntity = new HashMap<>();
 				jbossorgEntity.put(ProviderService.NAME, initialProviderName);
 				// initial password: jbossorgjbossorg
 				jbossorgEntity.put(ProviderService.PASSWORD_HASH, "47dc8a4d65fe0cd5b1236b7e8612634e604a0c2f");
@@ -79,14 +79,14 @@ public class PersistenceBackendService {
 	@Named("projectServiceBackend")
 	@ApplicationScoped
 	public EntityService produceProjectService() {
-		return new JpaEntityService<Project>(em, new ProjectConverter(), Project.class);
+		return new JpaEntityService<>(em, new ProjectConverter(), Project.class);
 	}
 
 	@Produces
 	@Named("contributorServiceBackend")
 	@ApplicationScoped
 	public EntityService produceContributorService() {
-		return new JpaEntityService<Contributor>(em, new ContributorConverter(), Contributor.class);
+		return new JpaEntityService<>(em, new ContributorConverter(), Contributor.class);
 
 	}
 
@@ -94,7 +94,7 @@ public class PersistenceBackendService {
 	@Named("configServiceBackend")
 	@ApplicationScoped
 	public EntityService produceConfigService() {
-		return new JpaEntityService<Config>(em, new ConfigConverter(), Config.class);
+		return new JpaEntityService<>(em, new ConfigConverter(), Config.class);
 
 	}
 

@@ -108,8 +108,6 @@ public class ContentRestService extends RestServiceBase {
 			return new ESDataOnlyResponse(response, ContentObjectFields.SYS_CONTENT_ID);
 		} catch (IndexMissingException e) {
 			return Response.status(Response.Status.NOT_FOUND).build();
-//		} catch (Exception e) {
-//			return createErrorResponse(e);
 		}
 	}
 
@@ -148,8 +146,6 @@ public class ContentRestService extends RestServiceBase {
 			return createResponse(getResponse);
 		} catch (IndexMissingException e) {
 			return Response.status(Response.Status.NOT_FOUND).build();
-//		} catch (Exception e) {
-//			return createErrorResponse(e);
 		}
 	}
 
@@ -170,68 +166,65 @@ public class ContentRestService extends RestServiceBase {
 		if (content == null || content.isEmpty()) {
 			return Response.status(Status.BAD_REQUEST).entity("Some content for pushing must be defined").build();
 		}
-//		try {
-			Map<String, Object> provider = providerService.findProvider(getProvider());
-			Map<String, Object> typeDef = ProviderService.extractContentType(provider, type);
-			if (typeDef == null) {
-                throw new BadFieldException("type");
-			}
 
-			String sysContentId = providerService.generateSysId(type, contentId);
+		Map<String, Object> provider = providerService.findProvider(getProvider());
+		Map<String, Object> typeDef = ProviderService.extractContentType(provider, type);
+		if (typeDef == null) {
+			throw new BadFieldException("type");
+		}
 
-			// check search subsystem configuration
-			String indexName = ProviderService.extractIndexName(typeDef, type);
-			String indexType = ProviderService.extractIndexType(typeDef, type);
+		String sysContentId = providerService.generateSysId(type, contentId);
 
-			// fill some normalized fields - should be last step to avoid changing them via preprocessors
-			content.put(ContentObjectFields.SYS_CONTENT_PROVIDER, getProvider());
-			content.put(ContentObjectFields.SYS_CONTENT_ID, contentId);
-			content.put(ContentObjectFields.SYS_CONTENT_TYPE, type);
-			content.put(ContentObjectFields.SYS_ID, sysContentId);
-			content.put(ContentObjectFields.SYS_TYPE, ProviderService.extractSysType(typeDef, type));
-			content.put(ContentObjectFields.SYS_UPDATED, new Date());
-			// Copy distinct data from content to normalized fields
-			content.put(ContentObjectFields.SYS_TAGS, content.get("tags"));
+		// check search subsystem configuration
+		String indexName = ProviderService.extractIndexName(typeDef, type);
+		String indexType = ProviderService.extractIndexType(typeDef, type);
 
-			// Fill type of content from configuration
-			if (content.containsKey(ContentObjectFields.SYS_CONTENT)) {
-				content.put(ContentObjectFields.SYS_CONTENT_CONTENT_TYPE,
-						ProviderService.extractSysContentContentType(typeDef, type));
-			} else {
-				content.remove(ContentObjectFields.SYS_CONTENT_CONTENT_TYPE);
-			}
+		// fill some normalized fields - should be last step to avoid changing them via preprocessors
+		content.put(ContentObjectFields.SYS_CONTENT_PROVIDER, getProvider());
+		content.put(ContentObjectFields.SYS_CONTENT_ID, contentId);
+		content.put(ContentObjectFields.SYS_CONTENT_TYPE, type);
+		content.put(ContentObjectFields.SYS_ID, sysContentId);
+		content.put(ContentObjectFields.SYS_TYPE, ProviderService.extractSysType(typeDef, type));
+		content.put(ContentObjectFields.SYS_UPDATED, new Date());
+		// Copy distinct data from content to normalized fields
+		content.put(ContentObjectFields.SYS_TAGS, content.get("tags"));
 
-			// Run preprocessors to manipulate other fields
-			providerService.runPreprocessors(type, ProviderService.extractPreprocessors(typeDef, type), content);
+		// Fill type of content from configuration
+		if (content.containsKey(ContentObjectFields.SYS_CONTENT)) {
+			content.put(ContentObjectFields.SYS_CONTENT_CONTENT_TYPE,
+					ProviderService.extractSysContentContentType(typeDef, type));
+		} else {
+			content.remove(ContentObjectFields.SYS_CONTENT_CONTENT_TYPE);
+		}
 
-			// Refill type of content from configuration if content was added in preprocessors
-			if (content.containsKey(ContentObjectFields.SYS_CONTENT)
-					&& !content.containsKey(ContentObjectFields.SYS_CONTENT_CONTENT_TYPE)) {
-				content.put(ContentObjectFields.SYS_CONTENT_CONTENT_TYPE,
-						ProviderService.extractSysContentContentType(typeDef, type));
-			}
+		// Run preprocessors to manipulate other fields
+		providerService.runPreprocessors(type, ProviderService.extractPreprocessors(typeDef, type), content);
 
-			if (ProviderService.extractPersist(typeDef)) {
-				contentPersistenceService.store(sysContentId, type, content);
-			}
+		// Refill type of content from configuration if content was added in preprocessors
+		if (content.containsKey(ContentObjectFields.SYS_CONTENT)
+				&& !content.containsKey(ContentObjectFields.SYS_CONTENT_CONTENT_TYPE)) {
+			content.put(ContentObjectFields.SYS_CONTENT_CONTENT_TYPE,
+					ProviderService.extractSysContentContentType(typeDef, type));
+		}
 
-			// TODO EXTERNAL_TAGS - add external tags for this document into sys_tags field
+		if (ProviderService.extractPersist(typeDef)) {
+			contentPersistenceService.store(sysContentId, type, content);
+		}
 
-			// Push to search subsystem
-			IndexResponse ir = searchClientService.getClient().prepareIndex(indexName, indexType, sysContentId)
-					.setSource(content).execute().actionGet();
-			Map<String, String> retJson = new LinkedHashMap<String, String>();
-			if (ir.getVersion() > 1) {
-				retJson.put("status", "update");
-				retJson.put("message", "Content was updated successfully.");
-			} else {
-				retJson.put("status", "insert");
-				retJson.put("message", "Content was inserted successfully.");
-			}
-			return Response.ok(retJson).build();
-//		} catch (Exception e) {
-//			return createErrorResponse(e);
-//		}
+		// TODO EXTERNAL_TAGS - add external tags for this document into sys_tags field
+
+		// Push to search subsystem
+		IndexResponse ir = searchClientService.getClient().prepareIndex(indexName, indexType, sysContentId)
+				.setSource(content).execute().actionGet();
+		Map<String, String> retJson = new LinkedHashMap<String, String>();
+		if (ir.getVersion() > 1) {
+			retJson.put("status", "update");
+			retJson.put("message", "Content was updated successfully.");
+		} else {
+			retJson.put("status", "insert");
+			retJson.put("message", "Content was inserted successfully.");
+		}
+		return Response.ok(retJson).build();
 	}
 
 	@DELETE
@@ -247,32 +240,29 @@ public class ContentRestService extends RestServiceBase {
 		if (type == null || type.isEmpty()) {
 			throw new RequiredFieldException("type");
 		}
-//		try {
-			Map<String, Object> provider = providerService.findProvider(getProvider());
-			Map<String, Object> typeDef = ProviderService.extractContentType(provider, type);
-			if (typeDef == null) {
-				throw new BadFieldException("type");
-			}
 
-			String sysContentId = providerService.generateSysId(type, contentId);
+		Map<String, Object> provider = providerService.findProvider(getProvider());
+		Map<String, Object> typeDef = ProviderService.extractContentType(provider, type);
+		if (typeDef == null) {
+			throw new BadFieldException("type");
+		}
 
-			if (ProviderService.extractPersist(typeDef)) {
-				contentPersistenceService.delete(sysContentId, type);
-			}
+		String sysContentId = providerService.generateSysId(type, contentId);
 
-			String indexName = ProviderService.extractIndexName(typeDef, type);
-			String indexType = ProviderService.extractIndexType(typeDef, type);
+		if (ProviderService.extractPersist(typeDef)) {
+			contentPersistenceService.delete(sysContentId, type);
+		}
 
-			DeleteResponse dr = searchClientService.getClient().prepareDelete(indexName, indexType, sysContentId).execute()
-					.actionGet();
+		String indexName = ProviderService.extractIndexName(typeDef, type);
+		String indexType = ProviderService.extractIndexType(typeDef, type);
 
-			if (dr.isNotFound() && !Boolean.parseBoolean(ignoreMissing)) {
-				return Response.status(Status.NOT_FOUND).entity("Content not found to be deleted.").build();
-			} else {
-				return Response.ok("Content deleted successfully.").build();
-			}
-//		} catch (Exception e) {
-//			return createErrorResponse(e);
-//		}
+		DeleteResponse dr = searchClientService.getClient().prepareDelete(indexName, indexType, sysContentId).execute()
+				.actionGet();
+
+		if (dr.isNotFound() && !Boolean.parseBoolean(ignoreMissing)) {
+			return Response.status(Status.NOT_FOUND).entity("Content not found to be deleted.").build();
+		} else {
+			return Response.ok("Content deleted successfully.").build();
+		}
 	}
 }

@@ -7,7 +7,7 @@ package org.searchisko.api.tasker;
 
 /**
  * Task execution context. Passed into {@link Task} instance over
- * {@link Task#setExecutionContext(String, TaskExecutionContenxt)} before task is started.
+ * {@link Task#setExecutionContext(String, TaskExecutionContext)} before task is started.
  *
  * @author Vlastimil Elias (velias at redhat dot com)
  */

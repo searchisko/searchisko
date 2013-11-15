@@ -39,12 +39,9 @@ public abstract class CommonConverter<T> implements ModelToJSONMapConverter<T> {
 	 *
 	 * @param jsonData string to convert
 	 * @return JSON MAP structure
-	 * @throws JsonParseException
-	 * @throws JsonMappingException
 	 * @throws IOException
 	 */
-	public Map<String, Object> convertToJsonMap(String jsonData) throws JsonParseException, JsonMappingException,
-			IOException {
+	public Map<String, Object> convertToJsonMap(String jsonData) throws IOException {
 		return SearchUtils.convertToJsonMap(jsonData);
 	}
 }

@@ -290,7 +290,7 @@ public class TaskPersisterJpaTest_Embedded extends JpaTestBase {
 
 			em.getTransaction().begin();
 			TaskStatusInfo ts = tested.getTaskStatusInfo(id1);
-			Assert.assertEquals(true, ts.isCancelRequsted());
+			Assert.assertEquals(true, ts.isCancelRequested());
 			em.getTransaction().commit();
 
 		} catch (Exception ex) {

@@ -137,51 +137,51 @@ public class TaskPersisterJpaTest {
 			Mockito.reset(tested.em);
 			TaskStatusInfo tsi = createTaskStatusInfoWithStatus(TaskStatus.NEW);
 			markTaskToBeCancelledImpl(tested, tsi, true);
-			Assert.assertTrue(tsi.isCancelRequsted());
+			Assert.assertTrue(tsi.isCancelRequested());
 		}
 
 		// case - no duplicate set if set already
 		{
 			Mockito.reset(tested.em);
 			TaskStatusInfo tsi = createTaskStatusInfoWithStatus(TaskStatus.NEW);
-			tsi.setCancelRequsted(true);
+			tsi.setCancelRequested(true);
 			markTaskToBeCancelledImpl(tested, tsi, false);
-			Assert.assertTrue(tsi.isCancelRequsted());
+			Assert.assertTrue(tsi.isCancelRequested());
 		}
 
 		{
 			Mockito.reset(tested.em);
 			TaskStatusInfo tsi = createTaskStatusInfoWithStatus(TaskStatus.RUNNING);
 			markTaskToBeCancelledImpl(tested, tsi, true);
-			Assert.assertTrue(tsi.isCancelRequsted());
+			Assert.assertTrue(tsi.isCancelRequested());
 		}
 
 		{
 			Mockito.reset(tested.em);
 			TaskStatusInfo tsi = createTaskStatusInfoWithStatus(TaskStatus.FAILOVER);
 			markTaskToBeCancelledImpl(tested, tsi, true);
-			Assert.assertTrue(tsi.isCancelRequsted());
+			Assert.assertTrue(tsi.isCancelRequested());
 		}
 
 		{
 			Mockito.reset(tested.em);
 			TaskStatusInfo tsi = createTaskStatusInfoWithStatus(TaskStatus.CANCELED);
 			markTaskToBeCancelledImpl(tested, tsi, false);
-			Assert.assertFalse(tsi.isCancelRequsted());
+			Assert.assertFalse(tsi.isCancelRequested());
 		}
 
 		{
 			Mockito.reset(tested.em);
 			TaskStatusInfo tsi = createTaskStatusInfoWithStatus(TaskStatus.FINISHED_OK);
 			markTaskToBeCancelledImpl(tested, tsi, false);
-			Assert.assertFalse(tsi.isCancelRequsted());
+			Assert.assertFalse(tsi.isCancelRequested());
 		}
 
 		{
 			Mockito.reset(tested.em);
 			TaskStatusInfo tsi = createTaskStatusInfoWithStatus(TaskStatus.FINISHED_ERROR);
 			markTaskToBeCancelledImpl(tested, tsi, false);
-			Assert.assertFalse(tsi.isCancelRequsted());
+			Assert.assertFalse(tsi.isCancelRequested());
 		}
 
 	}

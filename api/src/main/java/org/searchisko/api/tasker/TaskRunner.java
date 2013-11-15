@@ -120,7 +120,7 @@ public class TaskRunner extends Thread {
 				Task t = runningTasks.get(taskId);
 				if (t.isAlive() && !t.isCanceledOrInterrupted()) {
 					TaskStatusInfo tsi = taskPersister.getTaskStatusInfo(taskId);
-					if (tsi != null && tsi.cancelRequsted) {
+					if (tsi != null && tsi.cancelRequested) {
 						t.setCanceled(true);
 						t.interrupt();
 					}

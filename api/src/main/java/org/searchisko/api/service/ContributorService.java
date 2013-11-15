@@ -125,21 +125,17 @@ public class ContributorService implements EntityService {
 	}
 
 	public SearchResponse search(String email) {
-//		try {
-			SearchRequestBuilder searchBuilder = searchClientService.getClient().prepareSearch(SEARCH_INDEX_NAME)
-					.setTypes(SEARCH_INDEX_TYPE);
+		SearchRequestBuilder searchBuilder = searchClientService.getClient().prepareSearch(SEARCH_INDEX_NAME)
+				.setTypes(SEARCH_INDEX_TYPE);
 
-			searchBuilder.setFilter(FilterBuilders.queryFilter(QueryBuilders.matchQuery("email", email)));
-			searchBuilder.setQuery(QueryBuilders.matchAllQuery());
+		searchBuilder.setFilter(FilterBuilders.queryFilter(QueryBuilders.matchQuery("email", email)));
+		searchBuilder.setQuery(QueryBuilders.matchAllQuery());
 
-			try {
-				final SearchResponse response = searchBuilder.execute().actionGet();
-				return response;
-			} catch (IndexMissingException e) {
-				return null;
-			}
-//		} catch (Exception e) {
-//			throw e;
-//		}
+		try {
+			final SearchResponse response = searchBuilder.execute().actionGet();
+			return response;
+		} catch (IndexMissingException e) {
+			return null;
+		}
 	}
 }

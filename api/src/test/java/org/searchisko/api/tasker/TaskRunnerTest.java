@@ -76,7 +76,7 @@ public class TaskRunnerTest {
 
 	private TaskStatusInfo createTaskStatusInfoCancelTest(boolean cancelRequsted) {
 		TaskStatusInfo ret = new TaskStatusInfo();
-		ret.cancelRequsted = cancelRequsted;
+		ret.cancelRequested = cancelRequsted;
 		return ret;
 	}
 

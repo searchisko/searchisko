@@ -80,8 +80,6 @@ public class SearchRestService extends RestServiceBase {
             throw new BadFieldException("unknown", e);
 		} catch (IndexMissingException e) {
 			return Response.status(Response.Status.NOT_FOUND).build();
-//		} catch (Exception e) {
-//			return createErrorResponse(e);
 		}
 	}
 
@@ -121,12 +119,8 @@ public class SearchRestService extends RestServiceBase {
             throw new RequiredFieldException("hit_id");
 		}
 		sessionId = SearchUtils.trimToNull(sessionId);
-//		try {
-			boolean result = searchService.writeSearchHitUsedStatisticsRecord(uuid, contentId, sessionId);
-			return Response.ok(result ? "statistics record accepted" : "statistics record ignored").build();
-//		} catch (Exception e) {
-//			return createErrorResponse(e);
-//		}
+		boolean result = searchService.writeSearchHitUsedStatisticsRecord(uuid, contentId, sessionId);
+		return Response.ok(result ? "statistics record accepted" : "statistics record ignored").build();
 	}
 
 }

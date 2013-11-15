@@ -69,7 +69,7 @@ public class TaskPersisterJpa implements TaskPersister {
 		CriteriaQuery<TaskStatusInfo> queryList = cb.createQuery(TaskStatusInfo.class);
 		Root<TaskStatusInfo> root = queryList.from(TaskStatusInfo.class);
 		queryList.select(root);
-		List<Predicate> filter = new ArrayList<Predicate>();
+		List<Predicate> filter = new ArrayList<>();
 		if (taskStatusFilter != null && !taskStatusFilter.isEmpty()) {
 			Expression<String> taskStatus = root.get("taskStatus");
 			filter.add(taskStatus.in(taskStatusFilter));
@@ -98,9 +98,9 @@ public class TaskPersisterJpa implements TaskPersister {
 	public boolean markTaskToBeCancelled(String id) {
 		TaskStatusInfo tis = em.find(TaskStatusInfo.class, id, LockModeType.PESSIMISTIC_WRITE);
 		if (tis != null
-				&& !tis.isCancelRequsted()
+				&& !tis.isCancelRequested()
 				&& (tis.getTaskStatus() == TaskStatus.NEW || tis.getTaskStatus() == TaskStatus.RUNNING || tis.getTaskStatus() == TaskStatus.FAILOVER)) {
-			tis.setCancelRequsted(true);
+			tis.setCancelRequested(true);
 			return true;
 		}
 		return false;
@@ -139,7 +139,7 @@ public class TaskPersisterJpa implements TaskPersister {
 		}
 	}
 
-	private static final List<TaskStatus> toRunTaskStatusFilter = new ArrayList<TaskStatus>();
+	private static final List<TaskStatus> toRunTaskStatusFilter = new ArrayList<>();
 	static {
 		toRunTaskStatusFilter.add(TaskStatus.NEW);
 		toRunTaskStatusFilter.add(TaskStatus.FAILOVER);
@@ -164,7 +164,7 @@ public class TaskPersisterJpa implements TaskPersister {
 		return null;
 	}
 
-	private static final List<TaskStatus> runningTaskStatusFilter = new ArrayList<TaskStatus>();
+	private static final List<TaskStatus> runningTaskStatusFilter = new ArrayList<>();
 	static {
 		runningTaskStatusFilter.add(TaskStatus.RUNNING);
 	}

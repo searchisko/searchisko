@@ -146,7 +146,7 @@ public class TaskStatusInfoTest {
 		{
 			tested = new TaskStatusInfo();
 			tested.taskStatus = TaskStatus.NEW;
-			tested.setCancelRequsted(true);
+			tested.setCancelRequested(true);
 			Assert.assertFalse(tested.startTaskExecution("mynode"));
 
 			Assert.assertEquals(TaskStatus.CANCELED, tested.taskStatus);
@@ -159,7 +159,7 @@ public class TaskStatusInfoTest {
 		{
 			tested = new TaskStatusInfo();
 			tested.taskStatus = TaskStatus.FAILOVER;
-			tested.setCancelRequsted(true);
+			tested.setCancelRequested(true);
 			Assert.assertFalse(tested.startTaskExecution("mynode"));
 
 			Assert.assertEquals(TaskStatus.CANCELED, tested.taskStatus);

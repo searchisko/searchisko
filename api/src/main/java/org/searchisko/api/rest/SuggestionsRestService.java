@@ -72,20 +72,13 @@ public class SuggestionsRestService extends RestServiceBase {
     @CORSSupport
     public Object queryString(@Context UriInfo uriInfo) {
 
-//        try {
-            MultivaluedMap<String, String> params = uriInfo.getQueryParameters();
-            String query = SearchUtils.trimToNull(params.getFirst(QuerySettings.QUERY_KEY));
-            if (query == null) {
-                throw new IllegalArgumentException(QuerySettings.QUERY_KEY);
-            }
+		MultivaluedMap<String, String> params = uriInfo.getQueryParameters();
+		String query = SearchUtils.trimToNull(params.getFirst(QuerySettings.QUERY_KEY));
+		if (query == null) {
+			throw new IllegalArgumentException(QuerySettings.QUERY_KEY);
+		}
 
-            throw new RuntimeException("Method not implemented yet!");
-
-//        } catch (IllegalArgumentException e) {
-//            return createBadFieldDataResponse(e.getMessage());
-//        } catch (Exception e) {
-//            return createErrorResponse(e);
-//        }
+		throw new RuntimeException("Method not implemented yet!");
     }
 
     @GET
@@ -121,8 +114,6 @@ public class SuggestionsRestService extends RestServiceBase {
             return createResponse(searchResponse, responseUuid);
         } catch (IllegalArgumentException e) {
             throw new BadFieldException("unknown", e);
-//        } catch (Exception e) {
-//            return createErrorResponse(e);
         }
     }
 
