@@ -88,7 +88,7 @@ public class SearchUtils {
 	}
 
 	/**
-	 * Parse ISO date time formated string into {@link Date} instance.
+	 * Parse ISO date time formatted string into {@link Date} instance.
 	 *
 	 * @param string ISO formatted date string to parse
 	 * @param silent if true then null is returned instead of {@link IllegalArgumentException} thrown

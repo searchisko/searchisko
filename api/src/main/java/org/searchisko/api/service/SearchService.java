@@ -44,7 +44,6 @@ import org.elasticsearch.search.facet.terms.TermsFacetBuilder;
 import org.elasticsearch.search.sort.SortOrder;
 import org.searchisko.api.ContentObjectFields;
 import org.searchisko.api.cache.IndexNamesCache;
-import org.searchisko.api.model.FacetValue;
 import org.searchisko.api.model.QuerySettings;
 import org.searchisko.api.model.QuerySettings.Filters;
 import org.searchisko.api.model.SortByValue;
@@ -148,7 +147,7 @@ public class SearchService {
 				sysTypesRequested = querySettings.getFilters().getSysTypes();
 			}
 			boolean isSysTypeFacet = (querySettings.getFacets() != null && querySettings.getFacets().contains(
-					FacetValue.PER_SYS_TYPE_COUNTS));
+					getFacetNameUsingSysTypeField()));
 
 			Set<String> indexNames = indexNamesCache.get(prepareIndexNamesCacheKey(sysTypesRequested, isSysTypeFacet));
 			if (indexNames == null) {
@@ -348,37 +347,167 @@ public class SearchService {
 	 */
 	protected void handleFacetSettings(QuerySettings querySettings, Map<String, FilterBuilder> searchFilters,
 			SearchRequestBuilder srb) {
-		Set<FacetValue> facets = querySettings.getFacets();
-		if (facets != null) {
-			if (facets.contains(FacetValue.PER_PROJECT_COUNTS)) {
-				srb.addFacet(createTermsFacetBuilder(FacetValue.PER_PROJECT_COUNTS, ContentObjectFields.SYS_PROJECT, 500,
-						searchFilters));
-			}
-			if (facets.contains(FacetValue.PER_SYS_TYPE_COUNTS)) {
-				srb.addFacet(createTermsFacetBuilder(FacetValue.PER_SYS_TYPE_COUNTS, ContentObjectFields.SYS_TYPE, 20,
-						searchFilters));
-			}
-			if (facets.contains(FacetValue.TOP_CONTRIBUTORS)) {
-				srb.addFacet(createTermsFacetBuilder(FacetValue.TOP_CONTRIBUTORS, ContentObjectFields.SYS_CONTRIBUTORS, 100,
-						searchFilters));
-				if (searchFilters != null && searchFilters.containsKey(ContentObjectFields.SYS_CONTRIBUTORS)) {
-					// we filter over contributors so we have to add second facet which provide numbers for these contributors
-					// because they can be out of normal facet due count limitation
-					TermsFacetBuilder tb = new TermsFacetBuilder(FacetValue.TOP_CONTRIBUTORS + "_filter")
-							.field(ContentObjectFields.SYS_CONTRIBUTORS).size(30).global(true)
-							.facetFilter(new AndFilterBuilder(getFilters(searchFilters, null)));
-					srb.addFacet(tb);
+		// TODO: Optimize! We get and parse facet configuration multiple times in this code.
+		// We can cache parsed results for some time.
+		Map<String, Object> configuredFacets = configService.get(ConfigService.CFGNAME_SEARCH_FULLTEXT_FACETS_FIELDS);
+		Set<String> facets = querySettings.getFacets();
+		if (configuredFacets != null && !configuredFacets.isEmpty() && facets != null && !facets.isEmpty()) {
+			for (String queryFacetName : facets) {
+				Object facetConfig = configuredFacets.get(queryFacetName);
+				if (facetConfig != null) {
+					SemiParsedFacetConfig config = parseFacetType(facetConfig, queryFacetName);
+					if ("terms".equals(config.getFacetType())) {
+						int size;
+						try {
+							size = (int) config.getOptionalSettings().get("size");
+						} catch (Exception e) {
+							throw new SettingsException("Incorrect configuration of fulltext search facet field '" + queryFacetName
+									+ "' in configuration document " + ConfigService.CFGNAME_SEARCH_FULLTEXT_FACETS_FIELDS
+									+ ": Invalid value of [size] field.");
+						}
+						srb.addFacet(createTermsFacetBuilder(queryFacetName, config.getFieldName(), size, searchFilters));
+						if (searchFilters != null && searchFilters.containsKey(config.getFieldName())) {
+							if (config.isFiltered()) {
+								// we filter over contributors so we have to add second facet which provide numbers for these contributors
+								// because they can be out of normal facet due count limitation
+								TermsFacetBuilder tb = new TermsFacetBuilder(queryFacetName + "_filter")
+										.field(config.getFieldName()).size(config.getFilteredSize()).global(true)
+										.facetFilter(new AndFilterBuilder(getFilters(searchFilters, null)));
+								srb.addFacet(tb);
+							}
+						}
+					} else if ("date_histogram".equals(config.getFacetType())) {
+						srb.addFacet(
+								new DateHistogramFacetBuilder(queryFacetName)
+										.field(config.getFieldName())
+										.interval(selectActivityDatesHistogramInterval(querySettings)));
+					}
 				}
-
-			}
-			if (facets.contains(FacetValue.TAG_CLOUD)) {
-				srb.addFacet(createTermsFacetBuilder(FacetValue.TAG_CLOUD, ContentObjectFields.SYS_TAGS, 50, searchFilters));
-			}
-			if (facets.contains(FacetValue.ACTIVITY_DATES_HISTOGRAM)) {
-				srb.addFacet(new DateHistogramFacetBuilder(FacetValue.ACTIVITY_DATES_HISTOGRAM.toString()).field(
-						ContentObjectFields.SYS_ACTIVITY_DATES).interval(selectActivityDatesHistogramInterval(querySettings)));
 			}
 		}
+	}
+
+	protected class SemiParsedFacetConfig {
+		private String facetName;
+		private String facetType;
+		private String fieldName;
+		private Map<String, Object> optionalSettings;
+		private boolean filtered = false;
+		private int filteredSize = 0;
+
+		public void setFacetName(String value) { this.facetName = value; }
+		public String getFacetName() { return this.facetName; }
+		public void setFacetType(String value) { this.facetType = value; }
+		public String getFacetType() { return this.facetType; }
+		public void setFieldName(String value) { this.fieldName = value; }
+		public String getFieldName() { return this.fieldName; }
+		public void setOptionalSettings(Map<String, Object> object) { this.optionalSettings = object; }
+		public Map<String, Object> getOptionalSettings() { return this.optionalSettings; }
+		public void setFiltered(boolean value) { this.filtered = value; }
+		public boolean isFiltered() { return this.filtered; }
+		public void setFilteredSize(int value) { this.filteredSize = value; }
+		public int getFilteredSize() { return this.filteredSize; }
+	}
+
+	/**
+	 * Parse facet type.
+	 * @param facetConfig
+	 * @param facetName
+	 * @return
+	 */
+	protected SemiParsedFacetConfig parseFacetType(final Object facetConfig, final String facetName) {
+		try {
+			Map<String, Object> map = (Map<String, Object>) facetConfig;
+			if (map.isEmpty() ||
+					( map.size() > 1 && !map.containsKey("_filtered") ) ||
+					( map.size() > 2 && map.containsKey("_filtered"))
+					) {
+				throw new SettingsException("Incorrect configuration of fulltext search facet field '" + facetName
+						+ "' in configuration document " + ConfigService.CFGNAME_SEARCH_FULLTEXT_FACETS_FIELDS
+						+ ": Multiple facet type is not allowed.");
+			}
+			SemiParsedFacetConfig config = new SemiParsedFacetConfig();
+			config.setFacetName(facetName);
+			for (String key : map.keySet()) {
+				if ("_filtered".equals(key)) {
+					Map<String, Object> filtered = (Map<String, Object>) map.get(key);
+					config.setFilteredSize((Integer) filtered.get("size"));
+					config.setFiltered(config.getFilteredSize() > 0 ? true : false);
+				} else {
+					config.setFacetType(key);
+				}
+			}
+			// get map one level deeper
+			map = (Map<String, Object>) map.get(config.getFacetType());
+			if (!map.containsKey("field") || map.isEmpty()) {
+				throw new SettingsException("Incorrect configuration of fulltext search facet field '" + facetName
+						+ "' in configuration document " + ConfigService.CFGNAME_SEARCH_FULLTEXT_FACETS_FIELDS
+						+ ": Missing required [field] field.");
+			}
+			String fieldName = (String) map.get("field");
+			if (fieldName == null || fieldName.isEmpty()) {
+				throw new SettingsException("Incorrect configuration of fulltext search facet field '" + facetName
+						+ "' in configuration document " + ConfigService.CFGNAME_SEARCH_FULLTEXT_FACETS_FIELDS
+						+ ": Invalid [field] field value.");
+			}
+			config.setFieldName(fieldName);
+			config.setOptionalSettings(map);
+			return config;
+		} catch (ClassCastException e) {
+			throw new SettingsException("Incorrect configuration of fulltext search facet field '" + facetName
+					+ "' in configuration document " + ConfigService.CFGNAME_SEARCH_FULLTEXT_FACETS_FIELDS
+					+ ".");
+		}
+	}
+
+	/**
+	 * Return (the first) name of fact that is built on top of "sys_type" field.
+	 * TODO: Optimize! We get and parse facet configuration multiple times in this code.
+	 * We can cache parsed results for some time.
+	 *
+	 * @return (the first) name of fact that is built on top of "sys_type" field.
+	 */
+	private String getFacetNameUsingSysTypeField() {
+		Map<String, Object> configuredFacets = configService.get(ConfigService.CFGNAME_SEARCH_FULLTEXT_FACETS_FIELDS);
+		if (configuredFacets != null && !configuredFacets.isEmpty()) {
+			for (String facetName : configuredFacets.keySet()) {
+				Object facetConfig = configuredFacets.get(facetName);
+				if (facetConfig != null) {
+					SemiParsedFacetConfig config = parseFacetType(facetConfig, facetName);
+					if (ContentObjectFields.SYS_TYPE.equals(config.getFieldName())) {
+						return facetName;
+					}
+				}
+			}
+		}
+		return "";
+	}
+
+	/**
+	 * For given set of facet names it returns only those using "date_histogram" facet type.
+	 * TODO: Optimize! We get and parse facet configuration multiple times in this code.
+	 * We can cache parsed results for some time.
+	 *
+	 * @param facetNames set of facet names to filter
+	 * @return only those facets names using "date_histogram" facet type
+	 */
+	private Set<String> filterFacetNamesUsingDateHistogramFacetType(Set<String> facetNames) {
+		Set<String> result = new LinkedHashSet<>();
+		if (facetNames.size() > 0) {
+			Map<String, Object> configuredFacets = configService.get(ConfigService.CFGNAME_SEARCH_FULLTEXT_FACETS_FIELDS);
+			if (configuredFacets != null && !configuredFacets.isEmpty()) {
+				for (String facetName : configuredFacets.keySet()) {
+					Object facetConfig = configuredFacets.get(facetName);
+					if (facetConfig != null) {
+						SemiParsedFacetConfig config = parseFacetType(facetConfig, facetName);
+						if ("date_histogram".equals(config.getFacetType())) {
+							result.add(facetName);
+						}
+					}
+				}
+			}
+		}
+		return result;
 	}
 
 	/**
@@ -388,18 +517,24 @@ public class SearchService {
 	 * @return map with additional fields, never null
 	 */
 	public Map<String, String> getSearchResponseAdditionalFields(QuerySettings querySettings) {
-		Map<String, String> ret = new HashMap<String, String>();
-		Set<FacetValue> facets = querySettings.getFacets();
-		if (facets != null && facets.contains(FacetValue.ACTIVITY_DATES_HISTOGRAM)) {
-			ret.put(FacetValue.ACTIVITY_DATES_HISTOGRAM + "_interval", selectActivityDatesHistogramInterval(querySettings));
+		Map<String, String> ret = new HashMap<>();
+		Set<String> facets = querySettings.getFacets();
+		if (facets != null) {
+			Set<String> dateHistogramFacets = filterFacetNamesUsingDateHistogramFacetType(facets);
+			// TODO: hack-ish modification for configurable facets
+			String interval = null;
+			for (String facetName : dateHistogramFacets) {
+				if (interval == null) { interval = selectActivityDatesHistogramInterval(querySettings); }
+				ret.put(facetName + "_interval", interval);
+			}
 		}
 		return ret;
 	}
 
-	protected TermsFacetBuilder createTermsFacetBuilder(FacetValue facetName, String facetField, int size,
+	protected TermsFacetBuilder createTermsFacetBuilder(String facetName, String facetField, int size,
 			Map<String, FilterBuilder> searchFilters) {
 
-		TermsFacetBuilder tb = new TermsFacetBuilder(facetName.toString()).field(facetField).size(size).global(true);
+		TermsFacetBuilder tb = new TermsFacetBuilder(facetName).field(facetField).size(size).global(true);
 		if (searchFilters != null && !searchFilters.isEmpty()) {
 			FilterBuilder[] fb = getFilters(searchFilters, facetField);
 			if (fb != null && fb.length > 0)
@@ -450,7 +585,7 @@ public class SearchService {
 	}
 
 	protected static FilterBuilder[] getFilters(Map<String, FilterBuilder> filters, String filterToExclude) {
-		List<FilterBuilder> builders = new ArrayList<FilterBuilder>();
+		List<FilterBuilder> builders = new ArrayList<>();
 		if (filters != null) {
 			for (String name : filters.keySet()) {
 				if (filterToExclude == null || !filterToExclude.equals(name)) {

@@ -14,7 +14,7 @@ import org.searchisko.api.rest.SearchRestService;
  */
 @ApplicationScoped
 @Singleton
-public class IndexNamesCache extends TimedCacheBase<Set<String>> {
+public class IndexNamesCache extends ExpiringCacheBase<Set<String>> {
 
 	public IndexNamesCache() {
 		ttl = 20L * 1000L;

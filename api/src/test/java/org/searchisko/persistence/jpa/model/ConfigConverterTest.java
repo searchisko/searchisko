@@ -14,15 +14,15 @@ import org.junit.Test;
 
 /**
  * @author Libor Krzyzanek
- *
+ * @author Lukas Vlcek
  */
 public class ConfigConverterTest {
 
 	@Test
 	public void testConvertToModel() throws IOException {
 		ConfigConverter converter = new ConfigConverter();
-		Map<String, Object> data = new HashMap<String, Object>();
-		Map<String, Object> sysTitleConfig = new HashMap<String, Object>();
+		Map<String, Object> data = new HashMap<>();
+		Map<String, Object> sysTitleConfig = new HashMap<>();
 		sysTitleConfig.put("fragment_size", "-1");
 		sysTitleConfig.put("number_of_fragments", "0");
 		sysTitleConfig.put("fragment_offset", "0");
@@ -33,5 +33,22 @@ public class ConfigConverterTest {
 
 		TestUtils.assertJsonContent("{\"sys_title\":{" + "\"fragment_size\":\"-1\"," + "\"number_of_fragments\":\"0\","
 				+ "\"fragment_offset\":\"0\"" + "}}", c.getValue());
+	}
+
+	@Test
+	public void shouldConvertMoreNestedObjects() throws IOException {
+
+		ConfigConverter converter = new ConfigConverter();
+		Map<String, Object> terms = new HashMap<>();
+		terms.put("field", "sys_contributors");
+		terms.put("size", 20);
+		Map<String, Object> facetType = new HashMap<>();
+		facetType.put("terms", terms);
+		Map<String, Object> configObject = new HashMap<>();
+		configObject.put("top_contributors", facetType);
+
+		Config c = converter.convertToModel("search_fulltext_facets_fields", configObject);
+
+		TestUtils.assertJsonContent("{\"top_contributors\":{\"terms\":{\"field\":\"sys_contributors\",\"size\":20}}}", c.getValue());
 	}
 }

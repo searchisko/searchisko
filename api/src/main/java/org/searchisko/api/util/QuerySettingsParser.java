@@ -16,7 +16,6 @@ import javax.inject.Named;
 import javax.ws.rs.core.MultivaluedMap;
 
 import org.elasticsearch.common.joda.time.format.ISODateTimeFormat;
-import org.searchisko.api.model.FacetValue;
 import org.searchisko.api.model.PastIntervalValue;
 import org.searchisko.api.model.QuerySettings;
 import org.searchisko.api.model.SortByValue;
@@ -77,7 +76,9 @@ public class QuerySettingsParser {
 
 		if (params.get(QuerySettings.FACETS_KEY) != null) {
 			for (String fpv : params.get(QuerySettings.FACETS_KEY)) {
-				settings.addFacet(FacetValue.parseRequestParameterValue(fpv));
+				if (fpv != null && !fpv.trim().isEmpty()) {
+					settings.addFacet(fpv);
+				}
 			}
 		}
 

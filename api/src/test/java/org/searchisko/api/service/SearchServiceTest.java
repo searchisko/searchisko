@@ -23,7 +23,6 @@ import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.sort.SortOrder;
 import org.searchisko.api.cache.IndexNamesCache;
-import org.searchisko.api.model.FacetValue;
 import org.searchisko.api.model.PastIntervalValue;
 import org.searchisko.api.model.QuerySettings;
 import org.searchisko.api.model.QuerySettings.Filters;
@@ -47,6 +46,10 @@ public class SearchServiceTest {
 		SearchService tested = new SearchService();
 		tested.log = Logger.getLogger("testlogger");
 
+		tested.configService = Mockito.mock(ConfigService.class);
+		Map<String, Object> cfg = TestUtils.loadJSONFromClasspathFile("/search/search_fulltext_facets_fields.json");
+		Mockito.when(tested.configService.get(ConfigService.CFGNAME_SEARCH_FULLTEXT_FACETS_FIELDS)).thenReturn(cfg);
+
 		try {
 			tested.getSearchResponseAdditionalFields(null);
 			Assert.fail("NullPointerException expected");
@@ -58,7 +61,7 @@ public class SearchServiceTest {
 		Map<String, String> ret = tested.getSearchResponseAdditionalFields(qs);
 		Assert.assertTrue(ret.isEmpty());
 
-		qs.addFacet(FacetValue.ACTIVITY_DATES_HISTOGRAM);
+		qs.addFacet("activity_dates_histogram");
 		qs.getFiltersInit().setActivityDateInterval(PastIntervalValue.QUARTER);
 		ret = tested.getSearchResponseAdditionalFields(qs);
 		Assert.assertEquals(1, ret.size());
@@ -100,6 +103,10 @@ public class SearchServiceTest {
 		tested.providerService = Mockito.mock(ProviderService.class);
 		tested.log = Logger.getLogger("testlogger");
 		tested.indexNamesCache = Mockito.mock(IndexNamesCache.class);
+
+		tested.configService = Mockito.mock(ConfigService.class);
+		Map<String, Object> cfg = TestUtils.loadJSONFromClasspathFile("/search/search_fulltext_facets_fields.json");
+		Mockito.when(tested.configService.get(ConfigService.CFGNAME_SEARCH_FULLTEXT_FACETS_FIELDS)).thenReturn(cfg);
 
 		QuerySettings querySettings = new QuerySettings();
 		SearchRequestBuilder searchRequestBuilderMock = Mockito.mock(SearchRequestBuilder.class);
@@ -256,7 +263,7 @@ public class SearchServiceTest {
 			Mockito.when(tested.indexNamesCache.get(Mockito.anyString())).thenReturn(null);
 			List<String> sysTypesRequested = Arrays.asList(new String[] { "issue" });
 			filters.setSysTypes(sysTypesRequested);
-			querySettings.addFacet(FacetValue.PER_SYS_TYPE_COUNTS);
+			querySettings.addFacet("per_sys_type_counts");
 			List<Map<String, Object>> mockedProvidersList = new ArrayList<Map<String, Object>>();
 			mockedProvidersList.add(TestUtils.loadJSONFromClasspathFile("/search/provider_1.json"));
 			mockedProvidersList.add(TestUtils.loadJSONFromClasspathFile("/search/provider_2.json"));
@@ -281,7 +288,7 @@ public class SearchServiceTest {
 			Mockito.when(tested.indexNamesCache.get(Mockito.anyString())).thenReturn(null);
 			List<String> sysTypesRequested = Arrays.asList(new String[] { "issue", "cosi" });
 			filters.setSysTypes(sysTypesRequested);
-			querySettings.addFacet(FacetValue.PER_SYS_TYPE_COUNTS);
+			querySettings.addFacet("per_sys_type_counts");
 			List<Map<String, Object>> mockedProvidersList = new ArrayList<Map<String, Object>>();
 			mockedProvidersList.add(TestUtils.loadJSONFromClasspathFile("/search/provider_1.json"));
 			mockedProvidersList.add(TestUtils.loadJSONFromClasspathFile("/search/provider_2.json"));
@@ -1065,6 +1072,10 @@ public class SearchServiceTest {
 		SearchService tested = new SearchService();
 		tested.log = Logger.getLogger("testlogger");
 
+		tested.configService = Mockito.mock(ConfigService.class);
+		Map<String, Object> cfg = TestUtils.loadJSONFromClasspathFile("/search/search_fulltext_facets_fields.json");
+		Mockito.when(tested.configService.get(ConfigService.CFGNAME_SEARCH_FULLTEXT_FACETS_FIELDS)).thenReturn(cfg);
+
 		// case - no facets requested
 		{
 			SearchRequestBuilder srbMock = new SearchRequestBuilder(null);
@@ -1077,7 +1088,7 @@ public class SearchServiceTest {
 		{
 			SearchRequestBuilder srbMock = new SearchRequestBuilder(null);
 			QuerySettings querySettings = new QuerySettings();
-			querySettings.addFacet(FacetValue.PER_SYS_TYPE_COUNTS);
+			querySettings.addFacet("per_sys_type_counts");
 
 			tested.handleFacetSettings(querySettings, null, srbMock);
 			TestUtils.assertJsonContentFromClasspathFile("/search/query_facets_per_sys_type_counts.json", srbMock.toString());
@@ -1087,10 +1098,10 @@ public class SearchServiceTest {
 		{
 			SearchRequestBuilder srbMock = new SearchRequestBuilder(null);
 			QuerySettings querySettings = new QuerySettings();
-			querySettings.addFacet(FacetValue.ACTIVITY_DATES_HISTOGRAM);
-			querySettings.addFacet(FacetValue.PER_PROJECT_COUNTS);
-			querySettings.addFacet(FacetValue.TAG_CLOUD);
-			querySettings.addFacet(FacetValue.TOP_CONTRIBUTORS);
+			querySettings.addFacet("activity_dates_histogram");
+			querySettings.addFacet("per_project_counts");
+			querySettings.addFacet("tag_cloud");
+			querySettings.addFacet("top_contributors");
 			tested.handleFacetSettings(querySettings, null, srbMock);
 			TestUtils.assertJsonContentFromClasspathFile("/search/query_facets_moreNoFilter.json", srbMock.toString());
 		}
@@ -1113,11 +1124,11 @@ public class SearchServiceTest {
 			filters.addTag("tag1");
 			filters.addTag("tag2");
 			querySettings.setFilters(filters);
-			querySettings.addFacet(FacetValue.PER_SYS_TYPE_COUNTS);
-			querySettings.addFacet(FacetValue.ACTIVITY_DATES_HISTOGRAM);
-			querySettings.addFacet(FacetValue.PER_PROJECT_COUNTS);
-			querySettings.addFacet(FacetValue.TAG_CLOUD);
-			querySettings.addFacet(FacetValue.TOP_CONTRIBUTORS);
+			querySettings.addFacet("per_sys_type_counts");
+			querySettings.addFacet("activity_dates_histogram");
+			querySettings.addFacet("per_project_counts");
+			querySettings.addFacet("tag_cloud");
+			querySettings.addFacet("top_contributors");
 			tested.handleFacetSettings(querySettings, tested.handleCommonFiltersSettings(querySettings), srbMock);
 			TestUtils.assertJsonContentFromClasspathFile("/search/query_facets_moreWithFilter.json", srbMock.toString());
 		}
@@ -1129,11 +1140,15 @@ public class SearchServiceTest {
 		SearchService tested = new SearchService();
 		tested.log = Logger.getLogger("testlogger");
 
+		tested.configService = Mockito.mock(ConfigService.class);
+		Map<String, Object> cfg = TestUtils.loadJSONFromClasspathFile("/search/search_fulltext_facets_fields.json");
+		Mockito.when(tested.configService.get(ConfigService.CFGNAME_SEARCH_FULLTEXT_FACETS_FIELDS)).thenReturn(cfg);
+
 		// case - no contributor filter used, so only one top_contributors facet
 		{
 			SearchRequestBuilder srbMock = new SearchRequestBuilder(null);
 			QuerySettings querySettings = new QuerySettings();
-			querySettings.addFacet(FacetValue.TOP_CONTRIBUTORS);
+			querySettings.addFacet("top_contributors");
 			Filters filters = new Filters();
 			filters.addTag("tag1");
 			filters.addTag("tag2");
@@ -1146,7 +1161,7 @@ public class SearchServiceTest {
 		{
 			SearchRequestBuilder srbMock = new SearchRequestBuilder(null);
 			QuerySettings querySettings = new QuerySettings();
-			querySettings.addFacet(FacetValue.TOP_CONTRIBUTORS);
+			querySettings.addFacet("top_contributors");
 			Filters filters = new Filters();
 			filters.addTag("tag1");
 			filters.addTag("tag2");
@@ -1163,11 +1178,15 @@ public class SearchServiceTest {
 		SearchService tested = new SearchService();
 		tested.log = Logger.getLogger("testlogger");
 
+		tested.configService = Mockito.mock(ConfigService.class);
+		Map<String, Object> cfg = TestUtils.loadJSONFromClasspathFile("/search/search_fulltext_facets_fields.json");
+		Mockito.when(tested.configService.get(ConfigService.CFGNAME_SEARCH_FULLTEXT_FACETS_FIELDS)).thenReturn(cfg);
+
 		// case - no activity dates filter used
 		{
 			SearchRequestBuilder srbMock = new SearchRequestBuilder(null);
 			QuerySettings querySettings = new QuerySettings();
-			querySettings.addFacet(FacetValue.ACTIVITY_DATES_HISTOGRAM);
+			querySettings.addFacet("activity_dates_histogram");
 			Filters filters = new Filters();
 			filters.addTag("tag1");
 			filters.addTag("tag2");
@@ -1181,7 +1200,7 @@ public class SearchServiceTest {
 		{
 			SearchRequestBuilder srbMock = new SearchRequestBuilder(null);
 			QuerySettings querySettings = new QuerySettings();
-			querySettings.addFacet(FacetValue.ACTIVITY_DATES_HISTOGRAM);
+			querySettings.addFacet("activity_dates_histogram");
 			Filters filters = new Filters();
 			filters.addTag("tag1");
 			filters.addTag("tag2");
@@ -1198,7 +1217,7 @@ public class SearchServiceTest {
 		{
 			SearchRequestBuilder srbMock = new SearchRequestBuilder(null);
 			QuerySettings querySettings = new QuerySettings();
-			querySettings.addFacet(FacetValue.ACTIVITY_DATES_HISTOGRAM);
+			querySettings.addFacet("activity_dates_histogram");
 			Filters filters = new Filters();
 			filters.addTag("tag1");
 			filters.addTag("tag2");

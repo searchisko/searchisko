@@ -1,0 +1,7 @@
+{
+	"top_contributors" : { "terms" : { "field" : "sys_contributors", "size" : 100}, "_filtered" : { "size" : 30 }},
+	"activity_dates_histogram" : { "date_histogram" : { "field" : "sys_activity_dates" }},
+	"per_project_counts" : { "terms" : { "field" : "sys_project", "size" : 500 }},
+	"per_sys_type_counts" : { "terms" : { "field" : "sys_type", "size" : 20 }},
+	"tag_cloud" : { "terms" : { "field" : "sys_tags", "size" : 50 }}
+}

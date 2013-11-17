@@ -14,7 +14,7 @@ import org.searchisko.api.service.ProviderService;
  */
 @ApplicationScoped
 @Singleton
-public class ProviderCache extends TimedCacheBase<Map<String, Object>> {
+public class ProviderCache extends ExpiringCacheBase<Map<String, Object>> {
 
 	public ProviderCache() {
 		ttl = 20L * 1000L;

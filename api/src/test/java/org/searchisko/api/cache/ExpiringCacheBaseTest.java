@@ -12,16 +12,16 @@ import org.junit.Assert;
 import org.junit.Test;
 
 /**
- * Unit test for {@link TimedCacheBase}.
+ * Unit test for {@link ExpiringCacheBase}.
  *
  * @author Vlastimil Elias (velias at redhat dot com)
  */
-public class TimedCacheBaseTest {
+public class ExpiringCacheBaseTest {
 
 	@Test
 	public void cacheWorks() throws InterruptedException {
 
-		TimedCacheBase<Set<String>> tested = new TimedCacheBase<Set<String>>() {
+		ExpiringCacheBase<Set<String>> tested = new ExpiringCacheBase<Set<String>>() {
 		};
 		tested.ttl = 500;
 
@@ -53,7 +53,7 @@ public class TimedCacheBaseTest {
 
 	@Test
 	public void flush() {
-		TimedCacheBase<Set<String>> tested = new TimedCacheBase<Set<String>>() {
+		ExpiringCacheBase<Set<String>> tested = new ExpiringCacheBase<Set<String>>() {
 		};
 		tested.ttl = 50000;
 

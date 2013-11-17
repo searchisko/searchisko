@@ -7,12 +7,10 @@ package org.searchisko.api.util;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Set;
 
 import javax.ws.rs.core.MultivaluedMap;
 
-import org.searchisko.api.model.FacetValue;
 import org.searchisko.api.model.PastIntervalValue;
 import org.searchisko.api.model.QuerySettings;
 import org.searchisko.api.model.SortByValue;
@@ -121,20 +119,16 @@ public class QuerySettingsParserTest {
 		assertEqualsFacetValueList(expectedFacets, qs.getFacets());
 	}
 
-	private void assertEqualsFacetValueList(String expectedValuesCommaSeparated, Set<FacetValue> actualValue) {
+	private void assertEqualsFacetValueList(String expectedValuesCommaSeparated, Set<String> actualValue) {
 
 		if (expectedValuesCommaSeparated == null) {
 			Assert.assertNull(actualValue);
 			return;
 		}
 
-		List<FacetValue> expected = new ArrayList<FacetValue>();
-		for (String s : expectedValuesCommaSeparated.split(",")) {
-			expected.add(FacetValue.parseRequestParameterValue(s));
-		}
+		String[] expected = expectedValuesCommaSeparated.split(",");
 
-		Assert.assertArrayEquals(expected.toArray(new FacetValue[expected.size()]),
-				actualValue != null ? actualValue.toArray(new FacetValue[] {}) : null);
+		Assert.assertArrayEquals(expected, actualValue != null ? actualValue.toArray(new String[] {}) : null);
 	}
 
 	@Test
@@ -371,26 +365,18 @@ public class QuerySettingsParserTest {
 	public void parseUriParams_facet() {
 		QuerySettingsParser tested = getTested();
 		{
-			MultivaluedMap<String, String> params = new MultivaluedMapImpl<String, String>();
-			params.add(QuerySettings.FACETS_KEY, FacetValue.ACTIVITY_DATES_HISTOGRAM.toString());
+			MultivaluedMap<String, String> params = new MultivaluedMapImpl<>();
+			params.add(QuerySettings.FACETS_KEY, "activity_dates_histogram");
 			QuerySettings ret = tested.parseUriParams(params);
 			Assert.assertNotNull(ret);
-			Assert.assertTrue(ret.getFacets().contains(FacetValue.ACTIVITY_DATES_HISTOGRAM));
+			Assert.assertTrue(ret.getFacets().contains("activity_dates_histogram"));
 		}
 		{
-			MultivaluedMap<String, String> params = new MultivaluedMapImpl<String, String>();
+			MultivaluedMap<String, String> params = new MultivaluedMapImpl<>();
 			params.add(QuerySettings.FACETS_KEY, " ");
 			QuerySettings ret = tested.parseUriParams(params);
 			Assert.assertNotNull(ret);
 			Assert.assertNull(ret.getFacets());
-		}
-		try {
-			MultivaluedMap<String, String> params = new MultivaluedMapImpl<String, String>();
-			params.add(QuerySettings.FACETS_KEY, "bad");
-			tested.parseUriParams(params);
-			Assert.fail("IllegalArgumentException expected");
-		} catch (IllegalArgumentException e) {
-			// OK
 		}
 	}
 

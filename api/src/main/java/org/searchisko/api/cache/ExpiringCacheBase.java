@@ -4,25 +4,25 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Base for simple cache with timeout and <code>String</code> keys.
+ * Base for expiring cache with <code>String</code> keys.
  *
  * @param <T> the type of value stored in the cache
  *
  * @author Vlastimil Elias (velias at redhat dot com)
  */
 
-public abstract class TimedCacheBase<T> implements ICache<T> {
+public abstract class ExpiringCacheBase<T> implements ICache<T> {
 
 	/**
 	 * Time to Live for cache [ms].
 	 */
 	protected long ttl = 30 * 1000;
 
-	private Map<String, CacheItem<T>> cache = new HashMap<String, CacheItem<T>>();
+	private Map<String, CacheItem<T>> cache = new HashMap<>();
 
 	@Override
 	public T get(String key) {
-		CacheItem<T> ci = null;
+		CacheItem<T> ci;
 		synchronized (cache) {
 			ci = cache.get(key);
 		}
@@ -34,7 +34,7 @@ public abstract class TimedCacheBase<T> implements ICache<T> {
 
 	@Override
 	public void put(String key, T value) {
-		CacheItem<T> ci = new CacheItem<T>();
+		CacheItem<T> ci = new CacheItem<>();
 		ci.value = value;
 		ci.validTo = System.currentTimeMillis() + ttl;
 		synchronized (cache) {

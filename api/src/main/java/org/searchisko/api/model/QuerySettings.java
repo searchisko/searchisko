@@ -231,7 +231,7 @@ public class QuerySettings {
 
 	public static final String FIELDS_KEY = "field";
 
-	private Set<FacetValue> facets;
+	private Set<String> facets;
 
 	public static final String FACETS_KEY = "facet";
 
@@ -307,15 +307,15 @@ public class QuerySettings {
 		this.queryHighlight = queryHighlight;
 	}
 
-	public Set<FacetValue> getFacets() {
+	public Set<String> getFacets() {
 		return facets;
 	}
 
-	public void addFacet(FacetValue value) {
+	public void addFacet(String value) {
 		if (value == null)
 			return;
 		if (facets == null)
-			facets = new LinkedHashSet<FacetValue>();
+			facets = new LinkedHashSet<>();
 		facets.add(value);
 	}
 

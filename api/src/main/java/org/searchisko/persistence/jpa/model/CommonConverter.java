@@ -27,7 +27,7 @@ public abstract class CommonConverter<T> implements ModelToJSONMapConverter<T> {
 	 * Convert JSON Map structure into String with JSON content.
 	 *
 	 * @param jsonMapValue to convert
-	 * @return
+	 * @return string representation of JSON-like map
 	 * @throws IOException
 	 */
 	public String convertJsonMapToString(Map<String, Object> jsonMapValue) throws IOException {

@@ -32,6 +32,7 @@ public class ConfigService implements EntityService {
 	public static final String CFGNAME_SEARCH_RESPONSE_FIELDS = "search_response_fields";
 	public static final String CFGNAME_SEARCH_FULLTEXT_QUERY_FIELDS = "search_fulltext_query_fields";
 	public static final String CFGNAME_SEARCH_FULLTEXT_HIGHLIGHT_FIELDS = "search_fulltext_highlight_fields";
+	public static final String CFGNAME_SEARCH_FULLTEXT_FACETS_FIELDS = "search_fulltext_facets_fields";
 
 	@Inject
 	protected Logger log;
