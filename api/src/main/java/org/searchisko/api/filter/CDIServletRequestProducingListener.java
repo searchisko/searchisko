@@ -5,6 +5,7 @@
  */
 package org.searchisko.api.filter;
 
+import javax.enterprise.context.RequestScoped;
 import javax.enterprise.inject.Produces;
 import javax.servlet.*;
 import javax.servlet.annotation.WebFilter;
@@ -42,6 +43,7 @@ public class CDIServletRequestProducingListener implements Filter {
 	}
 
 	@Produces
+	@RequestScoped
 	private HttpServletRequest produce() {
 		return SERVLET_REQUESTS.get();
 	}

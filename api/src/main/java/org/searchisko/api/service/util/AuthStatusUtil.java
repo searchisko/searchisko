@@ -10,7 +10,6 @@ import org.jasig.cas.client.util.AbstractCasFilter;
 import org.jasig.cas.client.validation.Assertion;
 
 import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
@@ -29,7 +28,6 @@ public class AuthStatusUtil {
 	// see CDIServletRequestProducingListener
 	// injecting http servlet request should work from CDI 1.1
 	@Inject
-	@RequestScoped
 	protected HttpServletRequest request;
 
 	/**
