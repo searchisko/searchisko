@@ -1,0 +1,11 @@
+{
+  "code": "undertow",
+  "name": "Undertow",
+  "type_specific_code" : {
+    "jbossorg_blog": [""],
+    "jbossorg_jira": ["UNDERTOW"],
+    "jbossorg_sbs" : [""],
+    "jbossorg_mailing_list": ["undertow"],
+    "jbossorg_project_info": "undertow"
+  }
+}

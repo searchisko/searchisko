@@ -1,0 +1,11 @@
+{
+  "code": "uberfire",
+  "name": "UberFire",
+  "type_specific_code" : {
+    "jbossorg_blog": [""],
+    "jbossorg_jira": ["UF"],
+    "jbossorg_sbs" : [""],
+    "jbossorg_mailing_list": ["uberfire"],
+    "jbossorg_project_info": "uberfire"
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "code": "windup",
+  "name": "Windup",
+  "type_specific_code" : {
+    "jbossorg_blog": [""],
+    "jbossorg_jira": ["WINDUP"],
+    "jbossorg_sbs" : [""],
+    "jbossorg_mailing_list": ["windup"],
+    "jbossorg_project_info": "windup"
+  }
+}
