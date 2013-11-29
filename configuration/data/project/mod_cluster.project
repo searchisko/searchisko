@@ -5,7 +5,7 @@
     "jbossorg_blog": [""],
     "jbossorg_jira": ["MODCLUSTER"],
     "jbossorg_sbs" : ["2113","2231"],
-    "jbossorg_mailing_list": "",
+    "jbossorg_mailing_list": ["mod_cluster"],
     "jbossorg_project_info": "mod_cluster"
   }
 }

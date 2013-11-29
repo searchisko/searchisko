@@ -5,7 +5,7 @@
     "jbossorg_blog": ["no_relation_to"],
     "jbossorg_jira": ["HIBERNATE"],
     "jbossorg_sbs" : ["2206","2208","2209","2212","2216","2224"],
-    "jbossorg_mailing_list": "",
+    "jbossorg_mailing_list": ["hibernate"],
     "jbossorg_project_info": "hibernate"
   }
 }

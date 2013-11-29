@@ -5,7 +5,7 @@
     "jbossorg_blog": ["soagovernance"],
     "jbossorg_jira": ["SOAG", "SRAMP"],
     "jbossorg_sbs" : ["2122","2123"],
-    "jbossorg_mailing_list": "",
+    "jbossorg_mailing_list": ["overlord"],
     "jbossorg_project_info": "overlord"
   }
 }

@@ -5,7 +5,7 @@
     "jbossorg_blog": ["modeshape"],
     "jbossorg_jira": ["DNA", "MODE", "MODETOOLS"],
     "jbossorg_sbs" : ["2126"],
-    "jbossorg_mailing_list": "",
+    "jbossorg_mailing_list": ["modeshape"],
     "jbossorg_project_info": "modeshape"
   }
 }

@@ -5,7 +5,7 @@
     "jbossorg_blog": ["portletbridge"],
     "jbossorg_jira": ["PBR"],
     "jbossorg_sbs" : ["2016","2288"],
-    "jbossorg_mailing_list": "",
+    "jbossorg_mailing_list": ["portletbridge"],
     "jbossorg_project_info": "portletbridge"
   }
 }

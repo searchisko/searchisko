@@ -5,7 +5,7 @@
     "jbossorg_blog": ["switchyard"],
     "jbossorg_jira": ["SWITCHYARD"],
     "jbossorg_sbs" : ["2239","2240"],
-    "jbossorg_mailing_list": "",
+    "jbossorg_mailing_list": ["switchyard"],
     "jbossorg_project_info": "switchyard"
   }
 }

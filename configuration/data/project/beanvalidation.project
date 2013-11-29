@@ -5,7 +5,7 @@
     "jbossorg_blog": ["bean_validation"],
     "jbossorg_jira": [""],
     "jbossorg_sbs" : [],
-    "jbossorg_mailing_list": "",
+    "jbossorg_mailing_list": ["beanvalidation"],
     "jbossorg_project_info": "beanvalidation"
   }
 }

@@ -5,7 +5,7 @@
     "jbossorg_blog": [""],
     "jbossorg_jira": ["DTF"],
     "jbossorg_sbs" : [],
-    "jbossorg_mailing_list": "",
+    "jbossorg_mailing_list": ["dtf"],
     "jbossorg_project_info": "jbossdtf"
   }
 }

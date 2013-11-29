@@ -5,7 +5,7 @@
     "jbossorg_blog": ["infinispan"],
     "jbossorg_jira": ["ISPN"],
     "jbossorg_sbs" : ["2057","2283","2233"],
-    "jbossorg_mailing_list": "",
+    "jbossorg_mailing_list": ["infinispan"],
     "jbossorg_project_info": "infinispan"
   }
 }

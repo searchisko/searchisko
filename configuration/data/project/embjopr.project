@@ -5,7 +5,7 @@
     "jbossorg_blog": [""],
     "jbossorg_jira": ["EMBJOPR"],
     "jbossorg_sbs" : ["2106","2107","2108"],
-    "jbossorg_mailing_list": "",
+    "jbossorg_mailing_list": ["embjopr"],
     "jbossorg_project_info": "embjopr"
   }
 }

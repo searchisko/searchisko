@@ -5,7 +5,7 @@
     "jbossorg_blog": ["hornetq"],
     "jbossorg_jira": ["HORNETQ"],
     "jbossorg_sbs" : ["2066","2067"],
-    "jbossorg_mailing_list": "",
+    "jbossorg_mailing_list": ["hornetq"],
     "jbossorg_project_info": "hornetq"
   }
 }

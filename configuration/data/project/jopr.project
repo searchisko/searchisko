@@ -5,7 +5,7 @@
     "jbossorg_blog": ["heikowrupp", "greghinkle", "josephmarques", "ianspringer", "fadymatar", "mazz", "jayshaughnessy", "jasondobies", "johnsandablog", "lkrejciblog", "simeonsblog", "saas"],
     "jbossorg_jira": [""],
     "jbossorg_sbs" : [],
-    "jbossorg_mailing_list": "",
+    "jbossorg_mailing_list": ["jopr"],
     "jbossorg_project_info": "jopr"
   }
 }

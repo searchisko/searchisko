@@ -5,7 +5,7 @@
     "jbossorg_blog": [""],
     "jbossorg_jira": ["TOHU"],
     "jbossorg_sbs" : ["2242"],
-    "jbossorg_mailing_list": "",
+    "jbossorg_mailing_list": ["tohu"],
     "jbossorg_project_info": "tohu"
   }
 }

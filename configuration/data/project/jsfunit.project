@@ -5,7 +5,7 @@
     "jbossorg_blog": ["jsfunit"],
     "jbossorg_jira": ["JSFUNIT"],
     "jbossorg_sbs" : ["2133"],
-    "jbossorg_mailing_list": "",
+    "jbossorg_mailing_list": ["jsfunit"],
     "jbossorg_project_info": "jsfunit"
   }
 }

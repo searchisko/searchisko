@@ -5,7 +5,7 @@
     "jbossorg_blog": [""],
     "jbossorg_jira": ["SHRINKWRAP", "SHRINKDESC", "SHRINKRES"],
     "jbossorg_sbs" : ["2193","2194"],
-    "jbossorg_mailing_list": "",
+    "jbossorg_mailing_list": ["shrinkwrap"],
     "jbossorg_project_info": "shrinkwrap"
   }
 }

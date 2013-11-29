@@ -5,7 +5,7 @@
     "jbossorg_blog": ["jbossesb"],
     "jbossorg_jira": ["JBESB"],
     "jbossorg_sbs" : ["2031","2032"],
-    "jbossorg_mailing_list": "",
+    "jbossorg_mailing_list": ["esb"],
     "jbossorg_project_info": "jbossesb"
   }
 }

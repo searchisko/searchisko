@@ -5,7 +5,7 @@
     "jbossorg_blog": ["jbosswise"],
     "jbossorg_jira": ["WISE"],
     "jbossorg_sbs" : ["2048","2049"],
-    "jbossorg_mailing_list": "",
+    "jbossorg_mailing_list": ["wise"],
     "jbossorg_project_info": "wise"
   }
 }
