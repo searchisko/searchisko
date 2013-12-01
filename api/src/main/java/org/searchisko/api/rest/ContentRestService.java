@@ -187,7 +187,7 @@ public class ContentRestService extends RestServiceBase {
 		content.put(ContentObjectFields.SYS_TYPE, ProviderService.extractSysType(typeDef, type));
 		content.put(ContentObjectFields.SYS_UPDATED, new Date());
 		// Copy distinct data from content to normalized fields
-		content.put(ContentObjectFields.SYS_TAGS, content.get("tags"));
+		content.put(ContentObjectFields.SYS_TAGS, content.get(ContentObjectFields.TAGS));
 
 		// Fill type of content from configuration
 		if (content.containsKey(ContentObjectFields.SYS_CONTENT)) {
