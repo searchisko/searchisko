@@ -84,7 +84,7 @@ inside DCP during push. Those data fields are prefixed by `sys_`:
 </tr>
 <tr>
   <td>sys_content_plaintext</td>
-  <td>If <code>sys_content</code> is provided then this field is populated automatically by transformations (thus <code>dcp_content_content-type</code> value is important). The goal is to have the content without any markup - Search API fulltext search runs against it and this field is also used for highlighted snippets.</td>
+  <td>This field is expected to contain markup-free content of `sys_content` field. It makes it easy to run fulltext search API against it and use it for highlighted snippets. Note that it can be populated by pre-processors and <a href="https://github.com/jbossorg/structured-content-tools">structured-content-tools</a> can be used to strip HTML entities.</td>
 </tr>
 <tr>
   <td>sys_tags</td>

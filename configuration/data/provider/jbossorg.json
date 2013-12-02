@@ -266,6 +266,7 @@
     "jbossorg_mailing_list": {
         "description" : "Mails from project mailing list, public archive under https://lists.jboss.org/mailman/listinfo/",
         "sys_type" : "mailing_list_message",
+		"sys_content_content-type" : "text/plain",
         "input_preprocessors": [
             {
                 "name" : "Map important fields",
