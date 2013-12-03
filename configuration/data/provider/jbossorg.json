@@ -276,7 +276,7 @@
                     "sys_created" : "{date}",
                     "sys_title" : "{subject}",
                     "sys_description" : "{message_snippet}",
-                    "sys_contributor" : "{author}",
+                    "sys_contributors" : "{author}",
                     "sys_tags" : "{mail_list_category}"
                 }
             },{
