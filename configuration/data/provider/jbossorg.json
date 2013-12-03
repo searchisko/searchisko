@@ -276,7 +276,6 @@
                     "sys_created" : "{date}",
                     "sys_title" : "{subject}",
                     "sys_description" : "{message_snippet}",
-					// temporary
                     "sys_contributor" : "{author}",
                     "sys_tags" : "{mail_list_category}"
                 }
@@ -299,22 +298,6 @@
                     ]
                 }
             },
-//			{
-//                "name"     : "Contributors mapper",
-//                "class"    : "org.jboss.elasticsearch.tools.content.ESLookupValuePreprocessor",
-//                "settings" : {
-//                    "index_name"       : "sys_contributors",
-//                    "index_type"       : "contributor",
-//                    "source_field"     : "author",
-//                    "idx_search_field" : "code",
-//                    "result_mapping"   : [{
-//                        "idx_result_field" : "code",
-//                        "target_field"     : "sys_contributor",
-//                        "value_default"    : "{author}"
-//                    }],
-//                    "source_bases"     : ["author"]
-//                }
-//            },
 			{
                 "name"     : "Date collector",
                 "class"    : "org.jboss.elasticsearch.tools.content.ValuesCollectingPreprocessor",
