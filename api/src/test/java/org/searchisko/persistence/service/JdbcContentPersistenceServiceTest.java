@@ -26,15 +26,15 @@ import org.searchisko.api.util.SearchUtils;
 import org.searchisko.persistence.service.ContentPersistenceService.ListRequest;
 
 /**
- * Unit test for {@link JpaHibernateContentPersistenceService}
- *
+ * Unit test for {@link JdbcContentPersistenceService}
+ * 
  * @author Vlastimil Elias (velias at redhat dot com)
  */
-public class JpaHibernateContentPersistenceServiceTest extends JpaTestBase {
+public class JdbcContentPersistenceServiceTest extends JpaTestBase {
 
 	@Test
 	public void checkAndEnsureTableExists() {
-		JpaHibernateContentPersistenceService tested = getTested();
+		JdbcContentPersistenceService tested = getTested();
 
 		try {
 			Assert.assertFalse(tested.checkTableExists("table1"));
@@ -59,7 +59,7 @@ public class JpaHibernateContentPersistenceServiceTest extends JpaTestBase {
 
 	@Test
 	public void store_get_delete() {
-		JpaHibernateContentPersistenceService tested = getTested();
+		JdbcContentPersistenceService tested = getTested();
 
 		try {
 			// case - get from noexisting table
@@ -134,7 +134,7 @@ public class JpaHibernateContentPersistenceServiceTest extends JpaTestBase {
 
 	@Test
 	public void listRequest() {
-		JpaHibernateContentPersistenceService tested = getTested();
+		JdbcContentPersistenceService tested = getTested();
 		tested.LIST_PAGE_SIZE = 3;
 		try {
 			String sysContentType = "testtypelist";
@@ -145,12 +145,12 @@ public class JpaHibernateContentPersistenceServiceTest extends JpaTestBase {
 				Assert.assertFalse(req.hasContent());
 			}
 
-            // case - data handling test
+			// case - data handling test
 			{
-                for (int i = 7; i >= 1; i--)
-                    addContent(tested, sysContentType, "aaa-" + i);
+				for (int i = 7; i >= 1; i--)
+					addContent(tested, sysContentType, "aaa-" + i);
 
-                ListRequest req = tested.listRequestInit(sysContentType);
+				ListRequest req = tested.listRequestInit(sysContentType);
 				Assert.assertTrue(req.hasContent());
 				Assert.assertNotNull(req.content());
 				Assert.assertEquals(3, req.content().size());
@@ -184,7 +184,7 @@ public class JpaHibernateContentPersistenceServiceTest extends JpaTestBase {
 
 	}
 
-	private void addContent(JpaHibernateContentPersistenceService tested, String sysContentType, String id) {
+	private void addContent(JdbcContentPersistenceService tested, String sysContentType, String id) {
 		Map<String, Object> content = new HashMap<String, Object>();
 		content.put(ContentObjectFields.SYS_ID, id);
 		content.put(ContentObjectFields.SYS_CONTENT_TYPE, sysContentType);
@@ -192,62 +192,61 @@ public class JpaHibernateContentPersistenceServiceTest extends JpaTestBase {
 		tested.store(id, sysContentType, content);
 	}
 
-	private void assertRowCount(JpaHibernateContentPersistenceService tested, String sysContentType, int expectedCount) {
+	private void assertRowCount(JdbcContentPersistenceService tested, String sysContentType, int expectedCount) {
 		final String tablename = tested.getTableName(sysContentType);
-        int result = 0;
-        try (final Connection conn = this.getTested().searchiskoDs.getConnection();
-             final PreparedStatement statement = conn.prepareStatement(String.format("select count(*) from %s", tablename));
-             final ResultSet rs = statement.executeQuery()) {
-            while (rs.next()) {
-                result = rs.getInt(1);
-            }
-            Assert.assertEquals(expectedCount, result);
-        } catch (SQLException e) {
-            Assert.fail(e.getMessage());
-        }
+		int result = 0;
+		try (final Connection conn = this.getTested().searchiskoDs.getConnection();
+				final PreparedStatement statement = conn.prepareStatement(String.format("select count(*) from %s", tablename));
+				final ResultSet rs = statement.executeQuery()) {
+			while (rs.next()) {
+				result = rs.getInt(1);
+			}
+			Assert.assertEquals(expectedCount, result);
+		} catch (SQLException e) {
+			Assert.fail(e.getMessage());
+		}
 	}
 
-	private void assertTableContent(final JpaHibernateContentPersistenceService tested, final String sysContentType,
+	private void assertTableContent(final JdbcContentPersistenceService tested, final String sysContentType,
 			final String id, final Date expectedUpdated) {
-        final String tablename = tested.getTableName(sysContentType);
+		final String tablename = tested.getTableName(sysContentType);
 
-        try (final Connection conn = this.getTested().searchiskoDs.getConnection();
-             final PreparedStatement statement = conn.prepareStatement(String.format("select sys_content_type, updated from %s where id = ?", tablename))) {
-            statement.setString(1, id);
-            try (final ResultSet rs = statement.executeQuery()) {
-                Assert.assertTrue(rs.next());
-                Assert.assertEquals(sysContentType, rs.getString(1));
-                Timestamp actualTimestamp = rs.getTimestamp(2);
-                if (expectedUpdated != null) {
-                    Assert.assertEquals(new Timestamp(expectedUpdated.getTime()), actualTimestamp);
-                } else {
-                    Assert.assertNotNull(actualTimestamp);
-                }
-            }
-        } catch (SQLException e) {
-            Assert.fail(e.getMessage());
-        }
+		try (final Connection conn = this.getTested().searchiskoDs.getConnection();
+				final PreparedStatement statement = conn.prepareStatement(String.format(
+						"select sys_content_type, updated from %s where id = ?", tablename))) {
+			statement.setString(1, id);
+			try (final ResultSet rs = statement.executeQuery()) {
+				Assert.assertTrue(rs.next());
+				Assert.assertEquals(sysContentType, rs.getString(1));
+				Timestamp actualTimestamp = rs.getTimestamp(2);
+				if (expectedUpdated != null) {
+					Assert.assertEquals(new Timestamp(expectedUpdated.getTime()), actualTimestamp);
+				} else {
+					Assert.assertNotNull(actualTimestamp);
+				}
+			}
+		} catch (SQLException e) {
+			Assert.fail(e.getMessage());
+		}
 	}
 
-    private static JpaHibernateContentPersistenceService tested;
-	/**
-	 * @return
-	 */
-	protected JpaHibernateContentPersistenceService getTested() {
+	private static JdbcContentPersistenceService tested;
+
+	protected JdbcContentPersistenceService getTested() {
 		return tested;
-    }
+	}
 
-    @BeforeClass
-    public static void beforeClass() {
-        tested = new JpaHibernateContentPersistenceService();
-        tested.log = Logger.getLogger("test logger");
+	@BeforeClass
+	public static void beforeClass() {
+		tested = new JdbcContentPersistenceService();
+		tested.log = Logger.getLogger("test logger");
 
-        tested.searchiskoDs = JdbcConnectionPool.create("jdbc:h2:mem:unit-testing-jpa-persistence-service-test", "sa", "");
-    }
+		tested.searchiskoDs = JdbcConnectionPool.create("jdbc:h2:mem:unit-testing-jpa-persistence-service-test", "sa", "");
+	}
 
-    @AfterClass
-    public static void afterClass() {
-        ((JdbcConnectionPool) tested.searchiskoDs).dispose();
-        tested = null;
-    }
+	@AfterClass
+	public static void afterClass() {
+		((JdbcConnectionPool) tested.searchiskoDs).dispose();
+		tested = null;
+	}
 }
