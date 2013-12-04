@@ -30,8 +30,15 @@ To support synergy, information stored into DCP will be normalized in these area
 [This document describes structure of main content object](https://github.com/searchisko/searchisko/blob/master/documentation/rest-api/content/dcp_content_object.md) which can be pushed to and retrieved or searched from DCP.
 
 # Authentication
+## Provider authentication
+Some operation calls on REST API have to be authenticated by the Provider. The caller provides credentials (`provider` and `pwd`) via standard HTTP Basic authentication.
 
-Some operation calls on REST API need to be authenticated by the provider. The caller provides credentials (`provider` and `pwd`) via standard HTTP Basic authentication.
+## User authentication
+Some operation calls on REST API have to be authenticated by the User (eg. Personalized content rating API).
+
+When Searchisko REST API is called directly from Web browser, it may be configured to cooperate with CAS SSO authentication server.
+In this case user is authenticated from his SSO session established against CAS SSO server when 'User Authentication Status API' is called.
+
 
 # Description of usual server HTTP response codes
 
@@ -668,8 +675,10 @@ GET /rest/auth/status
 --
 Personalized Content Rating API
 
-This part of API allows to obtain and store personalized content rating for any content stored inside Searchisko.  
-This API cooperates with 'User Authentication Status API' to establish user authenticity, so you have to call 'User Authentication Status API' before you call this API.
+This part of API allows to obtain and store personalized rating for any document stored inside Searchisko. Rating is number between 1 (wort) and 5 (best).
+
+When called directly from Web Browser, this API cooperates with 'User Authentication Status API' to establish user authenticity, so you have to call 'User Authentication Status API' before you call this API in this case.
+
 All calls of this API return `403` Forbidden http response code if user is not authenticated!
 --
 
@@ -677,15 +686,15 @@ Get personalized content rating for one document.
 
 ##### Request parameters
 
-* `id` unique identifier of the document in Searchisko to get personalized content rating for.
+* `id` unique identifier of the document in Searchisko to get personalized rating for.
 
 ##### Response content
 
-The response contains a JSON object where `your_rating` holds number value of rating which is number from 1 to 5.
+The response contains a JSON object where `rating` holds value of the rating.
 
 ```
 {
-  "your_rating" : 2
+  "rating" : 2
 }
 ```
 
@@ -693,7 +702,7 @@ GET /rest/rating/{id}
 < 200
 < Content-Type: application/json
 {
-  "your_rating" : 2
+  "rating" : 2
 }
 
 
@@ -706,13 +715,13 @@ Get personalized content rating for more documents.
 ##### Response content
 
 The response contains a JSON object, where key is unique identifier of document in Searchisko (`id` request parameter) and value is structure with info about rating.
-`your_rating` holds number value of rating which is number from 1 to 5.
+`rating` field holds value of the rating.
 If user did not provided his rating for some requested document yet, it is not present in response.
 
 ```
 {
-  "id1" : { "your_rating" : 2},
-  "id2" : { "your_rating" : 3},
+  "id1" : { "rating" : 2},
+  "id2" : { "rating" : 3},
 }
 ```
 
@@ -720,20 +729,29 @@ GET /rest/rating{?id}
 < 200
 < Content-Type: application/json
 {
-  "id1" : { "your_rating" : 2},
-  "id2" : { "your_rating" : 3},
+  "id1" : { "rating" : 2},
+  "id2" : { "rating" : 3},
 }
 
 
 Rate content.
 
-##### Request parameters
+##### Request parameter
 
 * `id` unique identifier of the document in Searchisko to store personalized content rating for.
-* `my_rating` value of rating. Mandatory number from 1 to 5 (1 - worst, 5 - best). 
 
-POST /rest/rating/{id}{?my_rating}
+##### Request content
+JSON with rating value to store. `rating` field is mandatory.
+
+```
+{
+  "rating" : 2
+}
+```
+
+POST /rest/rating/{id}
 < 200
+< Content-Type: application/json
 
 
 --
