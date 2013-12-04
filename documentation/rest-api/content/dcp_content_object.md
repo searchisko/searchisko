@@ -98,6 +98,14 @@ inside DCP during push. Those data fields are prefixed by `sys_`:
   <td>sys_comments</td>
   <td>Array of comment for issue. <a href="#comment-data-structure-description">'Comment data structure'</a> is described below.</td>
 </tr>
+<tr>
+  <td>sys_rating_avg</td>
+  <td>Average rating of Document - system field. It is updated automatically when "Personalized Content Rating API" is used. Contains number value (with one decimal position) between 1 (worst) and 5 (best).</td>
+</tr>
+<tr>
+  <td>sys_rating_num</td>
+  <td>Number of users who rated this Document - system field. It is updated automatically when "Personalized Content Rating API" is used.</td>
+</tr>
 </tbody>
 </table>
 
@@ -196,6 +204,8 @@ It's defined only by content provider and must contain mandatory fields defined 
           "comment_created" : "2012-11-27T13:55Z",
           "comment_updated" : "2012-11-27T14:22Z"
         }
-      ]
+      ],
+      "sys_rating_avg" : 4.2,
+			"sys_rating_num" : 24
 	}
 

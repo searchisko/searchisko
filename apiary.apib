@@ -37,7 +37,7 @@ Some operation calls on REST API have to be authenticated by the Provider. The c
 Some operation calls on REST API have to be authenticated by the User (eg. Personalized content rating API).
 
 When Searchisko REST API is called directly from Web browser, it may be configured to cooperate with CAS SSO authentication server.
-In this case user is authenticated from his SSO session established against CAS SSO server when 'User Authentication Status API' is called.
+In this case user is authenticated from his SSO session established against CAS SSO server when 'User Authentication Status API' is called from Web browser.
 
 
 # Description of usual server HTTP response codes
@@ -240,7 +240,9 @@ Search contributions based on input parameters
 			            "Jay Balunas <tech4j@gmail.com>",
 			            "Wesley Hales <wesleyhales@gmail.com>"
 			        ],
-			        "sys_type": "issue"
+			        "sys_type": "issue",
+			        "sys_rating_avg" : 4.3,
+			        "sys_rating_num" : 5
 			    }
 			 },{
          ...
@@ -675,18 +677,23 @@ GET /rest/auth/status
 --
 Personalized Content Rating API
 
-This part of API allows to obtain and store personalized rating for any document stored inside Searchisko. Rating is number between 1 (wort) and 5 (best).
+This part of API allows to obtain and store personalized rating for any document stored inside Searchisko. 
+Rating is number between 1 (wort) and 5 (best).
 
-When called directly from Web Browser, this API cooperates with 'User Authentication Status API' to establish user authenticity, so you have to call 'User Authentication Status API' before you call this API in this case.
+Average rating and number of users who rated document are available directly in document data
+over system fields `sys_rating_avg` and `sys_rating_num`. These fields are updated automatically by Searchisko as users add rating over this API.
 
-All calls of this API return `403` Forbidden http response code if user is not authenticated!
+This API requires User authentication. All calls of this API return `403` Forbidden http response code if user is not authenticated!
+
+When called directly from Web Browser, this API cooperates with 'User Authentication Status API' to establish user authenticity,
+so you have to call 'User Authentication Status API' before you call this API in this case.
 --
 
 Get personalized content rating for one document.
 
 ##### Request parameters
 
-* `id` unique identifier of the document in Searchisko to get personalized rating for.
+* `id` unique identifier of the document in Searchisko to get personalized rating for (`_id` document field in search API results).
 
 ##### Response content
 
@@ -710,7 +717,7 @@ Get personalized content rating for more documents.
 
 ##### Request parameters
 
-* `id` unique identifier of the document in Searchisko to get personalized content rating for. Parameter can be used multiple times in one request to obtain rating for more documents at once.
+* `id` unique identifier of the document in Searchisko to get personalized content rating for (`_id` document field in search API results). Parameter can be used multiple times in one request to obtain rating for more documents at once.
 
 ##### Response content
 
@@ -738,10 +745,10 @@ Rate content.
 
 ##### Request parameter
 
-* `id` unique identifier of the document in Searchisko to store personalized content rating for.
+* `id` unique identifier of the document in Searchisko to store personalized content rating for (`_id` document field in search API results).
 
 ##### Request content
-JSON with rating value to store. `rating` field is mandatory.
+JSON object with rating value to store in `rating` mandatory field.
 
 ```
 {
@@ -750,8 +757,11 @@ JSON with rating value to store. `rating` field is mandatory.
 ```
 
 POST /rest/rating/{id}
+> Content-Type: application/json
+{
+  "rating" : 2
+}
 < 200
-< Content-Type: application/json
 
 
 --
