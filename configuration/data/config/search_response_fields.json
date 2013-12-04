@@ -10,6 +10,8 @@
         "sys_tags",
         "sys_contributors",
         "sys_created",
-        "sys_last_activity_date"
+        "sys_last_activity_date",
+        "sys_rating_avg",
+			  "sys_rating_num"
     ]
 }

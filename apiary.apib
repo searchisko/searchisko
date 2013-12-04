@@ -30,8 +30,15 @@ To support synergy, information stored into DCP will be normalized in these area
 [This document describes structure of main content object](https://github.com/searchisko/searchisko/blob/master/documentation/rest-api/content/dcp_content_object.md) which can be pushed to and retrieved or searched from DCP.
 
 # Authentication
+## Provider authentication
+Some operation calls on REST API have to be authenticated by the Provider. The caller provides credentials (`provider` and `pwd`) via standard HTTP Basic authentication.
 
-Some operation calls on REST API need to be authenticated by the provider. The caller provides credentials (`provider` and `pwd`) via standard HTTP Basic authentication.
+## User authentication
+Some operation calls on REST API have to be authenticated by the User (eg. Personalized content rating API).
+
+When Searchisko REST API is called directly from Web browser, it may be configured to cooperate with CAS SSO authentication server.
+In this case user is authenticated from his SSO session established against CAS SSO server when 'User Authentication Status API' is called from Web browser.
+
 
 # Description of usual server HTTP response codes
 
@@ -233,7 +240,9 @@ Search contributions based on input parameters
 			            "Jay Balunas <tech4j@gmail.com>",
 			            "Wesley Hales <wesleyhales@gmail.com>"
 			        ],
-			        "sys_type": "issue"
+			        "sys_type": "issue",
+			        "sys_rating_avg" : 4.3,
+			        "sys_rating_num" : 5
 			    }
 			 },{
          ...
@@ -252,7 +261,7 @@ Description of important response fields:
 * `hits` object containing info about search hits
 * `hits/total` total number of documents matching search request - search hits
 * `hits/hits` array with documents forming part of search hits matching `from` and `size` request parameters
-* `hits/hits/_id` unique identifier of document in DCP
+* `hits/hits/_id` unique identifier of document in Searchisko
 * `hits/hits/fields` document fields, see `field` request parameter
 * `hits/hits/highlight` highlights of fulltext matching in given document, see `query_highlight` request parameter
 * `facets` values from facets, see `facet` request parameter
@@ -288,8 +297,8 @@ configuration to bring better search results for users.
 * `search_result_uuid` - value of `uuid` field from search response this statistics record is for 
 * `hit_id` - unique identifier of search hit document (`hits/hits[]/_id` field 
 in response) from given search response which was "useful" for user (eg. he clicked it 
-or viewed detail). Validation is performed during DCP side record write to ensure this 
-identifier was part of given search response. 
+or viewed detail). Validation is performed during server side record write to ensure this 
+identifier has been part of given search response. 
 * `session_id` - optional, identifier of user's frontend session to allow more precise user behavior analyze
 
 PUT /rest/search/{search_result_uuid}/{hit_id}?{session_id}
@@ -641,11 +650,22 @@ GET /rest/feed?{project,contributor,sys_type,tag,type,content_provider,query,sor
 --
 User Authentication Status API
 
-When Searchisko is configured to work with authentication server (like SSO) then the following endpoint can be used to
-learn if user has been successfully authenticated.
+When Searchisko REST API is called directly from Web browser, and Searchisko is configured to cooperate with web SSO authentication server, 
+then this endpoint can be used from JavaScript to check if user is authenticated. 
+This information can be used then to show user necessary controls and/or to perform call to other Searchisko APIs used to obtain personalized 
+data (like 'content rating' endpoint).  
 --
 
-Learn if user has been authenticated.
+Check if user is authenticated.
+
+##### Response content
+The response contains a JSON object with `authenticated` field. Value `true` means user is authenticated:
+
+```
+{
+  "authenticated":true
+}
+```
 
 GET /rest/auth/status
 < 200
@@ -653,6 +673,95 @@ GET /rest/auth/status
 {
   "authenticated":true
 }
+
+--
+Personalized Content Rating API
+
+This part of API allows to obtain and store personalized rating for any document stored inside Searchisko. 
+Rating is number between 1 (wort) and 5 (best).
+
+Average rating and number of users who rated document are available directly in document data
+over system fields `sys_rating_avg` and `sys_rating_num`. These fields are updated automatically by Searchisko as users add rating over this API.
+
+This API requires User authentication. All calls of this API return `403` Forbidden http response code if user is not authenticated!
+
+When called directly from Web Browser, this API cooperates with 'User Authentication Status API' to establish user authenticity,
+so you have to call 'User Authentication Status API' before you call this API in this case.
+--
+
+Get personalized content rating for one document.
+
+##### Request parameters
+
+* `id` unique identifier of the document in Searchisko to get personalized rating for (`_id` document field in search API results).
+
+##### Response content
+
+The response contains a JSON object where `rating` holds value of the rating.
+
+```
+{
+  "rating" : 2
+}
+```
+
+GET /rest/rating/{id}
+< 200
+< Content-Type: application/json
+{
+  "rating" : 2
+}
+
+
+Get personalized content rating for more documents.
+
+##### Request parameters
+
+* `id` unique identifier of the document in Searchisko to get personalized content rating for (`_id` document field in search API results). Parameter can be used multiple times in one request to obtain rating for more documents at once.
+
+##### Response content
+
+The response contains a JSON object, where key is unique identifier of document in Searchisko (`id` request parameter) and value is structure with info about rating.
+`rating` field holds value of the rating.
+If user did not provided his rating for some requested document yet, it is not present in response.
+
+```
+{
+  "id1" : { "rating" : 2},
+  "id2" : { "rating" : 3},
+}
+```
+
+GET /rest/rating{?id}
+< 200
+< Content-Type: application/json
+{
+  "id1" : { "rating" : 2},
+  "id2" : { "rating" : 3},
+}
+
+
+Rate content.
+
+##### Request parameter
+
+* `id` unique identifier of the document in Searchisko to store personalized content rating for (`_id` document field in search API results).
+
+##### Request content
+JSON object with rating value to store in `rating` mandatory field.
+
+```
+{
+  "rating" : 2
+}
+```
+
+POST /rest/rating/{id}
+> Content-Type: application/json
+{
+  "rating" : 2
+}
+< 200
 
 
 --
