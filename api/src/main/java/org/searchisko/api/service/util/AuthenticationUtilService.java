@@ -8,8 +8,9 @@ package org.searchisko.api.service.util;
 import org.jasig.cas.client.authentication.AttributePrincipal;
 import org.jasig.cas.client.util.AbstractCasFilter;
 import org.jasig.cas.client.validation.Assertion;
+import org.searchisko.api.service.ContributorProfileService;
 
-import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
@@ -17,10 +18,13 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
+ * Authentication utility service
+ *
  * @author Lukas Vlcek
+ * @author Libor Krzyzanek
  */
-@ApplicationScoped
-public class AuthStatusUtil {
+@RequestScoped
+public class AuthenticationUtilService {
 
 	@Inject
 	protected Logger log;
@@ -30,9 +34,13 @@ public class AuthStatusUtil {
 	@Inject
 	protected HttpServletRequest request;
 
+	@Inject
+	protected ContributorProfileService contributorProfileService;
+
 	/**
-	 * Returns name of authenticated user. Returns null is user is not authenticated or if HTTP session does not exist.
-	 * @return name of authenticated user
+	 * Returns name of authenticated user
+	 *
+	 * @return name of authenticated user or null is user is not authenticated or if HTTP session does not exist.
 	 */
 	public String getAuthenticatedUserName() {
 		if (request != null) {
@@ -43,20 +51,28 @@ public class AuthStatusUtil {
 					AttributePrincipal principal = assertion.getPrincipal();
 					return principal == null ? null : principal.getName();
 				} else {
-					if (log.isLoggable(Level.FINEST)) {
-						log.log(Level.FINEST, "No Assertion found in HTTP session");
-					}
+					log.log(Level.FINEST, "No Assertion found in HTTP session");
 				}
 			} else {
-				if (log.isLoggable(Level.FINEST)) {
-					log.log(Level.FINEST, "Can not verify user authentication, no HTTP session found");
-				}
+				log.log(Level.FINEST, "Can not verify user authentication, no HTTP session found");
 			}
 		} else {
-			if (log.isLoggable(Level.FINEST)) {
-				log.log(Level.FINEST, "Can not verify user authentication, no HTTP request found");
-			}
+			log.log(Level.FINEST, "Can not verify user authentication, no HTTP request found");
 		}
 		return null;
+	}
+
+	/**
+	 * Get Contributor Id for currently authenticated user
+	 *
+	 * @return Contributor Id
+	 */
+	public String getAuthenticatedContributorId() {
+		String currentUsername = getAuthenticatedUserName();
+		if (currentUsername == null) {
+			return null;
+		}
+
+		return contributorProfileService.getContributorId(currentUsername);
 	}
 }
