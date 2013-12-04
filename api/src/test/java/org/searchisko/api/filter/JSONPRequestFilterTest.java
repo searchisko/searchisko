@@ -24,9 +24,10 @@ import org.mockito.stubbing.Answer;
 
 /**
  * Unit test for {@link JSONPRequestFilter}.
- *
+ * 
  * @author Vlastimil Elias (velias at redhat dot com)
  */
+@SuppressWarnings("deprecation")
 public class JSONPRequestFilterTest {
 
 	private static final String PARAM_CALLBACK = "callback";

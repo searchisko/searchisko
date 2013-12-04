@@ -8,22 +8,19 @@ package org.searchisko.persistence.jpa.model;
 import java.io.IOException;
 import java.util.Map;
 
-import org.codehaus.jackson.JsonParseException;
-import org.codehaus.jackson.map.JsonMappingException;
-
 /**
  * Common converter for entity with value as a plain string
- *
+ * 
  * @param <T> type of JPA entity
- *
+ * 
  * @author Libor Krzyzanek
- *
+ * 
  */
 public abstract class StringValueConverter<T> extends CommonConverter<T> {
 
 	/**
 	 * Get value field content from JPA entity
-	 *
+	 * 
 	 * @param jpaEntity
 	 * @return value field content
 	 */
@@ -31,7 +28,7 @@ public abstract class StringValueConverter<T> extends CommonConverter<T> {
 
 	/**
 	 * Set value content into JPA entity
-	 *
+	 * 
 	 * @param jpaEntity to set value into
 	 * @param value to set
 	 */

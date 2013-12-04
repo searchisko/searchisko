@@ -7,19 +7,18 @@ package org.searchisko.api.reindexer;
 
 import java.util.Map;
 
-import org.elasticsearch.action.admin.indices.flush.FlushRequest;
 import org.elasticsearch.action.bulk.BulkRequestBuilder;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.search.SearchHit;
+import org.jboss.elasticsearch.tools.content.InvalidDataException;
 import org.searchisko.api.service.ProviderService;
 import org.searchisko.api.service.SearchClientService;
-import org.jboss.elasticsearch.tools.content.InvalidDataException;
 
 /**
  * Task used to renormalize content in ElasticSearch search indices for given sys_content_type. Content is loaded from
  * ES index, all preprocessors are applied to it, and then it is stored back to the ES index.
- *
+ * 
  * @author Vlastimil Elias (velias at redhat dot com)
  */
 public class RenormalizeByContentTypeTask extends ReindexingTaskBase {
@@ -77,8 +76,8 @@ public class RenormalizeByContentTypeTask extends ReindexingTaskBase {
 
 	@Override
 	protected void performPostReindexingProcessing(Client client) {
-        client.admin().indices().prepareFlush(indexName).execute().actionGet();
-        client.admin().indices().prepareRefresh(indexName).execute().actionGet();
+		client.admin().indices().prepareFlush(indexName).execute().actionGet();
+		client.admin().indices().prepareRefresh(indexName).execute().actionGet();
 	}
 
 }

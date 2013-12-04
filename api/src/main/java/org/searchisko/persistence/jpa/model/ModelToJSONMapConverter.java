@@ -8,21 +8,18 @@ package org.searchisko.persistence.jpa.model;
 import java.io.IOException;
 import java.util.Map;
 
-import org.codehaus.jackson.JsonParseException;
-import org.codehaus.jackson.map.JsonMappingException;
-
 /**
  * Converter interface for converting between JPA entity and JSON value.
- *
+ * 
  * @param <T> type of JPA entity
- *
+ * 
  * @author Libor Krzyzanek
  */
 public interface ModelToJSONMapConverter<T> {
 
 	/**
 	 * Create JPA entity for given ID and JSON Map value
-	 *
+	 * 
 	 * @param id of entity
 	 * @param jsonMap value to store into entity
 	 * @return JPA entity
@@ -32,7 +29,7 @@ public interface ModelToJSONMapConverter<T> {
 
 	/**
 	 * Convert value from jpaEntity into JSON Map structure.
-	 *
+	 * 
 	 * @param jpaEntity to get value from
 	 * @return JSON Map structure from entity value
 	 * @throws IOException
@@ -41,7 +38,7 @@ public interface ModelToJSONMapConverter<T> {
 
 	/**
 	 * Update value in JPA entity from jsonMapValue
-	 *
+	 * 
 	 * @param jpaEntity to update data into
 	 * @param jsonMapValue to update data from
 	 * @throws IOException
@@ -50,7 +47,7 @@ public interface ModelToJSONMapConverter<T> {
 
 	/**
 	 * Get ID from JPA entity.
-	 *
+	 * 
 	 * @param jpaEntity
 	 * @return ID
 	 */

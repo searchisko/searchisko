@@ -10,21 +10,20 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.elasticsearch.action.admin.indices.flush.FlushRequest;
 import org.elasticsearch.action.bulk.BulkRequestBuilder;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.search.SearchHit;
+import org.jboss.elasticsearch.tools.content.InvalidDataException;
 import org.searchisko.api.ContentObjectFields;
 import org.searchisko.api.service.ProviderService;
 import org.searchisko.api.service.SearchClientService;
-import org.jboss.elasticsearch.tools.content.InvalidDataException;
 
 /**
  * Base for tasks used to renormalize document in ES search indices. All documents for specified filters (implemented in
  * {@link #addFilters(SearchRequestBuilder)}) are loaded from all ES indices with Searchisko content, all preprocessors
  * are applied to content, and then it is stored back to the ES index.
- *
+ * 
  * @author Vlastimil Elias (velias at redhat dot com)
  */
 public abstract class RenormalizeTaskBase extends ReindexingTaskBase {
@@ -62,7 +61,7 @@ public abstract class RenormalizeTaskBase extends ReindexingTaskBase {
 
 	/**
 	 * Add filters to select content to be reindexed. Called from {@link #prepareSearchRequest(Client)}.
-	 *
+	 * 
 	 * @param srb to add filters into
 	 */
 	protected abstract void addFilters(SearchRequestBuilder srb);
@@ -94,14 +93,14 @@ public abstract class RenormalizeTaskBase extends ReindexingTaskBase {
 	@Override
 	protected void performPostReindexingProcessing(Client client) {
 		if (indexNames.size() > 0)
-        client.admin().indices().prepareFlush(getIndexNamesAsArray()).execute().actionGet();
-        client.admin().indices().prepareRefresh(getIndexNamesAsArray()).execute().actionGet();
+			client.admin().indices().prepareFlush(getIndexNamesAsArray()).execute().actionGet();
+		client.admin().indices().prepareRefresh(getIndexNamesAsArray()).execute().actionGet();
 	}
 
 	/**
 	 * Fill {@link #indexNames} and {@link #indexTypes} fields with all indices and types for all configured Searchisko
-     * content types.
-	 *
+	 * content types.
+	 * 
 	 * @see ProviderService#getAll()
 	 */
 	protected void loadIndexNamesAndTypesForWholeContent() {

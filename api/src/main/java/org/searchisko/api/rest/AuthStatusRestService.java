@@ -5,7 +5,8 @@
  */
 package org.searchisko.api.rest;
 
-import org.searchisko.api.service.util.AuthStatusUtil;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
@@ -13,12 +14,12 @@ import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
-import java.util.HashMap;
-import java.util.Map;
+
+import org.searchisko.api.service.util.AuthStatusUtil;
 
 /**
  * Authentication status REST service.
- *
+ * 
  * @author Lukas Vlcek
  */
 @Path("/auth")
@@ -33,7 +34,7 @@ public class AuthStatusRestService {
 	@Produces(MediaType.APPLICATION_JSON)
 	public Map<String, Object> authStatus() {
 		boolean authenticated = false;
-		Map<String, Object> ret = new HashMap();
+		Map<String, Object> ret = new HashMap<>();
 		String userName = authStatsUtils.getAuthenticatedUserName();
 		if (userName != null) {
 			authenticated = true;

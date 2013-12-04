@@ -14,23 +14,21 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.TimeZone;
 
-import org.codehaus.jackson.JsonParseException;
-import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.type.TypeReference;
 import org.elasticsearch.common.joda.time.format.ISODateTimeFormat;
 
 /**
  * Utility class for search
- *
+ * 
  * @author Libor Krzyzanek
- *
+ * 
  */
 public class SearchUtils {
 
 	/**
 	 * Load properties from defined path e.g. "/app.properties"
-	 *
+	 * 
 	 * @param path
 	 * @return newly initialized {@link Properties}
 	 * @throws IOException
@@ -47,7 +45,7 @@ public class SearchUtils {
 
 	/**
 	 * Trim string and return null if empty.
-	 *
+	 * 
 	 * @param value to trim
 	 * @return trimmed value or null if empty
 	 */
@@ -62,7 +60,7 @@ public class SearchUtils {
 
 	/**
 	 * Convert JSON Map structure into String with JSON content.
-	 *
+	 * 
 	 * @param jsonMapValue to convert
 	 * @return
 	 * @throws IOException
@@ -77,7 +75,7 @@ public class SearchUtils {
 
 	/**
 	 * Get ISO date time formatter.
-	 *
+	 * 
 	 * @return DateFormat instance for ISO format
 	 */
 	public static DateFormat getISODateFormat() {
@@ -89,7 +87,7 @@ public class SearchUtils {
 
 	/**
 	 * Parse ISO date time formatted string into {@link Date} instance.
-	 *
+	 * 
 	 * @param string ISO formatted date string to parse
 	 * @param silent if true then null is returned instead of {@link IllegalArgumentException} thrown
 	 * @return parsed date or null
@@ -110,7 +108,7 @@ public class SearchUtils {
 
 	/**
 	 * Convert String with JSON content into JSON Map structure.
-	 *
+	 * 
 	 * @param jsonData string to convert
 	 * @return JSON MAP structure
 	 * @throws IOException
@@ -127,7 +125,7 @@ public class SearchUtils {
 	/**
 	 * Extract contributor name from contributor id string. So extracts 'John Doe' from '
 	 * <code>John Doe <john@doe.org></code>'.
-	 *
+	 * 
 	 * @param contributor id to extract name from
 	 * @return contributor name
 	 */

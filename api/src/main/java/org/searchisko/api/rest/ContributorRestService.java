@@ -10,7 +10,6 @@ import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
@@ -23,9 +22,9 @@ import org.searchisko.api.service.ContributorService;
 
 /**
  * Contributor REST API
- *
+ * 
  * @author Libor Krzyzanek
- *
+ * 
  */
 @RequestScoped
 @Path("/contributor")
@@ -44,33 +43,39 @@ public class ContributorRestService extends RestEntityServiceBase {
 	@Path("/search")
 	@Produces(MediaType.APPLICATION_JSON)
 	@GuestAllowed
-    @CORSSupport
+	@CORSSupport
 	public Object search(@QueryParam("email") String email) {
 		SearchResponse response = contributorService.search(email);
 		return new ESDataOnlyResponse(response);
 	}
 
-    /*
-    // Commented out as there should be better implementation of it
-    // as a part of https://github.com/searchisko/searchisko/issues/5
-    @GET
-    @Path("/")
-    @Override
-    @GuestAllowed
-    @CORSSupport
-    @Produces(MediaType.APPLICATION_JSON)
-    public Object getAll(@QueryParam("from") Integer from, @QueryParam("size") Integer size) {
-        return super.getAll(from, size);
-    }
-
-    @GET
-    @Path("/{id}")
-    @Override
-    @GuestAllowed
-    @CORSSupport
-    @Produces(MediaType.APPLICATION_JSON)
-    public Object get(@PathParam("id") String id) {
-        return super.get(id);
-    }
-    */
+	/*
+	 * // Commented out as there should be better implementation of it // as a part of
+	 * https://github.com/searchisko/searchisko/issues/5
+	 * 
+	 * @GET
+	 * 
+	 * @Path("/")
+	 * 
+	 * @Override
+	 * 
+	 * @GuestAllowed
+	 * 
+	 * @CORSSupport
+	 * 
+	 * @Produces(MediaType.APPLICATION_JSON) public Object getAll(@QueryParam("from") Integer from, @QueryParam("size")
+	 * Integer size) { return super.getAll(from, size); }
+	 * 
+	 * @GET
+	 * 
+	 * @Path("/{id}")
+	 * 
+	 * @Override
+	 * 
+	 * @GuestAllowed
+	 * 
+	 * @CORSSupport
+	 * 
+	 * @Produces(MediaType.APPLICATION_JSON) public Object get(@PathParam("id") String id) { return super.get(id); }
+	 */
 }

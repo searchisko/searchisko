@@ -51,10 +51,10 @@ import org.searchisko.api.model.TimeoutConfiguration;
 
 /**
  * Search business logic service.
- *
+ * 
  * @author Libor Krzyzanek
  * @author Vlastimil Elias (velias at redhat dot com)
- *
+ * 
  */
 @Named
 @ApplicationScoped
@@ -84,7 +84,7 @@ public class SearchService {
 
 	/**
 	 * Perform search operation.
-	 *
+	 * 
 	 * @param querySettings to use for search
 	 * @param responseUuid used for search response, we need it only to write it into statistics (so can be null)
 	 * @return search response
@@ -133,14 +133,14 @@ public class SearchService {
 			if (typeDef == null) {
 				throw new IllegalArgumentException("type");
 			}
-            String[] queryIndices = ProviderService.extractSearchIndices(typeDef, type);
-            String queryType = ProviderService.extractIndexType(typeDef, type);
+			String[] queryIndices = ProviderService.extractSearchIndices(typeDef, type);
+			String queryType = ProviderService.extractIndexType(typeDef, type);
 			srb.setIndices(queryIndices);
 			srb.setTypes(queryType);
-            if (log.isLoggable(Level.FINE)) {
-                log.log(Level.FINE, "Query indices: {0}", Arrays.asList(queryIndices).toString());
-                log.log(Level.FINE, "Query indices type: {0}", queryType);
-            }
+			if (log.isLoggable(Level.FINE)) {
+				log.log(Level.FINE, "Query indices: {0}", Arrays.asList(queryIndices).toString());
+				log.log(Level.FINE, "Query indices type: {0}", queryType);
+			}
 		} else {
 			List<String> sysTypesRequested = null;
 			if (querySettings.getFilters() != null) {
@@ -176,17 +176,17 @@ public class SearchService {
 				}
 				indexNamesCache.put(prepareIndexNamesCacheKey(sysTypesRequested, isSysTypeFacet), indexNames);
 			}
-            String[] queryIndices = indexNames.toArray(new String[indexNames.size()]);
+			String[] queryIndices = indexNames.toArray(new String[indexNames.size()]);
 			srb.setIndices(queryIndices);
-            if (log.isLoggable(Level.FINE)) {
-                log.log(Level.FINE, "Query indices: {0}", Arrays.asList(queryIndices).toString());
-            }
+			if (log.isLoggable(Level.FINE)) {
+				log.log(Level.FINE, "Query indices: {0}", Arrays.asList(queryIndices).toString());
+			}
 		}
 	}
 
 	/**
 	 * Prepare key for indexName cache.
-	 *
+	 * 
 	 * @param sysTypesRequested to prepare key for
 	 * @return key value (never null)
 	 */
@@ -250,9 +250,8 @@ public class SearchService {
 							parseHighlightSettingIntParam(hf, fieldName, "fragment_offset"));
 				}
 			} else {
-				throw new SettingsException(
-						"Fulltext search highlight requested but not configured by configuration document "
-								+ ConfigService.CFGNAME_SEARCH_FULLTEXT_HIGHLIGHT_FIELDS + ". Contact administrators please.");
+				throw new SettingsException("Fulltext search highlight requested but not configured by configuration document "
+						+ ConfigService.CFGNAME_SEARCH_FULLTEXT_HIGHLIGHT_FIELDS + ". Contact administrators please.");
 			}
 		}
 	}
@@ -368,19 +367,18 @@ public class SearchService {
 						srb.addFacet(createTermsFacetBuilder(queryFacetName, config.getFieldName(), size, searchFilters));
 						if (searchFilters != null && searchFilters.containsKey(config.getFieldName())) {
 							if (config.isFiltered()) {
-								// we filter over contributors so we have to add second facet which provide numbers for these contributors
+								// we filter over contributors so we have to add second facet which provide numbers for these
+								// contributors
 								// because they can be out of normal facet due count limitation
-								TermsFacetBuilder tb = new TermsFacetBuilder(queryFacetName + "_filter")
-										.field(config.getFieldName()).size(config.getFilteredSize()).global(true)
+								TermsFacetBuilder tb = new TermsFacetBuilder(queryFacetName + "_filter").field(config.getFieldName())
+										.size(config.getFilteredSize()).global(true)
 										.facetFilter(new AndFilterBuilder(getFilters(searchFilters, null)));
 								srb.addFacet(tb);
 							}
 						}
 					} else if ("date_histogram".equals(config.getFacetType())) {
-						srb.addFacet(
-								new DateHistogramFacetBuilder(queryFacetName)
-										.field(config.getFieldName())
-										.interval(selectActivityDatesHistogramInterval(querySettings)));
+						srb.addFacet(new DateHistogramFacetBuilder(queryFacetName).field(config.getFieldName()).interval(
+								selectActivityDatesHistogramInterval(querySettings)));
 					}
 				}
 			}
@@ -395,33 +393,68 @@ public class SearchService {
 		private boolean filtered = false;
 		private int filteredSize = 0;
 
-		public void setFacetName(String value) { this.facetName = value; }
-		public String getFacetName() { return this.facetName; }
-		public void setFacetType(String value) { this.facetType = value; }
-		public String getFacetType() { return this.facetType; }
-		public void setFieldName(String value) { this.fieldName = value; }
-		public String getFieldName() { return this.fieldName; }
-		public void setOptionalSettings(Map<String, Object> object) { this.optionalSettings = object; }
-		public Map<String, Object> getOptionalSettings() { return this.optionalSettings; }
-		public void setFiltered(boolean value) { this.filtered = value; }
-		public boolean isFiltered() { return this.filtered; }
-		public void setFilteredSize(int value) { this.filteredSize = value; }
-		public int getFilteredSize() { return this.filteredSize; }
+		public void setFacetName(String value) {
+			this.facetName = value;
+		}
+
+		public String getFacetName() {
+			return this.facetName;
+		}
+
+		public void setFacetType(String value) {
+			this.facetType = value;
+		}
+
+		public String getFacetType() {
+			return this.facetType;
+		}
+
+		public void setFieldName(String value) {
+			this.fieldName = value;
+		}
+
+		public String getFieldName() {
+			return this.fieldName;
+		}
+
+		public void setOptionalSettings(Map<String, Object> object) {
+			this.optionalSettings = object;
+		}
+
+		public Map<String, Object> getOptionalSettings() {
+			return this.optionalSettings;
+		}
+
+		public void setFiltered(boolean value) {
+			this.filtered = value;
+		}
+
+		public boolean isFiltered() {
+			return this.filtered;
+		}
+
+		public void setFilteredSize(int value) {
+			this.filteredSize = value;
+		}
+
+		public int getFilteredSize() {
+			return this.filteredSize;
+		}
 	}
 
 	/**
 	 * Parse facet type.
+	 * 
 	 * @param facetConfig
 	 * @param facetName
 	 * @return
 	 */
+	@SuppressWarnings("unchecked")
 	protected SemiParsedFacetConfig parseFacetType(final Object facetConfig, final String facetName) {
 		try {
 			Map<String, Object> map = (Map<String, Object>) facetConfig;
-			if (map.isEmpty() ||
-					( map.size() > 1 && !map.containsKey("_filtered") ) ||
-					( map.size() > 2 && map.containsKey("_filtered"))
-					) {
+			if (map.isEmpty() || (map.size() > 1 && !map.containsKey("_filtered"))
+					|| (map.size() > 2 && map.containsKey("_filtered"))) {
 				throw new SettingsException("Incorrect configuration of fulltext search facet field '" + facetName
 						+ "' in configuration document " + ConfigService.CFGNAME_SEARCH_FULLTEXT_FACETS_FIELDS
 						+ ": Multiple facet type is not allowed.");
@@ -455,16 +488,14 @@ public class SearchService {
 			return config;
 		} catch (ClassCastException e) {
 			throw new SettingsException("Incorrect configuration of fulltext search facet field '" + facetName
-					+ "' in configuration document " + ConfigService.CFGNAME_SEARCH_FULLTEXT_FACETS_FIELDS
-					+ ".");
+					+ "' in configuration document " + ConfigService.CFGNAME_SEARCH_FULLTEXT_FACETS_FIELDS + ".");
 		}
 	}
 
 	/**
-	 * Return (the first) name of fact that is built on top of "sys_type" field.
-	 * TODO: Optimize! We get and parse facet configuration multiple times in this code.
-	 * We can cache parsed results for some time.
-	 *
+	 * Return (the first) name of fact that is built on top of "sys_type" field. TODO: Optimize! We get and parse facet
+	 * configuration multiple times in this code. We can cache parsed results for some time.
+	 * 
 	 * @return (the first) name of fact that is built on top of "sys_type" field.
 	 */
 	private String getFacetNameUsingSysTypeField() {
@@ -484,10 +515,9 @@ public class SearchService {
 	}
 
 	/**
-	 * For given set of facet names it returns only those using "date_histogram" facet type.
-	 * TODO: Optimize! We get and parse facet configuration multiple times in this code.
-	 * We can cache parsed results for some time.
-	 *
+	 * For given set of facet names it returns only those using "date_histogram" facet type. TODO: Optimize! We get and
+	 * parse facet configuration multiple times in this code. We can cache parsed results for some time.
+	 * 
 	 * @param facetNames set of facet names to filter
 	 * @return only those facets names using "date_histogram" facet type
 	 */
@@ -512,7 +542,7 @@ public class SearchService {
 
 	/**
 	 * Get additional fields to be added into search response.
-	 *
+	 * 
 	 * @param querySettings for search
 	 * @return map with additional fields, never null
 	 */
@@ -524,7 +554,9 @@ public class SearchService {
 			// TODO: hack-ish modification for configurable facets
 			String interval = null;
 			for (String facetName : dateHistogramFacets) {
-				if (interval == null) { interval = selectActivityDatesHistogramInterval(querySettings); }
+				if (interval == null) {
+					interval = selectActivityDatesHistogramInterval(querySettings);
+				}
 				ret.put(facetName + "_interval", interval);
 			}
 		}
@@ -655,7 +687,7 @@ public class SearchService {
 	/**
 	 * Write info about used search hit into statistics. Validation is performed inside of this method to ensure given
 	 * content was returned as hit of given search response.
-	 *
+	 * 
 	 * @param uuid of search response hit was returned in
 	 * @param contentId identifier of content used
 	 * @param sessionId optional session id

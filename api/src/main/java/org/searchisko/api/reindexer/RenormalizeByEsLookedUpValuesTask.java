@@ -10,7 +10,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.elasticsearch.action.admin.indices.flush.FlushRequest;
 import org.elasticsearch.action.bulk.BulkRequestBuilder;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
@@ -22,14 +21,14 @@ import org.elasticsearch.index.query.FilterBuilder;
 import org.elasticsearch.index.query.OrFilterBuilder;
 import org.elasticsearch.index.query.TermsFilterBuilder;
 import org.elasticsearch.search.SearchHit;
-import org.searchisko.api.ContentObjectFields;
-import org.searchisko.api.service.ProviderService;
-import org.searchisko.api.service.SearchClientService;
-import org.searchisko.api.tasker.Task;
 import org.jboss.elasticsearch.tools.content.ESLookupValuePreprocessor;
 import org.jboss.elasticsearch.tools.content.InvalidDataException;
 import org.jboss.elasticsearch.tools.content.StructuredContentPreprocessor;
 import org.jboss.elasticsearch.tools.content.StructuredContentPreprocessorFactory;
+import org.searchisko.api.ContentObjectFields;
+import org.searchisko.api.service.ProviderService;
+import org.searchisko.api.service.SearchClientService;
+import org.searchisko.api.tasker.Task;
 
 /**
  * Task used to update document in ES search indices by selecting them over values in fields which are sources for
@@ -39,7 +38,7 @@ import org.jboss.elasticsearch.tools.content.StructuredContentPreprocessorFactor
  * <p>
  * All documents for given value in given lookup field are loaded from all ES indices (only indices where Searchisko
  * content is stored), all preprocessors are applied to content, and then it is stored back to the ES index.
- *
+ * 
  * @author Vlastimil Elias (velias at redhat dot com)
  */
 public class RenormalizeByEsLookedUpValuesTask extends Task {
@@ -130,8 +129,8 @@ public class RenormalizeByEsLookedUpValuesTask extends Task {
 										}
 										scrollResp = executeESScrollSearchNextRequest(client, scrollResp);
 									}
-                                    client.admin().indices().prepareFlush(indexName).execute().actionGet();
-                                    client.admin().indices().prepareRefresh(indexName).execute().actionGet();
+									client.admin().indices().prepareFlush(indexName).execute().actionGet();
+									client.admin().indices().prepareRefresh(indexName).execute().actionGet();
 								}
 								writeTaskLog("Processed " + i + " documents.");
 							}

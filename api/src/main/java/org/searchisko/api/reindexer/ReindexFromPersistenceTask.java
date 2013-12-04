@@ -8,24 +8,23 @@ package org.searchisko.api.reindexer;
 import java.util.Date;
 import java.util.Map;
 
-import org.elasticsearch.action.admin.indices.flush.FlushRequest;
 import org.elasticsearch.action.bulk.BulkRequestBuilder;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.common.settings.SettingsException;
 import org.elasticsearch.index.query.FilterBuilder;
 import org.elasticsearch.index.query.FilterBuilders;
 import org.elasticsearch.index.query.QueryBuilders;
+import org.jboss.elasticsearch.tools.content.InvalidDataException;
 import org.searchisko.api.ContentObjectFields;
 import org.searchisko.api.service.ProviderService;
 import org.searchisko.api.service.SearchClientService;
 import org.searchisko.api.tasker.Task;
 import org.searchisko.persistence.service.ContentPersistenceService;
 import org.searchisko.persistence.service.ContentPersistenceService.ListRequest;
-import org.jboss.elasticsearch.tools.content.InvalidDataException;
 
 /**
  * Task used to reindex data from persistent store into ElasticSearch search indices.
- *
+ * 
  * @author Vlastimil Elias (velias at redhat dot com)
  */
 public class ReindexFromPersistenceTask extends Task {
@@ -102,8 +101,8 @@ public class ReindexFromPersistenceTask extends Task {
 				}
 				// delete old entries from index which are not in persistence store anymore (so they was not updated during this
 				// reindexing run)
-                client.admin().indices().prepareFlush(indexName).execute().actionGet();
-                client.admin().indices().prepareRefresh(indexName).execute().actionGet();
+				client.admin().indices().prepareFlush(indexName).execute().actionGet();
+				client.admin().indices().prepareRefresh(indexName).execute().actionGet();
 				FilterBuilder filterTime = FilterBuilders.rangeFilter("_timestamp").lt(new Date(startTimestamp));
 				client.prepareDeleteByQuery(indexName).setTypes(indexType)
 						.setQuery(QueryBuilders.filteredQuery(QueryBuilders.matchAllQuery(), filterTime)).execute().actionGet();
