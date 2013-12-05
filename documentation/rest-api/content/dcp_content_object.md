@@ -100,11 +100,11 @@ inside DCP during push. Those data fields are prefixed by `sys_`:
 </tr>
 <tr>
   <td>sys_rating_avg</td>
-  <td>Average rating of Document - system field. It is updated automatically when "Personalized Content Rating API" is used. Contains number value (with one decimal position) between 1 (worst) and 5 (best).</td>
+  <td>Average rating of Document - system field. It is updated automatically when "Personalized Content Rating API" is used. Contains float number value (with decimal positions) between 1 (worst) and 5 (best). Field is not present if nobody rated document yet.</td>
 </tr>
 <tr>
   <td>sys_rating_num</td>
-  <td>Number of users who rated this Document - system field. It is updated automatically when "Personalized Content Rating API" is used.</td>
+  <td>Number of users who rated this Document - system field. It is updated automatically when "Personalized Content Rating API" is used. Contains positive integer number. Field is not present if nobody rated document yet.</td>
 </tr>
 </tbody>
 </table>

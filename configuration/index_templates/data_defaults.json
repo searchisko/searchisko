@@ -68,6 +68,8 @@
 				"sys_created"	: { "type": "date", "store": "yes" },
 				"sys_last_activity_date"	: { "type": "date", "store": "yes" },
 				"sys_activity_dates"	: { "type": "date" },
+				"sys_rating_avg"	: { "type": "float", "store": "yes" },
+				"sys_rating_num"	: { "type": "integer", "store": "yes" },
 				"sys_comments": {
 					"type": "object",
 					"properties": {

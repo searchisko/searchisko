@@ -7,7 +7,7 @@ package org.searchisko.api;
 
 /**
  * This class defines constants with names of common Searchisko Data Object Fields.
- *
+ * 
  * @author Vlastimil Elias (velias at redhat dot com)
  */
 public final class ContentObjectFields {
@@ -32,5 +32,6 @@ public final class ContentObjectFields {
 	public static final String SYS_TAGS = "sys_tags";
 	public static final String TAGS = "tags";
 	public static final String SYS_COMMENTS = "sys_comments";
-
+	public static final String SYS_RATING_AVG = "sys_rating_avg";
+	public static final String SYS_RATING_NUM = "sys_rating_num";
 }

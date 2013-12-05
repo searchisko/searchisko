@@ -43,10 +43,10 @@ import org.searchisko.persistence.service.ContentPersistenceService;
 
 /**
  * REST API for Content
- *
+ * 
  * @author Libor Krzyzanek
  * @author Vlastimil Elias (velias at redhat dot com)
- *
+ * 
  */
 @RequestScoped
 @Path("/content/{type}")
@@ -72,12 +72,12 @@ public class ContentRestService extends RestServiceBase {
 	public Object getAllContent(@PathParam("type") String type, @QueryParam("from") Integer from,
 			@QueryParam("size") Integer size, @QueryParam("sort") String sort) {
 		if (type == null || type.isEmpty()) {
-//			return createRequiredFieldResponse("type");
+			// return createRequiredFieldResponse("type");
 		}
 		try {
 			Map<String, Object> typeDef = providerService.findContentType(type);
 			if (typeDef == null) {
-                throw new BadFieldException("type");
+				throw new BadFieldException("type");
 			}
 
 			String indexName = ProviderService.extractIndexName(typeDef, type);
@@ -123,12 +123,12 @@ public class ContentRestService extends RestServiceBase {
 			throw new RequiredFieldException("contentId");
 		}
 		if (type == null || type.isEmpty()) {
-            throw new RequiredFieldException("type");
+			throw new RequiredFieldException("type");
 		}
 		try {
 			Map<String, Object> typeDef = providerService.findContentType(type);
 			if (typeDef == null) {
-                throw new BadFieldException("type");
+				throw new BadFieldException("type");
 			}
 
 			String sysContentId = providerService.generateSysId(type, contentId);
@@ -158,10 +158,10 @@ public class ContentRestService extends RestServiceBase {
 
 		// validation
 		if (contentId == null || contentId.isEmpty()) {
-            throw new RequiredFieldException("contentId");
+			throw new RequiredFieldException("contentId");
 		}
 		if (type == null || type.isEmpty()) {
-            throw new RequiredFieldException("type");
+			throw new RequiredFieldException("type");
 		}
 		if (content == null || content.isEmpty()) {
 			return Response.status(Status.BAD_REQUEST).entity("Some content for pushing must be defined").build();
@@ -212,6 +212,9 @@ public class ContentRestService extends RestServiceBase {
 		}
 
 		// TODO EXTERNAL_TAGS - add external tags for this document into sys_tags field
+
+		// TODO _RATING - fill sys_rating_avg and sys_rating_num fields if we update content (and solve this for content
+		// updated directly by rivers too)
 
 		// Push to search subsystem
 		IndexResponse ir = searchClientService.getClient().prepareIndex(indexName, indexType, sysContentId)
