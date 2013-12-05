@@ -91,6 +91,9 @@ public class ReindexFromPersistenceTask extends Task {
 						}
 						// TODO EXTERNAL_TAGS - add external tags for this document into sys_tags field
 
+						// TODO _RATING - fill sys_rating_avg and sys_rating_num fields if we update content (and solve this for
+						// content
+
 						// Push to search subsystem
 						brb.add(client.prepareIndex(indexName, indexType, id).setSource(content));
 					}

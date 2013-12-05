@@ -23,6 +23,8 @@ import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.common.xcontent.ToXContent;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentFactory;
+import org.searchisko.api.rest.exception.NotAuthenticatedException;
+import org.searchisko.api.rest.exception.NotAuthenticatedException.AuthenticatedUserTypes;
 
 /**
  * Base for REST endpoint services.
@@ -41,11 +43,18 @@ public class RestServiceBase {
 	protected SecurityContext securityContext;
 
 	/**
-	 * Get provider name based on security user principal
+	 * Get logged in 'provider' name based on security user principal.
 	 * 
-	 * @return
+	 * @return provider name
+	 * @throws NotAuthenticatedException if provider is not authenticated
+	 * 
+	 * @see SecurityPreProcessInterceptor
 	 */
-	public String getProvider() {
+	public String getProvider() throws NotAuthenticatedException {
+		if (securityContext == null || securityContext.getUserPrincipal() == null) {
+			// TODO _RATING check principal is for PROVIDER, not another type of user!
+			throw new NotAuthenticatedException(AuthenticatedUserTypes.PROVIDER);
+		}
 		return securityContext.getUserPrincipal().getName();
 	}
 
