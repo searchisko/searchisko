@@ -167,7 +167,7 @@ public class ContentRestService extends RestServiceBase {
 			return Response.status(Status.BAD_REQUEST).entity("Some content for pushing must be defined").build();
 		}
 
-		Map<String, Object> provider = providerService.findProvider(getProvider());
+		Map<String, Object> provider = providerService.findProvider(getAuthenticatedProvider());
 		Map<String, Object> typeDef = ProviderService.extractContentType(provider, type);
 		if (typeDef == null) {
 			throw new BadFieldException("type");
@@ -180,7 +180,7 @@ public class ContentRestService extends RestServiceBase {
 		String indexType = ProviderService.extractIndexType(typeDef, type);
 
 		// fill some normalized fields - should be last step to avoid changing them via preprocessors
-		content.put(ContentObjectFields.SYS_CONTENT_PROVIDER, getProvider());
+		content.put(ContentObjectFields.SYS_CONTENT_PROVIDER, getAuthenticatedProvider());
 		content.put(ContentObjectFields.SYS_CONTENT_ID, contentId);
 		content.put(ContentObjectFields.SYS_CONTENT_TYPE, type);
 		content.put(ContentObjectFields.SYS_ID, sysContentId);
@@ -244,7 +244,7 @@ public class ContentRestService extends RestServiceBase {
 			throw new RequiredFieldException("type");
 		}
 
-		Map<String, Object> provider = providerService.findProvider(getProvider());
+		Map<String, Object> provider = providerService.findProvider(getAuthenticatedProvider());
 		Map<String, Object> typeDef = ProviderService.extractContentType(provider, type);
 		if (typeDef == null) {
 			throw new BadFieldException("type");

@@ -26,7 +26,7 @@ import org.elasticsearch.common.xcontent.XContentFactory;
 import org.elasticsearch.common.xcontent.XContentParser;
 import org.elasticsearch.common.xcontent.XContentType;
 import org.searchisko.api.annotations.security.ProviderAllowed;
-import org.searchisko.api.rest.SecurityPreProcessInterceptor;
+import org.searchisko.api.rest.security.ProviderSecurityPreProcessInterceptor;
 import org.searchisko.api.util.SearchUtils;
 import org.junit.Assert;
 
@@ -85,8 +85,8 @@ public abstract class TestUtils {
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
-		ProviderAllowed pa = SecurityPreProcessInterceptor.getProviderAllowedAnnotation(testedClass, method);
-		if (pa != null && !SecurityPreProcessInterceptor.isGuestAllowed(method)) {
+		ProviderAllowed pa = ProviderSecurityPreProcessInterceptor.getProviderAllowedAnnotation(testedClass, method);
+		if (pa != null && !ProviderSecurityPreProcessInterceptor.isGuestAllowed(method)) {
 			Assert.fail("Method must be GuestAllowed too");
 		}
 	}
@@ -105,8 +105,8 @@ public abstract class TestUtils {
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
-		ProviderAllowed pa = SecurityPreProcessInterceptor.getProviderAllowedAnnotation(testedClass, method);
-		if (pa == null || SecurityPreProcessInterceptor.isGuestAllowed(method)) {
+		ProviderAllowed pa = ProviderSecurityPreProcessInterceptor.getProviderAllowedAnnotation(testedClass, method);
+		if (pa == null || ProviderSecurityPreProcessInterceptor.isGuestAllowed(method)) {
 			Assert.fail("Method must be ProviderAllowed only");
 		}
 	}
@@ -126,8 +126,8 @@ public abstract class TestUtils {
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
-		ProviderAllowed pa = SecurityPreProcessInterceptor.getProviderAllowedAnnotation(testedClass, method);
-		if (pa == null || !pa.superProviderOnly() || SecurityPreProcessInterceptor.isGuestAllowed(method)) {
+		ProviderAllowed pa = ProviderSecurityPreProcessInterceptor.getProviderAllowedAnnotation(testedClass, method);
+		if (pa == null || !pa.superProviderOnly() || ProviderSecurityPreProcessInterceptor.isGuestAllowed(method)) {
 			Assert.fail("Method must be ProviderAllowed.superProviderOnly");
 		}
 	}

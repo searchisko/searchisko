@@ -3,7 +3,7 @@
  * Copyright 2012 Red Hat Inc. and/or its affiliates and other contributors
  * as indicated by the @authors tag. All rights reserved.
  */
-package org.searchisko.api.rest;
+package org.searchisko.api.rest.security;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,17 +21,23 @@ import org.jboss.resteasy.util.Base64;
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
+import org.searchisko.api.rest.security.ProviderSecurityPreProcessInterceptorTest.ClassProviderAllowedMock;
+import org.searchisko.api.rest.security.ProviderSecurityPreProcessInterceptorTest.ClassSuperProviderAllowedMock;
+import org.searchisko.api.rest.security.ProviderSecurityPreProcessInterceptorTest.MethodAnnotationsMock;
+import org.searchisko.api.rest.security.ProviderSecurityPreProcessInterceptorTest.SubclassProviderAllowedMock;
 import org.searchisko.api.service.ProviderService;
 
 /**
+ * Unit test for {@link ProviderAuthenticationInterceptor}
+ * 
  * @author Libor Krzyzanek
  * @author Vlastimil Elias (velias at redhat dot com)
- *
+ * 
  */
-public class AuthenticationInterceptorTest {
+public class ProviderAuthenticationInterceptorTest {
 
-	private AuthenticationInterceptor getTested() {
-		AuthenticationInterceptor tested = new AuthenticationInterceptor();
+	private ProviderAuthenticationInterceptor getTested() {
+		ProviderAuthenticationInterceptor tested = new ProviderAuthenticationInterceptor();
 		tested.providerService = Mockito.mock(ProviderService.class);
 		tested.log = Logger.getLogger("testlogger");
 		return tested;
@@ -39,12 +45,12 @@ public class AuthenticationInterceptorTest {
 
 	/**
 	 * Test method for
-	 * {@link org.searchisko.api.rest.AuthenticationInterceptor#preProcess(org.jboss.resteasy.spi.HttpRequest, org.jboss.resteasy.core.ResourceMethod)}
+	 * {@link org.searchisko.api.rest.security.ProviderAuthenticationInterceptor#preProcess(org.jboss.resteasy.spi.HttpRequest, org.jboss.resteasy.core.ResourceMethod)}
 	 * .
 	 */
 	@Test
 	public void testNotAuthenticated() {
-		AuthenticationInterceptor tested = getTested();
+		ProviderAuthenticationInterceptor tested = getTested();
 
 		HttpRequest requestMock = getHttpRequestMock();
 		ResourceMethod methodMock = Mockito.mock(ResourceMethod.class);
@@ -56,12 +62,12 @@ public class AuthenticationInterceptorTest {
 
 	/**
 	 * Test method for
-	 * {@link org.searchisko.api.rest.AuthenticationInterceptor#preProcess(org.jboss.resteasy.spi.HttpRequest, org.jboss.resteasy.core.ResourceMethod)}
+	 * {@link org.searchisko.api.rest.security.ProviderAuthenticationInterceptor#preProcess(org.jboss.resteasy.spi.HttpRequest, org.jboss.resteasy.core.ResourceMethod)}
 	 * .
 	 */
 	@Test
 	public void testBasicAuthentication() {
-		AuthenticationInterceptor tested = getTested();
+		ProviderAuthenticationInterceptor tested = getTested();
 
 		HttpRequest requestMock = getHttpRequestMock();
 		ResourceMethod methodMock = Mockito.mock(ResourceMethod.class);
@@ -95,6 +101,25 @@ public class AuthenticationInterceptorTest {
 		Mockito.when(requestMock.getUri()).thenReturn(uriInfoMock);
 
 		return requestMock;
+	}
+
+	@Test
+	public void acceptTest() throws SecurityException, NoSuchMethodException {
+		ProviderAuthenticationInterceptor tested = getTested();
+
+		Assert.assertFalse(tested.accept(MethodAnnotationsMock.class,
+				MethodAnnotationsMock.class.getMethod("methodNotAnnotated")));
+		Assert.assertFalse(tested.accept(MethodAnnotationsMock.class,
+				MethodAnnotationsMock.class.getMethod("methodGuestAllowed")));
+
+		Assert.assertTrue(tested.accept(MethodAnnotationsMock.class,
+				MethodAnnotationsMock.class.getMethod("methodProviderAllowed")));
+		Assert.assertTrue(tested.accept(ClassProviderAllowedMock.class,
+				ClassProviderAllowedMock.class.getMethod("methodNotAnnotated")));
+		Assert.assertTrue(tested.accept(SubclassProviderAllowedMock.class,
+				SubclassProviderAllowedMock.class.getMethod("methodNotAnnotated")));
+		Assert.assertTrue(tested.accept(ClassSuperProviderAllowedMock.class,
+				ClassSuperProviderAllowedMock.class.getMethod("methodNotAnnotated")));
 	}
 
 }

@@ -10,11 +10,13 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import org.searchisko.api.rest.security.ProviderSecurityPreProcessInterceptor;
+
 /**
  * Annotation used for allowing any user to access method where annotation is used.
- *
+ * 
  * @author Libor Krzyzanek
- *
+ * @see ProviderSecurityPreProcessInterceptor
  */
 @Target({ ElementType.METHOD })
 @Retention(RetentionPolicy.RUNTIME)

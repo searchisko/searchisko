@@ -5,21 +5,27 @@
  */
 package org.searchisko.api.service.util;
 
-import org.jasig.cas.client.authentication.AttributePrincipal;
-import org.jasig.cas.client.util.AbstractCasFilter;
-import org.jasig.cas.client.validation.Assertion;
-import org.searchisko.api.service.ContributorProfileService;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import javax.ws.rs.core.SecurityContext;
+
+import org.jasig.cas.client.authentication.AttributePrincipal;
+import org.jasig.cas.client.util.AbstractCasFilter;
+import org.jasig.cas.client.validation.Assertion;
+import org.jboss.resteasy.spi.interception.PreProcessInterceptor;
+import org.searchisko.api.service.ContributorProfileService;
 
 /**
- * Authentication utility service
- *
+ * Authentication utility service.
+ * <p>
+ * TODO _RATING refactoring necessary - remove this service and implement {@link PreProcessInterceptor} and
+ * {@link SecurityContext} and other common authentication/authorization stuff instead.
+ * 
  * @author Lukas Vlcek
  * @author Libor Krzyzanek
  */
@@ -39,7 +45,7 @@ public class AuthenticationUtilService {
 
 	/**
 	 * Returns name of authenticated user
-	 *
+	 * 
 	 * @return name of authenticated user or null is user is not authenticated or if HTTP session does not exist.
 	 */
 	public String getAuthenticatedUserName() {
@@ -64,7 +70,7 @@ public class AuthenticationUtilService {
 
 	/**
 	 * Get Contributor Id for currently authenticated user
-	 *
+	 * 
 	 * @return Contributor Id
 	 */
 	public String getAuthenticatedContributorId() {

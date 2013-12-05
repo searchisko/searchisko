@@ -3,19 +3,19 @@
  * Copyright 2012 Red Hat Inc. and/or its affiliates and other contributors
  * as indicated by the @authors tag. All rights reserved.
  */
-package org.searchisko.api.rest;
+package org.searchisko.api.rest.security;
 
 import java.security.Principal;
 
 import javax.ws.rs.core.SecurityContext;
 
 /**
- * Custom security context used by {@link SecurityPreProcessInterceptor}
- *
+ * Custom security context used by {@link ProviderAuthenticationInterceptor} and {@link ProviderSecurityPreProcessInterceptor}
+ * 
  * @author Libor Krzyzanek
- *
+ * 
  */
-public class CustomSecurityContext implements SecurityContext {
+public class ProviderCustomSecurityContext implements SecurityContext {
 
 	public static final String SUPER_ADMIN_ROLE = "super_admin";
 
@@ -27,8 +27,7 @@ public class CustomSecurityContext implements SecurityContext {
 
 	private String authenticationScheme;
 
-	public CustomSecurityContext(Principal userPrincipal, boolean superAdmin, boolean secure,
-			String authenticationScheme) {
+	public ProviderCustomSecurityContext(Principal userPrincipal, boolean superAdmin, boolean secure, String authenticationScheme) {
 		this.userPrincipal = userPrincipal;
 		this.superAdmin = superAdmin;
 		this.secure = secure;

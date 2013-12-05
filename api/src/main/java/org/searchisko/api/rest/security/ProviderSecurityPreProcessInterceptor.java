@@ -3,7 +3,7 @@
  * Copyright 2012 Red Hat Inc. and/or its affiliates and other contributors
  * as indicated by the @authors tag. All rights reserved.
  */
-package org.searchisko.api.rest;
+package org.searchisko.api.rest.security;
 
 import java.lang.reflect.Method;
 import java.security.Principal;
@@ -30,7 +30,7 @@ import org.jboss.resteasy.util.HttpResponseCodes;
 
 /**
  * Security REST pre processor to handle security annotations used for authorization. This preprocessor needs to be
- * placed after {@link AuthenticationInterceptor} which is done thanks to {@link HeaderDecoratorPrecedence}.
+ * placed after {@link ProviderAuthenticationInterceptor} which is done thanks to {@link HeaderDecoratorPrecedence}.
  * <p>
  * This interceptor uses {@link GuestAllowed} and {@link ProviderAllowed} annotations placed on REST API implementing
  * classes and methods.
@@ -42,7 +42,7 @@ import org.jboss.resteasy.util.HttpResponseCodes;
 @Provider
 @ServerInterceptor
 @HeaderDecoratorPrecedence
-public class SecurityPreProcessInterceptor implements PreProcessInterceptor, AcceptedByMethod {
+public class ProviderSecurityPreProcessInterceptor implements PreProcessInterceptor, AcceptedByMethod {
 
 	@Inject
 	protected Logger log;
@@ -114,7 +114,7 @@ public class SecurityPreProcessInterceptor implements PreProcessInterceptor, Acc
 
 	/**
 	 * Is called for methods which require restricted access, necessary authorization check is done here. Authenticated
-	 * Principal is prepared by {@link AuthenticationInterceptor} called before this and stored in {@link SecurityContext}
+	 * Principal is prepared by {@link ProviderAuthenticationInterceptor} called before this and stored in {@link SecurityContext}
 	 * . .
 	 *
 	 */
@@ -137,7 +137,7 @@ public class SecurityPreProcessInterceptor implements PreProcessInterceptor, Acc
 		ProviderAllowed providerAllowed = getProviderAllowedAnnotation(method.getResourceClass(), method.getMethod());
 
 		// Check roles
-		if (providerAllowed.superProviderOnly() && !securityContext.isUserInRole(CustomSecurityContext.SUPER_ADMIN_ROLE)) {
+		if (providerAllowed.superProviderOnly() && !securityContext.isUserInRole(ProviderCustomSecurityContext.SUPER_ADMIN_ROLE)) {
 			ServerResponse response = new ServerResponse();
 			response.setStatus(HttpResponseCodes.SC_FORBIDDEN);
 			return response;

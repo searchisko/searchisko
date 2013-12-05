@@ -3,7 +3,7 @@
  * Copyright 2012 Red Hat Inc. and/or its affiliates and other contributors
  * as indicated by the @authors tag. All rights reserved.
  */
-package org.searchisko.api.rest;
+package org.searchisko.api.rest.security;
 
 import java.security.Principal;
 import java.util.logging.Logger;
@@ -12,6 +12,8 @@ import javax.ws.rs.core.SecurityContext;
 
 import org.searchisko.api.annotations.security.GuestAllowed;
 import org.searchisko.api.annotations.security.ProviderAllowed;
+import org.searchisko.api.rest.security.ProviderCustomSecurityContext;
+import org.searchisko.api.rest.security.ProviderSecurityPreProcessInterceptor;
 import org.jboss.resteasy.core.ResourceMethod;
 import org.jboss.resteasy.core.ServerResponse;
 import org.jboss.resteasy.plugins.server.embedded.SimplePrincipal;
@@ -21,16 +23,16 @@ import org.junit.Test;
 import org.mockito.Mockito;
 
 /**
- * Unit test for {@link SecurityPreProcessInterceptor}
+ * Unit test for {@link ProviderSecurityPreProcessInterceptor}
  *
  * @author Vlastimil Elias (velias at redhat dot com)
  */
-public class SecurityPreProcessInterceptorTest {
+public class ProviderSecurityPreProcessInterceptorTest {
 
 	Principal principal = new SimplePrincipal("uname");
 
-	private SecurityPreProcessInterceptor getTested() {
-		SecurityPreProcessInterceptor tested = new SecurityPreProcessInterceptor();
+	private ProviderSecurityPreProcessInterceptor getTested() {
+		ProviderSecurityPreProcessInterceptor tested = new ProviderSecurityPreProcessInterceptor();
 		tested.securityContext = Mockito.mock(SecurityContext.class);
 		tested.log = Logger.getLogger("testlogger");
 		return tested;
@@ -38,7 +40,7 @@ public class SecurityPreProcessInterceptorTest {
 
 	@Test
 	public void notAuthenticatedTest() {
-		SecurityPreProcessInterceptor tested = getTested();
+		ProviderSecurityPreProcessInterceptor tested = getTested();
 
 		Mockito.when(tested.securityContext.getUserPrincipal()).thenReturn(null);
 
@@ -53,7 +55,7 @@ public class SecurityPreProcessInterceptorTest {
 	@SuppressWarnings("unchecked")
 	@Test
 	public void authenticatedTest() throws NoSuchMethodException, SecurityException {
-		SecurityPreProcessInterceptor tested = getTested();
+		ProviderSecurityPreProcessInterceptor tested = getTested();
 
 		Mockito.when(tested.securityContext.getUserPrincipal()).thenReturn(principal);
 		ResourceMethod methodMock = Mockito.mock(ResourceMethod.class);
@@ -68,7 +70,7 @@ public class SecurityPreProcessInterceptorTest {
 	@SuppressWarnings("unchecked")
 	@Test
 	public void superProviderTest() throws NoSuchMethodException, SecurityException {
-		SecurityPreProcessInterceptor tested = getTested();
+		ProviderSecurityPreProcessInterceptor tested = getTested();
 
 		ResourceMethod methodMock = Mockito.mock(ResourceMethod.class);
 		Mockito.when((Class<ClassSuperProviderAllowedMock>) methodMock.getResourceClass()).thenReturn(
@@ -79,7 +81,7 @@ public class SecurityPreProcessInterceptorTest {
 
 		{
 			Mockito.when(tested.securityContext.getUserPrincipal()).thenReturn(principal);
-			Mockito.when(tested.securityContext.isUserInRole(CustomSecurityContext.SUPER_ADMIN_ROLE)).thenReturn(false);
+			Mockito.when(tested.securityContext.isUserInRole(ProviderCustomSecurityContext.SUPER_ADMIN_ROLE)).thenReturn(false);
 
 			ServerResponse res = tested.preProcess(null, methodMock);
 
@@ -91,7 +93,7 @@ public class SecurityPreProcessInterceptorTest {
 		{
 			Mockito.reset(tested.securityContext);
 			Mockito.when(tested.securityContext.getUserPrincipal()).thenReturn(principal);
-			Mockito.when(tested.securityContext.isUserInRole(CustomSecurityContext.SUPER_ADMIN_ROLE)).thenReturn(true);
+			Mockito.when(tested.securityContext.isUserInRole(ProviderCustomSecurityContext.SUPER_ADMIN_ROLE)).thenReturn(true);
 
 			ServerResponse res = tested.preProcess(null, methodMock);
 
@@ -102,22 +104,22 @@ public class SecurityPreProcessInterceptorTest {
 	@Test
 	public void getProviderAllowedAnnotationTest() throws SecurityException, NoSuchMethodException {
 
-		Assert.assertNull(SecurityPreProcessInterceptor.getProviderAllowedAnnotation(MethodAnnotationsMock.class,
+		Assert.assertNull(ProviderSecurityPreProcessInterceptor.getProviderAllowedAnnotation(MethodAnnotationsMock.class,
                 MethodAnnotationsMock.class.getMethod("methodNotAnnotated")));
-		Assert.assertNull(SecurityPreProcessInterceptor.getProviderAllowedAnnotation(MethodAnnotationsMock.class,
+		Assert.assertNull(ProviderSecurityPreProcessInterceptor.getProviderAllowedAnnotation(MethodAnnotationsMock.class,
                 MethodAnnotationsMock.class.getMethod("methodGuestAllowed")));
 
-		Assert.assertNotNull(SecurityPreProcessInterceptor.getProviderAllowedAnnotation(MethodAnnotationsMock.class,
+		Assert.assertNotNull(ProviderSecurityPreProcessInterceptor.getProviderAllowedAnnotation(MethodAnnotationsMock.class,
                 MethodAnnotationsMock.class.getMethod("methodProviderAllowed")));
-		Assert.assertNotNull(SecurityPreProcessInterceptor.getProviderAllowedAnnotation(ClassProviderAllowedMock.class,
+		Assert.assertNotNull(ProviderSecurityPreProcessInterceptor.getProviderAllowedAnnotation(ClassProviderAllowedMock.class,
                 ClassProviderAllowedMock.class.getMethod("methodNotAnnotated")));
-		Assert.assertNotNull(SecurityPreProcessInterceptor.getProviderAllowedAnnotation(SubclassProviderAllowedMock.class,
+		Assert.assertNotNull(ProviderSecurityPreProcessInterceptor.getProviderAllowedAnnotation(SubclassProviderAllowedMock.class,
                 SubclassProviderAllowedMock.class.getMethod("methodNotAnnotated")));
 	}
 
 	@Test
 	public void acceptTest() throws SecurityException, NoSuchMethodException {
-		SecurityPreProcessInterceptor tested = getTested();
+		ProviderSecurityPreProcessInterceptor tested = getTested();
 
 		Assert.assertFalse(tested.accept(MethodAnnotationsMock.class,
 				MethodAnnotationsMock.class.getMethod("methodNotAnnotated")));
@@ -136,11 +138,11 @@ public class SecurityPreProcessInterceptorTest {
 
 	@Test
 	public void isGuestAllowed() throws SecurityException, NoSuchMethodException {
-		Assert.assertFalse(SecurityPreProcessInterceptor.isGuestAllowed(MethodAnnotationsMock.class
+		Assert.assertFalse(ProviderSecurityPreProcessInterceptor.isGuestAllowed(MethodAnnotationsMock.class
 				.getMethod("methodNotAnnotated")));
-		Assert.assertFalse(SecurityPreProcessInterceptor.isGuestAllowed(MethodAnnotationsMock.class
+		Assert.assertFalse(ProviderSecurityPreProcessInterceptor.isGuestAllowed(MethodAnnotationsMock.class
 				.getMethod("methodProviderAllowed")));
-		Assert.assertTrue(SecurityPreProcessInterceptor.isGuestAllowed(MethodAnnotationsMock.class
+		Assert.assertTrue(ProviderSecurityPreProcessInterceptor.isGuestAllowed(MethodAnnotationsMock.class
 				.getMethod("methodGuestAllowed")));
 	}
 

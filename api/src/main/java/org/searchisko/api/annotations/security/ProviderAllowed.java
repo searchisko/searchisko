@@ -10,12 +10,15 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import org.searchisko.api.rest.security.ProviderSecurityPreProcessInterceptor;
+
 /**
  * Annotation for securing whole class or method to be accessible only to provider<br/>
- * Annotation can be used on class which secures all methods. If is used at method then it overrides class annotation.
- *
+ * Annotation can be used on class which secures all methods. If used at method level then overrides class annotation.
+ * 
  * @author Libor Krzyzanek
- *
+ * @see ProviderSecurityPreProcessInterceptor
+ * 
  */
 @Target({ ElementType.TYPE, ElementType.METHOD })
 @Retention(RetentionPolicy.RUNTIME)
@@ -23,7 +26,7 @@ public @interface ProviderAllowed {
 
 	/**
 	 * If only super provider is allowed. Default value is false.
-	 *
+	 * 
 	 * @return
 	 */
 	boolean superProviderOnly() default false;

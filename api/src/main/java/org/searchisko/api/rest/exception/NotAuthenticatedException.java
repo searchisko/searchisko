@@ -5,6 +5,8 @@
  */
 package org.searchisko.api.rest.exception;
 
+import org.searchisko.api.rest.security.AuthenticatedUserTypes;
+
 /**
  * Exception used when authenticated user is expected in REST handler but none is found. This generally means some
  * misconfiguration or code error because interceptors are used to control access to REST handlers.
@@ -12,15 +14,6 @@ package org.searchisko.api.rest.exception;
  * @author Vlastimil Elias (velias at redhat dot com)
  */
 public class NotAuthenticatedException extends RuntimeException {
-
-	/**
-	 * Types of possible authenticated users - each part of API may require another type of user to be authenticated.
-	 * 
-	 * @author Vlastimil Elias (velias at redhat dot com)
-	 */
-	public static enum AuthenticatedUserTypes {
-		PROVIDER, CONTRIBUTOR;
-	}
 
 	/**
 	 * Constructor.

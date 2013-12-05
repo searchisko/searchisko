@@ -6,7 +6,6 @@
 package org.searchisko.api.rest;
 
 import java.io.IOException;
-import java.security.Principal;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -19,16 +18,19 @@ import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.common.xcontent.ToXContent;
 import org.elasticsearch.common.xcontent.XContentBuilder;
+import org.jboss.resteasy.plugins.server.embedded.SimplePrincipal;
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
+import org.searchisko.api.rest.exception.NotAuthenticatedException;
+import org.searchisko.api.rest.security.ProviderCustomSecurityContext;
 import org.searchisko.api.testtools.TestUtils;
 
 /**
  * Unit test for {@link RestServiceBase}.
- *
+ * 
  * @author Vlastimil Elias (velias at redhat dot com)
  */
 public class RestServiceBaseTest {
@@ -43,18 +45,50 @@ public class RestServiceBaseTest {
 	}
 
 	@Test
-	public void getProvider() {
+	public void getAuthenticatedProvider() {
 		RestServiceBase tested = getTested();
-		SecurityContext scMock = Mockito.mock(SecurityContext.class);
-		tested.securityContext = scMock;
-		Mockito.when(scMock.getUserPrincipal()).thenReturn(new Principal() {
 
-			@Override
-			public String getName() {
-				return "aa";
+		// CASE - not authenticated - security context is empty
+		try {
+			tested.getAuthenticatedProvider();
+			Assert.fail("Exception must be thrown");
+		} catch (NotAuthenticatedException e) {
+			// OK
+		}
+
+		// CASE - not authenticated - security context is bad type
+		{
+			SecurityContext scMock = Mockito.mock(SecurityContext.class);
+			tested.securityContext = scMock;
+			Mockito.when(scMock.getUserPrincipal()).thenReturn(new SimplePrincipal("aa"));
+			try {
+				tested.getAuthenticatedProvider();
+				Assert.fail("Exception must be thrown");
+			} catch (NotAuthenticatedException e) {
+				// OK
 			}
-		});
-		Assert.assertEquals("aa", tested.getProvider());
+		}
+
+		// CASE - not authenticated - security context is correct type but principal is empty
+		{
+			SecurityContext scMock = Mockito.mock(ProviderCustomSecurityContext.class);
+			tested.securityContext = scMock;
+			Mockito.when(scMock.getUserPrincipal()).thenReturn(null);
+			try {
+				tested.getAuthenticatedProvider();
+				Assert.fail("Exception must be thrown");
+			} catch (NotAuthenticatedException e) {
+				// OK
+			}
+		}
+
+		// CASE - provider authenticated OK
+		{
+			SecurityContext scMock = Mockito.mock(ProviderCustomSecurityContext.class);
+			tested.securityContext = scMock;
+			Mockito.when(scMock.getUserPrincipal()).thenReturn(new SimplePrincipal("aa"));
+			Assert.assertEquals("aa", tested.getAuthenticatedProvider());
+		}
 	}
 
 	@Test

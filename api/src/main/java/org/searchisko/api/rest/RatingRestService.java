@@ -153,7 +153,7 @@ public class RatingRestService extends RestServiceBase {
 	protected String getAuthenticatedContributor(boolean forceCreate) throws NotAuthenticatedException {
 
 		// TODO _RATING get logged in contributor id
-		return null;
+		return "test <test@test.org>";
 	}
 
 }
