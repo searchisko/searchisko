@@ -5,10 +5,18 @@
  */
 package org.searchisko.contribprofile.provider;
 
+import org.apache.http.HttpResponse;
+import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.auth.BasicScheme;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.util.EntityUtils;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.type.TypeReference;
 import org.searchisko.contribprofile.model.ContributorProfile;
 
+import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 import javax.ejb.LocalBean;
 import javax.ejb.Stateless;
 import javax.inject.Inject;
@@ -33,12 +41,45 @@ public class Jive6ContributorProfileProvider implements ContributorProfileProvid
 	@Inject
 	protected Logger log;
 
+	public static final String JIVE_PROFILE_REST_API = "https://community.jboss.org/api/core/v3/people/username/";
+
+	protected DefaultHttpClient httpClient;
+
+	@PostConstruct
+	public void init() {
+		httpClient = new DefaultHttpClient();
+	}
+
 	@Override
 	public ContributorProfile getProfile(String jbossorgUsername) {
-		// TODO: Implement logic of getting profile from https://community.jboss.org/api/core/v3/people/username/%7Busername%7D
+		HttpGet httpGet = new HttpGet(JIVE_PROFILE_REST_API + jbossorgUsername);
 
-		ContributorProfile profile = new ContributorProfile("John Doe", "john.doe@doe.com");
-		return profile;
+		// TODO: Set username/password for accessing Jive
+		String username = "";
+		String password = "";
+
+		UsernamePasswordCredentials credentials = new UsernamePasswordCredentials(username, password);
+		httpGet.addHeader(BasicScheme.authenticate(credentials, "US-ASCII", false));
+
+		try {
+			HttpResponse response = httpClient.execute(httpGet);
+			if (response.getStatusLine().getStatusCode() >= 300) {
+				log.log(Level.WARNING, "Cannot get profile data form Jive, reason: {0}", response.getStatusLine().getReasonPhrase());
+				return null;
+			}
+			byte[] data = EntityUtils.toByteArray(response.getEntity());
+			if (log.isLoggable(Level.FINEST)) {
+				log.log(Level.FINEST, "data from Jive: {0}", new String(data));
+			}
+			return mapRawJsonData(data);
+		} catch (IOException e) {
+			return null;
+		}
+	}
+
+	@PreDestroy
+	public void destroy() {
+		httpClient.getConnectionManager().shutdown();
 	}
 
 	protected ContributorProfile mapRawJsonData(byte[] data) {
@@ -72,6 +113,10 @@ public class Jive6ContributorProfileProvider implements ContributorProfileProvid
 
 	protected String getPrimaryEmail(List<HashMap<String, Object>> emails) {
 		String email = "";
+		if (emails == null) {
+			log.log(Level.FINE, "Emails not returned in response from Jive. Probably bad authentication");
+			return email;
+		}
 		for (HashMap<String, Object> emailObject : emails) {
 			email = (String) emailObject.get("value");
 			if ((boolean) emailObject.get("primary")) {
