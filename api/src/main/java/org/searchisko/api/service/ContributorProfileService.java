@@ -28,6 +28,7 @@ public class ContributorProfileService {
 	@Inject
 	protected Logger log;
 
+	@Inject
 	protected Jive6ContributorProfileProvider contributorProfileProvider;
 
 	public String getContributorId(String username) {

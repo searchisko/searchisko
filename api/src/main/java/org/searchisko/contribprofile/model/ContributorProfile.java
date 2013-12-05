@@ -20,12 +20,18 @@ public class ContributorProfile {
 	private String contributorId;
 
 	/**
-	 * Free profile data
+	 * jboss.org username
 	 */
-	private Map<String, Object> profile;
+	private String jbossorgUsername;
 
-	public ContributorProfile(String contributorId) {
+	/**
+	 * Jive profile data
+	 */
+	private Map<String, Object> jiveProfile;
+
+	public ContributorProfile(String contributorId, String jbossorgUsername) {
 		this.contributorId = contributorId;
+		this.jbossorgUsername = jbossorgUsername;
 	}
 
 	@Override
@@ -36,20 +42,24 @@ public class ContributorProfile {
 		ContributorProfile that = (ContributorProfile) o;
 
 		if (!contributorId.equals(that.contributorId)) return false;
+		if (!jbossorgUsername.equals(that.jbossorgUsername)) return false;
 
 		return true;
 	}
 
 	@Override
 	public int hashCode() {
-		return contributorId.hashCode();
+		int result = contributorId.hashCode();
+		result = 31 * result + jbossorgUsername.hashCode();
+		return result;
 	}
 
 	@Override
 	public String toString() {
 		return "ContributorProfile{" +
 				"contributorId='" + contributorId + '\'' +
-				", profile=" + profile +
+				", jbossorgUsername='" + jbossorgUsername + '\'' +
+				", jiveProfile=" + jiveProfile +
 				'}';
 	}
 
@@ -61,11 +71,19 @@ public class ContributorProfile {
 		this.contributorId = contributorId;
 	}
 
-	public Map<String, Object> getProfile() {
-		return profile;
+	public String getJbossorgUsername() {
+		return jbossorgUsername;
 	}
 
-	public void setProfile(Map<String, Object> profile) {
-		this.profile = profile;
+	public void setJbossorgUsername(String jbossorgUsername) {
+		this.jbossorgUsername = jbossorgUsername;
+	}
+
+	public Map<String, Object> getJiveProfile() {
+		return jiveProfile;
+	}
+
+	public void setJiveProfile(Map<String, Object> jiveProfile) {
+		this.jiveProfile = jiveProfile;
 	}
 }
