@@ -393,12 +393,7 @@
                     <groupId>org.jboss.elasticsearch</groupId>
                     <artifactId>elasticsearch-river-jira</artifactId>
                     <version>${elasticsearch-river-jira.version}</version>
-                    <exclusions>
-                        <exclusion>
-                            <artifactId>commons-logging</artifactId>
-                            <groupId>commons-logging</groupId>
-                        </exclusion>
-                    </exclusions>
+					<!-- re-enabled commons-logging otherwise httpclient doesn't work -->
                 </dependency>
                 <dependency>
                     <groupId>org.jboss.elasticsearch</groupId>
