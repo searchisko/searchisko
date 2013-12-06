@@ -29,12 +29,13 @@ import org.searchisko.persistence.jpa.model.Provider;
 import org.searchisko.persistence.jpa.model.ProviderConverter;
 
 /**
- * Service for persistence backend.<br/>
- * Persistence storage is implemented via JPA
- *
+ * Service for persistence backend. It produces {@link EntityService}s for distinct types of entities Searchisko needs
+ * to store.<br/>
+ * Persistence storage is implemented via JPA now, see {@link JpaEntityService}.
+ * 
  * @author Libor Krzyzanek
  * @see JpaEntityService
- *
+ * 
  */
 @Named
 @Singleton

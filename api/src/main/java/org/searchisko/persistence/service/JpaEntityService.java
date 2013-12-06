@@ -28,11 +28,11 @@ import org.searchisko.persistence.jpa.model.ModelToJSONMapConverter;
 
 /**
  * JPA implementation of entity service. It's not session bean because type is unknown, so must be called from Session
- * bean to work with transactions.
- *
+ * bean to work with transactions!
+ * 
  * @author Libor Krzyzanek
  * @author Vlastimil Elias (velias at redhat dot com)
- *
+ * 
  */
 public class JpaEntityService<T> implements EntityService {
 

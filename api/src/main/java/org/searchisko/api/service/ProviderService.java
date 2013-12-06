@@ -17,18 +17,18 @@ import javax.inject.Named;
 import javax.ws.rs.core.StreamingOutput;
 
 import org.elasticsearch.common.settings.SettingsException;
+import org.jboss.elasticsearch.tools.content.StructuredContentPreprocessor;
+import org.jboss.elasticsearch.tools.content.StructuredContentPreprocessorFactory;
 import org.searchisko.api.cache.IndexNamesCache;
 import org.searchisko.api.cache.ProviderCache;
 import org.searchisko.persistence.service.EntityService;
-import org.jboss.elasticsearch.tools.content.StructuredContentPreprocessor;
-import org.jboss.elasticsearch.tools.content.StructuredContentPreprocessorFactory;
 
 /**
  * Service related to Content Provider, mainly reading provider configuration files.
- *
+ * 
  * @author Libor Krzyzanek
  * @author Vlastimil Elias (velias at redhat dot com)
- *
+ * 
  */
 @Named
 @Stateless
@@ -84,7 +84,7 @@ public class ProviderService implements EntityService {
 
 	/**
 	 * Check if password matches for given provider.
-	 *
+	 * 
 	 * @param providerName name of provider
 	 * @param password password to check
 	 * @return true if provider name and password matches so it's authenticated
@@ -109,7 +109,7 @@ public class ProviderService implements EntityService {
 
 	/**
 	 * Check if requested provider is super_provider.
-	 *
+	 * 
 	 * @param providerName name of provider to check
 	 * @return true if it is super_provider
 	 */
@@ -127,7 +127,7 @@ public class ProviderService implements EntityService {
 	/**
 	 * Find 'provider content type' configuration based on its identifier (called <code>sys_content_type</code>). Each
 	 * 'provider content type' identifier has to be system wide unique (so must be defined only for one provider)!
-	 *
+	 * 
 	 * @param typeName <code>sys_content_type</code> to look for
 	 * @return content type configuration structure or <code>null</code> if not found
 	 */
@@ -146,9 +146,25 @@ public class ProviderService implements EntityService {
 	}
 
 	/**
+	 * Find 'provider content type' configuration for content identified by system wide unique content system id (
+	 * <code>sys_id</code>).
+	 * 
+	 * @param contentSysId <code>sys_id</code> of content to get type for
+	 * @return content type configuration structure or <code>null</code> if not found
+	 * @throws IllegalArgumentException if passed in contentSysId is null or has invalid format
+	 * 
+	 * @see #parseTypeNameFromSysId(String)
+	 * @see #findContentType(String)
+	 * @see #generateSysId(String, String)
+	 * */
+	public Map<String, Object> findContentTypeForDocumentSysId(String contentSysId) throws IllegalArgumentException {
+		return findContentType(parseTypeNameFromSysId(contentSysId));
+	}
+
+	/**
 	 * Find provider based on its name (called <code>sys_content_provider</code>). Values are cached here with timeout so
 	 * may provide rather obsolete data sometimes!
-	 *
+	 * 
 	 * @param providerName of provider - system wide unique
 	 * @return provider configuration
 	 */
@@ -166,21 +182,21 @@ public class ProviderService implements EntityService {
 
 	/**
 	 * Cache of all providers list.
-	 *
+	 * 
 	 * @see #getAll()
 	 */
 	protected List<Map<String, Object>> cacheAllProviders;
 
 	/**
 	 * validity timestamp for cache of all providers list.
-	 *
+	 * 
 	 * @see #getAll()
 	 */
 	protected long cacheAllProvidersValidTo = 0;
 
 	/**
 	 * Time to live to compute validity timestamp for cache of all providers list.
-	 *
+	 * 
 	 * @see #getAll()
 	 */
 	protected long cacheAllProvidersTTL = 10000;
@@ -201,10 +217,10 @@ public class ProviderService implements EntityService {
 	/**
 	 * List configuration for all providers. Value is cached here with timeout so may provide rather obsolete data
 	 * sometimes!
-	 *
+	 * 
 	 * @return list with configurations for all providers
 	 * @see ProviderService#cacheAllProvidersTTL
-	 *
+	 * 
 	 */
 	@Override
 	public List<Map<String, Object>> getAll() {
@@ -250,7 +266,7 @@ public class ProviderService implements EntityService {
 
 	/**
 	 * Run defined content preprocessors on passed in content.
-	 *
+	 * 
 	 * @param typeName <code>sys_content_type</code> name we run preprocessors for to be used for error messages
 	 * @param preprocessorsDef definition of preprocessors - see {@link #extractPreprocessors(Map, String)}
 	 * @param content to run preprocessors on
@@ -274,7 +290,7 @@ public class ProviderService implements EntityService {
 	/**
 	 * Generate system wide unique <code>sys_id</code> value from <code>sys_content_type</code> and
 	 * <code>sys_content_id</code>.
-	 *
+	 * 
 	 * @param type <code>sys_content_type</code> value which is system wide unique
 	 * @param contentId <code>sys_content_id</code> value which is unique for <code>sys_content_type</code>
 	 * @return system wide unique <code>sys_id</code> value
@@ -284,8 +300,28 @@ public class ProviderService implements EntityService {
 	}
 
 	/**
+	 * Parse <code>sys_content_type</code> name from system wide unique content system id (<code>sys_id</code>) value.
+	 * Type is not validated for existence inside of this method!
+	 * 
+	 * <p>
+	 * TODO _RATING unit test
+	 * 
+	 * @param contentSysId to get type from
+	 * @return <code>sys_content_type</code> from id. never null
+	 * @throws IllegalArgumentException if passed in contentSysId is null or has invalid format
+	 */
+	public String parseTypeNameFromSysId(String contentSysId) throws IllegalArgumentException {
+		if (contentSysId == null)
+			throw new IllegalArgumentException("sys_id can't be null");
+		int idx = contentSysId.indexOf("-");
+		if (idx < 1 || idx >= contentSysId.length() - 2)
+			throw new IllegalArgumentException("Invalid format of sys_id");
+		return contentSysId.substring(0, idx);
+	}
+
+	/**
 	 * Get configuration for one <code>sys_content_type</code> from provider configuration.
-	 *
+	 * 
 	 * @param providerDef provider configuration structure
 	 * @param typeName name of <code>sys_content_type</code> to get configuration for
 	 * @return type configuration or null if doesn't exist
@@ -309,7 +345,7 @@ public class ProviderService implements EntityService {
 
 	/**
 	 * Get configuration for all <code>sys_content_type</code> from provider configuration.
-	 *
+	 * 
 	 * @param providerDef provider configuration structure
 	 * @return map with all type configurations or null if doesn't exist. Key in map is type name, value is type
 	 *         configuration.
@@ -328,7 +364,7 @@ public class ProviderService implements EntityService {
 
 	/**
 	 * Get preprocessors configuration from one <code>sys_content_type</code> configuration structure.
-	 *
+	 * 
 	 * @param typeDef <code>sys_content_type</code> configuration structure
 	 * @param typeName <code>sys_content_type</code> name to be used for error messages
 	 * @return list of preprocessor configurations
@@ -345,7 +381,7 @@ public class ProviderService implements EntityService {
 
 	/**
 	 * Get search subsystem index name from one <code>sys_content_type</code> configuration structure.
-	 *
+	 * 
 	 * @param typeDef <code>sys_content_type</code> configuration structure
 	 * @param typeName <code>sys_content_type</code> name to be used for error messages
 	 * @return search index name
@@ -373,7 +409,7 @@ public class ProviderService implements EntityService {
 	 * <code>sys_content_type</code>. Array or string with indices name is get from
 	 * {@value ProviderService#SEARCH_INDICES} config value if exists, if not then main index name is used, see
 	 * {@link #extractIndexName(Map, String)}.
-	 *
+	 * 
 	 * @param typeDef <code>sys_content_type</code> configuration structure
 	 * @param typeName <code>sys_content_type</code> name to be used for error messages
 	 * @return search index name
@@ -407,7 +443,7 @@ public class ProviderService implements EntityService {
 
 	/**
 	 * Get search subsystem type name from one <code>sys_content_type</code> configuration structure.
-	 *
+	 * 
 	 * @param typeDef <code>sys_content_type</code> configuration structure
 	 * @param typeName <code>sys_content_type</code> name to be used for error messages
 	 * @return search type name
@@ -432,7 +468,7 @@ public class ProviderService implements EntityService {
 
 	/**
 	 * Get <code>sys_type</code> value from one <code>sys_content_type</code> configuration structure.
-	 *
+	 * 
 	 * @param typeDef <code>sys_content_type</code> configuration structure
 	 * @param typeName <code>sys_content_type</code> name to be used for error messages
 	 * @return <code>sys_type</code> value
@@ -452,7 +488,7 @@ public class ProviderService implements EntityService {
 
 	/**
 	 * Get <code>sys_content_content-type</code> value from one <code>sys_content_type</code> configuration structure.
-	 *
+	 * 
 	 * @param typeDef <code>sys_content_type</code> configuration structure
 	 * @param typeName <code>sys_content_type</code> name to be used for error messages
 	 * @return <code>sys_content_content-type</code> value
@@ -473,7 +509,7 @@ public class ProviderService implements EntityService {
 	/**
 	 * Get {@value ProviderService#SEARCH_ALL_EXCLUDED} value from one <code>sys_content_type</code> configuration
 	 * structure. Handle all cases if not in structure etc.
-	 *
+	 * 
 	 * @param typeDef <code>sys_content_type</code> configuration structure
 	 * @return SEARCH_ALL_EXCLUDED value from configuration
 	 */
@@ -484,7 +520,7 @@ public class ProviderService implements EntityService {
 	/**
 	 * Get {@value ProviderService#PERSIST} value from one <code>sys_content_type</code> configuration structure. Handle
 	 * all cases if not in structure etc.
-	 *
+	 * 
 	 * @param typeDef <code>sys_content_type</code> configuration structure
 	 * @return PERSIST value from configuration
 	 */

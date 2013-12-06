@@ -19,10 +19,10 @@ import org.codehaus.jackson.type.TypeReference;
 import org.elasticsearch.common.joda.time.format.ISODateTimeFormat;
 
 /**
- * Utility class for search
+ * Distinct utility methods.
  * 
  * @author Libor Krzyzanek
- * 
+ * @author Vlastimil Elias (velias at redhat dot com)
  */
 public class SearchUtils {
 
@@ -56,6 +56,16 @@ public class SearchUtils {
 				value = null;
 		}
 		return value;
+	}
+
+	/**
+	 * Check if String is blank.
+	 * 
+	 * @param value to check
+	 * @return true if value is blank (so null or empty or whitespaces only string)
+	 */
+	public static boolean isBlank(String value) {
+		return value == null || value.trim().isEmpty();
 	}
 
 	/**
@@ -119,7 +129,30 @@ public class SearchUtils {
 		ObjectMapper mapper = new ObjectMapper();
 		return mapper.readValue(jsonData, new TypeReference<Map<String, Object>>() {
 		});
+	}
 
+	/**
+	 * Get Integer value from value in Json Map. Can convert from {@link String} and {@link Number} values.
+	 * 
+	 * @param map to get Integer value from
+	 * @param key in map to get value from
+	 * @return Integer value if found. <code>null</code> if value is not present in map.
+	 * @throws NumberFormatException if valu from map is not convertible to integer number
+	 */
+	public static Integer getIntegerFromJsonMap(Map<String, Object> map, String key) throws NumberFormatException {
+		if (map == null)
+			return null;
+		Object o = map.get(key);
+		if (o == null)
+			return null;
+		if (o instanceof Integer)
+			return (Integer) o;
+		else if (o instanceof Number)
+			return ((Number) o).intValue();
+		else if (o instanceof String)
+			return Integer.valueOf((String) o);
+		else
+			throw new NumberFormatException();
 	}
 
 	/**

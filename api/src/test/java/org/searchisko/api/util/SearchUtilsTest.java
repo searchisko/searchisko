@@ -15,13 +15,13 @@ import java.util.Map;
 
 import org.codehaus.jackson.JsonParseException;
 import org.codehaus.jackson.map.JsonMappingException;
-import org.searchisko.api.testtools.TestUtils;
 import org.junit.Assert;
 import org.junit.Test;
+import org.searchisko.api.testtools.TestUtils;
 
 /**
  * Unit test for {@link SearchUtils}
- *
+ * 
  * @author Vlastimil Elias (velias at redhat dot com)
  */
 public class SearchUtilsTest {
@@ -94,6 +94,20 @@ public class SearchUtilsTest {
 		Assert.assertEquals("a", SearchUtils.trimToNull("a "));
 		Assert.assertEquals("a", SearchUtils.trimToNull(" a"));
 		Assert.assertEquals("abcd aaa", SearchUtils.trimToNull("   abcd aaa \t   "));
+	}
+
+	@Test
+	public void isBlank() {
+		Assert.assertTrue(SearchUtils.isBlank(null));
+		Assert.assertTrue(SearchUtils.isBlank(""));
+		Assert.assertTrue(SearchUtils.isBlank(" "));
+		Assert.assertTrue(SearchUtils.isBlank("  "));
+		Assert.assertTrue(SearchUtils.isBlank("   \t"));
+
+		Assert.assertFalse(SearchUtils.isBlank("a"));
+		Assert.assertFalse(SearchUtils.isBlank("Z"));
+		Assert.assertFalse(SearchUtils.isBlank("1"));
+		Assert.assertFalse(SearchUtils.isBlank("-"));
 	}
 
 	@Test
@@ -184,6 +198,42 @@ public class SearchUtilsTest {
 			Assert.assertEquals(10, l.get(1));
 			Assert.assertEquals("string", l.get(2));
 			Assert.assertEquals("1972-01-24T20:21:38.465+0000", l.get(3));
+		}
+	}
+
+	private static final String KEY = "key";
+
+	@Test
+	public void getIntegerFromJsonMap() {
+		Assert.assertNull(SearchUtils.getIntegerFromJsonMap(null, KEY));
+		Map<String, Object> m = new HashMap<>();
+		Assert.assertNull(SearchUtils.getIntegerFromJsonMap(m, KEY));
+
+		m.put(KEY, new Integer(10));
+		Assert.assertEquals(new Integer(10), SearchUtils.getIntegerFromJsonMap(m, KEY));
+		m.put(KEY, new Long(12));
+		Assert.assertEquals(new Integer(12), SearchUtils.getIntegerFromJsonMap(m, KEY));
+		m.put(KEY, new Float(15));
+		Assert.assertEquals(new Integer(15), SearchUtils.getIntegerFromJsonMap(m, KEY));
+		m.put(KEY, "20");
+		Assert.assertEquals(new Integer(20), SearchUtils.getIntegerFromJsonMap(m, KEY));
+		m.put(KEY, "-20");
+		Assert.assertEquals(new Integer(-20), SearchUtils.getIntegerFromJsonMap(m, KEY));
+
+		m.put(KEY, "a");
+		try {
+			SearchUtils.getIntegerFromJsonMap(m, KEY);
+			Assert.fail("NumberFormatException must be thrown");
+		} catch (NumberFormatException e) {
+			// OK
+		}
+
+		m.put(KEY, new Object());
+		try {
+			SearchUtils.getIntegerFromJsonMap(m, KEY);
+			Assert.fail("NumberFormatException must be thrown");
+		} catch (NumberFormatException e) {
+			// OK
 		}
 	}
 }

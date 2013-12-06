@@ -693,7 +693,7 @@ Get personalized content rating for one document.
 
 ##### Request parameters
 
-* `id` unique identifier of the document in Searchisko to get personalized rating for (`_id` document field in search API results).
+* `_id` unique identifier of the document in Searchisko to get personalized rating for (`_id` document field in search API results).
 
 ##### Response content
 
@@ -705,7 +705,7 @@ The response contains a JSON object where `rating` holds value of the rating.
 }
 ```
 
-GET /rest/rating/{id}
+GET /rest/rating/{_id}
 < 200
 < Content-Type: application/json
 {
@@ -728,7 +728,7 @@ If user did not provided his rating for some requested document yet, it is not p
 ```
 {
   "id1" : { "rating" : 2},
-  "id2" : { "rating" : 3},
+  "id2" : { "rating" : 3}
 }
 ```
 
@@ -737,7 +737,7 @@ GET /rest/rating{?id}
 < Content-Type: application/json
 {
   "id1" : { "rating" : 2},
-  "id2" : { "rating" : 3},
+  "id2" : { "rating" : 3}
 }
 
 
@@ -756,12 +756,29 @@ JSON object with rating value to store in `rating` mandatory field.
 }
 ```
 
-POST /rest/rating/{id}
+##### Response content
+JSON object with identifier and new rating statistics for the document (average rating and number of users who rated it).
+
+```
+{
+  "_id" : "wp-85654",
+  "sys_rating_avg" : 4.2,
+  "sys_rating_num" : 24
+}
+```
+
+POST /rest/rating/{_id}
 > Content-Type: application/json
 {
   "rating" : 2
 }
 < 200
+< Content-Type: application/json
+{
+  "_id" : "wp-85654",
+  "sys_rating_avg" : 4.2,
+  "sys_rating_num" : 24
+}
 
 
 --
