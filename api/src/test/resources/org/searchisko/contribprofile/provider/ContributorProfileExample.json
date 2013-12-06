@@ -1,0 +1,56 @@
+{
+	"sys_content_provider": "jbossorg",
+	"sys_type": "contribprofile",
+	"sys_content_type": "jbossorg_contribprofile",
+
+	"id": "Libor Krzyzanek <fake@fake.com>",
+	"sys_id": "Libor Krzyzanek <fake@fake.com>",
+
+
+	"name": {
+		"givenName": "Libor",
+		"familyName": "Krzyzanek",
+		"formatted": "Libor Krzyzanek"
+	},
+	"displayName": "Libor Krzyzanek",
+
+	"tags": [ "jboss.org", "sbs" ],
+	"sys_tags": [ "jboss.org", "sbs" ],
+
+	"aboutMe": "BIO",
+	"sys_description": "BIO",
+
+
+	"published": "2009-01-13T05:00:00.000+0000",
+	"sys_created": "2009-01-13T05:00:00.000+0000",
+
+
+	"updated": "2013-12-03T13:06:37.972+0000",
+	"sys_updated": "2013-12-03T13:06:37.972+0000",
+
+	"thumbnailUrl": "https://community.jboss.org/people/lkrzyzanek/avatar/46.png",
+
+
+	"sys_url_view": "https://community.jboss.org/people/lkrzyzanek",
+	"profileUrl": "https://community.jboss.org/people/lkrzyzanek",
+
+	"accounts": [
+		{
+			"domain": "twitter.com",
+			"username": "aaa"
+		},
+		{
+			"domain": "google.com",
+			"username": "bbb"
+		},
+		{
+			"domain": "facebook.com",
+			"username": "ccc"
+		},
+		{
+			"domain": "linkedin.com",
+			"username": "ddd"
+		}
+	]
+
+}
