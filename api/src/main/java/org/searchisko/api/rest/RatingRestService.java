@@ -186,13 +186,13 @@ public class RatingRestService extends RestServiceBase {
 			type = providerService.parseTypeNameFromSysId(contentSysId);
 		} catch (IllegalArgumentException e) {
 			log.fine("bad format or unknown type for content sys_id=" + contentSysId);
-			return Response.status(Response.Status.NOT_FOUND).entity(QUERY_PARAM_ID + " is invalid").build();
+			return Response.status(Response.Status.BAD_REQUEST).entity(QUERY_PARAM_ID + " format is invalid").build();
 		}
 
-		Map<String, Object> typeDef = providerService.findContentTypeForDocumentSysId(type);
+		Map<String, Object> typeDef = providerService.findContentType(type);
 		if (typeDef == null) {
 			log.fine("unknown type for content with sys_id=" + contentSysId);
-			return Response.status(Response.Status.NOT_FOUND).entity(QUERY_PARAM_ID + " is invalid").build();
+			return Response.status(Response.Status.NOT_FOUND).entity("content type is unknown").build();
 		}
 
 		String indexName = ProviderService.extractIndexName(typeDef, type);

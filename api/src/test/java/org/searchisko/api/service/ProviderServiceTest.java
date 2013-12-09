@@ -16,18 +16,18 @@ import javax.ws.rs.core.StreamingOutput;
 
 import org.elasticsearch.client.Client;
 import org.elasticsearch.common.settings.SettingsException;
+import org.junit.Assert;
+import org.junit.Test;
+import org.mockito.Mockito;
 import org.searchisko.api.cache.IndexNamesCache;
 import org.searchisko.api.cache.ProviderCache;
 import org.searchisko.api.testtools.ESRealClientTestBase;
 import org.searchisko.api.testtools.TestUtils;
 import org.searchisko.persistence.service.EntityService;
-import org.junit.Assert;
-import org.junit.Test;
-import org.mockito.Mockito;
 
 /**
  * Unit test for {@link ProviderService}
- *
+ * 
  * @author Vlastimil Elias (velias at redhat dot com)
  */
 public class ProviderServiceTest extends ESRealClientTestBase {
@@ -39,6 +39,43 @@ public class ProviderServiceTest extends ESRealClientTestBase {
 		Assert.assertEquals("mytype-null", tested.generateSysId("mytype", null));
 		Assert.assertEquals("null-myid", tested.generateSysId(null, "myid"));
 		Assert.assertEquals("null-null", tested.generateSysId(null, null));
+	}
+
+	@Test
+	public void parseTypeNameFromSysId() {
+
+		// cases negative
+		parseTypeNameFromSysIdExceptionAsert(null);
+		parseTypeNameFromSysIdExceptionAsert("");
+		parseTypeNameFromSysIdExceptionAsert("-d");
+		parseTypeNameFromSysIdExceptionAsert("-dsda");
+		parseTypeNameFromSysIdExceptionAsert(" -dsda");
+		parseTypeNameFromSysIdExceptionAsert("   -dsda");
+		parseTypeNameFromSysIdExceptionAsert("d-");
+		parseTypeNameFromSysIdExceptionAsert("d-  ");
+		parseTypeNameFromSysIdExceptionAsert("dfsdf-");
+		parseTypeNameFromSysIdExceptionAsert("asdasda");
+		parseTypeNameFromSysIdExceptionAsert("adfafa_.*/");
+
+		// cases positive
+		ProviderService tested = new ProviderService();
+		Assert.assertEquals("b", tested.parseTypeNameFromSysId("b-a"));
+		Assert.assertEquals("jborg_issue", tested.parseTypeNameFromSysId("jborg_issue-a"));
+		Assert.assertEquals("jborg_issue", tested.parseTypeNameFromSysId("jborg_issue-5"));
+		Assert.assertEquals("jborg_issue", tested.parseTypeNameFromSysId("jborg_issue-25"));
+		Assert.assertEquals("jborg_issue", tested.parseTypeNameFromSysId("jborg_issue-ORG-565"));
+	}
+
+	private void parseTypeNameFromSysIdExceptionAsert(String value) {
+
+		try {
+			ProviderService tested = new ProviderService();
+			tested.parseTypeNameFromSysId(value);
+			Assert.fail("IllegalArgumentException must be thrown");
+		} catch (IllegalArgumentException e) {
+			// OK
+		}
+
 	}
 
 	@Test

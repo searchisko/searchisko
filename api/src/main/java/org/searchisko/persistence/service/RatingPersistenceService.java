@@ -11,8 +11,6 @@ import org.searchisko.persistence.jpa.model.Rating;
 
 /**
  * Interface for service used to persistently store "Personalized Content Rating"s.
- * <p>
- * TODO _RATING create JPA implementation of this service
  * 
  * @author Vlastimil Elias (velias at redhat dot com)
  */
@@ -44,20 +42,20 @@ public interface RatingPersistenceService {
 
 	public static class RatingStats {
 		private String contentId;
-		private float average;
-		private int number;
+		private double average;
+		private long number;
 
-		public RatingStats(String contentId, float average, int number) {
+		public RatingStats(String contentId, double average, long number) {
 			this.contentId = contentId;
 			this.average = average;
 			this.number = number;
 		}
 
-		public float getAverage() {
+		public double getAverage() {
 			return average;
 		}
 
-		public int getNumber() {
+		public long getNumber() {
 			return number;
 		}
 

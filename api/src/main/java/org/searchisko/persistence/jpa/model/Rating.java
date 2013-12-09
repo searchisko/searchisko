@@ -9,35 +9,47 @@ import java.io.Serializable;
 import java.sql.Timestamp;
 
 import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.Table;
+import javax.persistence.UniqueConstraint;
+import javax.validation.constraints.NotNull;
 
 /**
- * Personalized content rating entity class.
+ * Personalized content rating entity class. Class is JPA annotated.
  * 
  * @author Vlastimil Elias (velias at redhat dot com)
  */
 @Entity
+@Table(uniqueConstraints = @UniqueConstraint(columnNames = { "contentId", "contributorId" }))
 public class Rating implements Serializable {
 
-	// TODO _RATING JPA entity mapping, equals and toString
+	@Id
+	@GeneratedValue
+	private long id;
 
 	/**
 	 * Id of content this rating is for.
 	 */
+	@NotNull
 	private String contentId;
 
 	/**
 	 * Id og contributor who rated.
 	 */
+	@NotNull
 	private String contributorId;
 
 	/**
 	 * Rating value - number between 1 and 5.
 	 */
+	@NotNull
 	private int rating;
 
 	/**
 	 * Timestamp when rating has been updated last time.
 	 */
+	@NotNull
 	private Timestamp ratedAt;
 
 	public String getContentId() {
@@ -72,10 +84,42 @@ public class Rating implements Serializable {
 		this.ratedAt = ratedAt;
 	}
 
+	public long getId() {
+		return id;
+	}
+
+	public void setId(long id) {
+		this.id = id;
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + (int) (id ^ (id >>> 32));
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Rating other = (Rating) obj;
+		if (id != other.id)
+			return false;
+		if (id == 0)
+			return obj == this;
+		return true;
+	}
+
 	@Override
 	public String toString() {
-		return "Rating [contentId=" + contentId + ", contributorId=" + contributorId + ", rating=" + rating + ", ratedAt="
-				+ ratedAt + "]";
+		return "Rating [id=" + id + ", contentId=" + contentId + ", contributorId=" + contributorId + ", rating=" + rating
+				+ ", ratedAt=" + ratedAt + "]";
 	}
 
 }

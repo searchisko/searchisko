@@ -130,6 +130,8 @@ public class ProviderService implements EntityService {
 	 * 
 	 * @param typeName <code>sys_content_type</code> to look for
 	 * @return content type configuration structure or <code>null</code> if not found
+	 * 
+	 * @see #parseTypeNameFromSysId(String)
 	 */
 	public Map<String, Object> findContentType(String typeName) {
 		// we do not cache here because listAllProviders() caches.
@@ -143,22 +145,6 @@ public class ProviderService implements EntityService {
 			}
 		}
 		return null;
-	}
-
-	/**
-	 * Find 'provider content type' configuration for content identified by system wide unique content system id (
-	 * <code>sys_id</code>).
-	 * 
-	 * @param contentSysId <code>sys_id</code> of content to get type for
-	 * @return content type configuration structure or <code>null</code> if not found
-	 * @throws IllegalArgumentException if passed in contentSysId is null or has invalid format
-	 * 
-	 * @see #parseTypeNameFromSysId(String)
-	 * @see #findContentType(String)
-	 * @see #generateSysId(String, String)
-	 * */
-	public Map<String, Object> findContentTypeForDocumentSysId(String contentSysId) throws IllegalArgumentException {
-		return findContentType(parseTypeNameFromSysId(contentSysId));
 	}
 
 	/**
@@ -303,9 +289,6 @@ public class ProviderService implements EntityService {
 	 * Parse <code>sys_content_type</code> name from system wide unique content system id (<code>sys_id</code>) value.
 	 * Type is not validated for existence inside of this method!
 	 * 
-	 * <p>
-	 * TODO _RATING unit test
-	 * 
 	 * @param contentSysId to get type from
 	 * @return <code>sys_content_type</code> from id. never null
 	 * @throws IllegalArgumentException if passed in contentSysId is null or has invalid format
@@ -313,8 +296,9 @@ public class ProviderService implements EntityService {
 	public String parseTypeNameFromSysId(String contentSysId) throws IllegalArgumentException {
 		if (contentSysId == null)
 			throw new IllegalArgumentException("sys_id can't be null");
+		contentSysId = contentSysId.trim();
 		int idx = contentSysId.indexOf("-");
-		if (idx < 1 || idx >= contentSysId.length() - 2)
+		if (idx < 1 || idx >= contentSysId.length() - 1)
 			throw new IllegalArgumentException("Invalid format of sys_id");
 		return contentSysId.substring(0, idx);
 	}
