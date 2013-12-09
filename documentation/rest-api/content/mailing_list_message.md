@@ -43,7 +43,7 @@ Description may be found in general documentation for "DCP Content object".
 </thead>
 <tbody>
 <tr><td>author_name</td><td>Pete Muir</td><td>Originator of the message, just the name part. See <a href="http://tools.ietf.org/html/rfc2822#section-3.6.2">3.6.2. Originator fields</a>.</td></tr>
-<tr><td>author_Email</td><td>&lt;pmuir@redhat.com&gt;</td><td>Originator of the message, just the email part. See <a href="http://tools.ietf.org/html/rfc2822#section-3.6.2">3.6.2. Originator fields</a>.</td></tr>
+<tr><td>author_email</td><td>&lt;pmuir@redhat.com&gt;</td><td>Originator of the message, just the email part. See <a href="http://tools.ietf.org/html/rfc2822#section-3.6.2">3.6.2. Originator fields</a>.</td></tr>
 <tr><td>to</td><td></td><td>Value of recipient field <code>To</code>. See <a href="http://tools.ietf.org/html/rfc2822#section-3.6.3">3.6.3. Destination address fields</a></td></tr>
 <tr><td>message_id_original</td><td></td><td>Original value of <code>Message-Id</code> field. See <a href="http://tools.ietf.org/html/rfc2822#section-3.6.4">3.6.4. Identification fields</a>. Note that message can be sent to many mailing lists so this value may not be unique across document collection.</td></tr>
 <tr><td>message_id</td><td></td><td>${message_id_original} with optional suffix. This should be unique identifier of the message across whole document collection.</td></tr>
