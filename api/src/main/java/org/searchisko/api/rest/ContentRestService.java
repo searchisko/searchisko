@@ -37,6 +37,7 @@ import org.searchisko.api.annotations.security.GuestAllowed;
 import org.searchisko.api.annotations.security.ProviderAllowed;
 import org.searchisko.api.rest.exception.BadFieldException;
 import org.searchisko.api.rest.exception.RequiredFieldException;
+import org.searchisko.api.service.ContentEnhancementsService;
 import org.searchisko.api.service.ProviderService;
 import org.searchisko.api.service.SearchClientService;
 import org.searchisko.persistence.service.ContentPersistenceService;
@@ -63,6 +64,9 @@ public class ContentRestService extends RestServiceBase {
 
 	@Inject
 	protected ContentPersistenceService contentPersistenceService;
+
+	@Inject
+	protected ContentEnhancementsService contentEnhancementsService;
 
 	@GET
 	@Path("/")
@@ -211,10 +215,8 @@ public class ContentRestService extends RestServiceBase {
 			contentPersistenceService.store(sysContentId, type, content);
 		}
 
-		// TODO EXTERNAL_TAGS - add external tags for this document into sys_tags field
-
-		// TODO _RATING - fill sys_rating_avg and sys_rating_num fields if we update content (and solve this for content
-		// updated directly by rivers too)
+		contentEnhancementsService.handleExternalTags(content, sysContentId);
+		contentEnhancementsService.handleContentRatingFields(content, sysContentId);
 
 		// Push to search subsystem
 		IndexResponse ir = searchClientService.getClient().prepareIndex(indexName, indexType, sysContentId)

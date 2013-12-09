@@ -21,37 +21,37 @@ import org.elasticsearch.client.Client;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.node.Node;
 import org.elasticsearch.node.NodeBuilder;
-import org.searchisko.api.service.SearchClientService;
 import org.mockito.Mockito;
+import org.searchisko.api.service.SearchClientService;
 
 /**
  * Base class for unit tests which need to run some test against ElasticSearch cluster. You can use next pattern in your
  * unit test method to obtain testing client connected to in-memory ES cluster without any data.
- *
+ * 
  * <pre>
  * try{
  *   Client client = prepareESClientForUnitTest();
- *
+ * 
  *   ... your unit test code here
- *
+ * 
  * } finally {
  *   finalizeESClientForUnitTest();
  * }
  * </pre>
- *
+ * 
  * Or you can use
- *
+ * 
  * <pre>
  * try{
  *   SearchClientService scService = prepareSearchClientServiceMock();
- *
+ * 
  *   ... your unit test code here
- *
+ * 
  * } finally {
  *   finalizeESClientForUnitTest();
  * }
  * </pre>
- *
+ * 
  * @author Vlastimil Elias (velias at redhat dot com)
  */
 public abstract class ESRealClientTestBase {
@@ -65,7 +65,7 @@ public abstract class ESRealClientTestBase {
 	/**
 	 * Prepare SearchClientService against in-memory EC cluster for unit test. Do not forgot to call
 	 * {@link #finalizeESClientForUnitTest()} at the end of test!
-	 *
+	 * 
 	 * @return
 	 */
 	public final SearchClientService prepareSearchClientServiceMock() {
@@ -79,7 +79,7 @@ public abstract class ESRealClientTestBase {
 	/**
 	 * Prepare ES in-memory client for unit test. Do not forgot to call {@link #finalizeESClientForUnitTest()} at the end
 	 * of test!
-	 *
+	 * 
 	 * @return
 	 * @throws Exception
 	 */
@@ -97,20 +97,15 @@ public abstract class ESRealClientTestBase {
 			if (tempFolder.exists()) {
 				FileUtils.deleteDirectory(tempFolder);
 			}
-			if (!tempFolder.mkdir()) {
+			if (!tempFolder.mkdirs()) {
 				throw new IOException("Could not create a temporary folder [" + tempFolderName + "]");
 			}
 
 			// Make sure that the index and metadata are not stored on the disk
 			// path.data folder is created but we make sure it is removed after test finishes
 			Settings settings = org.elasticsearch.common.settings.ImmutableSettings.settingsBuilder()
-					.put("index.store.type", "memory")
-                    .put("gateway.type", "none")
-                    .put("http.enabled", "false")
-					.put("path.data", tempFolderName)
-                    .put("node.river", "_none_")
-                    .put("index.number_of_shards", 1)
-                    .build();
+					.put("index.store.type", "memory").put("gateway.type", "none").put("http.enabled", "false")
+					.put("path.data", tempFolderName).put("node.river", "_none_").put("index.number_of_shards", 1).build();
 
 			node = NodeBuilder.nodeBuilder().settings(settings).local(true).node();
 
@@ -148,7 +143,7 @@ public abstract class ESRealClientTestBase {
 
 	/**
 	 * Delete index from in-memory client.
-	 *
+	 * 
 	 * @param indexName
 	 */
 	public void indexDelete(String indexName) {
@@ -161,7 +156,7 @@ public abstract class ESRealClientTestBase {
 
 	/**
 	 * Create index in in-memory client.
-	 *
+	 * 
 	 * @param indexName
 	 */
 	public void indexCreate(String indexName) {
@@ -171,7 +166,7 @@ public abstract class ESRealClientTestBase {
 
 	/**
 	 * Create mapping inside index in in-memory client.
-	 *
+	 * 
 	 * @param indexName to add mapping into
 	 * @param indexType to add mapping for
 	 * @param mappingSource mapping definition
@@ -183,7 +178,7 @@ public abstract class ESRealClientTestBase {
 
 	/**
 	 * Insert document into in-memory client.
-	 *
+	 * 
 	 * @param indexName
 	 * @param documentType
 	 * @param id
@@ -195,12 +190,12 @@ public abstract class ESRealClientTestBase {
 
 	/**
 	 * Get document from in-memory client.
-	 *
+	 * 
 	 * @param indexName
 	 * @param documentType
 	 * @param id
 	 * @return null if document doesn't exist, Map of Maps structure if exists.
-	 *
+	 * 
 	 */
 	public Map<String, Object> indexGetDocument(String indexName, String documentType, String id) {
 		GetResponse r = client.get((new GetRequest(indexName, documentType, id))).actionGet();
@@ -214,7 +209,7 @@ public abstract class ESRealClientTestBase {
 	/**
 	 * Flush and Refresh search index - use it after you insert new documents and before you try to search/get them to be
 	 * sure they are in index and visible for search.
-	 *
+	 * 
 	 * @param indexName
 	 */
 	public void indexFlushAndRefresh(String indexName) {

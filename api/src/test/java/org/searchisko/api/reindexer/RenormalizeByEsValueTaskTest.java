@@ -13,19 +13,19 @@ import java.util.Map;
 import junit.framework.Assert;
 
 import org.elasticsearch.indices.IndexMissingException;
+import org.junit.Test;
+import org.mockito.Mockito;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 import org.searchisko.api.ContentObjectFields;
 import org.searchisko.api.service.ProviderService;
 import org.searchisko.api.service.SearchClientService;
 import org.searchisko.api.tasker.TaskExecutionContext;
 import org.searchisko.api.testtools.ESRealClientTestBase;
-import org.junit.Test;
-import org.mockito.Mockito;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
 
 /**
  * Unit test for {@link RenormalizeByEsValueTask}
- *
+ * 
  * @author Vlastimil Elias (velias at redhat dot com)
  */
 public class RenormalizeByEsValueTaskTest extends ESRealClientTestBase {
@@ -38,7 +38,7 @@ public class RenormalizeByEsValueTaskTest extends ESRealClientTestBase {
 
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	@Test
-	public void performTask_ok() throws Exception {
+	public synchronized void performTask_ok() throws Exception {
 
 		try {
 			RenormalizeByEsValueTask tested = new RenormalizeByEsValueTask();
@@ -52,6 +52,7 @@ public class RenormalizeByEsValueTaskTest extends ESRealClientTestBase {
 			List<Map<String, Object>> preprocessorsDef = new ArrayList<Map<String, Object>>();
 
 			// case - run on nonexisting index
+			indexDelete(indexName);
 			try {
 				configProviderServiceMock(tested, preprocessorsDef);
 				tested.performTask();

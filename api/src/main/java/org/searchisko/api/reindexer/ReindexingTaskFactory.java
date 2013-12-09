@@ -18,6 +18,7 @@ import javax.inject.Inject;
 import javax.inject.Named;
 
 import org.searchisko.api.ContentObjectFields;
+import org.searchisko.api.service.ContentEnhancementsService;
 import org.searchisko.api.service.ContributorService;
 import org.searchisko.api.service.ProjectService;
 import org.searchisko.api.service.ProviderService;
@@ -31,7 +32,7 @@ import org.searchisko.persistence.service.ContentPersistenceService;
 /**
  * {@link TaskFactory} for Searchisko tasks. It's CDI singleton bean because it needs to be injected some other
  * Searchisko components to pass them into tasks.
- *
+ * 
  * @author Vlastimil Elias (velias at redhat dot com)
  */
 @Named
@@ -55,6 +56,9 @@ public class ReindexingTaskFactory implements TaskFactory {
 
 	@Inject
 	protected SearchClientService searchClientService;
+
+	@Inject
+	protected ContentEnhancementsService contentEnhancementsService;
 
 	@Override
 	public List<String> listSupportedTaskTypes() {
@@ -120,7 +124,7 @@ public class ReindexingTaskFactory implements TaskFactory {
 			throw new TaskConfigurationException("Content type '" + sysContentType + "' is not persisted.");
 		}
 		return new ReindexFromPersistenceTask(contentPersistenceService, providerService, searchClientService,
-				sysContentType);
+				contentEnhancementsService, sysContentType);
 	}
 
 	private String getMandatoryConfigString(Map<String, Object> taskConfig, String propertyName)

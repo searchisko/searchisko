@@ -12,18 +12,19 @@ import java.util.Map;
 
 import junit.framework.Assert;
 
+import org.junit.Test;
+import org.mockito.Mockito;
 import org.searchisko.api.ContentObjectFields;
+import org.searchisko.api.service.ContentEnhancementsService;
 import org.searchisko.api.service.ProviderService;
 import org.searchisko.api.service.SearchClientService;
 import org.searchisko.api.testtools.ESRealClientTestBase;
 import org.searchisko.persistence.service.ContentPersistenceService;
 import org.searchisko.persistence.service.ContentPersistenceService.ListRequest;
-import org.junit.Test;
-import org.mockito.Mockito;
 
 /**
  * Unit test for {@link ReindexFromPersistenceTask}
- *
+ * 
  * @author Vlastimil Elias (velias at redhat dot com)
  */
 public class ReindexFromPersistenceTaskTest extends ESRealClientTestBase {
@@ -39,6 +40,7 @@ public class ReindexFromPersistenceTaskTest extends ESRealClientTestBase {
 		try {
 			ReindexFromPersistenceTask tested = new ReindexFromPersistenceTask();
 			tested.searchClientService = Mockito.mock(SearchClientService.class);
+			tested.contentEnhancementsService = Mockito.mock(ContentEnhancementsService.class);
 			Mockito.when(tested.searchClientService.getClient()).thenReturn(prepareESClientForUnitTest());
 			tested.sysContentType = sysContentType;
 			tested.providerService = Mockito.mock(ProviderService.class);
@@ -46,6 +48,7 @@ public class ReindexFromPersistenceTaskTest extends ESRealClientTestBase {
 
 			configProviderServiceMock(tested, preprocessorsDef);
 
+			indexDelete(indexName);
 			indexCreate(indexName);
 			indexMappingCreate(indexName, typeName, "{ \"" + typeName + "\" : {\"_timestamp\" : { \"enabled\" : true }}}");
 			// case - put it into empty index
@@ -64,11 +67,16 @@ public class ReindexFromPersistenceTaskTest extends ESRealClientTestBase {
 				Assert.assertNull(indexGetDocument(indexName, typeName, "tt-9"));
 				Mockito.verify(tested.providerService, Mockito.times(8)).runPreprocessors(Mockito.eq(sysContentType),
 						Mockito.eq(preprocessorsDef), Mockito.anyMap());
+				Mockito.verify(tested.contentEnhancementsService, Mockito.times(8)).handleContentRatingFields(Mockito.anyMap(),
+						Mockito.anyString());
+				Mockito.verify(tested.contentEnhancementsService, Mockito.times(8)).handleExternalTags(Mockito.anyMap(),
+						Mockito.anyString());
+
 			}
 
 			// case - put it into non empty index to check if records are deleted correctly
 			{
-				Mockito.reset(tested.providerService);
+				Mockito.reset(tested.providerService, tested.contentEnhancementsService);
 				configProviderServiceMock(tested, preprocessorsDef);
 				tested.contentPersistenceService = getContentPersistenceServiceMock(true);
 				tested.performTask();
@@ -84,6 +92,8 @@ public class ReindexFromPersistenceTaskTest extends ESRealClientTestBase {
 				Assert.assertNull(indexGetDocument(indexName, typeName, "tt-8"));
 				Mockito.verify(tested.providerService, Mockito.times(6)).runPreprocessors(Mockito.eq(sysContentType),
 						Mockito.eq(preprocessorsDef), Mockito.anyMap());
+				Mockito.verify(tested.contentEnhancementsService, Mockito.times(6)).handleContentRatingFields(Mockito.anyMap(),
+						Mockito.anyString());
 			}
 		} finally {
 			finalizeESClientForUnitTest();

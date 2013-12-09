@@ -16,6 +16,7 @@ import org.elasticsearch.index.query.FilterBuilders;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.jboss.elasticsearch.tools.content.InvalidDataException;
 import org.searchisko.api.ContentObjectFields;
+import org.searchisko.api.service.ContentEnhancementsService;
 import org.searchisko.api.service.ProviderService;
 import org.searchisko.api.service.SearchClientService;
 import org.searchisko.api.tasker.Task;
@@ -37,19 +38,17 @@ public class ReindexFromPersistenceTask extends Task {
 
 	protected String sysContentType;
 
-	/**
-	 * @param contentPersistenceService
-	 * @param providerService
-	 * @param searchClientService
-	 * @param sysContentType
-	 */
+	protected ContentEnhancementsService contentEnhancementsService;
+
 	public ReindexFromPersistenceTask(ContentPersistenceService contentPersistenceService,
-			ProviderService providerService, SearchClientService searchClientService, String sysContentType) {
+			ProviderService providerService, SearchClientService searchClientService,
+			ContentEnhancementsService contentEnhancementsService, String sysContentType) {
 		super();
 		this.contentPersistenceService = contentPersistenceService;
 		this.providerService = providerService;
 		this.searchClientService = searchClientService;
 		this.sysContentType = sysContentType;
+		this.contentEnhancementsService = contentEnhancementsService;
 	}
 
 	/**
@@ -89,10 +88,9 @@ public class ReindexFromPersistenceTask extends Task {
 									+ e.getMessage());
 							continue;
 						}
-						// TODO EXTERNAL_TAGS - add external tags for this document into sys_tags field
 
-						// TODO _RATING - fill sys_rating_avg and sys_rating_num fields if we update content (and solve this for
-						// content
+						contentEnhancementsService.handleExternalTags(content, id);
+						contentEnhancementsService.handleContentRatingFields(content, id);
 
 						// Push to search subsystem
 						brb.add(client.prepareIndex(indexName, indexType, id).setSource(content));

@@ -13,7 +13,10 @@ import java.util.Map;
 
 import junit.framework.Assert;
 
+import org.junit.Test;
+import org.mockito.Mockito;
 import org.searchisko.api.ContentObjectFields;
+import org.searchisko.api.service.ContentEnhancementsService;
 import org.searchisko.api.service.ContributorService;
 import org.searchisko.api.service.ProjectService;
 import org.searchisko.api.service.ProviderService;
@@ -22,12 +25,10 @@ import org.searchisko.api.tasker.Task;
 import org.searchisko.api.tasker.TaskConfigurationException;
 import org.searchisko.api.tasker.UnsupportedTaskException;
 import org.searchisko.persistence.service.ContentPersistenceService;
-import org.junit.Test;
-import org.mockito.Mockito;
 
 /**
  * Unit test for {@link ReindexingTaskFactory}.
- *
+ * 
  * @author Vlastimil Elias (velias at redhat dot com)
  */
 public class ReindexingTaskFactoryTest {
@@ -125,6 +126,7 @@ public class ReindexingTaskFactoryTest {
 			Assert.assertEquals(tested.contentPersistenceService, ctask.contentPersistenceService);
 			Assert.assertEquals(tested.providerService, ctask.providerService);
 			Assert.assertEquals(tested.searchClientService, ctask.searchClientService);
+			Assert.assertEquals(tested.contentEnhancementsService, ctask.contentEnhancementsService);
 		}
 	}
 
@@ -527,7 +529,8 @@ public class ReindexingTaskFactoryTest {
 		{
 			Map<String, Object> config = new HashMap<String, Object>();
 			config.put(ReindexingTaskFactory.CFG_CONTRIBUTOR_ID_TYPE, "idtype");
-			config.put(ReindexingTaskFactory.CFG_CONTRIBUTOR_ID_VALUE, Arrays.asList(new String[] { "myproject", "myproject2" }));
+			config.put(ReindexingTaskFactory.CFG_CONTRIBUTOR_ID_VALUE,
+					Arrays.asList(new String[] { "myproject", "myproject2" }));
 			Task task = tested.createTask(ReindexingTaskTypes.RENORMALIZE_BY_CONTRIBUTOR_LOOKUP_ID.getTaskType(), config);
 			Assert.assertEquals(RenormalizeByEsLookedUpValuesTask.class, task.getClass());
 			RenormalizeByEsLookedUpValuesTask ctask = (RenormalizeByEsLookedUpValuesTask) task;
@@ -698,6 +701,7 @@ public class ReindexingTaskFactoryTest {
 		tested.contentPersistenceService = Mockito.mock(ContentPersistenceService.class);
 		tested.providerService = Mockito.mock(ProviderService.class);
 		tested.searchClientService = Mockito.mock(SearchClientService.class);
+		tested.contentEnhancementsService = Mockito.mock(ContentEnhancementsService.class);
 		return tested;
 	}
 
