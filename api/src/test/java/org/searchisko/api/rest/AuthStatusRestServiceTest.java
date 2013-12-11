@@ -14,6 +14,7 @@ import org.mockito.Mockito;
 import org.searchisko.api.rest.exception.NotAuthenticatedException;
 import org.searchisko.api.rest.security.AuthenticatedUserTypes;
 import org.searchisko.api.rest.security.AuthenticationUtilService;
+import org.searchisko.api.testtools.TestUtils;
 
 /**
  * Unit test for {@link AuthStatusRestService}
@@ -21,6 +22,11 @@ import org.searchisko.api.rest.security.AuthenticationUtilService;
  * @author Vlastimil Elias (velias at redhat dot com)
  */
 public class AuthStatusRestServiceTest {
+
+	@Test
+	public void authStatus_permissions() throws Exception {
+		TestUtils.assertPermissionContributorOptional(AuthStatusRestService.class, "authStatus");
+	}
 
 	@Test
 	public void authStatus_notAuthenticated() {

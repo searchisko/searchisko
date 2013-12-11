@@ -25,21 +25,23 @@ import org.elasticsearch.common.settings.SettingsException;
 import org.elasticsearch.common.xcontent.XContentFactory;
 import org.elasticsearch.common.xcontent.XContentParser;
 import org.elasticsearch.common.xcontent.XContentType;
+import org.junit.Assert;
+import org.searchisko.api.annotations.security.ContributorAllowed;
 import org.searchisko.api.annotations.security.ProviderAllowed;
+import org.searchisko.api.rest.security.ContributorSecurityPreProcessInterceptor;
 import org.searchisko.api.rest.security.ProviderSecurityPreProcessInterceptor;
 import org.searchisko.api.util.SearchUtils;
-import org.junit.Assert;
 
 /**
  * Helper methods for Unit tests.
- *
+ * 
  * @author Vlastimil Elias (velias at redhat dot com)
  */
 public abstract class TestUtils {
 
 	/**
 	 * Assert date is current timestamp.
-	 *
+	 * 
 	 * @param actualDate to assert
 	 * @see #assertCurrentDate(long)
 	 */
@@ -52,7 +54,7 @@ public abstract class TestUtils {
 	/**
 	 * Assert current timestamp. There is 1000ms tolerance for future because assertion may run with some delay against
 	 * current date creation to asserted variable.
-	 *
+	 * 
 	 * @param actualDate to assert in millis
 	 */
 	public static void assertCurrentDate(long actualDate) {
@@ -62,7 +64,7 @@ public abstract class TestUtils {
 
 	/**
 	 * Assert list contains expected values.
-	 *
+	 * 
 	 * @param expectedValuesCommaSeparated comma separated list of expected values
 	 * @param actualValue actual list with string values
 	 */
@@ -73,7 +75,7 @@ public abstract class TestUtils {
 
 	/**
 	 * Assert REST API method is accessible by all users (even non authenticated).
-	 *
+	 * 
 	 * @param testedClass class method is in
 	 * @param methodName name of method
 	 * @param methodParamTypes method parameter types
@@ -93,7 +95,7 @@ public abstract class TestUtils {
 
 	/**
 	 * Assert REST API method is accessible by authenticated Providers only.
-	 *
+	 * 
 	 * @param testedClass class method is in
 	 * @param methodName name of method
 	 * @param methodParamTypes method parameter types
@@ -112,8 +114,55 @@ public abstract class TestUtils {
 	}
 
 	/**
+	 * Assert REST API method is accessible by authenticated Contributor only.
+	 * 
+	 * @param testedClass class method is in
+	 * @param methodName name of method
+	 * @param methodParamTypes method parameter types
+	 */
+	public static void assertPermissionContributor(Class<?> testedClass, String methodName, Class<?>... methodParamTypes) {
+		Method method;
+		try {
+			method = testedClass.getMethod(methodName, methodParamTypes);
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+		ContributorAllowed pa = ContributorSecurityPreProcessInterceptor.getContributorAllowedAnnotation(testedClass,
+				method);
+		if (pa == null || ContributorSecurityPreProcessInterceptor.isGuestAllowed(method)) {
+			Assert.fail("Method must be ProviderAllowed only");
+		}
+		if (pa.optional())
+			Assert.fail("Method must be ContributorAllowed only, without optional");
+	}
+
+	/**
+	 * Assert REST API method is accessible by authenticated Contributor in optional mode.
+	 * 
+	 * @param testedClass class method is in
+	 * @param methodName name of method
+	 * @param methodParamTypes method parameter types
+	 */
+	public static void assertPermissionContributorOptional(Class<?> testedClass, String methodName,
+			Class<?>... methodParamTypes) {
+		Method method;
+		try {
+			method = testedClass.getMethod(methodName, methodParamTypes);
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+		ContributorAllowed pa = ContributorSecurityPreProcessInterceptor.getContributorAllowedAnnotation(testedClass,
+				method);
+		if (pa == null || ContributorSecurityPreProcessInterceptor.isGuestAllowed(method)) {
+			Assert.fail("Method must be ProviderAllowed only");
+		}
+		if (!pa.optional())
+			Assert.fail("Method must be ContributorAllowed with optional only");
+	}
+
+	/**
 	 * Assert REST API method is accessible by authenticated Providers only.
-	 *
+	 * 
 	 * @param testedClass class method is in
 	 * @param methodName name of method
 	 * @param methodParamTypes method parameter types
@@ -134,7 +183,7 @@ public abstract class TestUtils {
 
 	/**
 	 * Assert passed in object is REST {@link Response} and has given status.
-	 *
+	 * 
 	 * @param actual object to check
 	 * @param expectedStatus to check
 	 * @return actual object casted to {@link Response} so other assertions may be performed on it.
@@ -145,7 +194,7 @@ public abstract class TestUtils {
 
 	/**
 	 * Assert passed in object is REST {@link Response} and has given status and string as Entity object.
-	 *
+	 * 
 	 * @param actual object to check
 	 * @param expectedStatus to check
 	 * @param expectedContent of response
@@ -166,7 +215,7 @@ public abstract class TestUtils {
 
 	/**
 	 * Assert string value equals one written by the StreamingOutput.
-	 *
+	 * 
 	 * @param expected value
 	 * @param actual value
 	 * @throws IOException
@@ -182,7 +231,7 @@ public abstract class TestUtils {
 
 	/**
 	 * Assert string value equals one written by the StreamingOutput.
-	 *
+	 * 
 	 * @param expectedPattern regexp value used to match
 	 * @param actual value
 	 * @throws IOException
@@ -201,7 +250,7 @@ public abstract class TestUtils {
 
 	/**
 	 * Assert passed string is same as content of given file loaded from classpath.
-	 *
+	 * 
 	 * @param expectedFilePath path to file inside classpath
 	 * @param actual content to assert
 	 * @throws IOException
@@ -212,7 +261,7 @@ public abstract class TestUtils {
 
 	/**
 	 * Assert passed in JSON string is same as JSON content of given file loaded from classpath.
-	 *
+	 * 
 	 * @param expectedJsonFilePath path to JSON file inside classpath
 	 * @param actualJsonString JSON content to assert for equality
 	 * @throws IOException
@@ -228,7 +277,7 @@ public abstract class TestUtils {
 
 	/**
 	 * Assert passed in JSON string is same as JSON content of given file loaded from classpath.
-	 *
+	 * 
 	 * @param expectedJsonString expected JSON content to assert for equality
 	 * @param actualJsonString JSON content to assert for equality
 	 * @throws IOException
@@ -241,7 +290,7 @@ public abstract class TestUtils {
 
 	/**
 	 * Assert passed in JSON string is same as JSON content of given file loaded from classpath.
-	 *
+	 * 
 	 * @param expectedJsonString expected JSON content to assert for equality
 	 * @param actualJsonString JSON content to assert for equality
 	 * @throws IOException
@@ -256,7 +305,7 @@ public abstract class TestUtils {
 
 	/**
 	 * Assert passed in JSON content is same as JSON content of given file loaded from classpath.
-	 *
+	 * 
 	 * @param expectedJsonString expected JSON content to assert for equality
 	 * @param actualJsonString JSON content to assert for equality
 	 * @throws IOException
@@ -278,7 +327,7 @@ public abstract class TestUtils {
 
 	/**
 	 * Read file from classpath into String. UTF-8 encoding expected.
-	 *
+	 * 
 	 * @param filePath in classpath to read data from.
 	 * @return file content.
 	 * @throws IOException
@@ -291,7 +340,7 @@ public abstract class TestUtils {
 
 	/**
 	 * Read JSON file from classpath into Map of Map structure.
-	 *
+	 * 
 	 * @param filePath path inside classpath pointing to JSON file to read
 	 * @return parsed JSON file
 	 * @throws SettingsException

@@ -45,6 +45,11 @@ public class RatingRestServiceTest {
 	private static final String MOCK_CONTENT_ID_3 = "jb-456";
 	private static final String MOCK_CONTRIB_ID = "test <test@test.org>";
 
+	@Test
+	public void getRating_permissions() throws Exception {
+		TestUtils.assertPermissionContributor(RatingRestService.class, "getRating", String.class);
+	}
+
 	@Test(expected = RequiredFieldException.class)
 	public void getRating_invalidParam_1() {
 		RatingRestService tested = getTested();
@@ -100,6 +105,11 @@ public class RatingRestServiceTest {
 		Assert.assertNotNull(ratingJsonMap);
 		Assert.assertEquals(1, ratingJsonMap.size());
 		Assert.assertEquals(ratingValue, ratingJsonMap.get(RatingRestService.DATA_FIELD_RATING));
+	}
+
+	@Test
+	public void getRatings_permissions() throws Exception {
+		TestUtils.assertPermissionContributor(RatingRestService.class, "getRatings", UriInfo.class);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -172,6 +182,11 @@ public class RatingRestServiceTest {
 			assertRatingJSON((Map<String, Object>) aret.get(MOCK_CONTENT_ID_1), 3);
 			assertRatingJSON((Map<String, Object>) aret.get(MOCK_CONTENT_ID_2), 5);
 		}
+	}
+
+	@Test
+	public void postRating_permissions() throws Exception {
+		TestUtils.assertPermissionContributor(RatingRestService.class, "postRating", String.class, Map.class);
 	}
 
 	@Test(expected = RequiredFieldException.class)
@@ -309,6 +324,11 @@ public class RatingRestServiceTest {
 			Assert.assertEquals(new Double(3), indexDocumentContent.get(ContentObjectFields.SYS_RATING_AVG));
 			Assert.assertEquals(new Long(20), indexDocumentContent.get(ContentObjectFields.SYS_RATING_NUM));
 		}
+	}
+
+	@Test
+	public void postRatingOPTIONS_permissions() throws Exception {
+		TestUtils.assertPermissionGuest(RatingRestService.class, "postRatingOPTIONS");
 	}
 
 	protected Map<String, Object> mockTypeDef() {
