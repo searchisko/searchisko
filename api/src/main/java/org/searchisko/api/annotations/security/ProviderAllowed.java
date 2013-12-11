@@ -13,7 +13,7 @@ import java.lang.annotation.Target;
 import org.searchisko.api.rest.security.ProviderSecurityPreProcessInterceptor;
 
 /**
- * Annotation for securing whole class or method to be accessible only to provider<br/>
+ * Annotation for securing whole class or method to be accessible only for authenticated Provider.<br/>
  * Annotation can be used on class which secures all methods. If used at method level then overrides class annotation.
  * 
  * @author Libor Krzyzanek
@@ -25,9 +25,7 @@ import org.searchisko.api.rest.security.ProviderSecurityPreProcessInterceptor;
 public @interface ProviderAllowed {
 
 	/**
-	 * If only super provider is allowed. Default value is false.
-	 * 
-	 * @return
+	 * Set to <code>true</code> if only super provider is allowed. Default value is <code>false</code>.
 	 */
 	boolean superProviderOnly() default false;
 

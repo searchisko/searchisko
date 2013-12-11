@@ -57,7 +57,8 @@ public class ProviderAuthenticationInterceptor implements PreProcessInterceptor,
 
 	/**
 	 * Returns false for methods which are not restricted to Providers only, so Basic authentication check in
-	 * {@link #preProcess(HttpRequest, ResourceMethod)} is not called for them.
+	 * {@link #preProcess(HttpRequest, ResourceMethod)} is not called for them - it is called only if provider
+	 * authentication is necessary!
 	 */
 	@SuppressWarnings("rawtypes")
 	@Override

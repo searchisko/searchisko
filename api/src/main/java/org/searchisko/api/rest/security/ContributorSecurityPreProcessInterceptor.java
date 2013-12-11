@@ -24,25 +24,24 @@ import org.jboss.resteasy.spi.HttpRequest;
 import org.jboss.resteasy.spi.interception.AcceptedByMethod;
 import org.jboss.resteasy.spi.interception.PreProcessInterceptor;
 import org.jboss.resteasy.util.HttpResponseCodes;
+import org.searchisko.api.annotations.security.ContributorAllowed;
 import org.searchisko.api.annotations.security.GuestAllowed;
-import org.searchisko.api.annotations.security.ProviderAllowed;
 
 /**
- * Security REST pre processor to handle security annotations used for Provider authorization. This preprocessor needs
- * to be placed after {@link ProviderAuthenticationInterceptor} which is done thanks to
+ * Security REST pre processor to handle security annotations used for Contributor authorization. This preprocessor
+ * needs to be placed after {@link ContributorAuthenticationInterceptor} which is done thanks to
  * {@link HeaderDecoratorPrecedence}.
  * <p>
- * This interceptor uses {@link GuestAllowed} and {@link ProviderAllowed} annotations placed on REST API implementing
+ * This interceptor uses {@link GuestAllowed} and {@link ContributorAllowed} annotations placed on REST API implementing
  * classes and methods.
  * 
- * @author Libor Krzyzanek
  * @author Vlastimil Elias (velias at redhat dot com)
  * @see SecurityInterceptor
  */
 @Provider
 @ServerInterceptor
 @HeaderDecoratorPrecedence
-public class ProviderSecurityPreProcessInterceptor implements PreProcessInterceptor, AcceptedByMethod {
+public class ContributorSecurityPreProcessInterceptor implements PreProcessInterceptor, AcceptedByMethod {
 
 	@Inject
 	protected Logger log;
@@ -62,12 +61,11 @@ public class ProviderSecurityPreProcessInterceptor implements PreProcessIntercep
 			return false;
 		}
 
-		ProviderAllowed providerAllowedAnnotation = getProviderAllowedAnnotation(declaring, method);
+		ContributorAllowed providerAllowedAnnotation = getContributorAllowedAnnotation(declaring, method);
 
-		if (providerAllowedAnnotation != null) {
-			log.fine("REST Security, method allowed only for "
-					+ (providerAllowedAnnotation.superProviderOnly() ? "SUPER " : "") + "PROVIDER: "
-					+ declaring.getCanonicalName() + "." + method.getName());
+		if (providerAllowedAnnotation != null && !providerAllowedAnnotation.optional()) {
+			log.fine("REST Security, method allowed for Contributors only: " + declaring.getCanonicalName() + "."
+					+ method.getName());
 			return true;
 		} else {
 			log.fine("REST Security, method allowed for all: " + declaring.getCanonicalName() + "." + method.getName());
@@ -86,7 +84,7 @@ public class ProviderSecurityPreProcessInterceptor implements PreProcessIntercep
 	}
 
 	/**
-	 * Get {@link ProviderAllowed} annotation from method or method's class or declaring class.<br/>
+	 * Get {@link ContributorAllowed} annotation from method or method's class or declaring class.<br/>
 	 * Precedence is:<br/>
 	 * 1. Method<br/>
 	 * 2. Method's class (declaring method can be some generic super class)<br/>
@@ -94,18 +92,18 @@ public class ProviderSecurityPreProcessInterceptor implements PreProcessIntercep
 	 * 
 	 * @param declaring
 	 * @param method
-	 * @return
+	 * @return annotation instance or null if not found
 	 */
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	public static ProviderAllowed getProviderAllowedAnnotation(Class declaring, Method method) {
-		if (method.isAnnotationPresent(ProviderAllowed.class)) {
-			return method.getAnnotation(ProviderAllowed.class);
+	public static ContributorAllowed getContributorAllowedAnnotation(Class declaring, Method method) {
+		if (method.isAnnotationPresent(ContributorAllowed.class)) {
+			return method.getAnnotation(ContributorAllowed.class);
 		} else {
-			if (declaring.isAnnotationPresent(ProviderAllowed.class)) {
-				return (ProviderAllowed) declaring.getAnnotation(ProviderAllowed.class);
+			if (declaring.isAnnotationPresent(ContributorAllowed.class)) {
+				return (ContributorAllowed) declaring.getAnnotation(ContributorAllowed.class);
 			} else {
-				if (method.getDeclaringClass().isAnnotationPresent(ProviderAllowed.class)) {
-					return method.getDeclaringClass().getAnnotation(ProviderAllowed.class);
+				if (method.getDeclaringClass().isAnnotationPresent(ContributorAllowed.class)) {
+					return method.getDeclaringClass().getAnnotation(ContributorAllowed.class);
 				}
 			}
 		}
@@ -121,25 +119,11 @@ public class ProviderSecurityPreProcessInterceptor implements PreProcessIntercep
 	@Override
 	public ServerResponse preProcess(HttpRequest request, ResourceMethod method) throws Failure, WebApplicationException {
 
-		if (securityContext == null || !(securityContext instanceof ProviderCustomSecurityContext)
+		if (securityContext == null || !(securityContext instanceof ContributorCustomSecurityContext)
 				|| securityContext.getUserPrincipal() == null) {
 			ServerResponse response = new ServerResponse();
-			response.setStatus(HttpResponseCodes.SC_UNAUTHORIZED);
-			response.getMetadata().add("WWW-Authenticate", "Basic realm=\"Insert Provider's username and password\"");
-			return response;
-		}
-
-		// Now we have only ProviderAllowed annotation and this preprocessor is processed only for this annotation.
-		// Because of that providerService.authenticate also check that it's provider who is trying to do operation
-
-		// Check if provider must be super provider
-		ProviderAllowed providerAllowed = getProviderAllowedAnnotation(method.getResourceClass(), method.getMethod());
-
-		// Check roles
-		if (providerAllowed.superProviderOnly()
-				&& !securityContext.isUserInRole(ProviderCustomSecurityContext.SUPER_ADMIN_ROLE)) {
-			ServerResponse response = new ServerResponse();
 			response.setStatus(HttpResponseCodes.SC_FORBIDDEN);
+			response.setEntity("Contributor authentication required");
 			return response;
 		}
 

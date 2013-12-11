@@ -5,18 +5,23 @@
  */
 package org.searchisko.api.filter;
 
-import javax.enterprise.context.RequestScoped;
-import javax.enterprise.inject.Produces;
-import javax.servlet.*;
-import javax.servlet.annotation.WebFilter;
-import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 
+import javax.enterprise.context.RequestScoped;
+import javax.enterprise.inject.Produces;
+import javax.servlet.Filter;
+import javax.servlet.FilterChain;
+import javax.servlet.FilterConfig;
+import javax.servlet.ServletException;
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
+import javax.servlet.annotation.WebFilter;
+import javax.servlet.http.HttpServletRequest;
+
 /**
- * Producer of HTTP request. When in place we can inject HTTP request via CDI.
- * Note: direct injecting of HTTP request should work from CDI 1.1 so once we upgrade we can consider getting rid
- * of this class.
- *
+ * CDI Producer of HTTP request. When in place we can inject HTTP request via CDI. Note: direct injecting of HTTP
+ * request should work from CDI 1.1 so once we upgrade we can consider getting rid of this class.
+ * 
  * @author Lukas Vlcek
  */
 @WebFilter("/*")
@@ -30,7 +35,8 @@ public class CDIServletRequestProducingListener implements Filter {
 	}
 
 	@Override
-	public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
+	public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain)
+			throws IOException, ServletException {
 		if (servletRequest instanceof HttpServletRequest) {
 			SERVLET_REQUESTS.set((HttpServletRequest) servletRequest);
 		}

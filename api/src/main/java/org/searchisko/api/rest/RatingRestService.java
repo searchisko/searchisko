@@ -30,8 +30,10 @@ import javax.ws.rs.core.UriInfo;
 import org.elasticsearch.action.get.GetResponse;
 import org.searchisko.api.ContentObjectFields;
 import org.searchisko.api.annotations.header.CORSSupport;
-import org.searchisko.api.rest.exception.NotAuthenticatedException;
+import org.searchisko.api.annotations.security.ContributorAllowed;
+import org.searchisko.api.annotations.security.GuestAllowed;
 import org.searchisko.api.rest.exception.RequiredFieldException;
+import org.searchisko.api.rest.security.AuthenticationUtilService;
 import org.searchisko.api.service.ProviderService;
 import org.searchisko.api.service.SearchClientService;
 import org.searchisko.api.util.SearchUtils;
@@ -48,7 +50,7 @@ import org.searchisko.persistence.service.RatingPersistenceService.RatingStats;
 @Path("/rating")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
-// TODO _RATING REST endpoint security to logged in contributors only
+@ContributorAllowed
 public class RatingRestService extends RestServiceBase {
 
 	public static final String QUERY_PARAM_ID = "id";
@@ -66,12 +68,16 @@ public class RatingRestService extends RestServiceBase {
 	@Inject
 	protected RatingPersistenceService ratingPersistenceService;
 
+	@Inject
+	protected AuthenticationUtilService authenticationUtilService;
+
 	/**
 	 * CORS handler for OPTIONS http request.
 	 */
 	@OPTIONS
 	@Path("/{id}")
 	@CORSSupport(allowedMethods = { CORSSupport.GET, CORSSupport.POST })
+	@GuestAllowed
 	public Object postRatingOPTIONS() {
 		return Response.ok().build();
 	}
@@ -89,7 +95,7 @@ public class RatingRestService extends RestServiceBase {
 			throw new RequiredFieldException(QUERY_PARAM_ID);
 		}
 
-		String currentContributorId = getAuthenticatedContributor(false);
+		String currentContributorId = authenticationUtilService.getAuthenticatedContributor(false);
 		if (currentContributorId != null) {
 			List<Rating> rl = ratingPersistenceService.getRatings(currentContributorId, contentSysId);
 			if (rl != null && !rl.isEmpty()) {
@@ -124,7 +130,7 @@ public class RatingRestService extends RestServiceBase {
 
 		Map<String, Object> ret = new HashMap<>();
 
-		String currentContributorId = getAuthenticatedContributor(false);
+		String currentContributorId = authenticationUtilService.getAuthenticatedContributor(false);
 		if (currentContributorId == null || uriInfo == null) {
 			return ret;
 		}
@@ -159,7 +165,7 @@ public class RatingRestService extends RestServiceBase {
 	@CORSSupport
 	public Object postRating(@PathParam(QUERY_PARAM_ID) String contentSysId, Map<String, Object> requestContent) {
 
-		String currentContributorId = getAuthenticatedContributor(true);
+		String currentContributorId = authenticationUtilService.getAuthenticatedContributor(true);
 
 		contentSysId = SearchUtils.trimToNull(contentSysId);
 
@@ -226,25 +232,6 @@ public class RatingRestService extends RestServiceBase {
 			ret.put(ContentObjectFields.SYS_RATING_NUM, rs.getNumber());
 		}
 		return ret;
-	}
-
-	/**
-	 * Get 'contributor id' for currently authenticated/logged in user.
-	 * <p>
-	 * TODO _RATING move this method to {@link RestServiceBase} so can be used in other services too!
-	 * 
-	 * @param forceCreate if <code>true</code> we need contributor id so backend should create it for logged in user if
-	 *          not created yet. If <code>false</code> then we do not need it currently, so system can't create it but
-	 *          return null instead.
-	 * @return contributor id - can be null if
-	 *         <code><forceCreate/code> is false and contributor record do not exists yet for current user.
-	 * @throws NotAuthenticatedException in case contributor is not authenticated/logged in. This should never happen if
-	 *           security interceptor is correctly implemented and configured for this class.
-	 */
-	protected String getAuthenticatedContributor(boolean forceCreate) throws NotAuthenticatedException {
-
-		// TODO _RATING get logged in contributor id
-		return "test <test@test.org>";
 	}
 
 }

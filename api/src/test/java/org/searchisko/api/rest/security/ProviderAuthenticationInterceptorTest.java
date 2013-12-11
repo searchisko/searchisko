@@ -43,11 +43,6 @@ public class ProviderAuthenticationInterceptorTest {
 		return tested;
 	}
 
-	/**
-	 * Test method for
-	 * {@link org.searchisko.api.rest.security.ProviderAuthenticationInterceptor#preProcess(org.jboss.resteasy.spi.HttpRequest, org.jboss.resteasy.core.ResourceMethod)}
-	 * .
-	 */
 	@Test
 	public void testNotAuthenticated() {
 		ProviderAuthenticationInterceptor tested = getTested();
@@ -60,11 +55,6 @@ public class ProviderAuthenticationInterceptorTest {
 		Mockito.verify(tested.providerService, Mockito.times(0)).authenticate(Mockito.anyString(), Mockito.anyString());
 	}
 
-	/**
-	 * Test method for
-	 * {@link org.searchisko.api.rest.security.ProviderAuthenticationInterceptor#preProcess(org.jboss.resteasy.spi.HttpRequest, org.jboss.resteasy.core.ResourceMethod)}
-	 * .
-	 */
 	@Test
 	public void testBasicAuthentication() {
 		ProviderAuthenticationInterceptor tested = getTested();
@@ -88,6 +78,7 @@ public class ProviderAuthenticationInterceptorTest {
 		Assert.assertNull(res);
 
 		SecurityContext ctx = ResteasyProviderFactory.getContextData(SecurityContext.class);
+		Assert.assertEquals(ProviderCustomSecurityContext.class, ctx.getClass());
 		Assert.assertEquals(uname, ctx.getUserPrincipal().getName());
 		Assert.assertEquals("BASIC", ctx.getAuthenticationScheme());
 	}

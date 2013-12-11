@@ -15,29 +15,35 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
-import org.searchisko.api.service.util.AuthenticationUtilService;
+import org.searchisko.api.annotations.security.ContributorAllowed;
+import org.searchisko.api.rest.exception.NotAuthenticatedException;
+import org.searchisko.api.rest.security.AuthenticationUtilService;
 
 /**
  * Authentication status REST service.
  * 
  * @author Lukas Vlcek
+ * @author Vlastimil Elias (velias at redhat dot com)
  */
 @Path("/auth")
 @RequestScoped
 public class AuthStatusRestService {
 
 	@Inject
-	private AuthenticationUtilService authenticationUtilService;
+	protected AuthenticationUtilService authenticationUtilService;
 
 	@GET
 	@Path("/status")
 	@Produces(MediaType.APPLICATION_JSON)
+	@ContributorAllowed(optional = true)
 	public Map<String, Object> authStatus() {
 		boolean authenticated = false;
 		Map<String, Object> ret = new HashMap<>();
-		String userName = authenticationUtilService.getAuthenticatedUserName();
-		if (userName != null) {
+		try {
+			authenticationUtilService.getAuthenticatedContributor(false);
 			authenticated = true;
+		} catch (NotAuthenticatedException e) {
+			// not authenticated so we return false
 		}
 		ret.put("authenticated", authenticated);
 		return ret;

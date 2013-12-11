@@ -13,8 +13,6 @@ import java.util.logging.Logger;
 
 import javax.inject.Inject;
 import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.core.StreamingOutput;
 
 import org.elasticsearch.action.get.GetResponse;
@@ -23,11 +21,6 @@ import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.common.xcontent.ToXContent;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentFactory;
-import org.searchisko.api.annotations.security.ProviderAllowed;
-import org.searchisko.api.rest.exception.NotAuthenticatedException;
-import org.searchisko.api.rest.security.AuthenticatedUserTypes;
-import org.searchisko.api.rest.security.ProviderCustomSecurityContext;
-import org.searchisko.api.rest.security.ProviderSecurityPreProcessInterceptor;
 
 /**
  * Base for REST endpoint services.
@@ -41,26 +34,6 @@ public class RestServiceBase {
 
 	@Inject
 	protected Logger log;
-
-	@Context
-	protected SecurityContext securityContext;
-
-	/**
-	 * Get name of authenticated/logged in 'provider' based on security user principal.
-	 * 
-	 * @return provider name
-	 * @throws NotAuthenticatedException if Provider is not authenticated. Use {@link ProviderAllowed} annotation to your
-	 *           REST service to prevent this exception.
-	 * 
-	 * @see ProviderSecurityPreProcessInterceptor
-	 */
-	public String getAuthenticatedProvider() throws NotAuthenticatedException {
-		if (securityContext == null || securityContext.getUserPrincipal() == null
-				|| !(securityContext instanceof ProviderCustomSecurityContext)) {
-			throw new NotAuthenticatedException(AuthenticatedUserTypes.PROVIDER);
-		}
-		return securityContext.getUserPrincipal().getName();
-	}
 
 	/**
 	 * Create JAX-RS response based on elastic get response.

@@ -23,6 +23,7 @@ import org.junit.Test;
 import org.mockito.Mockito;
 import org.searchisko.api.ContentObjectFields;
 import org.searchisko.api.rest.exception.RequiredFieldException;
+import org.searchisko.api.rest.security.AuthenticationUtilService;
 import org.searchisko.api.service.ProviderService;
 import org.searchisko.api.service.SearchClientService;
 import org.searchisko.api.testtools.TestUtils;
@@ -325,6 +326,9 @@ public class RatingRestServiceTest {
 		tested.ratingPersistenceService = Mockito.mock(RatingPersistenceService.class);
 		tested.providerService = Mockito.mock(ProviderService.class);
 		tested.searchClientService = Mockito.mock(SearchClientService.class);
+		tested.authenticationUtilService = Mockito.mock(AuthenticationUtilService.class);
+		Mockito.when(tested.authenticationUtilService.getAuthenticatedContributor(Mockito.anyBoolean())).thenReturn(
+				MOCK_CONTRIB_ID);
 		return tested;
 	}
 

@@ -15,14 +15,13 @@ import java.util.logging.Logger;
 import javax.ws.rs.core.Response;
 
 import org.elasticsearch.common.settings.SettingsException;
-import org.jboss.resteasy.plugins.server.embedded.SimplePrincipal;
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.searchisko.api.ContentObjectFields;
 import org.searchisko.api.rest.exception.BadFieldException;
 import org.searchisko.api.rest.exception.RequiredFieldException;
-import org.searchisko.api.rest.security.ProviderCustomSecurityContext;
+import org.searchisko.api.rest.security.AuthenticationUtilService;
 import org.searchisko.api.service.ContentEnhancementsService;
 import org.searchisko.api.service.ProviderService;
 import org.searchisko.api.testtools.ESRealClientTestBase;
@@ -603,7 +602,8 @@ public class ContentRestServiceTest extends ESRealClientTestBase {
 		tested.contentPersistenceService = Mockito.mock(ContentPersistenceService.class);
 		tested.contentEnhancementsService = Mockito.mock(ContentEnhancementsService.class);
 		tested.log = Logger.getLogger("testlogger");
-		tested.securityContext = new ProviderCustomSecurityContext(new SimplePrincipal("jbossorg"), false, true, "Basic");
+		tested.authenticationUtilService = Mockito.mock(AuthenticationUtilService.class);
+		Mockito.when(tested.authenticationUtilService.getAuthenticatedProvider()).thenReturn("jbossorg");
 
 		return tested;
 	}

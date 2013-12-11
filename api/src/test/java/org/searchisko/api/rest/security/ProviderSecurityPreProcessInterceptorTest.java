@@ -8,12 +8,6 @@ package org.searchisko.api.rest.security;
 import java.security.Principal;
 import java.util.logging.Logger;
 
-import javax.ws.rs.core.SecurityContext;
-
-import org.searchisko.api.annotations.security.GuestAllowed;
-import org.searchisko.api.annotations.security.ProviderAllowed;
-import org.searchisko.api.rest.security.ProviderCustomSecurityContext;
-import org.searchisko.api.rest.security.ProviderSecurityPreProcessInterceptor;
 import org.jboss.resteasy.core.ResourceMethod;
 import org.jboss.resteasy.core.ServerResponse;
 import org.jboss.resteasy.plugins.server.embedded.SimplePrincipal;
@@ -21,10 +15,12 @@ import org.jboss.resteasy.util.HttpResponseCodes;
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
+import org.searchisko.api.annotations.security.GuestAllowed;
+import org.searchisko.api.annotations.security.ProviderAllowed;
 
 /**
  * Unit test for {@link ProviderSecurityPreProcessInterceptor}
- *
+ * 
  * @author Vlastimil Elias (velias at redhat dot com)
  */
 public class ProviderSecurityPreProcessInterceptorTest {
@@ -33,19 +29,41 @@ public class ProviderSecurityPreProcessInterceptorTest {
 
 	private ProviderSecurityPreProcessInterceptor getTested() {
 		ProviderSecurityPreProcessInterceptor tested = new ProviderSecurityPreProcessInterceptor();
-		tested.securityContext = Mockito.mock(SecurityContext.class);
 		tested.log = Logger.getLogger("testlogger");
 		return tested;
 	}
 
 	@Test
-	public void notAuthenticatedTest() {
+	public void notAuthenticatedTest_noSecurityContext() {
 		ProviderSecurityPreProcessInterceptor tested = getTested();
 
-		Mockito.when(tested.securityContext.getUserPrincipal()).thenReturn(null);
+		tested.securityContext = null;
 
 		ServerResponse res = tested.preProcess(null, null);
+		assertResponseUnauthorized(res);
+	}
 
+	@Test
+	public void notAuthenticatedTest_badSecurityContext() {
+		ProviderSecurityPreProcessInterceptor tested = getTested();
+
+		tested.securityContext = new ContributorCustomSecurityContext(principal, true, "aa");
+
+		ServerResponse res = tested.preProcess(null, null);
+		assertResponseUnauthorized(res);
+	}
+
+	@Test
+	public void notAuthenticatedTest_emptySecurityContext() {
+		ProviderSecurityPreProcessInterceptor tested = getTested();
+
+		tested.securityContext = new ProviderCustomSecurityContext(null, false, true, "aa");
+
+		ServerResponse res = tested.preProcess(null, null);
+		assertResponseUnauthorized(res);
+	}
+
+	protected void assertResponseUnauthorized(ServerResponse res) {
 		Assert.assertNotNull(res);
 		Assert.assertEquals(HttpResponseCodes.SC_UNAUTHORIZED, res.getStatus());
 		Assert.assertEquals("Basic realm=\"Insert Provider's username and password\"",
@@ -57,7 +75,7 @@ public class ProviderSecurityPreProcessInterceptorTest {
 	public void authenticatedTest() throws NoSuchMethodException, SecurityException {
 		ProviderSecurityPreProcessInterceptor tested = getTested();
 
-		Mockito.when(tested.securityContext.getUserPrincipal()).thenReturn(principal);
+		tested.securityContext = new ProviderCustomSecurityContext(principal, false, true, "Basic");
 		ResourceMethod methodMock = Mockito.mock(ResourceMethod.class);
 		Mockito.when((Class<MethodAnnotationsMock>) methodMock.getResourceClass()).thenReturn(MethodAnnotationsMock.class);
 		Mockito.when(methodMock.getMethod()).thenReturn(MethodAnnotationsMock.class.getMethod("methodProviderAllowed"));
@@ -80,8 +98,7 @@ public class ProviderSecurityPreProcessInterceptorTest {
 		// case - user is not super provider but annotation requires super provider
 
 		{
-			Mockito.when(tested.securityContext.getUserPrincipal()).thenReturn(principal);
-			Mockito.when(tested.securityContext.isUserInRole(ProviderCustomSecurityContext.SUPER_ADMIN_ROLE)).thenReturn(false);
+			tested.securityContext = new ProviderCustomSecurityContext(principal, false, true, "Basic");
 
 			ServerResponse res = tested.preProcess(null, methodMock);
 
@@ -91,9 +108,7 @@ public class ProviderSecurityPreProcessInterceptorTest {
 		// case - user is super provider and annotation requires super provider
 
 		{
-			Mockito.reset(tested.securityContext);
-			Mockito.when(tested.securityContext.getUserPrincipal()).thenReturn(principal);
-			Mockito.when(tested.securityContext.isUserInRole(ProviderCustomSecurityContext.SUPER_ADMIN_ROLE)).thenReturn(true);
+			tested.securityContext = new ProviderCustomSecurityContext(principal, true, true, "Basic");
 
 			ServerResponse res = tested.preProcess(null, methodMock);
 
@@ -105,16 +120,16 @@ public class ProviderSecurityPreProcessInterceptorTest {
 	public void getProviderAllowedAnnotationTest() throws SecurityException, NoSuchMethodException {
 
 		Assert.assertNull(ProviderSecurityPreProcessInterceptor.getProviderAllowedAnnotation(MethodAnnotationsMock.class,
-                MethodAnnotationsMock.class.getMethod("methodNotAnnotated")));
+				MethodAnnotationsMock.class.getMethod("methodNotAnnotated")));
 		Assert.assertNull(ProviderSecurityPreProcessInterceptor.getProviderAllowedAnnotation(MethodAnnotationsMock.class,
-                MethodAnnotationsMock.class.getMethod("methodGuestAllowed")));
+				MethodAnnotationsMock.class.getMethod("methodGuestAllowed")));
 
-		Assert.assertNotNull(ProviderSecurityPreProcessInterceptor.getProviderAllowedAnnotation(MethodAnnotationsMock.class,
-                MethodAnnotationsMock.class.getMethod("methodProviderAllowed")));
-		Assert.assertNotNull(ProviderSecurityPreProcessInterceptor.getProviderAllowedAnnotation(ClassProviderAllowedMock.class,
-                ClassProviderAllowedMock.class.getMethod("methodNotAnnotated")));
-		Assert.assertNotNull(ProviderSecurityPreProcessInterceptor.getProviderAllowedAnnotation(SubclassProviderAllowedMock.class,
-                SubclassProviderAllowedMock.class.getMethod("methodNotAnnotated")));
+		Assert.assertNotNull(ProviderSecurityPreProcessInterceptor.getProviderAllowedAnnotation(
+				MethodAnnotationsMock.class, MethodAnnotationsMock.class.getMethod("methodProviderAllowed")));
+		Assert.assertNotNull(ProviderSecurityPreProcessInterceptor.getProviderAllowedAnnotation(
+				ClassProviderAllowedMock.class, ClassProviderAllowedMock.class.getMethod("methodNotAnnotated")));
+		Assert.assertNotNull(ProviderSecurityPreProcessInterceptor.getProviderAllowedAnnotation(
+				SubclassProviderAllowedMock.class, SubclassProviderAllowedMock.class.getMethod("methodNotAnnotated")));
 	}
 
 	@Test
