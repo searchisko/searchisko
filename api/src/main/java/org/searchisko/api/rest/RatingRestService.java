@@ -6,7 +6,7 @@
 package org.searchisko.api.rest;
 
 import java.util.HashMap;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -41,8 +41,6 @@ import org.searchisko.persistence.service.RatingPersistenceService.RatingStats;
 
 /**
  * REST API endpoint for 'Personalized Content Rating API'.
- * <p>
- * TODO _RATING unit tests
  * 
  * @author Vlastimil Elias (velias at redhat dot com)
  */
@@ -53,8 +51,8 @@ import org.searchisko.persistence.service.RatingPersistenceService.RatingStats;
 // TODO _RATING REST endpoint security to logged in contributors only
 public class RatingRestService extends RestServiceBase {
 
-	private static final String QUERY_PARAM_ID = "id";
-	private static final String DATA_FIELD_RATING = "rating";
+	public static final String QUERY_PARAM_ID = "id";
+	public static final String DATA_FIELD_RATING = "rating";
 
 	@Inject
 	protected Logger log;
@@ -68,10 +66,13 @@ public class RatingRestService extends RestServiceBase {
 	@Inject
 	protected RatingPersistenceService ratingPersistenceService;
 
+	/**
+	 * CORS handler for OPTIONS http request.
+	 */
 	@OPTIONS
 	@Path("/{id}")
 	@CORSSupport(allowedMethods = { CORSSupport.GET, CORSSupport.POST })
-	public Object writeSearchHitUsedStatisticsRecordOPTIONS() {
+	public Object postRatingOPTIONS() {
 		return Response.ok().build();
 	}
 
@@ -81,8 +82,10 @@ public class RatingRestService extends RestServiceBase {
 	@CORSSupport
 	public Object getRating(@PathParam(QUERY_PARAM_ID) String contentSysId) {
 
+		contentSysId = SearchUtils.trimToNull(contentSysId);
+
 		// validation
-		if (contentSysId == null || contentSysId.isEmpty()) {
+		if (contentSysId == null) {
 			throw new RequiredFieldException(QUERY_PARAM_ID);
 		}
 
@@ -93,10 +96,10 @@ public class RatingRestService extends RestServiceBase {
 				Map<String, Object> ret = ratingToJSON(rl.get(0));
 				return ret;
 			} else {
-				return Response.status(Status.NOT_FOUND);
+				return Response.status(Status.NOT_FOUND).build();
 			}
 		} else {
-			return Response.status(Status.NOT_FOUND);
+			return Response.status(Status.NOT_FOUND).build();
 		}
 
 	}
@@ -117,16 +120,16 @@ public class RatingRestService extends RestServiceBase {
 	@Path("/")
 	@Produces(MediaType.APPLICATION_JSON)
 	@CORSSupport
-	public Object getRatings(@Context UriInfo uriInfo) {
+	public Map<String, Object> getRatings(@Context UriInfo uriInfo) {
 
 		Map<String, Object> ret = new HashMap<>();
 
 		String currentContributorId = getAuthenticatedContributor(false);
-		if (currentContributorId == null) {
+		if (currentContributorId == null || uriInfo == null) {
 			return ret;
 		}
 
-		Set<String> contentSysIds = new HashSet<>();
+		Set<String> contentSysIds = new LinkedHashSet<>();
 		List<String> rawids = uriInfo.getQueryParameters().get(QUERY_PARAM_ID);
 		if (rawids != null) {
 			for (String rid : rawids) {
@@ -144,9 +147,6 @@ public class RatingRestService extends RestServiceBase {
 				for (Rating r : rl) {
 					ret.put(r.getContentId(), ratingToJSON(r));
 				}
-				return ret;
-			} else {
-				return Response.status(Status.NOT_FOUND);
 			}
 		}
 		return ret;
@@ -161,8 +161,10 @@ public class RatingRestService extends RestServiceBase {
 
 		String currentContributorId = getAuthenticatedContributor(true);
 
+		contentSysId = SearchUtils.trimToNull(contentSysId);
+
 		// validation
-		if (contentSysId == null || contentSysId.isEmpty()) {
+		if (contentSysId == null) {
 			throw new RequiredFieldException(QUERY_PARAM_ID);
 		}
 
@@ -170,14 +172,15 @@ public class RatingRestService extends RestServiceBase {
 		try {
 			rating = SearchUtils.getIntegerFromJsonMap(requestContent, DATA_FIELD_RATING);
 		} catch (NumberFormatException e) {
-			return Response.status(Status.BAD_REQUEST).entity(DATA_FIELD_RATING + " field must be number");
+			return Response.status(Status.BAD_REQUEST).entity(DATA_FIELD_RATING + " field must be number").build();
 		}
 		if (rating == null) {
 			throw new RequiredFieldException(DATA_FIELD_RATING);
 		}
 
 		if (rating < 1 || rating > 5) {
-			return Response.status(Status.BAD_REQUEST).entity(DATA_FIELD_RATING + " field must be number from 1 to 5");
+			return Response.status(Status.BAD_REQUEST).entity(DATA_FIELD_RATING + " field must be number from 1 to 5")
+					.build();
 		}
 
 		// check if rated document exists
@@ -198,8 +201,7 @@ public class RatingRestService extends RestServiceBase {
 		String indexName = ProviderService.extractIndexName(typeDef, type);
 		String indexType = ProviderService.extractIndexType(typeDef, type);
 
-		GetResponse getResponse = searchClientService.getClient().prepareGet(indexName, indexType, contentSysId).execute()
-				.actionGet();
+		GetResponse getResponse = searchClientService.performGet(indexName, indexType, contentSysId);
 		if (!getResponse.isExists()) {
 			return Response.status(Response.Status.NOT_FOUND).build();
 		}
@@ -213,14 +215,16 @@ public class RatingRestService extends RestServiceBase {
 			Map<String, Object> data = getResponse.getSource();
 			data.put(ContentObjectFields.SYS_RATING_AVG, rs.getAverage());
 			data.put(ContentObjectFields.SYS_RATING_NUM, rs.getNumber());
-			searchClientService.getClient().prepareIndex(indexName, indexType, contentSysId).setSource(data).execute();
+			searchClientService.performPutAsync(indexName, indexType, contentSysId, data);
 		} else {
 			log.warning("Average rating is not found for content after ratring. sys_id=" + contentSysId);
 		}
 		Map<String, Object> ret = new HashMap<>();
 		ret.put(ContentObjectFields.SYS_ID, contentSysId);
-		ret.put(ContentObjectFields.SYS_RATING_AVG, rs.getAverage());
-		ret.put(ContentObjectFields.SYS_RATING_NUM, rs.getNumber());
+		if (rs != null) {
+			ret.put(ContentObjectFields.SYS_RATING_AVG, rs.getAverage());
+			ret.put(ContentObjectFields.SYS_RATING_NUM, rs.getNumber());
+		}
 		return ret;
 	}
 

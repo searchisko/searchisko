@@ -52,6 +52,21 @@ public class Rating implements Serializable {
 	@NotNull
 	private Timestamp ratedAt;
 
+	/**
+	 * Basic constructor.
+	 */
+	public Rating() {
+		super();
+	}
+
+	public Rating(String contentId, String contributorId, int rating, Timestamp ratedAt) {
+		super();
+		this.contentId = contentId;
+		this.contributorId = contributorId;
+		this.rating = rating;
+		this.ratedAt = ratedAt;
+	}
+
 	public String getContentId() {
 		return contentId;
 	}

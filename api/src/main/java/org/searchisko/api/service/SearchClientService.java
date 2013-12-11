@@ -5,6 +5,7 @@
  */
 package org.searchisko.api.service;
 
+import java.util.Map;
 import java.util.Properties;
 import java.util.logging.Logger;
 
@@ -14,14 +15,15 @@ import javax.ejb.Startup;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Named;
 
+import org.elasticsearch.action.get.GetResponse;
 import org.searchisko.api.model.AppConfiguration.ClientType;
 import org.searchisko.api.util.SearchUtils;
 
 /**
  * Search Client service for Elasticsearch client
- *
+ * 
  * @author Libor Krzyzanek
- *
+ * @author Vlastimil Elias (velias at redhat dot com)
  */
 @Named
 @ApplicationScoped
@@ -44,6 +46,30 @@ public class SearchClientService extends ElasticsearchClientService {
 		}
 
 		checkHealthOfCluster(client);
+	}
+
+	/**
+	 * Perform ElasticSearch document GET request.
+	 * 
+	 * @param indexName name of ES index to get document from
+	 * @param indexType type of ES document to get
+	 * @param id of document to get
+	 * @return ES get response
+	 */
+	public GetResponse performGet(String indexName, String indexType, String id) {
+		return getClient().prepareGet(indexName, indexType, id).execute().actionGet();
+	}
+
+	/**
+	 * Perform asynchronous ElasticSearch document PUT (doc into index) request - no waut to response.
+	 * 
+	 * @param indexName ES index name to put document into
+	 * @param indexType type of ES document to put
+	 * @param id of ES document to put
+	 * @param content of document to put
+	 */
+	public void performPutAsync(String indexName, String indexType, String id, Map<String, Object> content) {
+		getClient().prepareIndex(indexName, indexType, id).setSource(content).execute();
 	}
 
 }

@@ -11,11 +11,11 @@ import javax.inject.Named;
 import org.apache.commons.codec.digest.DigestUtils;
 
 /**
- * Security service for authentication providers
- *
+ * Security service for authentication providers.
+ * 
  * @author Libor Krzyzanek
  * @author Vlastimil Elias (velias at redhat dot com)
- *
+ * 
  */
 @Named
 @ApplicationScoped
@@ -23,7 +23,7 @@ public class SecurityService {
 
 	/**
 	 * Method which allows to generate hash from commandline.
-	 *
+	 * 
 	 * @param args - commandline arguments, username (provider name) as first parameter and password as second one.
 	 */
 	public static void main(String[] args) {
@@ -38,7 +38,7 @@ public class SecurityService {
 
 	/**
 	 * Create password hash.
-	 *
+	 * 
 	 * @param username
 	 * @param pwd
 	 * @return hash from username and password
@@ -49,7 +49,7 @@ public class SecurityService {
 
 	/**
 	 * Check if given hash matches username and password
-	 *
+	 * 
 	 * @param username
 	 * @param pwd
 	 * @param hash
