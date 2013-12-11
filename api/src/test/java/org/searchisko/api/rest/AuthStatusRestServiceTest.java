@@ -54,6 +54,7 @@ public class AuthStatusRestServiceTest {
 			Assert.assertNotNull(ret);
 			Assert.assertEquals(1, ret.size());
 			Assert.assertTrue((Boolean) ret.get("authenticated"));
+			Mockito.verify(tested.authenticationUtilService).updateAuthenticatedContributorProfile();
 		}
 
 		// case - contributor id returned
@@ -64,9 +65,11 @@ public class AuthStatusRestServiceTest {
 			Map<String, Object> ret = tested.authStatus();
 
 			Mockito.verify(tested.authenticationUtilService).getAuthenticatedContributor(false);
+			Mockito.verify(tested.authenticationUtilService).updateAuthenticatedContributorProfile();
 			Assert.assertNotNull(ret);
 			Assert.assertEquals(1, ret.size());
 			Assert.assertTrue((Boolean) ret.get("authenticated"));
+			Mockito.verify(tested.authenticationUtilService).updateAuthenticatedContributorProfile();
 		}
 
 	}

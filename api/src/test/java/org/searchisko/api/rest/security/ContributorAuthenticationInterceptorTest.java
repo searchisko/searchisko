@@ -104,6 +104,25 @@ public class ContributorAuthenticationInterceptorTest {
 	}
 
 	@Test
+	public void testCASAuthentication_emptyUsernameInPrincipalInAssertion() {
+		ContributorAuthenticationInterceptor tested = getTested();
+
+		tested.servletRequest = Mockito.mock(HttpServletRequest.class);
+		HttpSession sessionMock = Mockito.mock(HttpSession.class);
+		Mockito.when(tested.servletRequest.getSession(false)).thenReturn(sessionMock);
+		Assertion assertionMock = Mockito.mock(Assertion.class);
+		Mockito.when(sessionMock.getAttribute(AbstractCasFilter.CONST_CAS_ASSERTION)).thenReturn(assertionMock);
+		Mockito.when(assertionMock.getPrincipal()).thenReturn(new AttributePrincipalImpl("  "));
+
+		HttpRequest requestMock = getHttpRequestMock();
+		ResourceMethod methodMock = Mockito.mock(ResourceMethod.class);
+
+		ServerResponse res = tested.preProcess(requestMock, methodMock);
+		Assert.assertNull(res);
+		Mockito.verify(tested.servletRequest).getSession(false);
+	}
+
+	@Test
 	public void testCASAuthentication_OK() {
 		ContributorAuthenticationInterceptor tested = getTested();
 

@@ -5,6 +5,7 @@
  */
 package org.searchisko.api.rest.security;
 
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.enterprise.context.RequestScoped;
@@ -16,6 +17,7 @@ import org.searchisko.api.annotations.security.ContributorAllowed;
 import org.searchisko.api.annotations.security.ProviderAllowed;
 import org.searchisko.api.rest.exception.NotAuthenticatedException;
 import org.searchisko.api.service.ContributorProfileService;
+import org.searchisko.api.util.SearchUtils;
 
 /**
  * Authentication utility service. Use it in your RestServices if you need info about currently logged in user!
@@ -60,8 +62,8 @@ public class AuthenticationUtilService {
 	 * @param forceCreate if <code>true</code> we need contributor id so backend should create it for logged in user if
 	 *          not created yet. If <code>false</code> then we do not need it currently, so system can't create it but
 	 *          return null instead.
-	 * @return contributor id - can be null if
-	 *         <code><forceCreate/code> is false and contributor record do not exists yet for current user.
+	 * @return contributor id - can be null if <code><forceCreate</code> is false and contributor record do not exists yet
+	 *         for current user.
 	 * @throws NotAuthenticatedException in case contributor is not authenticated/logged in. This should never happen if
 	 *           security interceptor is correctly implemented and configured for this class and
 	 *           {@link ContributorAllowed} is used without <code>optional</code>.
@@ -71,8 +73,37 @@ public class AuthenticationUtilService {
 				|| !(securityContext instanceof ContributorCustomSecurityContext)) {
 			throw new NotAuthenticatedException(AuthenticatedUserTypes.CONTRIBUTOR);
 		}
-		// TODO _RATING propagate forceCreate parameter into contributorProfileService.getContributorId()
-		return contributorProfileService.getContributorId(securityContext.getUserPrincipal().getName());
+
+		ContributorCustomSecurityContext contributorSecurityContext = (ContributorCustomSecurityContext) securityContext;
+
+		// cache contributor id in request not to call backend service too often
+		if (contributorSecurityContext.getCachedContributorId() != null)
+			return contributorSecurityContext.getCachedContributorId();
+
+		String cid = SearchUtils.trimToNull(contributorProfileService.getContributorId(
+				securityContext.getAuthenticationScheme(), securityContext.getUserPrincipal().getName(), forceCreate));
+		contributorSecurityContext.setCachedContributorId(cid);
+
+		return cid;
+	}
+
+	/**
+	 * Force update of currently logged in contributor profile. No any exception is thrown. Should be called after
+	 * contributor authentication.
+	 */
+	public void updateAuthenticatedContributorProfile() {
+		if (securityContext != null && securityContext.getUserPrincipal() != null
+				&& (securityContext instanceof ContributorCustomSecurityContext)) {
+			try {
+				String uname = SearchUtils.trimToNull(securityContext.getUserPrincipal().getName());
+				if (uname != null) {
+					// TODO CONTRIBUTOR_PROFILE we should consider to run update in another thread not to block caller
+					contributorProfileService.createOrUpdateProfile(securityContext.getAuthenticationScheme(), uname);
+				}
+			} catch (Exception e) {
+				log.log(Level.WARNING, "Contributor profile update failed", e);
+			}
+		}
 	}
 
 }

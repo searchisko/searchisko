@@ -32,6 +32,7 @@ import org.jboss.resteasy.spi.interception.AcceptedByMethod;
 import org.jboss.resteasy.spi.interception.PreProcessInterceptor;
 import org.searchisko.api.annotations.security.ContributorAllowed;
 import org.searchisko.api.filter.CDIServletRequestProducingListener;
+import org.searchisko.api.util.SearchUtils;
 
 /**
  * This interceptor handle Contributor ( {@link AuthenticatedUserTypes#CONTRIBUTOR}) authentication. for now via CAS web
@@ -95,8 +96,9 @@ public class ContributorAuthenticationInterceptor implements PreProcessIntercept
 				if (assertion != null) {
 					AttributePrincipal principal = assertion.getPrincipal();
 					if (principal != null) {
-						username = principal.getName();
-						authenticationScheme = AUTH_METHOD_CAS;
+						username = SearchUtils.trimToNull(principal.getName());
+						if (username != null)
+							authenticationScheme = AUTH_METHOD_CAS;
 					}
 				} else {
 					log.log(Level.FINEST, "No CAS Assertion found in HTTP session");

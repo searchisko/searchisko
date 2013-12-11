@@ -116,13 +116,96 @@ public class AuthenticationUtilServiceTest {
 			}
 		}
 
-		// CASE - provider authenticated OK
+		// CASE - provider authenticated OK - contributor id required and returned
 		{
+			boolean forceCreate = true;
 			tested.contributorProfileService = Mockito.mock(ContributorProfileService.class);
-			Mockito.when(tested.contributorProfileService.getContributorId("aa")).thenReturn("bb");
+			Mockito.when(tested.contributorProfileService.getContributorId("a", "aa", forceCreate)).thenReturn("bb");
 			tested.securityContext = new ContributorCustomSecurityContext(new SimplePrincipal("aa"), true, "a");
-			Assert.assertEquals("bb", tested.getAuthenticatedContributor(false));
+			Assert.assertEquals("bb", tested.getAuthenticatedContributor(forceCreate));
+			Mockito.verify(tested.contributorProfileService, Mockito.times(1)).getContributorId(Mockito.anyString(),
+					Mockito.anyString(), Mockito.anyBoolean());
+
+			// second run uses cache
+			Assert.assertEquals("bb", tested.getAuthenticatedContributor(forceCreate));
+			Mockito.verify(tested.contributorProfileService, Mockito.times(1)).getContributorId(Mockito.anyString(),
+					Mockito.anyString(), Mockito.anyBoolean());
 		}
+
+		// CASE - provider authenticated OK - contributor id is not required so not returned
+		{
+			boolean forceCreate = false;
+			tested.contributorProfileService = Mockito.mock(ContributorProfileService.class);
+			Mockito.when(tested.contributorProfileService.getContributorId("a", "aa", forceCreate)).thenReturn(null);
+			tested.securityContext = new ContributorCustomSecurityContext(new SimplePrincipal("aa"), true, "a");
+			Assert.assertEquals(null, tested.getAuthenticatedContributor(forceCreate));
+			Mockito.verify(tested.contributorProfileService, Mockito.times(1)).getContributorId(Mockito.anyString(),
+					Mockito.anyString(), Mockito.anyBoolean());
+
+			// second run uses cache
+			Assert.assertEquals(null, tested.getAuthenticatedContributor(forceCreate));
+			Mockito.verify(tested.contributorProfileService, Mockito.times(2)).getContributorId(Mockito.anyString(),
+					Mockito.anyString(), Mockito.anyBoolean());
+		}
+
+		// CASE - provider authenticated OK - contributor id is not required and returned first time, but is required and
+		// returned second time
+		{
+			boolean forceCreate = false;
+			boolean forceCreate2 = true;
+			tested.contributorProfileService = Mockito.mock(ContributorProfileService.class);
+			Mockito.when(tested.contributorProfileService.getContributorId("a", "aa", forceCreate)).thenReturn(null);
+			Mockito.when(tested.contributorProfileService.getContributorId("a", "aa", forceCreate2)).thenReturn("bb");
+			tested.securityContext = new ContributorCustomSecurityContext(new SimplePrincipal("aa"), true, "a");
+			Assert.assertEquals(null, tested.getAuthenticatedContributor(forceCreate));
+			Mockito.verify(tested.contributorProfileService, Mockito.times(1)).getContributorId(Mockito.anyString(),
+					Mockito.anyString(), Mockito.anyBoolean());
+
+			// second run uses cache
+			Assert.assertEquals("bb", tested.getAuthenticatedContributor(forceCreate2));
+			Mockito.verify(tested.contributorProfileService, Mockito.times(2)).getContributorId(Mockito.anyString(),
+					Mockito.anyString(), Mockito.anyBoolean());
+		}
+
+	}
+
+	@Test
+	public void updateAuthenticatedContributorProfile() {
+		AuthenticationUtilService tested = getTested();
+		tested.contributorProfileService = Mockito.mock(ContributorProfileService.class);
+
+		// CASE - not authenticated - no call to service
+		{
+			Mockito.reset(tested.contributorProfileService);
+			tested.updateAuthenticatedContributorProfile();
+			Mockito.verifyZeroInteractions(tested.contributorProfileService);
+		}
+		{
+			Mockito.reset(tested.contributorProfileService);
+			SecurityContext scMock = Mockito.mock(SecurityContext.class);
+			tested.securityContext = scMock;
+			Mockito.when(scMock.getUserPrincipal()).thenReturn(new SimplePrincipal("aa"));
+			tested.updateAuthenticatedContributorProfile();
+			Mockito.verifyZeroInteractions(tested.contributorProfileService);
+		}
+
+		tested.securityContext = new ContributorCustomSecurityContext(new SimplePrincipal("aa"), true, "a");
+		// case - service call OK
+		{
+			Mockito.reset(tested.contributorProfileService);
+			tested.updateAuthenticatedContributorProfile();
+			Mockito.verify(tested.contributorProfileService).createOrUpdateProfile("a", "aa");
+		}
+
+		// case - service call exception is not propagated
+		{
+			Mockito.reset(tested.contributorProfileService);
+			Mockito.doThrow(new RuntimeException("Test exception from profile update"))
+					.when(tested.contributorProfileService).createOrUpdateProfile(Mockito.anyString(), Mockito.anyString());
+			tested.updateAuthenticatedContributorProfile();
+			Mockito.verify(tested.contributorProfileService).createOrUpdateProfile("a", "aa");
+		}
+
 	}
 
 }

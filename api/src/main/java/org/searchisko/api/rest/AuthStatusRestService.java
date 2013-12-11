@@ -42,6 +42,7 @@ public class AuthStatusRestService {
 		try {
 			authenticationUtilService.getAuthenticatedContributor(false);
 			authenticated = true;
+			authenticationUtilService.updateAuthenticatedContributorProfile();
 		} catch (NotAuthenticatedException e) {
 			// not authenticated so we return false
 		}

@@ -10,7 +10,8 @@ import java.security.Principal;
 import javax.ws.rs.core.SecurityContext;
 
 /**
- * Custom security context used by {@link ProviderAuthenticationInterceptor} and {@link ProviderSecurityPreProcessInterceptor}
+ * Custom security context used by {@link ProviderAuthenticationInterceptor} and
+ * {@link ProviderSecurityPreProcessInterceptor}
  * 
  * @author Libor Krzyzanek
  * 
@@ -27,7 +28,8 @@ public class ProviderCustomSecurityContext implements SecurityContext {
 
 	private String authenticationScheme;
 
-	public ProviderCustomSecurityContext(Principal userPrincipal, boolean superAdmin, boolean secure, String authenticationScheme) {
+	public ProviderCustomSecurityContext(Principal userPrincipal, boolean superAdmin, boolean secure,
+			String authenticationScheme) {
 		this.userPrincipal = userPrincipal;
 		this.superAdmin = superAdmin;
 		this.secure = secure;
@@ -55,6 +57,12 @@ public class ProviderCustomSecurityContext implements SecurityContext {
 	@Override
 	public String getAuthenticationScheme() {
 		return authenticationScheme;
+	}
+
+	@Override
+	public String toString() {
+		return "ProviderCustomSecurityContext [userPrincipal=" + userPrincipal + ", superAdmin=" + superAdmin + ", secure="
+				+ secure + ", authenticationScheme=" + authenticationScheme + "]";
 	}
 
 }

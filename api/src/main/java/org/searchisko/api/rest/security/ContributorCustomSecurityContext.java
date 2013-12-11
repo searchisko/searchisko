@@ -23,6 +23,11 @@ public class ContributorCustomSecurityContext implements SecurityContext {
 
 	private String authenticationScheme;
 
+	/**
+	 * Used to cache contributor id not to call backend service more times during request.
+	 */
+	private String cachedContributorId;
+
 	public ContributorCustomSecurityContext(Principal userPrincipal, boolean secure, String authenticationScheme) {
 		this.userPrincipal = userPrincipal;
 		this.secure = secure;
@@ -47,6 +52,20 @@ public class ContributorCustomSecurityContext implements SecurityContext {
 	@Override
 	public String getAuthenticationScheme() {
 		return authenticationScheme;
+	}
+
+	public String getCachedContributorId() {
+		return cachedContributorId;
+	}
+
+	public void setCachedContributorId(String cachedContributorId) {
+		this.cachedContributorId = cachedContributorId;
+	}
+
+	@Override
+	public String toString() {
+		return "ContributorCustomSecurityContext [userPrincipal=" + userPrincipal + ", secure=" + secure
+				+ ", authenticationScheme=" + authenticationScheme + ", cachedContributorId=" + cachedContributorId + "]";
 	}
 
 }
