@@ -2,14 +2,14 @@
 
 ## This script uses ElasticSearch 'search' cluster node http connector
 ##
-## You can use first commandline parameter or OPENSHIFT_INTERNAL_IP system property to change IP/domainname of ElasticSearch http connector. Default is: localhost
+## You can use first commandline parameter or OPENSHIFT_JBOSSEAP_IP system property to change IP/domainname of ElasticSearch http connector. Default is: localhost
 ## You can use second commandline parameter to change port of ElasticSearch http connector. Default is: 15000
 
 clear
 
 esip="localhost";
-if [ -n "${OPENSHIFT_INTERNAL_IP}" ]; then
-  esip=${OPENSHIFT_INTERNAL_IP}
+if [ -n "${OPENSHIFT_JBOSSEAP_IP}" ]; then
+  esip=${OPENSHIFT_JBOSSEAP_IP}
 fi
 if [ -n "$1" ]; then
   esip=$1
