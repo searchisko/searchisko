@@ -8,7 +8,7 @@
 
 clear
 
-dcpurl=http://localhost:8080/dcp-api
+dcpurl=https://dcp-jbossorgdev.rhcloud.com
 if [ -n "$1" ]; then
   dcpurl=$1
 fi
@@ -24,8 +24,8 @@ if [ -n "$3" ]; then
 fi
 
 eshost=localhost
-if [ -n "${OPENSHIFT_INTERNAL_IP}" ]; then
-  eshost=${OPENSHIFT_INTERNAL_IP}
+if [ -n "${OPENSHIFT_JBOSSEAP_IP}" ]; then
+  eshost=${OPENSHIFT_JBOSSEAP_IP}
 fi
 esport=15000
 

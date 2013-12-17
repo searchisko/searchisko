@@ -7,6 +7,20 @@ DCP Development Guide
 * JBoss EAP 6.1.1 - Java EE 6 - JAX-RS RestEasy, CDI, EJB Session beans, Hibernate JPA
 * Jackson for JSON processing
 * JUnit, Mockito for unit tests
+* Arquillian for functional tests
+
+## Project structure
+
+This is common **Maven** project with main `pom.xml` in root of repository. There are two subprojects available:
+
+* `api` - main subproject with searchisko source codes
+* `ftest` - subproject with Arquillian functional tests
+ 
+Other folders in root of repository:
+
+* `configuration` - example configurations for searchisko instance
+* `documentation` - documentation for project
+* `deployments` - output directory for build results
 
 ## Build
 
@@ -14,7 +28,7 @@ It's necessary to use **Maven 3** to build this project! To build it simply use:
 
 		mvn clean package
 
-Build output is a `ROOT.war` file placed in the `deployments` folder.
+in the root folder. Build output is a `ROOT.war` file placed in the `deployments` folder.
 
 The `pom.xml` file defines a few [build profiles](http://maven.apache.org/guides/introduction/introduction-to-profiles.html) 
 used to build for different target environments (the `localhost` profile is activated by default):
@@ -23,13 +37,13 @@ used to build for different target environments (the `localhost` profile is acti
 
 * build for development and testing in the localhost environment. Very easy deployment to the JBoss EAP 6 `standalone` configuration. 
 * Embedded ElasticSearch nodes used with data stored in user home `.dcp_data` subfolder. Search node REST API on 15000 port. Statistics node REST API on 15100 port.  
-* Embedded [h2 database](http://www.h2database.com) used for persistence over `java:jboss/datasources/ExampleDS` datasource which is configured in JBoss EAP 6 by default. 
+* Embedded [h2 database](http://www.h2database.com) used for persistence.
 
 #### rhel6-dev
 
 * build for development running on typical RHEL6 machine with installed standard JBoss EAP bundle.
 * Embedded ElasticSearch nodes used with data stored in `_EAP_HOME_/standalone/.dcp_data` subfolder. Search node REST API on 15000 port. Statistics node REST API on 15100 port.
-* Embedded [h2 database](http://www.h2database.com) used for persistence over `java:jboss/datasources/ExampleDS` datasource which is configured in JBoss EAP 6 by default.
+* Embedded [h2 database](http://www.h2database.com) used for persistence.
 
 #### openshift
 
@@ -56,10 +70,9 @@ You can use [Eclipse with JBoss Tools](http://www.jboss.org/tools) or
 The DCP REST API is then available at [`http://localhost:8080/v1/rest/`](http://localhost:8080/v1/rest/)  
 The ElasticSearch search node REST API is available at [`http://localhost:15000/`](http://localhost:15000/)  
 
-**Note #1**: When you use the standard configuration of the embedded h2 database from JBoss EAP 6 then data is lost
-when EAP is shutdown/restarted. To persist the data simply open the `standalone.xml` EAP configuration file, locate 
-`<connection-url>jdbc:h2:mem:test;DB_CLOSE_DELAY=-1</connection-url>` and change it to `<connection-url>jdbc:h2:test</connection-url>`.
-Data is then persisted in the `$EAP6HOME/bin/test.h2.db` file so you can delete it manually if necessary.
+**Note #1**: When you use the standard configuration of the embedded h2 database then data are lost
+when EAP is shutdown/restarted. To persist the data simply open the `pom.xml` and change `datasource.connection.url` property for `localhost` profile from `jdbc:h2:mem:searchisko;DB_CLOSE_DELAY=-1` to `jdbc:h2:searchisko`.
+Data is then persisted in the `$EAP6HOME/bin/searchislo.h2.db` file so you can delete it manually if necessary.
 
 **Note #2**: You might get the following exception when `ROOT.war` is deployed:
 
