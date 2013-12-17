@@ -9,6 +9,15 @@ import javax.ws.rs.core.SecurityContext;
  * 
  * @author Vlastimil Elias (velias at redhat dot com)
  */
-public enum AuthenticatedUserTypes {
+public enum AuthenticatedUserType {
 	PROVIDER, CONTRIBUTOR;
+
+	/**
+	 * Get role name used for security context checks.
+	 * 
+	 * @return role name
+	 */
+	public String roleName() {
+		return "USER_TYPE_" + name();
+	}
 }

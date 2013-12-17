@@ -33,7 +33,7 @@ import org.searchisko.api.service.ProviderService;
 import org.searchisko.api.util.SearchUtils;
 
 /**
- * This interceptor handle Provider ( {@link AuthenticatedUserTypes#PROVIDER}) authentication via standard HTTP basic
+ * This interceptor handle Provider ( {@link AuthenticatedUserType#PROVIDER}) authentication via standard HTTP basic
  * authentication header if present in request and store authenticated {@link Principal} witn name of provider in
  * {@link ProviderCustomSecurityContext} instance into {@link SecurityContext} to be used later by authorization
  * interceptor {@link ProviderSecurityPreProcessInterceptor} if necessary.

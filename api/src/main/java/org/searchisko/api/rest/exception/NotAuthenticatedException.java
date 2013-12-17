@@ -5,7 +5,7 @@
  */
 package org.searchisko.api.rest.exception;
 
-import org.searchisko.api.rest.security.AuthenticatedUserTypes;
+import org.searchisko.api.rest.security.AuthenticatedUserType;
 
 /**
  * Exception used when authenticated user is expected in REST handler but none is found. This generally means some
@@ -20,7 +20,7 @@ public class NotAuthenticatedException extends RuntimeException {
 	 * 
 	 * @param requiredType mandatory type of authenticated user we require.
 	 */
-	public NotAuthenticatedException(AuthenticatedUserTypes requiredType) {
+	public NotAuthenticatedException(AuthenticatedUserType requiredType) {
 		super(requiredType.name());
 	}
 

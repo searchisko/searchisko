@@ -7,65 +7,22 @@ package org.searchisko.api.rest.security;
 
 import java.security.Principal;
 
-import javax.ws.rs.core.SecurityContext;
-
 /**
  * Custom security context used by {@link ContributorAuthenticationInterceptor} and
  * {@link ContributorSecurityPreProcessInterceptor}
  * 
  * @author Vlastimil Elias (velias at redhat dot com)
  */
-public class ContributorCustomSecurityContext implements SecurityContext {
-
-	private Principal userPrincipal;
-
-	private boolean secure;
-
-	private String authenticationScheme;
-
-	/**
-	 * Used to cache contributor id not to call backend service more times during request.
-	 */
-	private String cachedContributorId;
+public class ContributorCustomSecurityContext extends CustomSecurityContextBase {
 
 	public ContributorCustomSecurityContext(Principal userPrincipal, boolean secure, String authenticationScheme) {
-		this.userPrincipal = userPrincipal;
-		this.secure = secure;
-		this.authenticationScheme = authenticationScheme;
-	}
-
-	@Override
-	public Principal getUserPrincipal() {
-		return userPrincipal;
-	}
-
-	@Override
-	public boolean isUserInRole(String role) {
-		return false;
-	}
-
-	@Override
-	public boolean isSecure() {
-		return secure;
-	}
-
-	@Override
-	public String getAuthenticationScheme() {
-		return authenticationScheme;
-	}
-
-	public String getCachedContributorId() {
-		return cachedContributorId;
-	}
-
-	public void setCachedContributorId(String cachedContributorId) {
-		this.cachedContributorId = cachedContributorId;
+		super(AuthenticatedUserType.CONTRIBUTOR, userPrincipal, secure, authenticationScheme);
 	}
 
 	@Override
 	public String toString() {
-		return "ContributorCustomSecurityContext [userPrincipal=" + userPrincipal + ", secure=" + secure
-				+ ", authenticationScheme=" + authenticationScheme + ", cachedContributorId=" + cachedContributorId + "]";
+		return "ContributorCustomSecurityContext [userType=" + userType + ", userPrincipal=" + userPrincipal + ", secure="
+				+ secure + ", authenticationScheme=" + authenticationScheme + "]";
 	}
 
 }

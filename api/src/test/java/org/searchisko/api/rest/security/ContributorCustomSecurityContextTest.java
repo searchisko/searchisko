@@ -31,6 +31,8 @@ public class ContributorCustomSecurityContextTest {
 		Assert.assertFalse(tested.isUserInRole(null));
 		Assert.assertFalse(tested.isUserInRole(""));
 		Assert.assertFalse(tested.isUserInRole("unknown"));
+		Assert.assertFalse(tested.isUserInRole(AuthenticatedUserType.PROVIDER.roleName()));
+		Assert.assertTrue(tested.isUserInRole(AuthenticatedUserType.CONTRIBUTOR.roleName()));
 	}
 
 	@Test

@@ -35,7 +35,7 @@ import org.searchisko.api.filter.CDIServletRequestProducingListener;
 import org.searchisko.api.util.SearchUtils;
 
 /**
- * This interceptor handle Contributor ( {@link AuthenticatedUserTypes#CONTRIBUTOR}) authentication. for now via CAS web
+ * This interceptor handle Contributor ( {@link AuthenticatedUserType#CONTRIBUTOR}) authentication. for now via CAS web
  * SSO login. It stores authenticated {@link Principal} with CAS usernamename in
  * {@link ContributorCustomSecurityContext} instance into {@link SecurityContext} to be used later by authorization
  * interceptor {@link ContributorSecurityPreProcessInterceptor} if necessary.

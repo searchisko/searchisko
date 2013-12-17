@@ -38,6 +38,11 @@ public class AuthenticationUtilService {
 	protected SecurityContext securityContext;
 
 	/**
+	 * request scoped cache.
+	 */
+	private String cachedContributorId;
+
+	/**
 	 * Get name of authenticated/logged in 'provider' based on security user principal. Can be used only in methods where
 	 * {@link ProviderAllowed} annotation is applied.
 	 * 
@@ -48,9 +53,8 @@ public class AuthenticationUtilService {
 	 * @see ProviderSecurityPreProcessInterceptor
 	 */
 	public String getAuthenticatedProvider() throws NotAuthenticatedException {
-		if (securityContext == null || securityContext.getUserPrincipal() == null
-				|| !(securityContext instanceof ProviderCustomSecurityContext)) {
-			throw new NotAuthenticatedException(AuthenticatedUserTypes.PROVIDER);
+		if (!isAuthenticatedUserOfType(AuthenticatedUserType.PROVIDER)) {
+			throw new NotAuthenticatedException(AuthenticatedUserType.PROVIDER);
 		}
 		return securityContext.getUserPrincipal().getName();
 	}
@@ -69,20 +73,18 @@ public class AuthenticationUtilService {
 	 *           {@link ContributorAllowed} is used without <code>optional</code>.
 	 */
 	public String getAuthenticatedContributor(boolean forceCreate) throws NotAuthenticatedException {
-		if (securityContext == null || securityContext.getUserPrincipal() == null
-				|| !(securityContext instanceof ContributorCustomSecurityContext)) {
-			throw new NotAuthenticatedException(AuthenticatedUserTypes.CONTRIBUTOR);
+		if (!isAuthenticatedUserOfType(AuthenticatedUserType.CONTRIBUTOR)) {
+			cachedContributorId = null;
+			throw new NotAuthenticatedException(AuthenticatedUserType.CONTRIBUTOR);
 		}
 
-		ContributorCustomSecurityContext contributorSecurityContext = (ContributorCustomSecurityContext) securityContext;
-
 		// cache contributor id in request not to call backend service too often
-		if (contributorSecurityContext.getCachedContributorId() != null)
-			return contributorSecurityContext.getCachedContributorId();
+		if (cachedContributorId != null)
+			return cachedContributorId;
 
 		String cid = SearchUtils.trimToNull(contributorProfileService.getContributorId(
 				securityContext.getAuthenticationScheme(), securityContext.getUserPrincipal().getName(), forceCreate));
-		contributorSecurityContext.setCachedContributorId(cid);
+		cachedContributorId = cid;
 
 		return cid;
 	}
@@ -92,8 +94,7 @@ public class AuthenticationUtilService {
 	 * contributor authentication.
 	 */
 	public void updateAuthenticatedContributorProfile() {
-		if (securityContext != null && securityContext.getUserPrincipal() != null
-				&& (securityContext instanceof ContributorCustomSecurityContext)) {
+		if (isAuthenticatedUserOfType(AuthenticatedUserType.CONTRIBUTOR)) {
 			try {
 				String uname = SearchUtils.trimToNull(securityContext.getUserPrincipal().getName());
 				if (uname != null) {
@@ -105,5 +106,16 @@ public class AuthenticationUtilService {
 			}
 		}
 	}
+
+	/**
+	 * Check if user of given type is authenticated.
+	 * 
+	 * @param userType to check
+	 * @return true if user of given type is authenticated.
+	 */
+	public boolean isAuthenticatedUserOfType(AuthenticatedUserType userType) {
+		return securityContext != null && securityContext.getUserPrincipal() != null
+				&& securityContext.isUserInRole(userType.roleName());
+	};
 
 }

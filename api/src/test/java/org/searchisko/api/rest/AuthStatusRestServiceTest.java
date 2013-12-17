@@ -12,7 +12,7 @@ import junit.framework.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.searchisko.api.rest.exception.NotAuthenticatedException;
-import org.searchisko.api.rest.security.AuthenticatedUserTypes;
+import org.searchisko.api.rest.security.AuthenticatedUserType;
 import org.searchisko.api.rest.security.AuthenticationUtilService;
 import org.searchisko.api.testtools.TestUtils;
 
@@ -34,7 +34,7 @@ public class AuthStatusRestServiceTest {
 		AuthStatusRestService tested = new AuthStatusRestService();
 		tested.authenticationUtilService = Mockito.mock(AuthenticationUtilService.class);
 		Mockito.when(tested.authenticationUtilService.getAuthenticatedContributor(false)).thenThrow(
-				new NotAuthenticatedException(AuthenticatedUserTypes.CONTRIBUTOR));
+				new NotAuthenticatedException(AuthenticatedUserType.CONTRIBUTOR));
 
 		Map<String, Object> ret = tested.authStatus();
 

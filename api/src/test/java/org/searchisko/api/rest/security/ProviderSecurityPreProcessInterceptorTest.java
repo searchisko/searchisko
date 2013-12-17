@@ -75,7 +75,9 @@ public class ProviderSecurityPreProcessInterceptorTest {
 	public void authenticatedTest() throws NoSuchMethodException, SecurityException {
 		ProviderSecurityPreProcessInterceptor tested = getTested();
 
-		tested.securityContext = new ProviderCustomSecurityContext(principal, false, true, "Basic");
+		// we create subclass here to check it is evaluated OK die proxying in CDI
+		tested.securityContext = new ProviderCustomSecurityContext(principal, false, true, "Basic") {
+		};
 		ResourceMethod methodMock = Mockito.mock(ResourceMethod.class);
 		Mockito.when((Class<MethodAnnotationsMock>) methodMock.getResourceClass()).thenReturn(MethodAnnotationsMock.class);
 		Mockito.when(methodMock.getMethod()).thenReturn(MethodAnnotationsMock.class.getMethod("methodProviderAllowed"));

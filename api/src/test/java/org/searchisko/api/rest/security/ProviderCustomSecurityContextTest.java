@@ -10,11 +10,10 @@ import java.security.Principal;
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
-import org.searchisko.api.rest.security.ProviderCustomSecurityContext;
 
 /**
  * Unit test for {@link ProviderCustomSecurityContext}.
- *
+ * 
  * @author Vlastimil Elias (velias at redhat dot com)
  */
 public class ProviderCustomSecurityContextTest {
@@ -32,12 +31,16 @@ public class ProviderCustomSecurityContextTest {
 		Assert.assertFalse(tested.isUserInRole(null));
 		Assert.assertFalse(tested.isUserInRole(""));
 		Assert.assertFalse(tested.isUserInRole("unknown"));
+		Assert.assertTrue(tested.isUserInRole(AuthenticatedUserType.PROVIDER.roleName()));
+		Assert.assertFalse(tested.isUserInRole(AuthenticatedUserType.CONTRIBUTOR.roleName()));
 		Assert.assertFalse(tested.isUserInRole(ProviderCustomSecurityContext.SUPER_ADMIN_ROLE));
 
 		tested = new ProviderCustomSecurityContext(null, true, false, null);
 		Assert.assertFalse(tested.isUserInRole(null));
 		Assert.assertFalse(tested.isUserInRole(""));
 		Assert.assertFalse(tested.isUserInRole("unknown"));
+		Assert.assertTrue(tested.isUserInRole(AuthenticatedUserType.PROVIDER.roleName()));
+		Assert.assertFalse(tested.isUserInRole(AuthenticatedUserType.CONTRIBUTOR.roleName()));
 		Assert.assertTrue(tested.isUserInRole(ProviderCustomSecurityContext.SUPER_ADMIN_ROLE));
 	}
 

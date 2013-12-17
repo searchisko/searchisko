@@ -70,7 +70,8 @@ public class ProviderSecurityPreProcessInterceptor implements PreProcessIntercep
 					+ declaring.getCanonicalName() + "." + method.getName());
 			return true;
 		} else {
-			log.fine("REST Security, method allowed for all: " + declaring.getCanonicalName() + "." + method.getName());
+			log.fine("REST Security, method not restricted for providers: " + declaring.getCanonicalName() + "."
+					+ method.getName());
 			return false;
 		}
 	}
@@ -121,8 +122,12 @@ public class ProviderSecurityPreProcessInterceptor implements PreProcessIntercep
 	@Override
 	public ServerResponse preProcess(HttpRequest request, ResourceMethod method) throws Failure, WebApplicationException {
 
-		if (securityContext == null || !(securityContext instanceof ProviderCustomSecurityContext)
-				|| securityContext.getUserPrincipal() == null) {
+		log.fine("REST Security, Provider security check for security context: " + securityContext);
+
+		if (securityContext == null || securityContext.getUserPrincipal() == null
+				|| !securityContext.isUserInRole(AuthenticatedUserType.PROVIDER.roleName())) {
+			log.fine("REST Security, Provider security check failed for security context: " + securityContext
+					+ " and principal " + (securityContext != null ? securityContext.getUserPrincipal() : null));
 			ServerResponse response = new ServerResponse();
 			response.setStatus(HttpResponseCodes.SC_UNAUTHORIZED);
 			response.getMetadata().add("WWW-Authenticate", "Basic realm=\"Insert Provider's username and password\"");

@@ -15,19 +15,19 @@ import junit.framework.Assert;
 
 import org.elasticsearch.client.Client;
 import org.elasticsearch.indices.IndexMissingException;
+import org.junit.Test;
+import org.mockito.Mockito;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 import org.searchisko.api.service.ProviderService;
 import org.searchisko.api.service.SearchClientService;
 import org.searchisko.api.tasker.TaskExecutionContext;
 import org.searchisko.api.testtools.ESRealClientTestBase;
 import org.searchisko.api.testtools.TestUtils;
-import org.junit.Test;
-import org.mockito.Mockito;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
 
 /**
  * Unit test for {@link RenormalizeByEsLookedUpValuesTask}
- *
+ * 
  * @author Vlastimil Elias (velias at redhat dot com)
  */
 public class RenormalizeByEsLookedUpValuesTaskTest extends ESRealClientTestBase {
@@ -58,6 +58,7 @@ public class RenormalizeByEsLookedUpValuesTaskTest extends ESRealClientTestBase 
 
 			// case - run on nonexisting index
 			try {
+				indexDelete(indexName);
 				configProviderServiceMock(tested, preprocessorsDef);
 				tested.performTask();
 				Assert.fail("IndexMissingException expected");

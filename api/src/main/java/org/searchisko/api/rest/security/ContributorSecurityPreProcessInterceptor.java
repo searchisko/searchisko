@@ -68,7 +68,8 @@ public class ContributorSecurityPreProcessInterceptor implements PreProcessInter
 					+ method.getName());
 			return true;
 		} else {
-			log.fine("REST Security, method allowed for all: " + declaring.getCanonicalName() + "." + method.getName());
+			log.fine("REST Security, method not restricted for contributors: " + declaring.getCanonicalName() + "."
+					+ method.getName());
 			return false;
 		}
 	}
@@ -119,8 +120,10 @@ public class ContributorSecurityPreProcessInterceptor implements PreProcessInter
 	@Override
 	public ServerResponse preProcess(HttpRequest request, ResourceMethod method) throws Failure, WebApplicationException {
 
-		if (securityContext == null || !(securityContext instanceof ContributorCustomSecurityContext)
-				|| securityContext.getUserPrincipal() == null) {
+		log.fine("REST Security, Contributor security check for security context: " + securityContext);
+
+		if (securityContext == null || securityContext.getUserPrincipal() == null
+				|| !securityContext.isUserInRole(AuthenticatedUserType.CONTRIBUTOR.roleName())) {
 			ServerResponse response = new ServerResponse();
 			response.setStatus(HttpResponseCodes.SC_FORBIDDEN);
 			response.setEntity("Contributor authentication required");
