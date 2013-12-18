@@ -170,7 +170,7 @@ public class AuthenticationUtilServiceTest {
 			Mockito.verify(tested.contributorProfileService, Mockito.times(1)).getContributorId(Mockito.anyString(),
 					Mockito.anyString(), Mockito.anyBoolean());
 
-			// second run uses cache
+			// second run do not uses cache for this case
 			Assert.assertEquals(null, tested.getAuthenticatedContributor(forceCreate));
 			Mockito.verify(tested.contributorProfileService, Mockito.times(2)).getContributorId(Mockito.anyString(),
 					Mockito.anyString(), Mockito.anyBoolean());
@@ -190,7 +190,7 @@ public class AuthenticationUtilServiceTest {
 			Mockito.verify(tested.contributorProfileService, Mockito.times(1)).getContributorId(Mockito.anyString(),
 					Mockito.anyString(), Mockito.anyBoolean());
 
-			// second run uses cache
+			// second run do not uses cache in this case
 			Assert.assertEquals("bb", tested.getAuthenticatedContributor(forceCreate2));
 			Mockito.verify(tested.contributorProfileService, Mockito.times(2)).getContributorId(Mockito.anyString(),
 					Mockito.anyString(), Mockito.anyBoolean());
