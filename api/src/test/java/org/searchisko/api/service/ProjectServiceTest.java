@@ -15,6 +15,7 @@ import javax.ws.rs.core.StreamingOutput;
 
 import junit.framework.Assert;
 
+import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.Client;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -340,4 +341,101 @@ public class ProjectServiceTest extends ESRealClientTestBase {
 		}
 	}
 
+	@Test
+	public void findByCode() throws Exception {
+		Client client = prepareESClientForUnitTest();
+		ProjectService tested = getTested(client);
+		try {
+			// case - search from noexisting index
+			{
+				indexDelete(ProjectService.SEARCH_INDEX_NAME);
+				SearchResponse sr = tested.findByCode("jbosstools");
+				Assert.assertNull(sr);
+			}
+
+			// case - search from empty index
+			indexCreate(ProjectService.SEARCH_INDEX_NAME);
+			{
+				SearchResponse sr = tested.findByCode("jbosstools");
+				Assert.assertEquals(0, sr.getHits().getTotalHits());
+			}
+
+			indexInsertDocument(ProjectService.SEARCH_INDEX_NAME, ProjectService.SEARCH_INDEX_TYPE, "10",
+					"{\"code\":\"jbosstools\"}");
+			indexInsertDocument(ProjectService.SEARCH_INDEX_NAME, ProjectService.SEARCH_INDEX_TYPE, "20",
+					"{\"code\":\"jbossas\"}");
+			indexInsertDocument(ProjectService.SEARCH_INDEX_NAME, ProjectService.SEARCH_INDEX_TYPE, "30",
+					"{\"code\":\"aerogear\"}");
+			indexFlushAndRefresh(ProjectService.SEARCH_INDEX_NAME);
+			// case - search existing
+			{
+				SearchResponse sr = tested.findByCode("jbossas");
+				Assert.assertEquals(1, sr.getHits().getTotalHits());
+				Assert.assertEquals("20", sr.getHits().getHits()[0].getId());
+
+				sr = tested.findByCode("jbosstools");
+				Assert.assertEquals(1, sr.getHits().getTotalHits());
+				Assert.assertEquals("10", sr.getHits().getHits()[0].getId());
+
+				sr = tested.findByCode("spring");
+				Assert.assertEquals(0, sr.getHits().getTotalHits());
+			}
+
+		} finally {
+			indexDelete(ProjectService.SEARCH_INDEX_NAME);
+			finalizeESClientForUnitTest();
+		}
+	}
+
+	private static final String CODE_NAME_1 = "code_type1";
+	private static final String CODE_NAME_2 = "code_type2";
+
+	@Test
+	public void findByTypeSpecificCode() throws InterruptedException {
+		Client client = prepareESClientForUnitTest();
+		ProjectService tested = getTested(client);
+		try {
+			// case - search from noexisting index
+			indexDelete(ProjectService.SEARCH_INDEX_NAME);
+			{
+				SearchResponse sr = tested.findByTypeSpecificCode(CODE_NAME_1, "test");
+				Assert.assertNull(sr);
+			}
+
+			indexCreate(ProjectService.SEARCH_INDEX_NAME);
+			// case - search from empty index
+			{
+				SearchResponse sr = tested.findByTypeSpecificCode(CODE_NAME_2, "test");
+				Assert.assertEquals(0, sr.getHits().getTotalHits());
+			}
+
+			indexInsertDocument(ProjectService.SEARCH_INDEX_NAME, ProjectService.SEARCH_INDEX_TYPE, "10",
+					"{\"code\":\"test1\""
+							+ ", \"type_specific_code\" : {\"code_type1\":\"test\",\"code_type2\":[\"ct2_1_1\",\"ct2_1_2\"]}" + "}");
+			indexInsertDocument(ProjectService.SEARCH_INDEX_NAME, ProjectService.SEARCH_INDEX_TYPE, "20",
+					"{\"code\":\"test2\""
+							+ ", \"type_specific_code\" : {\"code_type1\":\"ct1_2\",\"code_type2\":[\"ct2_2_1\",\"test\"]}" + "}");
+			indexInsertDocument(ProjectService.SEARCH_INDEX_NAME, ProjectService.SEARCH_INDEX_TYPE, "30",
+					"{\"code\":\"test3\""
+							+ ", \"type_specific_code\" : {\"code_type1\":\"ct1_3\",\"code_type2\":[\"ct2_3_1\",\"test_3_2\"]}" + "}");
+			indexFlushAndRefresh(ProjectService.SEARCH_INDEX_NAME);
+			// case - search existing
+			{
+				SearchResponse sr = tested.findByTypeSpecificCode(CODE_NAME_1, "test");
+				Assert.assertEquals(1, sr.getHits().getTotalHits());
+				Assert.assertEquals("10", sr.getHits().getHits()[0].getId());
+
+				sr = tested.findByTypeSpecificCode(CODE_NAME_2, "test");
+				Assert.assertEquals(1, sr.getHits().getTotalHits());
+				Assert.assertEquals("20", sr.getHits().getHits()[0].getId());
+
+				sr = tested.findByTypeSpecificCode(CODE_NAME_2, "te");
+				Assert.assertEquals(0, sr.getHits().getTotalHits());
+			}
+
+		} finally {
+			indexDelete(ProjectService.SEARCH_INDEX_NAME);
+			finalizeESClientForUnitTest();
+		}
+	}
 }

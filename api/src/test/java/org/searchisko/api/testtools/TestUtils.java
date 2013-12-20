@@ -14,8 +14,10 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
+import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
+import javax.ws.rs.core.UriInfo;
 
 import org.apache.commons.io.IOUtils;
 import org.codehaus.jackson.JsonNode;
@@ -25,7 +27,9 @@ import org.elasticsearch.common.settings.SettingsException;
 import org.elasticsearch.common.xcontent.XContentFactory;
 import org.elasticsearch.common.xcontent.XContentParser;
 import org.elasticsearch.common.xcontent.XContentType;
+import org.jboss.resteasy.specimpl.MultivaluedMapImpl;
 import org.junit.Assert;
+import org.mockito.Mockito;
 import org.searchisko.api.annotations.security.ContributorAllowed;
 import org.searchisko.api.annotations.security.ProviderAllowed;
 import org.searchisko.api.rest.security.ContributorSecurityPreProcessInterceptor;
@@ -357,4 +361,15 @@ public abstract class TestUtils {
 				parser.close();
 		}
 	}
+
+	public static UriInfo prepareUriInfiWithParams(String... params) {
+		UriInfo uriInfoMock = Mockito.mock(UriInfo.class);
+		MultivaluedMap<String, String> qp = new MultivaluedMapImpl<String, String>();
+		for (int i = 0; i < params.length; i = i + 2) {
+			qp.add(params[i], params[i + 1]);
+		}
+		Mockito.when(uriInfoMock.getQueryParameters()).thenReturn(qp);
+		return uriInfoMock;
+	}
+
 }

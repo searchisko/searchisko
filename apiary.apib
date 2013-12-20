@@ -961,6 +961,38 @@ GET /rest/project/{code}
   }
 }
 
+Search project configuration by some of available identifiers.
+
+##### Request parameters
+
+Method expects one request parameter. Name of parameter is name of identifier you can search in. 
+It may be `code` or any other identifier type used inside of `type_specific_code` map of project definition (eg. `jbossorg_jira` etc.).
+Value of parameter is identifier value you can search for then.   
+
+
+GET /rest/project/search?{idName}={idValue}
+< 200
+< Content-Type: application/json
+{
+  "total": "1",
+  "hits": [
+    {
+      "id": "project code",
+      "data": {
+			  "code": "project code",
+			  "name": "JBoss Tools",
+			  "type_specific_code" : {
+			    "jbossorg_blog": ["jbosstools"],
+			    "jbossorg_jira": ["JBIDE"],
+			    "jbossorg_mailing_list": [],
+			    "jbossorg_project_info": "/jbosstools"
+			  }
+			}
+    }
+  ]
+}
+
+
 List project definitions.
 
 *Authentication not required to use this method*

@@ -177,7 +177,7 @@ public class ContributorService implements EntityService {
 	 * 
 	 * @param codeName name of 'type specific code', eg. <code>jbossorg_username</code>, <code>github_username</code>
 	 * @param codeValue value of code to search for
-	 * @return search result - should contain zero or one contributor only! Multiple contributors for one code address is
+	 * @return search result - should contain zero or one contributor only! Multiple contributors for one code is
 	 *         configuration problem!
 	 */
 	public SearchResponse findByTypeSpecificCode(String codeName, String codeValue) {

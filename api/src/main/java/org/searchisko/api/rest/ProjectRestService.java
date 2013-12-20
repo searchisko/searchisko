@@ -24,19 +24,21 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.SecurityContext;
+import javax.ws.rs.core.UriInfo;
 
+import org.elasticsearch.action.search.SearchResponse;
 import org.searchisko.api.annotations.header.CORSSupport;
 import org.searchisko.api.annotations.security.GuestAllowed;
 import org.searchisko.api.annotations.security.ProviderAllowed;
 import org.searchisko.api.rest.exception.RequiredFieldException;
 import org.searchisko.api.service.ProjectService;
-import org.searchisko.persistence.service.EntityService;
+import org.searchisko.api.util.SearchUtils;
 
 /**
  * Project REST API
- *
+ * 
  * @author Libor Krzyzanek
- *
+ * 
  */
 @RequestScoped
 @Path("/project")
@@ -45,9 +47,11 @@ public class ProjectRestService extends RestEntityServiceBase {
 
 	protected final String[] fieldsToRemove = new String[] { "type_specific_code" };
 
+	public static final String PARAM_CODE = "code";
+
 	@Inject
 	@Named("projectService")
-	protected EntityService projectService;
+	protected ProjectService projectService;
 
 	@Context
 	protected SecurityContext securityContext;
@@ -59,7 +63,7 @@ public class ProjectRestService extends RestEntityServiceBase {
 
 	/**
 	 * Get all projects. If user is authenticated then all data are returned otherwise sensitive data are removed.
-	 *
+	 * 
 	 * @see #fieldsToRemove
 	 */
 	@GET
@@ -67,7 +71,7 @@ public class ProjectRestService extends RestEntityServiceBase {
 	@Produces(MediaType.APPLICATION_JSON)
 	@Override
 	@GuestAllowed
-    @CORSSupport
+	@CORSSupport
 	public Object getAll(@QueryParam("from") Integer from, @QueryParam("size") Integer size) {
 		Principal principal = securityContext.getUserPrincipal();
 
@@ -83,7 +87,7 @@ public class ProjectRestService extends RestEntityServiceBase {
 	@Produces(MediaType.APPLICATION_JSON)
 	@Override
 	@GuestAllowed
-    @CORSSupport
+	@CORSSupport
 	public Object get(@PathParam("id") String id) {
 		Principal principal = securityContext.getUserPrincipal();
 		if (principal == null) {
@@ -100,8 +104,8 @@ public class ProjectRestService extends RestEntityServiceBase {
 	public Object create(Map<String, Object> data) {
 		String codeFromData = (String) data.get(ProjectService.FIELD_CODE);
 		if (codeFromData == null || codeFromData.isEmpty())
-			return Response.status(Status.BAD_REQUEST).entity("Required data field '" + ProjectService.FIELD_CODE + "' not set")
-					.build();
+			return Response.status(Status.BAD_REQUEST)
+					.entity("Required data field '" + ProjectService.FIELD_CODE + "' not set").build();
 		return this.create(codeFromData, data);
 	}
 
@@ -112,13 +116,13 @@ public class ProjectRestService extends RestEntityServiceBase {
 	public Object create(@PathParam("id") String id, Map<String, Object> data) {
 
 		if (id == null || id.isEmpty()) {
-            throw new RequiredFieldException("id");
+			throw new RequiredFieldException("id");
 		}
 
 		String codeFromData = (String) data.get(ProjectService.FIELD_CODE);
 		if (codeFromData == null || codeFromData.isEmpty())
-			return Response.status(Status.BAD_REQUEST).entity("Required data field '" + ProjectService.FIELD_CODE + "' not set")
-					.build();
+			return Response.status(Status.BAD_REQUEST)
+					.entity("Required data field '" + ProjectService.FIELD_CODE + "' not set").build();
 
 		if (!id.equals(codeFromData)) {
 			return Response.status(Status.BAD_REQUEST)
@@ -127,6 +131,35 @@ public class ProjectRestService extends RestEntityServiceBase {
 
 		entityService.create(id, data);
 		return createResponseWithId(id);
+	}
+
+	@GET
+	@Path("/search")
+	@Produces(MediaType.APPLICATION_JSON)
+	@CORSSupport
+	public Object search(@Context UriInfo uriInfo) {
+
+		if (uriInfo == null || uriInfo.getQueryParameters().isEmpty() || uriInfo.getQueryParameters().size() > 1) {
+			return Response.status(Response.Status.BAD_REQUEST).entity("One request parameter is expected").build();
+		}
+
+		SearchResponse response = null;
+
+		String codeName = uriInfo.getQueryParameters().keySet().iterator().next();
+		String codeValue = uriInfo.getQueryParameters().getFirst(codeName);
+
+		if (SearchUtils.isBlank(codeValue)) {
+			return Response.status(Response.Status.BAD_REQUEST)
+					.entity("Value for request parameter " + codeName + " must be provided").build();
+		}
+
+		if (PARAM_CODE.equals(codeName)) {
+			response = projectService.findByCode(codeValue);
+		} else {
+			response = projectService.findByTypeSpecificCode(codeName, codeValue);
+		}
+
+		return new ESDataOnlyResponse(response);
 	}
 
 }

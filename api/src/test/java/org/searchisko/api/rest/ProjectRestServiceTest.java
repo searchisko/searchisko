@@ -10,7 +10,10 @@ import java.util.Map;
 
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.SecurityContext;
+import javax.ws.rs.core.StreamingOutput;
+import javax.ws.rs.core.UriInfo;
 
+import org.elasticsearch.action.search.SearchResponse;
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -30,7 +33,7 @@ public class ProjectRestServiceTest {
 	public void init() {
 		ProjectRestService tested = new ProjectRestService();
 		Assert.assertNull(tested.entityService);
-		tested.projectService = Mockito.mock(EntityService.class);
+		tested.projectService = Mockito.mock(ProjectService.class);
 		Assert.assertNull(tested.entityService);
 		tested.init();
 		Assert.assertEquals(tested.projectService, tested.entityService);
@@ -169,6 +172,93 @@ public class ProjectRestServiceTest {
 	}
 
 	@Test
+	public void search_inputParamValidation() throws Exception {
+		ProjectRestService tested = new ProjectRestService();
+		RestEntityServiceBaseTest.mockLogger(tested);
+
+		// only one param with some value is accepted
+		TestUtils.assertResponseStatus(tested.search(null), Status.BAD_REQUEST);
+		TestUtils.assertResponseStatus(tested.search(TestUtils.prepareUriInfiWithParams()), Status.BAD_REQUEST);
+		TestUtils.assertResponseStatus(tested.search(TestUtils.prepareUriInfiWithParams("a", "b", "c", "d")),
+				Status.BAD_REQUEST);
+		TestUtils.assertResponseStatus(tested.search(TestUtils.prepareUriInfiWithParams("a", "  ")), Status.BAD_REQUEST);
+	}
+
+	@Test
+	public void search_byOtherIdentifier() throws Exception {
+		ProjectRestService tested = new ProjectRestService();
+		tested.projectService = Mockito.mock(ProjectService.class);
+		RestEntityServiceBaseTest.mockLogger(tested);
+
+		// case - return from service OK, one result
+		{
+			SearchResponse sr = ESDataOnlyResponseTest.mockSearchResponse("ve", "email@em", null, null);
+			Mockito.when(tested.projectService.findByTypeSpecificCode("idType", "idValue")).thenReturn(sr);
+			StreamingOutput ret = (StreamingOutput) tested.search(TestUtils.prepareUriInfiWithParams("idType", "idValue"));
+			TestUtils.assetStreamingOutputContent(
+					"{\"total\":1,\"hits\":[{\"id\":\"ve\",\"data\":{\"sys_name\":\"email@em\",\"sys_id\":\"ve\"}}]}", ret);
+		}
+
+		// case - return from service OK, no result
+		{
+			Mockito.reset(tested.projectService);
+			SearchResponse sr = ESDataOnlyResponseTest.mockSearchResponse(null, null, null, null);
+			Mockito.when(tested.projectService.findByTypeSpecificCode("idType", "idValue")).thenReturn(sr);
+			StreamingOutput ret = (StreamingOutput) tested.search(TestUtils.prepareUriInfiWithParams("idType", "idValue"));
+			Mockito.verify(tested.projectService).findByTypeSpecificCode("idType", "idValue");
+			TestUtils.assetStreamingOutputContent("{\"total\":0,\"hits\":[]}", ret);
+		}
+
+		// case - Exception from service
+		try {
+			Mockito.reset(tested.projectService);
+			Mockito.when(tested.projectService.findByTypeSpecificCode("idType", "idValue")).thenThrow(
+					new RuntimeException("test exception"));
+			tested.search(TestUtils.prepareUriInfiWithParams("idType", "idValue"));
+			Assert.fail("RuntimeException expected");
+		} catch (RuntimeException e) {
+			// OK
+		}
+	}
+
+	@Test
+	public void search_byCode() throws Exception {
+		ProjectRestService tested = new ProjectRestService();
+		tested.projectService = Mockito.mock(ProjectService.class);
+		RestEntityServiceBaseTest.mockLogger(tested);
+
+		// case - return from service OK, one result
+		{
+			SearchResponse sr = ESDataOnlyResponseTest.mockSearchResponse("ve", "email@em", null, null);
+			Mockito.when(tested.projectService.findByCode("testcode")).thenReturn(sr);
+			StreamingOutput ret = (StreamingOutput) tested.search(TestUtils.prepareUriInfiWithParams(
+					ProjectRestService.PARAM_CODE, "testcode"));
+			TestUtils.assetStreamingOutputContent(
+					"{\"total\":1,\"hits\":[{\"id\":\"ve\",\"data\":{\"sys_name\":\"email@em\",\"sys_id\":\"ve\"}}]}", ret);
+		}
+
+		// case - return from service OK, no result
+		{
+			Mockito.reset(tested.projectService);
+			SearchResponse sr = ESDataOnlyResponseTest.mockSearchResponse(null, null, null, null);
+			Mockito.when(tested.projectService.findByCode("testcode")).thenReturn(sr);
+			StreamingOutput ret = (StreamingOutput) tested.search(TestUtils.prepareUriInfiWithParams(
+					ProjectRestService.PARAM_CODE, "testcode"));
+			TestUtils.assetStreamingOutputContent("{\"total\":0,\"hits\":[]}", ret);
+		}
+
+		// case - Exception from service
+		try {
+			Mockito.reset(tested.projectService);
+			Mockito.when(tested.projectService.findByCode("testcode")).thenThrow(new RuntimeException("test exception"));
+			tested.search(TestUtils.prepareUriInfiWithParams(ProjectRestService.PARAM_CODE, "testcode"));
+			Assert.fail("RuntimeException expected");
+		} catch (RuntimeException e) {
+			// OK
+		}
+	}
+
+	@Test
 	public void getAll_permissions() {
 		TestUtils.assertPermissionGuest(ProjectRestService.class, "getAll", Integer.class, Integer.class);
 	}
@@ -187,6 +277,11 @@ public class ProjectRestServiceTest {
 	@Test
 	public void delete_permissions() {
 		TestUtils.assertPermissionSuperProvider(ProjectRestService.class, "delete", String.class);
+	}
+
+	@Test
+	public void search_permissions() throws Exception {
+		TestUtils.assertPermissionSuperProvider(ProjectRestService.class, "search", UriInfo.class);
 	}
 
 	protected ProjectRestService getTested() {

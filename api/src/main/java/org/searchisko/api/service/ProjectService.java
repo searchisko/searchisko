@@ -15,6 +15,8 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.ws.rs.core.StreamingOutput;
 
+import org.elasticsearch.action.search.SearchResponse;
+import org.elasticsearch.indices.IndexMissingException;
 import org.searchisko.persistence.service.EntityService;
 
 /**
@@ -33,6 +35,15 @@ public class ProjectService implements EntityService {
 	 * Field in project definition with project code, used as unique ID
 	 */
 	public static final String FIELD_CODE = "code";
+
+	/**
+	 * Field in project definition containing Map structure with other unique identifiers used to map pushed data to the
+	 * project. Key in the Map structure marks type of identifier (eg. jbossorg_jira, jbossorg_project_info), value in
+	 * structure is identifier or array of identifiers itself used during mapping.
+	 * 
+	 * @see {@link #findByTypeSpecificCode(String, String)} for description.
+	 */
+	public static final String FIELD_TYPE_SPECIFIC_CODE = "type_specific_code";
 
 	public static final String SEARCH_INDEX_NAME = "sys_projects";
 
@@ -98,5 +109,39 @@ public class ProjectService implements EntityService {
 	public void delete(String id) {
 		entityService.delete(id);
 		searchClientService.performDelete(SEARCH_INDEX_NAME, SEARCH_INDEX_TYPE, id);
+	}
+
+	/**
+	 * Find project by <code>code</code> (unique id used in content).
+	 * 
+	 * @param code to search project for.
+	 * 
+	 * @return search result - should contain zero or one project only! Multiple projects for one code is configuration
+	 *         problem!
+	 */
+	public SearchResponse findByCode(String code) {
+		try {
+			return searchClientService.performFilterByOneField(SEARCH_INDEX_NAME, SEARCH_INDEX_TYPE, FIELD_CODE, code);
+		} catch (IndexMissingException e) {
+			return null;
+		}
+	}
+
+	/**
+	 * Find project by 'type specific code'. These codes are used to map from third party unique identifiers to searchisko
+	 * unique project id.
+	 * 
+	 * @param codeName name of 'type specific code', eg. <code>jbossorg_jira</code>, <code>jbossorg_project_info</code>
+	 * @param codeValue value of code to search for
+	 * @return search result - should contain zero or one project only! Multiple projects for one code is configuration
+	 *         problem!
+	 */
+	public SearchResponse findByTypeSpecificCode(String codeName, String codeValue) {
+		try {
+			return searchClientService.performFilterByOneField(SEARCH_INDEX_NAME, SEARCH_INDEX_TYPE, FIELD_TYPE_SPECIFIC_CODE
+					+ "." + codeName, codeValue);
+		} catch (IndexMissingException e) {
+			return null;
+		}
 	}
 }
