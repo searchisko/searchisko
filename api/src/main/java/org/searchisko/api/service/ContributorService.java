@@ -16,22 +16,18 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.ws.rs.core.StreamingOutput;
 
-import org.elasticsearch.action.admin.indices.flush.FlushRequest;
-import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.Client;
-import org.elasticsearch.index.query.FilterBuilders;
-import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.indices.IndexMissingException;
 import org.searchisko.api.util.Resources;
 import org.searchisko.persistence.service.EntityService;
 
 /**
- * Service related to Contributor
- *
+ * Service containing Contributor related operations.
+ * 
  * @author Libor Krzyzanek
  * @author Vlastimil Elias (velias at redhat dot com)
- *
+ * 
  */
 @Named
 @Stateless
@@ -44,6 +40,26 @@ public class ContributorService implements EntityService {
 	public static final String SEARCH_INDEX_NAME = "sys_contributors";
 
 	public static final String SEARCH_INDEX_TYPE = "contributor";
+
+	/**
+	 * Contributor document field containing "code" - primary unique id of Contributor for searchisko.
+	 */
+	public static final String FIELD_CODE = "code";
+
+	/**
+	 * Contributor document field containing array of email addresses used by this contributor. Note than one email
+	 * address should be defined for one contributor only!
+	 */
+	public static final String FIELD_EMAIL = "email";
+
+	/**
+	 * Contributor document field containing Map structure with other unique identifiers used to map pushed data to the
+	 * contributor. Key in the Map structure marks type of identifier (eg. jbossorg_username, github_username), value in
+	 * structure is identifier or array of identifiers itself used during mapping.
+	 * 
+	 * @see {@link #findByTypeSpecificCode(String, String)} for description.
+	 */
+	public static final String FIELD_TYPE_SPECIFIC_CODE = "type_specific_code";
 
 	@Inject
 	protected SearchClientService searchClientService;
@@ -87,14 +103,13 @@ public class ContributorService implements EntityService {
 
 	/**
 	 * Updates search index by current entity identified by id
-	 *
+	 * 
 	 * @param id
 	 * @param entity
 	 */
 	private void updateSearchIndex(String id, Map<String, Object> entity) {
-		searchClientService.getClient().prepareIndex(SEARCH_INDEX_NAME, SEARCH_INDEX_TYPE, id).setSource(entity).execute()
-				.actionGet();
-		searchClientService.getClient().admin().indices().flush(new FlushRequest(SEARCH_INDEX_NAME));
+		searchClientService.performPut(SEARCH_INDEX_NAME, SEARCH_INDEX_TYPE, id, entity);
+		searchClientService.performIndexFlushAndRefresh(SEARCH_INDEX_NAME);
 	}
 
 	@Override
@@ -121,21 +136,41 @@ public class ContributorService implements EntityService {
 	@Override
 	public void delete(String id) {
 		entityService.delete(id);
-		searchClientService.getClient().prepareDelete(SEARCH_INDEX_NAME, SEARCH_INDEX_TYPE, id).execute().actionGet();
+		searchClientService.performDelete(SEARCH_INDEX_NAME, SEARCH_INDEX_TYPE, id);
 	}
 
-	public SearchResponse search(String email) {
-		SearchRequestBuilder searchBuilder = searchClientService.getClient().prepareSearch(SEARCH_INDEX_NAME)
-				.setTypes(SEARCH_INDEX_TYPE);
-
-		searchBuilder.setFilter(FilterBuilders.queryFilter(QueryBuilders.matchQuery("email", email)));
-		searchBuilder.setQuery(QueryBuilders.matchAllQuery());
-
+	/**
+	 * Find contributor by email.
+	 * 
+	 * @param email address to search contributor for.
+	 * 
+	 * @return search result - should contain zero or one contributor only! Multiple contributors for one email address is
+	 *         configuration problem!
+	 */
+	public SearchResponse findByEmail(String email) {
 		try {
-			final SearchResponse response = searchBuilder.execute().actionGet();
-			return response;
+			return searchClientService.performFilterByOneField(SEARCH_INDEX_NAME, SEARCH_INDEX_TYPE, FIELD_EMAIL, email);
 		} catch (IndexMissingException e) {
 			return null;
 		}
 	}
+
+	/**
+	 * Find contributor by 'type specific code'. These codes are used to map from third party unique identifiers to
+	 * searchisko unique contributor id.
+	 * 
+	 * @param codeName name of 'type specific code', eg. <code>jbossorg_username</code>, <code>github_username</code>
+	 * @param codeValue value of code to search for
+	 * @return search result - should contain zero or one contributor only! Multiple contributors for one code address is
+	 *         configuration problem!
+	 */
+	public SearchResponse findByTypeSpecificCode(String codeName, String codeValue) {
+		try {
+			return searchClientService.performFilterByOneField(SEARCH_INDEX_NAME, SEARCH_INDEX_TYPE, FIELD_TYPE_SPECIFIC_CODE
+					+ "." + codeName, codeValue);
+		} catch (IndexMissingException e) {
+			return null;
+		}
+	}
+
 }

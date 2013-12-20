@@ -11,14 +11,16 @@ import javax.inject.Inject;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriInfo;
 
 import org.elasticsearch.action.search.SearchResponse;
 import org.searchisko.api.annotations.header.CORSSupport;
-import org.searchisko.api.annotations.security.GuestAllowed;
 import org.searchisko.api.annotations.security.ProviderAllowed;
 import org.searchisko.api.service.ContributorService;
+import org.searchisko.api.util.SearchUtils;
 
 /**
  * Contributor REST API
@@ -31,6 +33,8 @@ import org.searchisko.api.service.ContributorService;
 @ProviderAllowed(superProviderOnly = true)
 public class ContributorRestService extends RestEntityServiceBase {
 
+	public static final String PARAM_EMAIL = "email";
+
 	@Inject
 	protected ContributorService contributorService;
 
@@ -42,40 +46,29 @@ public class ContributorRestService extends RestEntityServiceBase {
 	@GET
 	@Path("/search")
 	@Produces(MediaType.APPLICATION_JSON)
-	@GuestAllowed
 	@CORSSupport
-	public Object search(@QueryParam("email") String email) {
-		SearchResponse response = contributorService.search(email);
+	public Object search(@Context UriInfo uriInfo) {
+
+		if (uriInfo == null || uriInfo.getQueryParameters().isEmpty() || uriInfo.getQueryParameters().size() > 1) {
+			return Response.status(Response.Status.BAD_REQUEST).entity("One request parameter is expected").build();
+		}
+
+		SearchResponse response = null;
+
+		String codeName = uriInfo.getQueryParameters().keySet().iterator().next();
+		String codeValue = uriInfo.getQueryParameters().getFirst(codeName);
+
+		if (SearchUtils.isBlank(codeValue)) {
+			return Response.status(Response.Status.BAD_REQUEST)
+					.entity("Value for request parameter " + codeName + " must be provided").build();
+		}
+
+		if (PARAM_EMAIL.equals(codeName)) {
+			response = contributorService.findByEmail(codeValue);
+		} else {
+			response = contributorService.findByTypeSpecificCode(codeName, codeValue);
+		}
+
 		return new ESDataOnlyResponse(response);
 	}
-
-	/*
-	 * // Commented out as there should be better implementation of it // as a part of
-	 * https://github.com/searchisko/searchisko/issues/5
-	 * 
-	 * @GET
-	 * 
-	 * @Path("/")
-	 * 
-	 * @Override
-	 * 
-	 * @GuestAllowed
-	 * 
-	 * @CORSSupport
-	 * 
-	 * @Produces(MediaType.APPLICATION_JSON) public Object getAll(@QueryParam("from") Integer from, @QueryParam("size")
-	 * Integer size) { return super.getAll(from, size); }
-	 * 
-	 * @GET
-	 * 
-	 * @Path("/{id}")
-	 * 
-	 * @Override
-	 * 
-	 * @GuestAllowed
-	 * 
-	 * @CORSSupport
-	 * 
-	 * @Produces(MediaType.APPLICATION_JSON) public Object get(@PathParam("id") String id) { return super.get(id); }
-	 */
 }

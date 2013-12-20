@@ -24,13 +24,13 @@ public class ProjectConverterTest {
 	public void testConvertToModel() throws IOException {
 		ProjectConverter converter = new ProjectConverter();
 		Map<String, Object> data = new HashMap<String, Object>();
-		data.put(ProjectService.CODE, "as7");
+		data.put(ProjectService.FIELD_CODE, "as7");
 		data.put("name", "AS 7");
 
 		Project p = converter.convertToModel("as7", data);
 
 		assertEquals("as7", p.getCode());
-		assertEquals("{\"name\":\"AS 7\",\"" + ProjectService.CODE + "\":\"as7\"}", p.getValue());
+		assertEquals("{\"name\":\"AS 7\",\"" + ProjectService.FIELD_CODE + "\":\"as7\"}", p.getValue());
 	}
 
 }

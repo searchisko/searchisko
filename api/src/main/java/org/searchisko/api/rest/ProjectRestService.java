@@ -98,9 +98,9 @@ public class ProjectRestService extends RestEntityServiceBase {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	public Object create(Map<String, Object> data) {
-		String codeFromData = (String) data.get(ProjectService.CODE);
+		String codeFromData = (String) data.get(ProjectService.FIELD_CODE);
 		if (codeFromData == null || codeFromData.isEmpty())
-			return Response.status(Status.BAD_REQUEST).entity("Required data field '" + ProjectService.CODE + "' not set")
+			return Response.status(Status.BAD_REQUEST).entity("Required data field '" + ProjectService.FIELD_CODE + "' not set")
 					.build();
 		return this.create(codeFromData, data);
 	}
@@ -115,14 +115,14 @@ public class ProjectRestService extends RestEntityServiceBase {
             throw new RequiredFieldException("id");
 		}
 
-		String codeFromData = (String) data.get(ProjectService.CODE);
+		String codeFromData = (String) data.get(ProjectService.FIELD_CODE);
 		if (codeFromData == null || codeFromData.isEmpty())
-			return Response.status(Status.BAD_REQUEST).entity("Required data field '" + ProjectService.CODE + "' not set")
+			return Response.status(Status.BAD_REQUEST).entity("Required data field '" + ProjectService.FIELD_CODE + "' not set")
 					.build();
 
 		if (!id.equals(codeFromData)) {
 			return Response.status(Status.BAD_REQUEST)
-					.entity("Code in URL must be same as '" + ProjectService.CODE + "' field in data.").build();
+					.entity("Code in URL must be same as '" + ProjectService.FIELD_CODE + "' field in data.").build();
 		}
 
 		entityService.create(id, data);

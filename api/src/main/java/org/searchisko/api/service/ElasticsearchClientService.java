@@ -30,10 +30,10 @@ import org.searchisko.api.model.AppConfiguration;
 /**
  * Common service for Elasticsearch client. It handles closing client (and node in embedded mode) so child doesn't need
  * to care of it.
- *
+ * 
  * @author Libor Krzyzanek
  * @author Vlastimil Elias (velias at redhat dot com)
- *
+ * 
  */
 public class ElasticsearchClientService {
 
@@ -45,7 +45,7 @@ public class ElasticsearchClientService {
 	 */
 	protected Node node;
 
-	public Client client;
+	protected Client client;
 
 	@Inject
 	protected AppConfigurationService appConfigurationService;
@@ -54,7 +54,7 @@ public class ElasticsearchClientService {
 	 * Prepare ES embedded Node.<br/>
 	 * Inspired by: https://github.com/jbossorg/elasticsearch-river-jira/blob/master/src/test
 	 * /java/org/jboss/elasticsearch/river/jira/testtools/ESRealClientTestBase.java
-	 *
+	 * 
 	 * @return Embedded node
 	 * @throws Exception
 	 */

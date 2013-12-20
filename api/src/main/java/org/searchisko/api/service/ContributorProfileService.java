@@ -13,14 +13,17 @@ import javax.ejb.Stateless;
 import javax.inject.Inject;
 import javax.inject.Named;
 
+import org.elasticsearch.action.search.SearchResponse;
 import org.searchisko.api.rest.security.ContributorAuthenticationInterceptor;
+import org.searchisko.api.util.SearchUtils;
 import org.searchisko.contribprofile.model.ContributorProfile;
 import org.searchisko.contribprofile.provider.Jive6ContributorProfileProvider;
 
 /**
- * Service for handling contributor profiles
+ * Service for handling 'Contributor profiles'.
  * 
  * @author Libor Krzyzanek
+ * @author Vlastimil Elias (velias at redhat dot com)
  */
 @Named
 @Stateless
@@ -32,6 +35,9 @@ public class ContributorProfileService {
 
 	@Inject
 	protected Jive6ContributorProfileProvider contributorProfileProvider;
+
+	@Inject
+	protected ContributorService contributorService;
 
 	/**
 	 * Get contributor id based on username and authentication method.
@@ -47,8 +53,29 @@ public class ContributorProfileService {
 	 */
 	public String getContributorId(String authenticationScheme, String username, boolean forceCreate) {
 		if (ContributorAuthenticationInterceptor.AUTH_METHOD_CAS.equals(authenticationScheme)) {
-			// TODO CONTRIBUTOR_PROFILE Search ContributorProfile in index just for contributor Id based on jboss.org
-			// username, use forceCreate here
+
+			SearchResponse sr = contributorService.findByTypeSpecificCode("jbossorg_username", username);
+			if (sr.getHits().getTotalHits() > 0) {
+				if (sr.getHits().getTotalHits() > 1) {
+					log.warning("Contributor configuration problem! We found more Contributor definitions for jbossorg_username="
+							+ username + ". For now we use first one, but problem should be resolved by administrator!");
+				}
+				String c = (String) sr.getHits().getHits()[0].getSource().get(ContributorService.FIELD_CODE);
+				if (SearchUtils.isBlank(c)) {
+					String msg = "Contributor configuration problem! 'code' field is emply for contributor id="
+							+ sr.getHits().getHits()[0].getId();
+					log.log(Level.WARNING, msg);
+					throw new IllegalArgumentException(msg);
+				}
+				return c;
+
+			}
+
+			if (!forceCreate)
+				return null;
+
+			// TODO CONTRIBUTOR_PROFILE download profile from jive and create Contributor and ContributorProfile records. Try
+			// to bind to existing Contributor using email addresses (do not create duplicity with same email address)!
 			return contributorProfileProvider.getProfile(username).getContributorId();
 		} else {
 			throw new IllegalArgumentException("Usernames from " + authenticationScheme + " are not supported");

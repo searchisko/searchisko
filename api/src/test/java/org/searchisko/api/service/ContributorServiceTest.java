@@ -17,15 +17,15 @@ import junit.framework.Assert;
 
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.Client;
+import org.junit.Test;
+import org.mockito.Mockito;
 import org.searchisko.api.rest.ESDataOnlyResponse;
 import org.searchisko.api.testtools.ESRealClientTestBase;
 import org.searchisko.persistence.service.EntityService;
-import org.junit.Test;
-import org.mockito.Mockito;
 
 /**
  * Unit test for {@link ContributorService}
- *
+ * 
  * @author Vlastimil Elias (velias at redhat dot com)
  */
 public class ContributorServiceTest extends ESRealClientTestBase {
@@ -36,8 +36,8 @@ public class ContributorServiceTest extends ESRealClientTestBase {
 
 		ContributorService ret = new ContributorService();
 		ret.entityService = Mockito.mock(EntityService.class);
-		ret.searchClientService = Mockito.mock(SearchClientService.class);
-		Mockito.when(ret.searchClientService.getClient()).thenReturn(client);
+		ret.searchClientService = new SearchClientService();
+		ret.searchClientService.client = client;
 		ret.log = Logger.getLogger("testlogger");
 		return ret;
 	}
@@ -137,6 +137,7 @@ public class ContributorServiceTest extends ESRealClientTestBase {
 		try {
 
 			// case - insert to noexisting index
+			indexDelete(ContributorService.SEARCH_INDEX_NAME);
 			{
 				Map<String, Object> entity = new HashMap<String, Object>();
 				entity.put("name", "v1");
@@ -181,6 +182,7 @@ public class ContributorServiceTest extends ESRealClientTestBase {
 		try {
 
 			// case - insert noexisting object to noexisting index
+			indexDelete(ContributorService.SEARCH_INDEX_NAME);
 			{
 				Map<String, Object> entity = new HashMap<String, Object>();
 				entity.put("name", "v1");
@@ -235,6 +237,7 @@ public class ContributorServiceTest extends ESRealClientTestBase {
 		try {
 
 			// case - insert noexisting object to noexisting index
+			indexDelete(ContributorService.SEARCH_INDEX_NAME);
 			{
 				Mockito.reset(tested.entityService);
 				Map<String, Object> entity = new HashMap<String, Object>();
@@ -291,6 +294,7 @@ public class ContributorServiceTest extends ESRealClientTestBase {
 		ContributorService tested = getTested(client);
 		try {
 
+			indexDelete(ContributorService.SEARCH_INDEX_NAME);
 			// case - delete from noexisting index
 			{
 				Mockito.reset(tested.entityService);
@@ -344,13 +348,14 @@ public class ContributorServiceTest extends ESRealClientTestBase {
 	}
 
 	@Test
-	public void search() throws Exception {
+	public void findByEmail() throws Exception {
 		Client client = prepareESClientForUnitTest();
 		ContributorService tested = getTested(client);
 		try {
 			// case - search from noexisting index
 			{
-				SearchResponse sr = tested.search("test@test.org");
+				indexDelete(ContributorService.SEARCH_INDEX_NAME);
+				SearchResponse sr = tested.findByEmail("test@test.org");
 				Assert.assertNull(sr);
 			}
 
@@ -358,7 +363,7 @@ public class ContributorServiceTest extends ESRealClientTestBase {
 			Thread.sleep(100);
 			// case - search from empty index
 			{
-				SearchResponse sr = tested.search("test@test.org");
+				SearchResponse sr = tested.findByEmail("test@test.org");
 				Assert.assertEquals(0, sr.getHits().getTotalHits());
 			}
 
@@ -371,13 +376,69 @@ public class ContributorServiceTest extends ESRealClientTestBase {
 			indexFlushAndRefresh(ContributorService.SEARCH_INDEX_NAME);
 			// case - search existing
 			{
-				SearchResponse sr = tested.search("test@test.org");
+				SearchResponse sr = tested.findByEmail("test@test.org");
 				Assert.assertEquals(1, sr.getHits().getTotalHits());
 				Assert.assertEquals("20", sr.getHits().getHits()[0].getId());
 
-				sr = tested.search("me@test.org");
+				sr = tested.findByEmail("me@test.org");
 				Assert.assertEquals(1, sr.getHits().getTotalHits());
 				Assert.assertEquals("10", sr.getHits().getHits()[0].getId());
+
+				sr = tested.findByEmail("me@test");
+				Assert.assertEquals(0, sr.getHits().getTotalHits());
+			}
+
+		} finally {
+			indexDelete(ContributorService.SEARCH_INDEX_NAME);
+			finalizeESClientForUnitTest();
+		}
+	}
+
+	private static final String CODE_NAME_1 = "code_type1";
+	private static final String CODE_NAME_2 = "code_type2";
+
+	@Test
+	public void findByTypeSpecificCode() throws InterruptedException {
+		Client client = prepareESClientForUnitTest();
+		ContributorService tested = getTested(client);
+		try {
+			// case - search from noexisting index
+			indexDelete(ContributorService.SEARCH_INDEX_NAME);
+			{
+				SearchResponse sr = tested.findByTypeSpecificCode(CODE_NAME_1, "test");
+				Assert.assertNull(sr);
+			}
+
+			tested.init();
+			Thread.sleep(100);
+			// case - search from empty index
+			{
+				SearchResponse sr = tested.findByTypeSpecificCode(CODE_NAME_2, "test");
+				Assert.assertEquals(0, sr.getHits().getTotalHits());
+			}
+
+			indexInsertDocument(ContributorService.SEARCH_INDEX_NAME, ContributorService.SEARCH_INDEX_TYPE, "10",
+					"{\"name\":\"test1\",\"idx\":\"1\",\"email\":\"me@test.org\""
+							+ ", \"type_specific_code\" : {\"code_type1\":\"test\",\"code_type2\":[\"ct2_1_1\",\"ct2_1_2\"]}" + "}");
+			indexInsertDocument(ContributorService.SEARCH_INDEX_NAME, ContributorService.SEARCH_INDEX_TYPE, "20",
+					"{\"name\":\"test2\",\"idx\":\"2\",\"email\":\"test@test.org\""
+							+ ", \"type_specific_code\" : {\"code_type1\":\"ct1_2\",\"code_type2\":[\"ct2_2_1\",\"test\"]}" + "}");
+			indexInsertDocument(ContributorService.SEARCH_INDEX_NAME, ContributorService.SEARCH_INDEX_TYPE, "30",
+					"{\"name\":\"test3\",\"idx\":\"3\",\"email\":\"he@test.org\""
+							+ ", \"type_specific_code\" : {\"code_type1\":\"ct1_3\",\"code_type2\":[\"ct2_3_1\",\"test_3_2\"]}" + "}");
+			indexFlushAndRefresh(ContributorService.SEARCH_INDEX_NAME);
+			// case - search existing
+			{
+				SearchResponse sr = tested.findByTypeSpecificCode(CODE_NAME_1, "test");
+				Assert.assertEquals(1, sr.getHits().getTotalHits());
+				Assert.assertEquals("10", sr.getHits().getHits()[0].getId());
+
+				sr = tested.findByTypeSpecificCode(CODE_NAME_2, "test");
+				Assert.assertEquals(1, sr.getHits().getTotalHits());
+				Assert.assertEquals("20", sr.getHits().getHits()[0].getId());
+
+				sr = tested.findByTypeSpecificCode(CODE_NAME_2, "te");
+				Assert.assertEquals(0, sr.getHits().getTotalHits());
 			}
 
 		} finally {

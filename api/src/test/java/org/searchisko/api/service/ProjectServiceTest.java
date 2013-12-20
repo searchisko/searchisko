@@ -16,15 +16,15 @@ import javax.ws.rs.core.StreamingOutput;
 import junit.framework.Assert;
 
 import org.elasticsearch.client.Client;
+import org.junit.Test;
+import org.mockito.Mockito;
 import org.searchisko.api.rest.ESDataOnlyResponse;
 import org.searchisko.api.testtools.ESRealClientTestBase;
 import org.searchisko.persistence.service.EntityService;
-import org.junit.Test;
-import org.mockito.Mockito;
 
 /**
  * Unit test for {@link ProjectService}
- *
+ * 
  * @author Vlastimil Elias (velias at redhat dot com)
  */
 public class ProjectServiceTest extends ESRealClientTestBase {
@@ -35,8 +35,8 @@ public class ProjectServiceTest extends ESRealClientTestBase {
 
 		ProjectService ret = new ProjectService();
 		ret.entityService = Mockito.mock(EntityService.class);
-		ret.searchClientService = Mockito.mock(SearchClientService.class);
-		Mockito.when(ret.searchClientService.getClient()).thenReturn(client);
+		ret.searchClientService = new SearchClientService();
+		ret.searchClientService.client = client;
 		ret.log = Logger.getLogger("testlogger");
 		return ret;
 	}

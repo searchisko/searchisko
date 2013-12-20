@@ -998,7 +998,7 @@ GET /rest/project{?from,size}
     {
       "id": "jbosstools",
       "data": {
-    		  "code": "jbosstools",
+			  "code": "jbosstools",
 			  "name": "JBoss Tools",
 			  "description" : "",
 			  "type_specific_code" : {
@@ -1060,12 +1060,24 @@ GET /rest/contributor/{id}
 < Content-Type: application/json
 {
   "code" : "John Doe <john@doe.org>",
-  "email" : ["john@doe.org", "john.doe@gmail.com"]
+  "email" : ["john@doe.org", "john.doe@gmail.com"],
+  "type_specific_code" : {
+    "jbossorg_username" : "jdoe",
+    "github_username" : "john.doe",
+    "jbossorg_blog": ["jbosstools.John Doe", "aerogear.John Doe"]
+  }
 }
 
-Search contributor configuration for given email address.
+Search contributor configuration by some of available identifiers.
 
-GET /rest/contributor/search?email={email}
+##### Request parameters
+
+Method expects one request parameter. Name of parameter is name of identifier you can search in. 
+It can be `email` or any other identifier type used in `type_specific_code` map of contributor definition (eg. `jbossorg_username`, `github_username` etc.).
+Value of parameter is then identifier value you can search for.   
+
+
+GET /rest/contributor/search?{idName}={idValue}
 < 200
 < Content-Type: application/json
 {

@@ -2,7 +2,7 @@ Contributor
 ===========
 
 Contributor configuration contains distinct information/identifiers used
-by preprocessors in 'Content Push API' to normalize project identifier 
+by preprocessors in 'Content Push API' to normalize contributor identifier 
 for `sys_contributors` field.
 
 It's managed over 'Management API - contributors'.
@@ -34,3 +34,9 @@ Example of contributor configuration:
 	    "jbossorg_blog": ["jbosstools.John Doe", "aerogear.John Doe"]
 	  }
 	}
+
+
+This information is not considered as public! If you have 
+to have some some public contributor informations (aka contributor profile), then simply create 
+necessary Content type and fill it with public contributor data. Searchisko has some support for this, 
+see issue #24 and [`contributor_info`](../content/contributor_info.md) content type.

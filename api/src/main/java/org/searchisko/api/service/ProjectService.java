@@ -18,11 +18,11 @@ import javax.ws.rs.core.StreamingOutput;
 import org.searchisko.persistence.service.EntityService;
 
 /**
- * Service related to project definitions
- *
+ * Service related to Project definitions.
+ * 
  * @author Libor Krzyzanek
  * @author Lukas Vlcek
- *
+ * @author Vlastimil Elias (velias at redhat dot com)
  */
 @Named
 @Stateless
@@ -32,7 +32,7 @@ public class ProjectService implements EntityService {
 	/**
 	 * Field in project definition with project code, used as unique ID
 	 */
-	public static final String CODE = "code";
+	public static final String FIELD_CODE = "code";
 
 	public static final String SEARCH_INDEX_NAME = "sys_projects";
 
@@ -65,13 +65,12 @@ public class ProjectService implements EntityService {
 
 	/**
 	 * Updates search index by current entity identified by id
-	 *
+	 * 
 	 * @param id
 	 * @param entity
 	 */
 	private void updateSearchIndex(String id, Map<String, Object> entity) {
-		searchClientService.getClient().prepareIndex(SEARCH_INDEX_NAME, SEARCH_INDEX_TYPE, id).setSource(entity).execute()
-				.actionGet();
+		searchClientService.performPut(SEARCH_INDEX_NAME, SEARCH_INDEX_TYPE, id, entity);
 	}
 
 	@Override
@@ -98,6 +97,6 @@ public class ProjectService implements EntityService {
 	@Override
 	public void delete(String id) {
 		entityService.delete(id);
-		searchClientService.getClient().prepareDelete(SEARCH_INDEX_NAME, SEARCH_INDEX_TYPE, id).execute().actionGet();
+		searchClientService.performDelete(SEARCH_INDEX_NAME, SEARCH_INDEX_TYPE, id);
 	}
 }
