@@ -140,6 +140,22 @@ public class ContributorService implements EntityService {
 	}
 
 	/**
+	 * Find contributor by <code>code</code> (unique id used in content).
+	 * 
+	 * @param code to search contributor for.
+	 * 
+	 * @return search result - should contain zero or one contributor only! Multiple contributors for one code is
+	 *         configuration problem!
+	 */
+	public SearchResponse findByCode(String code) {
+		try {
+			return searchClientService.performFilterByOneField(SEARCH_INDEX_NAME, SEARCH_INDEX_TYPE, FIELD_CODE, code);
+		} catch (IndexMissingException e) {
+			return null;
+		}
+	}
+
+	/**
 	 * Find contributor by email.
 	 * 
 	 * @param email address to search contributor for.

@@ -70,8 +70,7 @@ public class ContributorRestServiceTest {
 			Mockito.reset(tested.contributorService);
 			Mockito.when(tested.contributorService.findByTypeSpecificCode("idType", "idValue")).thenThrow(
 					new RuntimeException("test exception"));
-			TestUtils.assertResponseStatus(tested.search(prepareUriInfiWithParams("idType", "idValue")),
-					Status.INTERNAL_SERVER_ERROR);
+			tested.search(prepareUriInfiWithParams("idType", "idValue"));
 			Assert.fail("RuntimeException expected");
 		} catch (RuntimeException e) {
 			// OK
@@ -108,9 +107,45 @@ public class ContributorRestServiceTest {
 		try {
 			Mockito.reset(tested.contributorService);
 			Mockito.when(tested.contributorService.findByEmail("email@em")).thenThrow(new RuntimeException("test exception"));
-			TestUtils.assertResponseStatus(
-					tested.search(prepareUriInfiWithParams(ContributorRestService.PARAM_EMAIL, "email@em")),
-					Status.INTERNAL_SERVER_ERROR);
+			tested.search(prepareUriInfiWithParams(ContributorRestService.PARAM_EMAIL, "email@em"));
+			Assert.fail("RuntimeException expected");
+		} catch (RuntimeException e) {
+			// OK
+		}
+	}
+
+	@Test
+	public void search_byCode() throws Exception {
+		ContributorRestService tested = new ContributorRestService();
+		tested.contributorService = Mockito.mock(ContributorService.class);
+		RestEntityServiceBaseTest.mockLogger(tested);
+
+		// case - return from service OK, one result
+		{
+			SearchResponse sr = ESDataOnlyResponseTest.mockSearchResponse("ve", "email@em", null, null);
+			Mockito.when(tested.contributorService.findByCode("e j <email@em>")).thenReturn(sr);
+			StreamingOutput ret = (StreamingOutput) tested.search(prepareUriInfiWithParams(ContributorRestService.PARAM_CODE,
+					"e j <email@em>"));
+			TestUtils.assetStreamingOutputContent(
+					"{\"total\":1,\"hits\":[{\"id\":\"ve\",\"data\":{\"sys_name\":\"email@em\",\"sys_id\":\"ve\"}}]}", ret);
+		}
+
+		// case - return from service OK, no result
+		{
+			Mockito.reset(tested.contributorService);
+			SearchResponse sr = ESDataOnlyResponseTest.mockSearchResponse(null, null, null, null);
+			Mockito.when(tested.contributorService.findByCode("e j <email@em>")).thenReturn(sr);
+			StreamingOutput ret = (StreamingOutput) tested.search(prepareUriInfiWithParams(ContributorRestService.PARAM_CODE,
+					"e j <email@em>"));
+			TestUtils.assetStreamingOutputContent("{\"total\":0,\"hits\":[]}", ret);
+		}
+
+		// case - Exception from service
+		try {
+			Mockito.reset(tested.contributorService);
+			Mockito.when(tested.contributorService.findByCode("e j <email@em>")).thenThrow(
+					new RuntimeException("test exception"));
+			tested.search(prepareUriInfiWithParams(ContributorRestService.PARAM_CODE, "e j <email@em>"));
 			Assert.fail("RuntimeException expected");
 		} catch (RuntimeException e) {
 			// OK

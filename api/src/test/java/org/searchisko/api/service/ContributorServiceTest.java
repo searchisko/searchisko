@@ -348,6 +348,53 @@ public class ContributorServiceTest extends ESRealClientTestBase {
 	}
 
 	@Test
+	public void findByCode() throws Exception {
+		Client client = prepareESClientForUnitTest();
+		ContributorService tested = getTested(client);
+		try {
+			// case - search from noexisting index
+			{
+				indexDelete(ContributorService.SEARCH_INDEX_NAME);
+				SearchResponse sr = tested.findByCode("john doe <test@test.org>");
+				Assert.assertNull(sr);
+			}
+
+			tested.init();
+			Thread.sleep(100);
+			// case - search from empty index
+			{
+				SearchResponse sr = tested.findByCode("john doe <test@test.org>");
+				Assert.assertEquals(0, sr.getHits().getTotalHits());
+			}
+
+			indexInsertDocument(ContributorService.SEARCH_INDEX_NAME, ContributorService.SEARCH_INDEX_TYPE, "10",
+					"{\"code\":\"john doe 2 <test2@test.org>\",\"email\":\"test2@test.org\"}");
+			indexInsertDocument(ContributorService.SEARCH_INDEX_NAME, ContributorService.SEARCH_INDEX_TYPE, "20",
+					"{\"code\":\"john doe <test@test.org>\",\"email\":\"test@test.org\"}");
+			indexInsertDocument(ContributorService.SEARCH_INDEX_NAME, ContributorService.SEARCH_INDEX_TYPE, "30",
+					"{\"code\":\"paul doe <t@te.org>\",\"email\":\"te@te.org\"}");
+			indexFlushAndRefresh(ContributorService.SEARCH_INDEX_NAME);
+			// case - search existing
+			{
+				SearchResponse sr = tested.findByCode("john doe <test@test.org>");
+				Assert.assertEquals(1, sr.getHits().getTotalHits());
+				Assert.assertEquals("20", sr.getHits().getHits()[0].getId());
+
+				sr = tested.findByCode("john doe 2 <test2@test.org>");
+				Assert.assertEquals(1, sr.getHits().getTotalHits());
+				Assert.assertEquals("10", sr.getHits().getHits()[0].getId());
+
+				sr = tested.findByCode("jan doe <test@test.org>");
+				Assert.assertEquals(0, sr.getHits().getTotalHits());
+			}
+
+		} finally {
+			indexDelete(ContributorService.SEARCH_INDEX_NAME);
+			finalizeESClientForUnitTest();
+		}
+	}
+
+	@Test
 	public void findByEmail() throws Exception {
 		Client client = prepareESClientForUnitTest();
 		ContributorService tested = getTested(client);
@@ -368,11 +415,11 @@ public class ContributorServiceTest extends ESRealClientTestBase {
 			}
 
 			indexInsertDocument(ContributorService.SEARCH_INDEX_NAME, ContributorService.SEARCH_INDEX_TYPE, "10",
-					"{\"name\":\"test1\",\"idx\":\"1\",\"email\":\"me@test.org\"}");
+					"{\"code\":\"test1\",\"email\":\"me@test.org\"}");
 			indexInsertDocument(ContributorService.SEARCH_INDEX_NAME, ContributorService.SEARCH_INDEX_TYPE, "20",
-					"{\"name\":\"test2\",\"idx\":\"2\",\"email\":\"test@test.org\"}");
+					"{\"code\":\"test2\",\"email\":\"test@test.org\"}");
 			indexInsertDocument(ContributorService.SEARCH_INDEX_NAME, ContributorService.SEARCH_INDEX_TYPE, "30",
-					"{\"name\":\"test3\",\"idx\":\"3\",\"email\":\"he@test.org\"}");
+					"{\"code\":\"test3\",\"email\":\"he@test.org\"}");
 			indexFlushAndRefresh(ContributorService.SEARCH_INDEX_NAME);
 			// case - search existing
 			{
@@ -418,13 +465,13 @@ public class ContributorServiceTest extends ESRealClientTestBase {
 			}
 
 			indexInsertDocument(ContributorService.SEARCH_INDEX_NAME, ContributorService.SEARCH_INDEX_TYPE, "10",
-					"{\"name\":\"test1\",\"idx\":\"1\",\"email\":\"me@test.org\""
+					"{\"code\":\"test1\",\"email\":\"me@test.org\""
 							+ ", \"type_specific_code\" : {\"code_type1\":\"test\",\"code_type2\":[\"ct2_1_1\",\"ct2_1_2\"]}" + "}");
 			indexInsertDocument(ContributorService.SEARCH_INDEX_NAME, ContributorService.SEARCH_INDEX_TYPE, "20",
-					"{\"name\":\"test2\",\"idx\":\"2\",\"email\":\"test@test.org\""
+					"{\"code\":\"test2\",\"email\":\"test@test.org\""
 							+ ", \"type_specific_code\" : {\"code_type1\":\"ct1_2\",\"code_type2\":[\"ct2_2_1\",\"test\"]}" + "}");
 			indexInsertDocument(ContributorService.SEARCH_INDEX_NAME, ContributorService.SEARCH_INDEX_TYPE, "30",
-					"{\"name\":\"test3\",\"idx\":\"3\",\"email\":\"he@test.org\""
+					"{\"code\":\"test3\",\"email\":\"he@test.org\""
 							+ ", \"type_specific_code\" : {\"code_type1\":\"ct1_3\",\"code_type2\":[\"ct2_3_1\",\"test_3_2\"]}" + "}");
 			indexFlushAndRefresh(ContributorService.SEARCH_INDEX_NAME);
 			// case - search existing

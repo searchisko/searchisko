@@ -1073,8 +1073,8 @@ Search contributor configuration by some of available identifiers.
 ##### Request parameters
 
 Method expects one request parameter. Name of parameter is name of identifier you can search in. 
-It can be `email` or any other identifier type used in `type_specific_code` map of contributor definition (eg. `jbossorg_username`, `github_username` etc.).
-Value of parameter is then identifier value you can search for.   
+It may be `code`, `email` or any other identifier type used inside of `type_specific_code` map of contributor definition (eg. `jbossorg_username`, `github_username` etc.).
+Value of parameter is identifier value you can search for then.   
 
 
 GET /rest/contributor/search?{idName}={idValue}

@@ -26,7 +26,7 @@ import org.searchisko.api.util.SearchUtils;
  * Contributor REST API
  * 
  * @author Libor Krzyzanek
- * 
+ * @author Vlastimil Elias (velias at redhat dot com)
  */
 @RequestScoped
 @Path("/contributor")
@@ -34,6 +34,7 @@ import org.searchisko.api.util.SearchUtils;
 public class ContributorRestService extends RestEntityServiceBase {
 
 	public static final String PARAM_EMAIL = "email";
+	public static final String PARAM_CODE = "code";
 
 	@Inject
 	protected ContributorService contributorService;
@@ -63,7 +64,9 @@ public class ContributorRestService extends RestEntityServiceBase {
 					.entity("Value for request parameter " + codeName + " must be provided").build();
 		}
 
-		if (PARAM_EMAIL.equals(codeName)) {
+		if (PARAM_CODE.equals(codeName)) {
+			response = contributorService.findByCode(codeValue);
+		} else if (PARAM_EMAIL.equals(codeName)) {
 			response = contributorService.findByEmail(codeValue);
 		} else {
 			response = contributorService.findByTypeSpecificCode(codeName, codeValue);
