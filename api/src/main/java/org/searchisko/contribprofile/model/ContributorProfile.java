@@ -5,85 +5,75 @@
  */
 package org.searchisko.contribprofile.model;
 
+import java.util.List;
 import java.util.Map;
 
+import org.searchisko.api.util.SearchUtils;
+
 /**
- * Model object for Contributor Profile
- *
+ * Model object for Contributor Profile data readed from remote profile provider.
+ * 
  * @author Libor Krzyzanek
+ * @author Vlastimil Elias (velias at redhat dot com)
  */
 public class ContributorProfile {
 
-	/**
-	 * Contributor ID
-	 */
-	private String contributorId;
+	private String primaryEmail;
+
+	private String fullName;
+
+	private List<String> emails;
+
+	private Map<String, List<String>> typeSpecificCodes;
 
 	/**
-	 * jboss.org username
+	 * <code>contributor_profile</code> JSON data structure.
 	 */
-	private String jbossorgUsername;
+	private Map<String, Object> profileData;
 
-	/**
-	 * Jive profile data
-	 */
-	private Map<String, Object> jiveProfile;
-
-	public ContributorProfile(String contributorId, String jbossorgUsername) {
-		this.contributorId = contributorId;
-		this.jbossorgUsername = jbossorgUsername;
+	public ContributorProfile(String fullName, String primaryEmail, List<String> emails,
+			Map<String, List<String>> typeSpecificCodes) {
+		super();
+		fullName = SearchUtils.trimToNull(fullName);
+		primaryEmail = SearchUtils.trimToNull(primaryEmail);
+		if (fullName == null || primaryEmail == null)
+			throw new IllegalArgumentException("fullName and primaryEmail can't be null or empty");
+		if (emails == null || typeSpecificCodes == null)
+			throw new IllegalArgumentException("emails and typeSpecificCodes can't be null");
+		this.fullName = fullName;
+		this.primaryEmail = primaryEmail;
+		this.emails = emails;
+		this.typeSpecificCodes = typeSpecificCodes;
 	}
 
-	@Override
-	public boolean equals(Object o) {
-		if (this == o) return true;
-		if (o == null || getClass() != o.getClass()) return false;
-
-		ContributorProfile that = (ContributorProfile) o;
-
-		if (!contributorId.equals(that.contributorId)) return false;
-		if (!jbossorgUsername.equals(that.jbossorgUsername)) return false;
-
-		return true;
+	public Map<String, Object> getProfileData() {
+		return profileData;
 	}
 
-	@Override
-	public int hashCode() {
-		int result = contributorId.hashCode();
-		result = 31 * result + jbossorgUsername.hashCode();
-		return result;
+	public void setProfileData(Map<String, Object> profileData) {
+		this.profileData = profileData;
+	}
+
+	public String getPrimaryEmail() {
+		return primaryEmail;
+	}
+
+	public String getFullName() {
+		return fullName;
+	}
+
+	public List<String> getEmails() {
+		return emails;
+	}
+
+	public Map<String, List<String>> getTypeSpecificCodes() {
+		return typeSpecificCodes;
 	}
 
 	@Override
 	public String toString() {
-		return "ContributorProfile{" +
-				"contributorId='" + contributorId + '\'' +
-				", jbossorgUsername='" + jbossorgUsername + '\'' +
-				", jiveProfile=" + jiveProfile +
-				'}';
+		return "ContributorProfile [primaryEmail=" + primaryEmail + ", fullName=" + fullName + ", emails=" + emails
+				+ ", typeSpecificCodes=" + typeSpecificCodes + ", profileData=" + profileData + "]";
 	}
 
-	public String getContributorId() {
-		return contributorId;
-	}
-
-	public void setContributorId(String contributorId) {
-		this.contributorId = contributorId;
-	}
-
-	public String getJbossorgUsername() {
-		return jbossorgUsername;
-	}
-
-	public void setJbossorgUsername(String jbossorgUsername) {
-		this.jbossorgUsername = jbossorgUsername;
-	}
-
-	public Map<String, Object> getJiveProfile() {
-		return jiveProfile;
-	}
-
-	public void setJiveProfile(Map<String, Object> jiveProfile) {
-		this.jiveProfile = jiveProfile;
-	}
 }

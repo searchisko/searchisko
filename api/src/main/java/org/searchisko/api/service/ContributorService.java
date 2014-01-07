@@ -20,6 +20,7 @@ import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.indices.IndexMissingException;
 import org.searchisko.api.util.Resources;
+import org.searchisko.api.util.SearchUtils;
 import org.searchisko.persistence.service.EntityService;
 
 /**
@@ -187,6 +188,23 @@ public class ContributorService implements EntityService {
 		} catch (IndexMissingException e) {
 			return null;
 		}
+	}
+
+	/**
+	 * Create contributor ID from user related informations.
+	 * 
+	 * @param fullName of user
+	 * @param email primary email of user
+	 * @return contributor id
+	 */
+	public static String createContributorId(String fullName, String email) {
+		fullName = SearchUtils.trimToNull(fullName);
+		if (fullName == null)
+			throw new IllegalArgumentException("fullName can't be empty");
+		email = SearchUtils.trimToNull(email);
+		if (email == null)
+			throw new IllegalArgumentException("email can't be empty");
+		return fullName + " <" + email.toLowerCase() + ">";
 	}
 
 }

@@ -54,7 +54,7 @@ throw 'allowIllegalResourceCall is false.';
       "value" : "",
       "jive_label" : "MSN Messenger"
     }, {
-      "value" : "lkrzyzanek",
+      "value" : "lkrzyzanek-ght",
       "jive_label" : "github Username"
     } ],
     "external" : false,
@@ -77,6 +77,11 @@ throw 'allowIllegalResourceCall is false.';
     "type" : "work",
     "jive_label" : "Email",
     "primary" : true
+  },{
+    "value" : "fake2@fake.com",
+    "type" : "work",
+    "jive_label" : "Email",
+    "primary" : false
   } ],
   "photos" : [ {
     "value" : "https://community.jboss.org/api/core/v3/people/6100/images/1/data"

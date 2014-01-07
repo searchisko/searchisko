@@ -102,7 +102,7 @@ public class AuthenticationUtilService {
 					contributorProfileService.createOrUpdateProfile(securityContext.getAuthenticationScheme(), uname);
 				}
 			} catch (Exception e) {
-				log.log(Level.WARNING, "Contributor profile update failed", e);
+				log.log(Level.WARNING, "Contributor profile update failed: " + e.getMessage(), e);
 			}
 		}
 	}

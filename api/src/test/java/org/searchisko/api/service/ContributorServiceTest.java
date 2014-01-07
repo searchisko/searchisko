@@ -30,6 +30,52 @@ import org.searchisko.persistence.service.EntityService;
  */
 public class ContributorServiceTest extends ESRealClientTestBase {
 
+	@Test
+	public void createContributorId() {
+
+		Assert.assertEquals("full name <email>", ContributorService.createContributorId("full name", "email"));
+		// trim
+		Assert.assertEquals("full Name <email>", ContributorService.createContributorId("full Name ", " email "));
+		// email to lower case
+		Assert.assertEquals("full Name <email>", ContributorService.createContributorId("full Name ", " eMail "));
+		try {
+			ContributorService.createContributorId(null, "email");
+			Assert.fail("IllegalArgumentException expected");
+		} catch (IllegalArgumentException e) {
+		}
+
+		try {
+			ContributorService.createContributorId("", "email");
+			Assert.fail("IllegalArgumentException expected");
+		} catch (IllegalArgumentException e) {
+		}
+
+		try {
+			ContributorService.createContributorId("  ", "email");
+			Assert.fail("IllegalArgumentException expected");
+		} catch (IllegalArgumentException e) {
+		}
+
+		try {
+			ContributorService.createContributorId("full name", null);
+			Assert.fail("IllegalArgumentException expected");
+		} catch (IllegalArgumentException e) {
+		}
+
+		try {
+			ContributorService.createContributorId("full name", "");
+			Assert.fail("IllegalArgumentException expected");
+		} catch (IllegalArgumentException e) {
+		}
+
+		try {
+			ContributorService.createContributorId("full name", "  ");
+			Assert.fail("IllegalArgumentException expected");
+		} catch (IllegalArgumentException e) {
+		}
+
+	}
+
 	private ContributorService getTested(Client client) {
 		if (client == null)
 			client = Mockito.mock(Client.class);

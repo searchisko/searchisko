@@ -154,17 +154,17 @@ public class ReindexingTaskFactory implements TaskFactory {
 		if (val instanceof Collection) {
 			for (Object o : ((Collection<?>) val)) {
 				if (o != null) {
-					addToHash(ret, o.toString());
+					addToSet(ret, o.toString());
 				}
 			}
 		} else if (val instanceof String[]) {
 			for (String o : (String[]) val) {
 				if (o != null) {
-					addToHash(ret, o);
+					addToSet(ret, o);
 				}
 			}
 		} else {
-			addToHash(ret, val.toString());
+			addToSet(ret, val.toString());
 		}
 
 		if (ret.isEmpty())
@@ -173,7 +173,7 @@ public class ReindexingTaskFactory implements TaskFactory {
 		return ret.toArray(new String[ret.size()]);
 	}
 
-	private void addToHash(Set<String> ret, String string) {
+	private void addToSet(Set<String> ret, String string) {
 		if (string != null) {
 			string = string.trim();
 			if (!string.isEmpty()) {
