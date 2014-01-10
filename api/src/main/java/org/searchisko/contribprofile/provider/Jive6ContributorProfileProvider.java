@@ -133,15 +133,18 @@ public class Jive6ContributorProfileProvider implements ContributorProfileProvid
 	protected final String JIVE_PROFILE_NAME_KEY = "jive_label";
 	protected final String JIVE_PROFILE_VALUE_KEY = "value";
 
+	@SuppressWarnings("unchecked")
 	protected Map<String, Object> mapProfileData(Map<String, Object> map, Map<String, Object> jiveObject) {
 		Map<String, Object> profileData = new LinkedHashMap<>();
+
+		Object username = jiveObject.get("username");
 
 		profileData.put(ContentObjectFields.SYS_CONTENT_PROVIDER, "jbossorg");
 		profileData.put(ContentObjectFields.SYS_TYPE, "contribprofile");
 		profileData.put(ContentObjectFields.SYS_CONTENT_TYPE, "jbossorg_contribprofile");
 
-		profileData.put("id", "jbossorg_contribprofile-" + jiveObject.get("username"));
-		profileData.put(ContentObjectFields.SYS_ID, "jbossorg_contribprofile-" + jiveObject.get("username"));
+		profileData.put("id", "jbossorg_contribprofile-" + username);
+		profileData.put(ContentObjectFields.SYS_ID, "jbossorg_contribprofile-" + username);
 
 
 		profileData.put("name", map.get("name"));
@@ -157,9 +160,13 @@ public class Jive6ContributorProfileProvider implements ContributorProfileProvid
 		profileData.put(ContentObjectFields.SYS_UPDATED, map.get("updated"));
 
 		Map<String, Object> resourcesObject = (Map<String, Object>) map.get("resources");
-		String profileUrl = ((Map<String, Object>) resourcesObject.get("html")).get("ref").toString();
-		profileData.put("profileUrl", profileUrl);
-		profileData.put("sys_url_view", profileUrl);
+		try {
+			String profileUrl = ((Map<String, Object>) resourcesObject.get("html")).get("ref").toString();
+			profileData.put("profileUrl", profileUrl);
+			profileData.put("sys_url_view", profileUrl);
+		} catch (Exception e) {
+			log.log(Level.WARNING, "Cannot get profile URL for usrname: {0}", username);
+		}
 
 		profileData.put("timeZone", jiveObject.get("timeZone"));
 
