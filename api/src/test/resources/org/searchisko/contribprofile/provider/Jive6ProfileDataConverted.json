@@ -3,9 +3,10 @@
 	"sys_type": "contribprofile",
 	"sys_content_type": "jbossorg_contribprofile",
 
-	"id": "Libor Krzyzanek <fake@fake.com>",
-	"sys_id": "Libor Krzyzanek <fake@fake.com>",
+	"id": "jbossorg_contribprofile-lkrzyzanek",
+	"sys_id": "jbossorg_contribprofile-lkrzyzanek",
 
+	"sys_contributors": ["Libor Krzyzanek <fake@fake.com>"],
 
 	"name": {
 		"givenName": "Libor",
@@ -17,39 +18,36 @@
 	"tags": [ "jboss.org", "sbs" ],
 	"sys_tags": [ "jboss.org", "sbs" ],
 
-	"aboutMe": "BIO",
-	"sys_description": "BIO",
-
-
 	"published": "2009-01-13T05:00:00.000+0000",
 	"sys_created": "2009-01-13T05:00:00.000+0000",
-
 
 	"updated": "2013-12-03T13:06:37.972+0000",
 	"sys_updated": "2013-12-03T13:06:37.972+0000",
 
-	"thumbnailUrl": "https://community.jboss.org/people/lkrzyzanek/avatar/46.png",
 
-
-	"sys_url_view": "https://community.jboss.org/people/lkrzyzanek",
 	"profileUrl": "https://community.jboss.org/people/lkrzyzanek",
+	"sys_url_view": "https://community.jboss.org/people/lkrzyzanek",
+
+	"timeZone": "Europe/Berlin",
+
+	"thumbnailUrl": "https://community.jboss.org/api/core/v3/people/6100/avatar",
+
+
+	"aboutMe": "BIO",
+	"sys_description": "BIO",
 
 	"accounts": [
 		{
-			"domain": "twitter.com",
-			"username": "aaa"
+			"domain": "github.com",
+			"username": "lkrzyzanek-ght"
 		},
 		{
-			"domain": "google.com",
-			"username": "bbb"
+			"domain": "twitter.com",
+			"username": "lkrzyzanek-twitter"
 		},
 		{
 			"domain": "facebook.com",
-			"username": "ccc"
-		},
-		{
-			"domain": "linkedin.com",
-			"username": "ddd"
+			"username": "lkrzyzanek-facebook"
 		}
 	]
 

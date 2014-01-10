@@ -56,6 +56,12 @@ throw 'allowIllegalResourceCall is false.';
     }, {
       "value" : "lkrzyzanek-ght",
       "jive_label" : "github Username"
+    }, {
+      "value" : "lkrzyzanek-twitter",
+      "jive_label" : "Twitter Username"
+    }, {
+      "value" : "lkrzyzanek-facebook",
+      "jive_label" : "Facebook Username"
     } ],
     "external" : false,
     "visible" : true,

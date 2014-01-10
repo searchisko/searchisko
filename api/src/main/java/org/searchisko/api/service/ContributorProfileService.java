@@ -5,6 +5,9 @@
  */
 package org.searchisko.api.service;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -14,6 +17,7 @@ import javax.inject.Inject;
 import javax.inject.Named;
 
 import org.elasticsearch.action.search.SearchResponse;
+import org.searchisko.api.ContentObjectFields;
 import org.searchisko.api.rest.security.ContributorAuthenticationInterceptor;
 import org.searchisko.api.util.SearchUtils;
 import org.searchisko.contribprofile.model.ContributorProfile;
@@ -21,7 +25,7 @@ import org.searchisko.contribprofile.provider.Jive6ContributorProfileProvider;
 
 /**
  * Service for handling 'Contributor profiles'.
- * 
+ *
  * @author Libor Krzyzanek
  * @author Vlastimil Elias (velias at redhat dot com)
  */
@@ -44,7 +48,7 @@ public class ContributorProfileService {
 
 	/**
 	 * Get contributor id based on username and authentication method.
-	 * 
+	 *
 	 * @param authenticationScheme we pass username for. This allows to use more authentication methods for contributors
 	 *          to be used in same time. You can see {@link ContributorAuthenticationInterceptor} for possible values.
 	 * @param username of contributor in passed in <code>authenticationScheme</code> to get profile for
@@ -85,7 +89,7 @@ public class ContributorProfileService {
 
 	/**
 	 * Create or Update contributor profile based on username and authentication method.
-	 * 
+	 *
 	 * @param authenticationScheme we pass username for. This allows to use more authentication methods for contributors
 	 *          to be used in same time. You can see {@link ContributorAuthenticationInterceptor} for possible values.
 	 * @param username of contributor in passed in <code>authenticationScheme</code> to get profile for
@@ -96,7 +100,7 @@ public class ContributorProfileService {
 		if (ContributorAuthenticationInterceptor.AUTH_METHOD_CAS.equals(authenticationScheme)) {
 
 			// TODO CONTRIBUTOR_PROFILE we call this method when user successfully authenticate which may be rather often. So
-			// perform profile update only once a time (store last update timestamp in profile and use it).
+			// perform profile update only once a time (store last update timestamp in profile's field sys_updated and use it).
 
 			ContributorProfile profile = contributorProfileProvider.getProfile(username);
 			if (profile == null) {
@@ -108,6 +112,12 @@ public class ContributorProfileService {
 					username);
 
 			// TODO CONTRIBUTOR_PROFILE create and insert contributor_profile document into search index
+
+			Map<String, Object> profileData = profile.getProfileData();
+			List<String> contributors = new ArrayList<>(1);
+			contributors.add(contributorId);
+
+			profileData.put(ContentObjectFields.SYS_CONTRIBUTORS, contributors);
 
 			return contributorId;
 		} else {

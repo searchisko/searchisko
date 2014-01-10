@@ -5,21 +5,6 @@
  */
 package org.searchisko.contribprofile.provider;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
-import javax.ejb.LocalBean;
-import javax.ejb.Stateless;
-import javax.inject.Inject;
-import javax.inject.Named;
-
 import org.apache.http.HttpResponse;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.methods.HttpGet;
@@ -28,14 +13,26 @@ import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.util.EntityUtils;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.type.TypeReference;
+import org.searchisko.api.ContentObjectFields;
 import org.searchisko.api.service.ContributorProfileService;
 import org.searchisko.api.util.SearchUtils;
 import org.searchisko.contribprofile.model.ContributorProfile;
 
+import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
+import javax.ejb.LocalBean;
+import javax.ejb.Stateless;
+import javax.inject.Inject;
+import javax.inject.Named;
+import java.io.IOException;
+import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 /**
  * Jive 6 implementation of Contributor Provider. <br/>
  * Documentation for Jive 6 REST API: https://developers.jivesoftware.com/api/v3/rest/PersonService.html
- * 
+ *
  * @author Libor Krzyzanek
  * @author Vlastimil Elias (velias at redhat dot com)
  */
@@ -127,17 +124,84 @@ public class Jive6ContributorProfileProvider implements ContributorProfileProvid
 		ContributorProfile profile = new ContributorProfile((String) nameObject.get("formatted"),
 				getPrimaryEmail(emailsObject), getEmails(emailsObject), typeSpecificCodes);
 
-		// TODO CONTRIBUTOR_PROFILE map jive profile structure to the Searchisko contributor profile structure
-		profile.setProfileData(jiveObject);
+		Map<String, Object> profileData = mapProfileData(map, jiveObject);
+		profile.setProfileData(profileData);
 
 		return profile;
 	}
 
+	protected final String JIVE_PROFILE_NAME_KEY = "jive_label";
+	protected final String JIVE_PROFILE_VALUE_KEY = "value";
+
+	protected Map<String, Object> mapProfileData(Map<String, Object> map, Map<String, Object> jiveObject) {
+		Map<String, Object> profileData = new LinkedHashMap<>();
+
+		profileData.put(ContentObjectFields.SYS_CONTENT_PROVIDER, "jbossorg");
+		profileData.put(ContentObjectFields.SYS_TYPE, "contribprofile");
+		profileData.put(ContentObjectFields.SYS_CONTENT_TYPE, "jbossorg_contribprofile");
+
+		profileData.put("id", "jbossorg_contribprofile-" + jiveObject.get("username"));
+		profileData.put(ContentObjectFields.SYS_ID, "jbossorg_contribprofile-" + jiveObject.get("username"));
+
+
+		profileData.put("name", map.get("name"));
+		profileData.put("displayName", map.get("displayName"));
+
+		profileData.put(ContentObjectFields.TAGS, map.get("tags"));
+		profileData.put(ContentObjectFields.SYS_TAGS, map.get("tags"));
+
+		profileData.put("published", map.get("published"));
+		profileData.put(ContentObjectFields.SYS_CREATED, map.get("published"));
+
+		profileData.put("updated", map.get("updated"));
+		profileData.put(ContentObjectFields.SYS_UPDATED, map.get("updated"));
+
+		Map<String, Object> resourcesObject = (Map<String, Object>) map.get("resources");
+		String profileUrl = ((Map<String, Object>) resourcesObject.get("html")).get("ref").toString();
+		profileData.put("profileUrl", profileUrl);
+		profileData.put("sys_url_view", profileUrl);
+
+		profileData.put("timeZone", jiveObject.get("timeZone"));
+
+		profileData.put("thumbnailUrl", map.get("thumbnailUrl"));
+
+		List<Map<String, Object>> accounts = new ArrayList<>();
+
+		List<Map<String, Object>> jiveProfile = (List<Map<String, Object>>) jiveObject.get("profile");
+		for (Map<String, Object> p : jiveProfile) {
+			switch ((String) p.get(JIVE_PROFILE_NAME_KEY)) {
+				case "Biography":
+					profileData.put("aboutMe", p.get(JIVE_PROFILE_VALUE_KEY));
+					profileData.put("sys_description", p.get(JIVE_PROFILE_VALUE_KEY));
+					break;
+				case "Twitter Username":
+					accounts.add(getAccountObject("twitter.com", p.get(JIVE_PROFILE_VALUE_KEY)));
+					break;
+				case "github Username":
+					accounts.add(getAccountObject("github.com", p.get(JIVE_PROFILE_VALUE_KEY)));
+					break;
+				case "Facebook Username":
+					accounts.add(getAccountObject("facebook.com", p.get(JIVE_PROFILE_VALUE_KEY)));
+					break;
+			}
+		}
+		profileData.put("accounts", accounts);
+
+		return profileData;
+	}
+
+	protected Map<String, Object> getAccountObject(String domainName, Object value) {
+		Map<String, Object> a = new HashMap<>(2);
+		a.put("domain", domainName);
+		a.put("username", value);
+		return a;
+	}
+
 	/**
 	 * Safe getter for <code>jive.profile</code> field value.
-	 * 
+	 *
 	 * @param jiveObject to get profile value from
-	 * @param jiveLabel <code>jive_label</code> for profile field value we can obtain
+	 * @param jiveLabel  <code>jive_label</code> for profile field value we can obtain
 	 * @return profile field value or null
 	 */
 	@SuppressWarnings("unchecked")
@@ -148,8 +212,8 @@ public class Jive6ContributorProfileProvider implements ContributorProfileProvid
 			List<Map<String, Object>> profileObject = (List<Map<String, Object>>) jiveObject.get("profile");
 			if (profileObject != null) {
 				for (Map<String, Object> profileItem : profileObject) {
-					if (jiveLabel.equals(profileItem.get("jive_label"))) {
-						return (String) profileItem.get("value");
+					if (jiveLabel.equals(profileItem.get(JIVE_PROFILE_NAME_KEY))) {
+						return (String) profileItem.get(JIVE_PROFILE_VALUE_KEY);
 					}
 				}
 			}
@@ -161,7 +225,7 @@ public class Jive6ContributorProfileProvider implements ContributorProfileProvid
 
 	/**
 	 * Get list of email addresses from JIVE profile <code>emails</code> structure.
-	 * 
+	 *
 	 * @param emailsObject JIVE profile <code>emails</code> structure
 	 * @return list of emails. never null.
 	 */
@@ -180,9 +244,10 @@ public class Jive6ContributorProfileProvider implements ContributorProfileProvid
 
 	/**
 	 * @param typeSpecificCodes structure to add code into
-	 * @param fieldTcsName name of Type Specific Code to add
-	 * @param value of code. May be null or empty - ignored in this case.
+	 * @param fieldTcsName      name of Type Specific Code to add
+	 * @param value             of code. May be null or empty - ignored in this case.
 	 */
+
 	protected void addTypeSpecificCode(Map<String, List<String>> typeSpecificCodes, String fieldTcsName, String value) {
 		value = SearchUtils.trimToNull(value);
 		if (value != null) {
@@ -198,7 +263,7 @@ public class Jive6ContributorProfileProvider implements ContributorProfileProvid
 
 	/**
 	 * Get primary email address from JIVE profile <code>emails</code> structure.
-	 * 
+	 *
 	 * @param emailsObject JIVE profile <code>emails</code> structure.
 	 * @return primary emaill address or null if not found
 	 */

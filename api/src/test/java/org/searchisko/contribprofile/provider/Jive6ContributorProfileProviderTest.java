@@ -5,22 +5,26 @@
  */
 package org.searchisko.contribprofile.provider;
 
+import org.apache.commons.io.IOUtils;
+import org.junit.Assert;
+import org.junit.Test;
+import org.searchisko.api.ContentObjectFields;
+import org.searchisko.api.service.ContributorProfileService;
+import org.searchisko.api.service.ContributorService;
+import org.searchisko.api.testtools.TestUtils;
+import org.searchisko.contribprofile.model.ContributorProfile;
+
 import java.io.InputStream;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
-import org.apache.commons.io.IOUtils;
-import org.junit.Assert;
-import org.junit.Test;
-import org.searchisko.api.service.ContributorProfileService;
-import org.searchisko.contribprofile.model.ContributorProfile;
-
 /**
  * Unit test for {@link Jive6ContributorProfileProvider}.
- * 
+ *
  * @author Libor Krzyzanek
  * @author Vlastimil Elias (velias at redhat dot com)
  */
@@ -71,12 +75,21 @@ public class Jive6ContributorProfileProviderTest {
 		Assert.assertTrue(profile.getEmails().contains("fake@fake.com"));
 		Assert.assertTrue(profile.getEmails().contains("fake2@fake.com"));
 
-		List<Map<String, Object>> jiveProfile = (List<Map<String, Object>>) profile.getProfileData().get("profile");
-		for (Map<String, Object> p : jiveProfile) {
-			if (p.get("jive_label").equals("Biography")) {
-				Assert.assertEquals("BIO", p.get("value"));
-			}
-		}
+
+		// TEST Contributor Profile
+		Map<String, Object> contributorProfile = profile.getProfileData();
+
+		// It's needed to manually add contributor ID because it's added in ContributorProfileService
+		Map<String, Object> profileData = profile.getProfileData();
+		List<String> contributors = new ArrayList<>(1);
+		contributors.add(ContributorService.createContributorId(profile.getFullName(), profile.getPrimaryEmail()));
+
+		profileData.put(ContentObjectFields.SYS_CONTRIBUTORS, contributors);
+
+		StringWriter stringWriter = new StringWriter();
+		IOUtils.copy(Jive6ContributorProfileProviderTest.class.getResourceAsStream("Jive6ProfileDataConverted.json"), stringWriter, "UTF-8");
+		String expectedString = stringWriter.toString();
+		TestUtils.assertJsonContent(expectedString, contributorProfile);
 	}
 
 	@Test
