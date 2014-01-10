@@ -104,8 +104,8 @@ public class ContributorProfileService {
 				return null;
 			}
 
-			String contributorId = contributorService.createOrUpdateFromProfile(profile,
-					FIELD_TSC_JBOSSORG_USERNAME, username);
+			String contributorId = contributorService.createOrUpdateFromProfile(profile, FIELD_TSC_JBOSSORG_USERNAME,
+					username);
 
 			// TODO CONTRIBUTOR_PROFILE create and insert contributor_profile document into search index
 
@@ -114,6 +114,10 @@ public class ContributorProfileService {
 			throw new IllegalArgumentException("Usernames from " + authenticationScheme + " are not supported");
 		}
 
+	}
+
+	public void deleteByContributorCode(String code) {
+		// TODO CONTRIBUTOR_PROFILE implement profile deletion
 	}
 
 }

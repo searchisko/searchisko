@@ -81,6 +81,9 @@ public class ContributorService implements EntityService {
 	@Inject
 	protected TaskService taskService;
 
+	@Inject
+	protected ContributorProfileService contributorProfileService;
+
 	@PostConstruct
 	public void init() {
 		try {
@@ -239,8 +242,8 @@ public class ContributorService implements EntityService {
 		SearchResponse srById = findByCode(contributorCode);
 		if (srById.getHits().getTotalHits() > 0) {
 			if (srById.getHits().getTotalHits() > 1) {
-				log.warning("Contributor configuration problem! We found more Contributor definitions for code=" + contributorCode
-						+ ". For now we use first one, but problem should be resolved by administrator!");
+				log.warning("Contributor configuration problem! We found more Contributor definitions for code="
+						+ contributorCode + ". For now we use first one, but problem should be resolved by administrator!");
 			}
 			contributorById = srById.getHits().getHits()[0];
 		}
@@ -253,13 +256,14 @@ public class ContributorService implements EntityService {
 		if (contributorById != null && contributorByTsc != null) {
 			contributorEntityId = contributorById.getId();
 			contributorEntityContent = contributorById.getSource();
-			String ciFromTsc = getContributorCode(contributorByTsc.getSource());
-			if (!contributorCode.equals(ciFromTsc)) {
-				log.info("Contributor duplicity detected. We are going to merge contributor '" + ciFromTsc
+			String contributorCodeFromTsc = getContributorCode(contributorByTsc.getSource());
+			if (!contributorCode.equals(contributorCodeFromTsc)) {
+				log.info("Contributor duplicity detected. We are going to merge contributor '" + contributorCodeFromTsc
 						+ "' into contributor '" + contributorCode + "'");
-				toRenormalizeContributorIds.add(ciFromTsc);
-				// TODO CONTRIBUTOR_PROFILE merge data from contributorByTsc into contributorEntityContent
+				toRenormalizeContributorIds.add(contributorCodeFromTsc);
+				mergeContributorData(contributorEntityContent, contributorByTsc.getSource());
 				delete(contributorByTsc.getId());
+				contributorProfileService.deleteByContributorCode(contributorCodeFromTsc);
 			}
 		} else if (contributorById == null && contributorByTsc != null) {
 			contributorCode = getContributorCode(contributorByTsc.getSource());
@@ -297,6 +301,57 @@ public class ContributorService implements EntityService {
 
 		return contributorCode;
 
+	}
+
+	protected void mergeContributorData(Map<String, Object> mergeTo, Map<String, Object> mergeFrom) {
+		if (mergeFrom == null || mergeTo == null)
+			return;
+		mergeFrom.remove(FIELD_CODE);
+		mergeMaps(mergeFrom, mergeTo);
+	}
+
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	protected void mergeMaps(Map<String, Object> mergeFrom, Map<String, Object> mergeTo) {
+		if (mergeFrom == null || mergeTo == null)
+			return;
+		for (String key : mergeFrom.keySet()) {
+			Object oFrom = mergeFrom.get(key);
+			if (oFrom == null)
+				continue;
+			Object oTo = mergeTo.get(key);
+			if (oTo == null) {
+				mergeTo.put(key, oFrom);
+			} else {
+				if (oTo instanceof List) {
+					if (oFrom instanceof List) {
+						((List) oTo).addAll((List) oFrom);
+					} else {
+						((List) oTo).add(oFrom);
+					}
+				} else if (oTo instanceof Map) {
+					if (oFrom instanceof Map) {
+						mergeMaps((Map<String, Object>) oFrom, (Map<String, Object>) oTo);
+					} else {
+						// TODO which key to use here? Or do not add at all?
+						if (!((Map) oTo).containsKey(key)) {
+							((Map) oTo).put(key, oFrom);
+						} else {
+							log.fine("can't merge");
+						}
+					}
+				} else {
+					if (oFrom instanceof List) {
+						((List) oFrom).add(oTo);
+						mergeTo.put(key, oFrom);
+					} else if (oFrom instanceof Map) {
+						// TODO how to solve this? add oTo value into oFrom or ignore?
+					} else {
+						log.fine("can't merge value for key " + key
+								+ " because it is simple value in bot source and target structure, se we keep source value there");
+					}
+				}
+			}
+		}
 	}
 
 	private SearchHit findOneByTypeSpecificCode(String typeSpecificCodeField, String typeSpecificCode, String expectedCode) {
