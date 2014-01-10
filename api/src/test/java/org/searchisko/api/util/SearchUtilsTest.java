@@ -20,7 +20,7 @@ import org.junit.Test;
 import org.searchisko.api.testtools.TestUtils;
 
 /**
- * Unit test for {@link SearchUtils}
+ * Unit test for {@link SearchUtils}.
  * 
  * @author Vlastimil Elias (velias at redhat dot com)
  */
@@ -55,32 +55,6 @@ public class SearchUtilsTest {
 
 		Assert.assertEquals(1361390410123l, SearchUtils.dateFromISOString("2013-02-20T20:00:10.123Z", false).getTime());
 
-	}
-
-	@Test
-	public void extractContributorName() {
-		Assert.assertNull(SearchUtils.extractContributorName(null));
-		Assert.assertNull(SearchUtils.extractContributorName(""));
-
-		// no email present
-		Assert.assertEquals("John Doe", SearchUtils.extractContributorName("John Doe"));
-		Assert.assertEquals("John Doe", SearchUtils.extractContributorName(" John Doe "));
-		Assert.assertEquals("John > Doe", SearchUtils.extractContributorName("John > Doe"));
-		Assert.assertEquals("John < Doe", SearchUtils.extractContributorName("John < Doe"));
-		Assert.assertEquals("John Doe <", SearchUtils.extractContributorName("John Doe <"));
-		Assert.assertEquals("John Doe >", SearchUtils.extractContributorName("John Doe >"));
-		Assert.assertEquals("John >< Doe", SearchUtils.extractContributorName("John >< Doe"));
-
-		// remove email
-		Assert.assertEquals("John Doe", SearchUtils.extractContributorName("John Doe<john@doe.org>"));
-		Assert.assertEquals("John Doe", SearchUtils.extractContributorName("John Doe <john@doe.org>"));
-		Assert.assertEquals("John > Doe", SearchUtils.extractContributorName("John > Doe <john@doe.org>"));
-		Assert.assertEquals("John Doe", SearchUtils.extractContributorName("John Doe<john@doe.org> "));
-		Assert.assertEquals("John Doe", SearchUtils.extractContributorName("John Doe <john@doe.org> "));
-		Assert.assertEquals("John Doe", SearchUtils.extractContributorName("John Doe <> "));
-		Assert.assertEquals("John Doe", SearchUtils.extractContributorName("John Doe<> "));
-		Assert.assertNull(SearchUtils.extractContributorName("<john@doe.org>"));
-		Assert.assertNull(SearchUtils.extractContributorName(" <john@doe.org>"));
 	}
 
 	@Test
@@ -234,6 +208,180 @@ public class SearchUtilsTest {
 			Assert.fail("NumberFormatException must be thrown");
 		} catch (NumberFormatException e) {
 			// OK
+		}
+	}
+
+	@SuppressWarnings("rawtypes")
+	@Test
+	public void mergeJsonMaps_basic() {
+
+		// case - call is null safe and do not modify nothing in this case
+		{
+			Map<String, Object> source = new HashMap<>();
+			source.put("ks", "vs");
+			Map<String, Object> target = new HashMap<>();
+			target.put("kt", "vt");
+			SearchUtils.mergeJsonMaps(source, null);
+			SearchUtils.mergeJsonMaps(null, target);
+			Assert.assertEquals(1, source.size());
+			Assert.assertEquals(1, target.size());
+		}
+
+		// case - simple value, same key in source and target so list is created for different values but not for same
+		{
+			Map<String, Object> source = new HashMap<>();
+			Map<String, Object> target = new HashMap<>();
+			// create List for these two values for same key
+			source.put("key1", "v1");
+			target.put("key1", "v2");
+			// common merge of distinct keys
+			source.put("key2", "v22");
+			target.put("key3", "v33");
+			source.put("key4", "v44");
+			target.put("key5", "v55");
+			// do not create List for these two values for same key as they are same
+			source.put("key6", "v1");
+			target.put("key6", "v1");
+			SearchUtils.mergeJsonMaps(source, target);
+			Assert.assertEquals(6, target.size());
+			Assert.assertTrue(target.get("key1") instanceof List);
+			List l = (List) target.get("key1");
+			Assert.assertTrue(l.contains("v1"));
+			Assert.assertTrue(l.contains("v2"));
+			Assert.assertEquals("v22", target.get("key2"));
+			Assert.assertEquals("v33", target.get("key3"));
+			Assert.assertEquals("v44", target.get("key4"));
+			Assert.assertEquals("v55", target.get("key5"));
+			Assert.assertEquals("v1", target.get("key6"));
+		}
+	}
+
+	@SuppressWarnings("rawtypes")
+	@Test
+	public void mergeJsonMaps_Lists() {
+
+		// case - simple value in source, List in target - must be merged
+		{
+			Map<String, Object> source = new HashMap<>();
+			Map<String, Object> target = new HashMap<>();
+			source.put("key1", "v1");
+			target.put("key1", TestUtils.createListOfStrings("v2", "v3"));
+			SearchUtils.mergeJsonMaps(source, target);
+			Assert.assertTrue(target.get("key1") instanceof List);
+			List tl = (List) target.get("key1");
+			Assert.assertEquals(3, tl.size());
+			Assert.assertTrue(tl.contains("v1"));
+			Assert.assertTrue(tl.contains("v2"));
+			Assert.assertTrue(tl.contains("v3"));
+		}
+
+		// case - simple value in source duplicate to value in List in target - must be merged without duplication
+		{
+			Map<String, Object> source = new HashMap<>();
+			Map<String, Object> target = new HashMap<>();
+			source.put("key1", "v1");
+			target.put("key1", TestUtils.createListOfStrings("v1", "v3"));
+			SearchUtils.mergeJsonMaps(source, target);
+			Assert.assertTrue(target.get("key1") instanceof List);
+			List tl = (List) target.get("key1");
+			Assert.assertEquals(2, tl.size());
+			Assert.assertTrue(tl.contains("v1"));
+			Assert.assertTrue(tl.contains("v3"));
+		}
+
+		// case - map in source, List in target - must be merged
+		{
+			Map<String, Object> source = new HashMap<>();
+			Map<String, Object> target = new HashMap<>();
+			Map sourceMap = new HashMap<>();
+			source.put("key1", sourceMap);
+			target.put("key1", TestUtils.createListOfStrings("v1", "v3"));
+			SearchUtils.mergeJsonMaps(source, target);
+			Assert.assertTrue(target.get("key1") instanceof List);
+			List tl = (List) target.get("key1");
+			Assert.assertEquals(3, tl.size());
+			Assert.assertTrue(tl.contains("v1"));
+			Assert.assertTrue(tl.contains("v3"));
+			Assert.assertTrue(tl.contains(sourceMap));
+		}
+
+		// case - List in source (with simple values and Map) with duplicates to values in List in target - must be merged
+		// without duplication.
+		{
+			Map<String, Object> source = new HashMap<>();
+			Map<String, Object> target = new HashMap<>();
+			List<Object> sourceList = new ArrayList<>();
+			sourceList.add("v1");
+			sourceList.add("v2");
+			Map mapValue = new HashMap<>();
+			sourceList.add(mapValue);
+			source.put("key1", sourceList);
+			target.put("key1", TestUtils.createListOfStrings("v1", "v3"));
+			SearchUtils.mergeJsonMaps(source, target);
+			Assert.assertTrue(target.get("key1") instanceof List);
+			List tl = (List) target.get("key1");
+			Assert.assertEquals(4, tl.size());
+			Assert.assertTrue(tl.contains("v1"));
+			Assert.assertTrue(tl.contains("v2"));
+			Assert.assertTrue(tl.contains("v3"));
+			Assert.assertTrue(tl.contains(mapValue));
+		}
+	}
+
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	@Test
+	public void mergeJsonMaps_Maps() {
+
+		// case - simple value in source, Map in target - source is ignored
+		{
+			Map<String, Object> source = new HashMap<>();
+			Map<String, Object> target = new HashMap<>();
+			source.put("key1", "v1");
+			Map targetMap = new HashMap<>();
+			targetMap.put("tk1", "tv1");
+			target.put("key1", targetMap);
+			SearchUtils.mergeJsonMaps(source, target);
+			Assert.assertTrue(target.get("key1") instanceof Map);
+			Map tl = (Map) target.get("key1");
+			Assert.assertEquals(1, tl.size());
+			Assert.assertEquals("tv1", tl.get("tk1"));
+		}
+
+		// case - List value in source, Map in target - source is ignored
+		{
+			Map<String, Object> source = new HashMap<>();
+			Map<String, Object> target = new HashMap<>();
+			source.put("key1", TestUtils.createListOfStrings("v1"));
+			Map targetMap = new HashMap<>();
+			targetMap.put("tk1", "tv1");
+			target.put("key1", targetMap);
+			SearchUtils.mergeJsonMaps(source, target);
+			Assert.assertTrue(target.get("key1") instanceof Map);
+			Map tl = (Map) target.get("key1");
+			Assert.assertEquals(1, tl.size());
+			Assert.assertEquals("tv1", tl.get("tk1"));
+		}
+
+		// case - Map in source and target - must be merged
+		{
+			Map<String, Object> source = new HashMap<>();
+			Map sourceMap = new HashMap<>();
+			sourceMap.put("sk1", "sv1");
+			sourceMap.put("k1", "v1");
+			source.put("key1", sourceMap);
+			Map<String, Object> target = new HashMap<>();
+			Map targetMap = new HashMap<>();
+			targetMap.put("tk1", "tv1");
+			targetMap.put("k1", "v2");
+			target.put("key1", targetMap);
+			SearchUtils.mergeJsonMaps(source, target);
+			Assert.assertTrue(target.get("key1") instanceof Map);
+			Map tl = (Map) target.get("key1");
+			Assert.assertEquals(3, tl.size());
+			Assert.assertEquals("tv1", tl.get("tk1"));
+			Assert.assertEquals("sv1", tl.get("sk1"));
+			Assert.assertTrue(tl.get("k1") instanceof List);
+			Assert.assertEquals(2, ((List) tl.get("k1")).size());
 		}
 	}
 }

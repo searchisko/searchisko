@@ -9,10 +9,14 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.TimeZone;
+import java.util.logging.Logger;
 
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.type.TypeReference;
@@ -25,6 +29,8 @@ import org.elasticsearch.common.joda.time.format.ISODateTimeFormat;
  * @author Vlastimil Elias (velias at redhat dot com)
  */
 public class SearchUtils {
+
+	private static final Logger log = Logger.getLogger(SearchUtils.class.getName());
 
 	/**
 	 * Load properties from defined path e.g. "/app.properties"
@@ -156,21 +162,81 @@ public class SearchUtils {
 	}
 
 	/**
-	 * Extract contributor name from contributor id string. So extracts 'John Doe' from '
-	 * <code>John Doe <john@doe.org></code>'.
+	 * Merge values from source into target JSON Map. Target Map is more important during merge, so in case of some
+	 * conflicts target Map wins and original value is preserved. Lists (used for JSON Array) merging do not create
+	 * duplication (uses <code>equals()</code> to detect them). Structure inside source Map is not changed any way.
 	 * 
-	 * @param contributor id to extract name from
-	 * @return contributor name
+	 * @param source Map to merge values from
+	 * @param target Map to merge values into
 	 */
-	public static String extractContributorName(String contributor) {
-		if (contributor == null)
-			return null;
-		int i = contributor.lastIndexOf("<");
-		int i2 = contributor.lastIndexOf(">");
-		if (i > -1 && i2 > -1 && i < i2) {
-			return trimToNull(contributor.substring(0, i));
+	public static void mergeJsonMaps(Map<String, Object> source, Map<String, Object> target) {
+		mergeJsonMaps(source, target, null);
+	}
+
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	private static void mergeJsonMaps(Map<String, Object> source, Map<String, Object> target, String keyBase) {
+		if (source == null || target == null || source.isEmpty())
+			return;
+		if (keyBase == null || keyBase.trim().isEmpty())
+			keyBase = "";
+		else {
+			keyBase = keyBase.trim() + ".";
 		}
-		return trimToNull(contributor);
+		for (String key : source.keySet()) {
+			Object sourceValue = source.get(key);
+			if (sourceValue == null)
+				continue;
+			Object targetValue = target.get(key);
+			if (targetValue == null) {
+				target.put(key, sourceValue);
+			} else {
+				if (targetValue instanceof List) {
+					if (sourceValue instanceof List) {
+						if (!((List) sourceValue).isEmpty()) {
+							// merge without duplicities
+							if (((List) targetValue).isEmpty()) {
+								((List) targetValue).addAll((List) sourceValue);
+							} else {
+								LinkedHashSet nv = new LinkedHashSet();
+								nv.addAll((List) targetValue);
+								nv.addAll((List) sourceValue);
+								((List) targetValue).clear();
+								((List) targetValue).addAll(nv);
+							}
+						}
+					} else {
+						if (!((List) targetValue).contains(sourceValue))
+							((List) targetValue).add(sourceValue);
+					}
+				} else if (targetValue instanceof Map) {
+					if (sourceValue instanceof Map) {
+						mergeJsonMaps((Map<String, Object>) sourceValue, (Map<String, Object>) targetValue, keyBase + key);
+					} else {
+						log.fine("Can't merge value for key " + keyBase + key
+								+ " because target is Map but source is not Map. Keeping source value there.");
+					}
+				} else {
+					if (sourceValue instanceof List) {
+						List newList = new ArrayList();
+						newList.addAll((List) sourceValue);
+						if (!newList.contains(targetValue))
+							newList.add(targetValue);
+						target.put(key, newList);
+					} else if (sourceValue instanceof Map) {
+						log.fine("Can't merge value for key " + keyBase + key
+								+ " because source is Map but target is simple value. Keeping source value.");
+					} else {
+						// merge values into list if not same
+						if (!sourceValue.equals(targetValue)) {
+							List newList = new ArrayList<>();
+							newList.add(sourceValue);
+							newList.add(targetValue);
+							target.put(key, newList);
+						}
+					}
+				}
+			}
+		}
 	}
 
 }

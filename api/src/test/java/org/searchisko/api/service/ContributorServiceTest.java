@@ -21,6 +21,7 @@ import org.junit.Test;
 import org.mockito.Mockito;
 import org.searchisko.api.rest.ESDataOnlyResponse;
 import org.searchisko.api.testtools.ESRealClientTestBase;
+import org.searchisko.api.testtools.TestUtils;
 import org.searchisko.persistence.service.EntityService;
 
 /**
@@ -29,6 +30,13 @@ import org.searchisko.persistence.service.EntityService;
  * @author Vlastimil Elias (velias at redhat dot com)
  */
 public class ContributorServiceTest extends ESRealClientTestBase {
+
+	private static final String EMAIL_3 = "me@test";
+	private static final String EMAIL_2 = "me@test.org";
+	private static final String EMAIL_1 = "test@test.org";
+	private static final String CODE_3 = "jan doe <test@test.org>";
+	private static final String CODE_2 = "john doe 2 <test2@test.org>";
+	private static final String CODE_1 = "john doe <test@test.org>";
 
 	@Test
 	public void createContributorId() {
@@ -74,6 +82,32 @@ public class ContributorServiceTest extends ESRealClientTestBase {
 		} catch (IllegalArgumentException e) {
 		}
 
+	}
+
+	@Test
+	public void extractContributorName() {
+		Assert.assertNull(ContributorService.extractContributorName(null));
+		Assert.assertNull(ContributorService.extractContributorName(""));
+
+		// no email present
+		Assert.assertEquals("John Doe", ContributorService.extractContributorName("John Doe"));
+		Assert.assertEquals("John Doe", ContributorService.extractContributorName(" John Doe "));
+		Assert.assertEquals("John > Doe", ContributorService.extractContributorName("John > Doe"));
+		Assert.assertEquals("John < Doe", ContributorService.extractContributorName("John < Doe"));
+		Assert.assertEquals("John Doe <", ContributorService.extractContributorName("John Doe <"));
+		Assert.assertEquals("John Doe >", ContributorService.extractContributorName("John Doe >"));
+		Assert.assertEquals("John >< Doe", ContributorService.extractContributorName("John >< Doe"));
+
+		// remove email
+		Assert.assertEquals("John Doe", ContributorService.extractContributorName("John Doe<john@doe.org>"));
+		Assert.assertEquals("John Doe", ContributorService.extractContributorName("John Doe <john@doe.org>"));
+		Assert.assertEquals("John > Doe", ContributorService.extractContributorName("John > Doe <john@doe.org>"));
+		Assert.assertEquals("John Doe", ContributorService.extractContributorName("John Doe<john@doe.org> "));
+		Assert.assertEquals("John Doe", ContributorService.extractContributorName("John Doe <john@doe.org> "));
+		Assert.assertEquals("John Doe", ContributorService.extractContributorName("John Doe <> "));
+		Assert.assertEquals("John Doe", ContributorService.extractContributorName("John Doe<> "));
+		Assert.assertNull(ContributorService.extractContributorName("<john@doe.org>"));
+		Assert.assertNull(ContributorService.extractContributorName(" <john@doe.org>"));
 	}
 
 	private ContributorService getTested(Client client) {
@@ -394,44 +428,47 @@ public class ContributorServiceTest extends ESRealClientTestBase {
 	}
 
 	@Test
-	public void findByCode() throws Exception {
+	public void findByCode_findOneByCode() throws Exception {
 		Client client = prepareESClientForUnitTest();
 		ContributorService tested = getTested(client);
 		try {
 			// case - search from noexisting index
 			{
 				indexDelete(ContributorService.SEARCH_INDEX_NAME);
-				SearchResponse sr = tested.findByCode("john doe <test@test.org>");
-				Assert.assertNull(sr);
+				Assert.assertNull(tested.findByCode(CODE_1));
+				Assert.assertNull(tested.findOneByCode(CODE_1));
 			}
 
 			tested.init();
 			Thread.sleep(100);
 			// case - search from empty index
 			{
-				SearchResponse sr = tested.findByCode("john doe <test@test.org>");
+				SearchResponse sr = tested.findByCode(CODE_1);
 				Assert.assertEquals(0, sr.getHits().getTotalHits());
+				Assert.assertNull(tested.findOneByCode(CODE_1));
 			}
 
 			indexInsertDocument(ContributorService.SEARCH_INDEX_NAME, ContributorService.SEARCH_INDEX_TYPE, "10",
-					"{\"code\":\"john doe 2 <test2@test.org>\",\"email\":\"test2@test.org\"}");
+					"{\"code\":\"" + CODE_2 + "\",\"email\":\"test2@test.org\"}");
 			indexInsertDocument(ContributorService.SEARCH_INDEX_NAME, ContributorService.SEARCH_INDEX_TYPE, "20",
-					"{\"code\":\"john doe <test@test.org>\",\"email\":\"test@test.org\"}");
+					"{\"code\":\"" + CODE_1 + "\",\"email\":\"test@test.org\"}");
 			indexInsertDocument(ContributorService.SEARCH_INDEX_NAME, ContributorService.SEARCH_INDEX_TYPE, "30",
 					"{\"code\":\"paul doe <t@te.org>\",\"email\":\"te@te.org\"}");
 			indexFlushAndRefresh(ContributorService.SEARCH_INDEX_NAME);
 			// case - search existing
 			{
-				SearchResponse sr = tested.findByCode("john doe <test@test.org>");
+				SearchResponse sr = tested.findByCode(CODE_1);
 				Assert.assertEquals(1, sr.getHits().getTotalHits());
 				Assert.assertEquals("20", sr.getHits().getHits()[0].getId());
 
-				sr = tested.findByCode("john doe 2 <test2@test.org>");
+				sr = tested.findByCode(CODE_2);
 				Assert.assertEquals(1, sr.getHits().getTotalHits());
 				Assert.assertEquals("10", sr.getHits().getHits()[0].getId());
+				Assert.assertEquals("10", tested.findOneByCode(CODE_2).getId());
 
-				sr = tested.findByCode("jan doe <test@test.org>");
+				sr = tested.findByCode(CODE_3);
 				Assert.assertEquals(0, sr.getHits().getTotalHits());
+				Assert.assertNull(tested.findOneByCode(CODE_3));
 			}
 
 		} finally {
@@ -441,43 +478,49 @@ public class ContributorServiceTest extends ESRealClientTestBase {
 	}
 
 	@Test
-	public void findByEmail() throws Exception {
+	public void findByEmail_findOneByEmail() throws Exception {
 		Client client = prepareESClientForUnitTest();
 		ContributorService tested = getTested(client);
 		try {
 			// case - search from noexisting index
 			{
 				indexDelete(ContributorService.SEARCH_INDEX_NAME);
-				SearchResponse sr = tested.findByEmail("test@test.org");
-				Assert.assertNull(sr);
+				Assert.assertNull(tested.findByEmail(EMAIL_1));
+				Assert.assertNull(tested.findOneByEmail(EMAIL_1, null));
 			}
 
 			tested.init();
 			Thread.sleep(100);
 			// case - search from empty index
 			{
-				SearchResponse sr = tested.findByEmail("test@test.org");
+				SearchResponse sr = tested.findByEmail(EMAIL_1);
 				Assert.assertEquals(0, sr.getHits().getTotalHits());
+				Assert.assertNull(tested.findOneByEmail(EMAIL_1, null));
 			}
 
 			indexInsertDocument(ContributorService.SEARCH_INDEX_NAME, ContributorService.SEARCH_INDEX_TYPE, "10",
-					"{\"code\":\"test1\",\"email\":\"me@test.org\"}");
+					"{\"code\":\"test1\",\"email\":\"" + EMAIL_2 + "\"}");
 			indexInsertDocument(ContributorService.SEARCH_INDEX_NAME, ContributorService.SEARCH_INDEX_TYPE, "20",
-					"{\"code\":\"test2\",\"email\":\"test@test.org\"}");
+					"{\"code\":\"test2\",\"email\":\"" + EMAIL_1 + "\"}");
 			indexInsertDocument(ContributorService.SEARCH_INDEX_NAME, ContributorService.SEARCH_INDEX_TYPE, "30",
 					"{\"code\":\"test3\",\"email\":\"he@test.org\"}");
 			indexFlushAndRefresh(ContributorService.SEARCH_INDEX_NAME);
 			// case - search existing
 			{
-				SearchResponse sr = tested.findByEmail("test@test.org");
+				SearchResponse sr = tested.findByEmail(EMAIL_1);
 				Assert.assertEquals(1, sr.getHits().getTotalHits());
 				Assert.assertEquals("20", sr.getHits().getHits()[0].getId());
+				List<String> emails = new ArrayList<>();
+				emails.add(EMAIL_2);
+				Assert.assertEquals("20", tested.findOneByEmail(EMAIL_1, null).getId());
 
-				sr = tested.findByEmail("me@test.org");
+				sr = tested.findByEmail(EMAIL_2);
 				Assert.assertEquals(1, sr.getHits().getTotalHits());
 				Assert.assertEquals("10", sr.getHits().getHits()[0].getId());
+				emails.add(EMAIL_2);
+				Assert.assertEquals("10", tested.findOneByEmail(EMAIL_3, emails).getId());
 
-				sr = tested.findByEmail("me@test");
+				sr = tested.findByEmail(EMAIL_3);
 				Assert.assertEquals(0, sr.getHits().getTotalHits());
 			}
 
@@ -498,8 +541,7 @@ public class ContributorServiceTest extends ESRealClientTestBase {
 			// case - search from noexisting index
 			indexDelete(ContributorService.SEARCH_INDEX_NAME);
 			{
-				SearchResponse sr = tested.findByTypeSpecificCode(CODE_NAME_1, "test");
-				Assert.assertNull(sr);
+				Assert.assertNull(tested.findByTypeSpecificCode(CODE_NAME_1, "test"));
 			}
 
 			tested.init();
@@ -538,6 +580,128 @@ public class ContributorServiceTest extends ESRealClientTestBase {
 			indexDelete(ContributorService.SEARCH_INDEX_NAME);
 			finalizeESClientForUnitTest();
 		}
+	}
+
+	@Test
+	public void findOneByTypeSpecificCode() throws InterruptedException {
+		Client client = prepareESClientForUnitTest();
+		ContributorService tested = getTested(client);
+		try {
+			// case - search from noexisting index
+			indexDelete(ContributorService.SEARCH_INDEX_NAME);
+			{
+				Assert.assertNull(tested.findOneByTypeSpecificCode(CODE_NAME_1, "test", null));
+			}
+
+			tested.init();
+			Thread.sleep(100);
+			// case - search from empty index
+			{
+				Assert.assertNull(tested.findOneByTypeSpecificCode(CODE_NAME_2, "test", "test1"));
+			}
+
+			indexInsertDocument(ContributorService.SEARCH_INDEX_NAME, ContributorService.SEARCH_INDEX_TYPE, "10",
+					"{\"code\":\"test1\",\"email\":\"me@test.org\""
+							+ ", \"type_specific_code\" : {\"code_type1\":\"test\",\"code_type2\":[\"ct2_1_1\",\"ct2_1_2\"]}" + "}");
+			indexInsertDocument(ContributorService.SEARCH_INDEX_NAME, ContributorService.SEARCH_INDEX_TYPE, "20",
+					"{\"code\":\"test2\",\"email\":\"test@test.org\""
+							+ ", \"type_specific_code\" : {\"code_type1\":\"ct1_2\",\"code_type2\":[\"ct2_2_1\",\"test\"]}" + "}");
+			indexInsertDocument(ContributorService.SEARCH_INDEX_NAME, ContributorService.SEARCH_INDEX_TYPE, "30",
+					"{\"code\":\"test3\",\"email\":\"he@test.org\""
+							+ ", \"type_specific_code\" : {\"code_type1\":\"ct1_3\",\"code_type2\":[\"ct2_3_1\",\"test_3_2\"]}" + "}");
+			indexFlushAndRefresh(ContributorService.SEARCH_INDEX_NAME);
+			// case - search existing
+			{
+				Assert.assertEquals("10", tested.findOneByTypeSpecificCode(CODE_NAME_1, "test", null).getId());
+				Assert.assertEquals("10", tested.findOneByTypeSpecificCode(CODE_NAME_1, "test", "test1").getId());
+				Assert.assertEquals("10", tested.findOneByTypeSpecificCode(CODE_NAME_1, "test", "test2").getId());
+
+				Assert.assertEquals("20", tested.findOneByTypeSpecificCode(CODE_NAME_2, "test", null).getId());
+
+				Assert.assertNull(tested.findOneByTypeSpecificCode(CODE_NAME_2, "te", "test"));
+			}
+
+			// case - more contributors for same type specific code code, so we select one by prefered code
+			indexInsertDocument(ContributorService.SEARCH_INDEX_NAME, ContributorService.SEARCH_INDEX_TYPE, "40",
+					"{\"code\":\"test4\",\"email\":\"me@test.org\""
+							+ ", \"type_specific_code\" : {\"code_type1\":\"test\",\"code_type2\":[\"ct2_1_1\",\"ct2_1_2\"]}" + "}");
+			indexFlushAndRefresh(ContributorService.SEARCH_INDEX_NAME);
+			{
+				// first two asserts removed because it is unclear which one will be selected if no prefered code matches
+				// Assert.assertEquals("10", tested.findOneByTypeSpecificCode(CODE_NAME_1, "test", null).getId());
+				// Assert.assertEquals("10", tested.findOneByTypeSpecificCode(CODE_NAME_1, "test", "unknown").getId());
+				Assert.assertEquals("10", tested.findOneByTypeSpecificCode(CODE_NAME_1, "test", "test1").getId());
+				Assert.assertEquals("40", tested.findOneByTypeSpecificCode(CODE_NAME_1, "test", "test4").getId());
+			}
+
+		} finally {
+			indexDelete(ContributorService.SEARCH_INDEX_NAME);
+			finalizeESClientForUnitTest();
+		}
+	}
+
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	@Test
+	public void mergeContributorData() {
+		ContributorService tested = getTested(null);
+		Map<String, Object> source = new HashMap<>();
+		Map<String, Object> target = new HashMap<>();
+
+		source.put(ContributorService.FIELD_CODE, "sourcecode");
+		source.put(ContributorService.FIELD_EMAIL, TestUtils.createListOfStrings(EMAIL_1, EMAIL_2));
+		Map<String, List<String>> sourceTSC = new HashMap<>();
+		sourceTSC.put(CODE_NAME_1, TestUtils.createListOfStrings("c11_t", "c11"));
+		sourceTSC.put(CODE_NAME_2, TestUtils.createListOfStrings("c21"));
+		source.put(ContributorService.FIELD_TYPE_SPECIFIC_CODE, sourceTSC);
+
+		target.put(ContributorService.FIELD_CODE, "targetcode");
+		target.put(ContributorService.FIELD_EMAIL, TestUtils.createListOfStrings(EMAIL_3, EMAIL_2));
+		Map<String, List<String>> targetTSC = new HashMap<>();
+		targetTSC.put(CODE_NAME_1, TestUtils.createListOfStrings("c11"));
+		target.put(ContributorService.FIELD_TYPE_SPECIFIC_CODE, targetTSC);
+
+		tested.mergeContributorData(target, source);
+
+		Assert.assertEquals("sourcecode", ContributorService.getContributorCode(source));
+		Assert.assertEquals("targetcode", ContributorService.getContributorCode(target));
+
+		Assert.assertTrue(target.get(ContributorService.FIELD_EMAIL) instanceof List);
+		List l = (List) target.get(ContributorService.FIELD_EMAIL);
+		Assert.assertEquals(3, l.size());
+		Assert.assertTrue(l.contains(EMAIL_1));
+		Assert.assertTrue(l.contains(EMAIL_2));
+		Assert.assertTrue(l.contains(EMAIL_3));
+		Assert.assertTrue(target.get(ContributorService.FIELD_TYPE_SPECIFIC_CODE) instanceof Map);
+		Map<String, List<String>> m = (Map<String, List<String>>) target.get(ContributorService.FIELD_TYPE_SPECIFIC_CODE);
+		List l1 = m.get(CODE_NAME_1);
+		Assert.assertEquals(2, l1.size());
+		Assert.assertTrue(l1.contains("c11"));
+		Assert.assertTrue(l1.contains("c11_t"));
+		List l2 = m.get(CODE_NAME_2);
+		Assert.assertEquals(1, l2.size());
+		Assert.assertTrue(l2.contains("c21"));
+	}
+
+	@Test
+	public void getContributorCode() {
+
+		try {
+			ContributorService.getContributorCode(null);
+			Assert.fail("NullPointerException expected");
+		} catch (NullPointerException e) {
+
+		}
+
+		Map<String, Object> source = new HashMap<>();
+		Assert.assertNull(ContributorService.getContributorCode(source));
+
+		source.put(ContributorService.FIELD_CODE, "mycode");
+		Assert.assertEquals("mycode", ContributorService.getContributorCode(source));
+	}
+
+	@Test
+	public void createOrUpdateFromProfile() {
+		// TODO CONTRIBUTOR_PROFILE unit test for ContributorService#createOrUpdateFromProfile
 	}
 
 }

@@ -25,18 +25,6 @@ import javax.ws.rs.core.UriInfo;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.indices.IndexMissingException;
 import org.elasticsearch.search.SearchHit;
-import org.searchisko.api.ContentObjectFields;
-import org.searchisko.api.annotations.header.CORSSupport;
-import org.searchisko.api.annotations.security.GuestAllowed;
-import org.searchisko.api.model.QuerySettings;
-import org.searchisko.api.model.QuerySettings.Filters;
-import org.searchisko.api.model.SortByValue;
-import org.searchisko.api.rest.exception.BadFieldException;
-import org.searchisko.api.service.SearchService;
-import org.searchisko.api.service.StatsRecordType;
-import org.searchisko.api.service.SystemInfoService;
-import org.searchisko.api.util.QuerySettingsParser;
-import org.searchisko.api.util.SearchUtils;
 import org.jboss.resteasy.plugins.providers.atom.Category;
 import org.jboss.resteasy.plugins.providers.atom.Content;
 import org.jboss.resteasy.plugins.providers.atom.Entry;
@@ -44,13 +32,26 @@ import org.jboss.resteasy.plugins.providers.atom.Feed;
 import org.jboss.resteasy.plugins.providers.atom.Generator;
 import org.jboss.resteasy.plugins.providers.atom.Link;
 import org.jboss.resteasy.plugins.providers.atom.Person;
+import org.searchisko.api.ContentObjectFields;
+import org.searchisko.api.annotations.header.CORSSupport;
+import org.searchisko.api.annotations.security.GuestAllowed;
+import org.searchisko.api.model.QuerySettings;
+import org.searchisko.api.model.QuerySettings.Filters;
+import org.searchisko.api.model.SortByValue;
+import org.searchisko.api.rest.exception.BadFieldException;
+import org.searchisko.api.service.ContributorService;
+import org.searchisko.api.service.SearchService;
+import org.searchisko.api.service.StatsRecordType;
+import org.searchisko.api.service.SystemInfoService;
+import org.searchisko.api.util.QuerySettingsParser;
+import org.searchisko.api.util.SearchUtils;
 
 /**
  * Feed REST API.
- *
+ * 
  * @author Libor Krzyzanek
  * @author Vlastimil Elias (velias at redhat dot com)
- *
+ * 
  */
 @RequestScoped
 @Path("/feed")
@@ -88,7 +89,7 @@ public class FeedRestService extends RestServiceBase {
 		try {
 
 			if (uriInfo == null) {
-                throw new BadFieldException("uriInfo");
+				throw new BadFieldException("uriInfo");
 			}
 			MultivaluedMap<String, String> params = uriInfo.getQueryParameters();
 			querySettings = querySettingsParser.parseUriParams(params);
@@ -101,7 +102,7 @@ public class FeedRestService extends RestServiceBase {
 
 			return createAtomResponse(querySettings, searchResponse, uriInfo);
 		} catch (IllegalArgumentException e) {
-            throw new BadFieldException("unknown", e);
+			throw new BadFieldException("unknown", e);
 		} catch (IndexMissingException e) {
 			return Response.status(Response.Status.NOT_FOUND).build();
 		}
@@ -109,7 +110,7 @@ public class FeedRestService extends RestServiceBase {
 
 	/**
 	 * Patch query settings to search correct values necessary for feeds.
-	 *
+	 * 
 	 * @param querySettings
 	 */
 	protected void patchQuerySettings(QuerySettings querySettings) {
@@ -184,7 +185,7 @@ public class FeedRestService extends RestServiceBase {
 				List<Object> contributors = getHitListFieldValue(hit, ContentObjectFields.SYS_CONTRIBUTORS);
 				if (contributors != null) {
 					for (Object contributor : contributors) {
-						Person p = new Person(SearchUtils.extractContributorName(contributor.toString()));
+						Person p = new Person(ContributorService.extractContributorName(contributor.toString()));
 						entry.getAuthors().add(p);
 					}
 				}

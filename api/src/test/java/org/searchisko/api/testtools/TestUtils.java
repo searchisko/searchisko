@@ -10,6 +10,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -370,6 +371,16 @@ public abstract class TestUtils {
 		}
 		Mockito.when(uriInfoMock.getQueryParameters()).thenReturn(qp);
 		return uriInfoMock;
+	}
+
+	public static ArrayList<String> createListOfStrings(String... strings) {
+		ArrayList<String> ret = new ArrayList<>();
+		if (strings != null) {
+			for (String s : strings) {
+				ret.add(s);
+			}
+		}
+		return ret;
 	}
 
 }

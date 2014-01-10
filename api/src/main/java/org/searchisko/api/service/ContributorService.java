@@ -223,6 +223,24 @@ public class ContributorService implements EntityService {
 	}
 
 	/**
+	 * Extract contributor name from contributor id string. So extracts 'John Doe' from '
+	 * <code>John Doe <john@doe.org></code>'.
+	 * 
+	 * @param contributorID id to extract name from
+	 * @return contributor name
+	 */
+	public static String extractContributorName(String contributorID) {
+		if (contributorID == null)
+			return null;
+		int i = contributorID.lastIndexOf("<");
+		int i2 = contributorID.lastIndexOf(">");
+		if (i > -1 && i2 > -1 && i < i2) {
+			return SearchUtils.trimToNull(contributorID.substring(0, i));
+		}
+		return SearchUtils.trimToNull(contributorID);
+	}
+
+	/**
 	 * Create or update Contributor record from {@link ContributorProfile} informations.
 	 * 
 	 * @param profile to create/update Contributor from
@@ -238,18 +256,8 @@ public class ContributorService implements EntityService {
 
 		String contributorCode = createContributorId(profile.getFullName(), profile.getPrimaryEmail());
 
-		SearchHit contributorById = null;
-		SearchResponse srById = findByCode(contributorCode);
-		if (srById.getHits().getTotalHits() > 0) {
-			if (srById.getHits().getTotalHits() > 1) {
-				log.warning("Contributor configuration problem! We found more Contributor definitions for code="
-						+ contributorCode + ". For now we use first one, but problem should be resolved by administrator!");
-			}
-			contributorById = srById.getHits().getHits()[0];
-		}
-
-		SearchHit contributorByTsc = null;
-		contributorByTsc = findOneByTypeSpecificCode(typeSpecificCodeField, typeSpecificCode, contributorCode);
+		SearchHit contributorById = findOneByCode(contributorCode);
+		SearchHit contributorByTsc = findOneByTypeSpecificCode(typeSpecificCodeField, typeSpecificCode, contributorCode);
 
 		String contributorEntityId = null;
 		Map<String, Object> contributorEntityContent = null;
@@ -273,13 +281,23 @@ public class ContributorService implements EntityService {
 			contributorEntityId = contributorById.getId();
 			contributorEntityContent = contributorById.getSource();
 		} else {
-			// TODO CONTRIBUTOR_PROFILE try to find existing Contributor by any of email addresses available in profile
-			contributorEntityContent = new HashMap<String, Object>();
-			contributorEntityContent.put(ContributorService.FIELD_CODE, contributorCode);
+			SearchHit contributorByEmail = findOneByEmail(profile.getPrimaryEmail(), profile.getEmails());
+			if (contributorByEmail != null) {
+				contributorEntityId = contributorByEmail.getId();
+				contributorEntityContent = contributorByEmail.getSource();
+			} else {
+				contributorEntityContent = new HashMap<String, Object>();
+				contributorEntityContent.put(ContributorService.FIELD_CODE, contributorCode);
+			}
 		}
 
-		// TODO CONTRIBUTOR_PROFILE upgrade contributorEntityContent with new values from profile
-		// TODO CONTRIBUTOR_PROFILE check email uniqueness (remove them from other Contributor records if any and reindex)
+		Map<String, Object> newDataFromProfile = new HashMap<>();
+		newDataFromProfile.put(FIELD_EMAIL, profile.getEmails());
+		newDataFromProfile.put(FIELD_TYPE_SPECIFIC_CODE, profile.getTypeSpecificCodes());
+		mergeContributorData(contributorEntityContent, newDataFromProfile);
+
+		// TODO CONTRIBUTOR_PROFILE check email and typeSpecificCode uniqueness (remove them from other Contributor records
+		// if any and reindex);
 
 		if (contributorEntityId != null)
 			create(contributorEntityId, contributorEntityContent);
@@ -303,88 +321,100 @@ public class ContributorService implements EntityService {
 
 	}
 
-	protected void mergeContributorData(Map<String, Object> mergeTo, Map<String, Object> mergeFrom) {
-		if (mergeFrom == null || mergeTo == null)
+	protected void mergeContributorData(Map<String, Object> mergeToContributor, Map<String, Object> mergeFromContributor) {
+		if (mergeToContributor == null)
+			throw new IllegalArgumentException("mergeToContributor can't be null");
+		if (mergeFromContributor == null || mergeFromContributor.isEmpty())
 			return;
-		mergeFrom.remove(FIELD_CODE);
-		mergeMaps(mergeFrom, mergeTo);
+
+		// temporarily remove code from mergeFromContributor to preserve only one from mergeToContributor
+		Object o = mergeFromContributor.remove(FIELD_CODE);
+		SearchUtils.mergeJsonMaps(mergeFromContributor, mergeToContributor);
+		if (o != null)
+			mergeFromContributor.put(FIELD_CODE, o);
 	}
 
-	@SuppressWarnings({ "unchecked", "rawtypes" })
-	protected void mergeMaps(Map<String, Object> mergeFrom, Map<String, Object> mergeTo) {
-		if (mergeFrom == null || mergeTo == null)
-			return;
-		for (String key : mergeFrom.keySet()) {
-			Object oFrom = mergeFrom.get(key);
-			if (oFrom == null)
-				continue;
-			Object oTo = mergeTo.get(key);
-			if (oTo == null) {
-				mergeTo.put(key, oFrom);
-			} else {
-				if (oTo instanceof List) {
-					if (oFrom instanceof List) {
-						((List) oTo).addAll((List) oFrom);
-					} else {
-						((List) oTo).add(oFrom);
-					}
-				} else if (oTo instanceof Map) {
-					if (oFrom instanceof Map) {
-						mergeMaps((Map<String, Object>) oFrom, (Map<String, Object>) oTo);
-					} else {
-						// TODO which key to use here? Or do not add at all?
-						if (!((Map) oTo).containsKey(key)) {
-							((Map) oTo).put(key, oFrom);
-						} else {
-							log.fine("can't merge");
-						}
-					}
-				} else {
-					if (oFrom instanceof List) {
-						((List) oFrom).add(oTo);
-						mergeTo.put(key, oFrom);
-					} else if (oFrom instanceof Map) {
-						// TODO how to solve this? add oTo value into oFrom or ignore?
-					} else {
-						log.fine("can't merge value for key " + key
-								+ " because it is simple value in bot source and target structure, se we keep source value there");
-					}
+	protected SearchHit findOneByCode(String contributorCode) {
+		SearchHit contributorById = null;
+		SearchResponse sr = findByCode(contributorCode);
+		if (sr != null) {
+			log.fine("Number of Contributor records found by code=" + contributorCode + " is " + sr.getHits().getTotalHits());
+			if (sr.getHits().getTotalHits() > 0) {
+				if (sr.getHits().getTotalHits() > 1) {
+					log.warning("Contributor configuration problem! We found more Contributor definitions for code="
+							+ contributorCode + ". For now we use first one, but problem should be resolved by administrator!");
 				}
+				contributorById = sr.getHits().getHits()[0];
 			}
 		}
+		return contributorById;
 	}
 
-	private SearchHit findOneByTypeSpecificCode(String typeSpecificCodeField, String typeSpecificCode, String expectedCode) {
+	protected SearchHit findOneByTypeSpecificCode(String typeSpecificCodeField, String typeSpecificCodeValue,
+			String expectedCode) {
 		SearchHit contributorByTsc = null;
 		if (typeSpecificCodeField != null) {
-			SearchResponse srByTsc = findByTypeSpecificCode(typeSpecificCodeField, typeSpecificCode);
-			if (srByTsc.getHits().getTotalHits() > 0) {
-				if (srByTsc.getHits().getTotalHits() > 1) {
-					log.warning("Contributor configuration problem! We found more Contributor definitions for "
-							+ ContributorService.FIELD_TYPE_SPECIFIC_CODE
-							+ "/"
-							+ typeSpecificCodeField
-							+ "="
-							+ typeSpecificCode
-							+ ". For now we try to find correct one over 'code' or use first one, but problem should be resolved by administrator!");
-					for (SearchHit sh : srByTsc.getHits()) {
-						if (expectedCode.equals(getContributorCode(sh.getSource()))) {
-							contributorByTsc = sh;
-							break;
+			SearchResponse sr = findByTypeSpecificCode(typeSpecificCodeField, typeSpecificCodeValue);
+			if (sr != null) {
+				log.fine("Number of Contributor records found by " + ContributorService.FIELD_TYPE_SPECIFIC_CODE + "."
+						+ typeSpecificCodeField + "=" + typeSpecificCodeValue + " is " + sr.getHits().getTotalHits());
+				if (sr.getHits().getTotalHits() > 0) {
+					if (sr.getHits().getTotalHits() > 1) {
+						log.warning("Contributor configuration problem! We found more Contributor definitions for "
+								+ ContributorService.FIELD_TYPE_SPECIFIC_CODE
+								+ "."
+								+ typeSpecificCodeField
+								+ "="
+								+ typeSpecificCodeValue
+								+ ". For now we try to find correct one over 'code' or use first one, but problem should be resolved by administrator!");
+						if (expectedCode != null) {
+							for (SearchHit sh : sr.getHits()) {
+								if (expectedCode.equals(getContributorCode(sh.getSource()))) {
+									contributorByTsc = sh;
+									break;
+								}
+							}
 						}
 					}
-				}
-				if (contributorByTsc == null)
-					contributorByTsc = srByTsc.getHits().getHits()[0];
-				if (SearchUtils.isBlank(getContributorCode(contributorByTsc.getSource()))) {
-					String msg = "Contributor configuration problem! 'code' field is empty for Contributor with id="
-							+ contributorByTsc.getId() + " so we can't use it. Skipping this record for now.";
-					log.log(Level.WARNING, msg);
-					contributorByTsc = null;
+					if (contributorByTsc == null)
+						contributorByTsc = sr.getHits().getHits()[0];
+					if (SearchUtils.isBlank(getContributorCode(contributorByTsc.getSource()))) {
+						String msg = "Contributor configuration problem! 'code' field is empty for Contributor with id="
+								+ contributorByTsc.getId() + " so we can't use it. Skipping this record for now.";
+						log.log(Level.WARNING, msg);
+						contributorByTsc = null;
+					}
 				}
 			}
 		}
 		return contributorByTsc;
+	}
+
+	protected SearchHit findOneByEmail(String primaryEmail, List<String> emails) {
+		if (primaryEmail != null) {
+			SearchResponse sr = findByEmail(primaryEmail);
+			if (sr != null) {
+				log.fine("Number of Contributor records found by primaryEmail=" + primaryEmail + " is "
+						+ sr.getHits().getTotalHits());
+				if (sr.getHits().getTotalHits() > 0) {
+					return sr.getHits().getHits()[0];
+				}
+			}
+		}
+		if (emails != null) {
+			for (String email : emails) {
+				if (primaryEmail == null || !primaryEmail.equals(email)) {
+					SearchResponse sr = findByEmail(email);
+					if (sr != null) {
+						log.fine("Number of Contributor records found by email=" + email + " is " + sr.getHits().getTotalHits());
+						if (sr.getHits().getTotalHits() > 0) {
+							return sr.getHits().getHits()[0];
+						}
+					}
+				}
+			}
+		}
+		return null;
 	}
 
 	/**
