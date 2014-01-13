@@ -7,8 +7,10 @@ package org.searchisko.api.service;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Logger;
 
 import javax.ws.rs.core.StreamingOutput;
@@ -19,9 +21,12 @@ import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.Client;
 import org.junit.Test;
 import org.mockito.Mockito;
+import org.searchisko.api.reindexer.ReindexingTaskTypes;
 import org.searchisko.api.rest.ESDataOnlyResponse;
+import org.searchisko.api.tasker.TaskManager;
 import org.searchisko.api.testtools.ESRealClientTestBase;
 import org.searchisko.api.testtools.TestUtils;
+import org.searchisko.contribprofile.model.ContributorProfile;
 import org.searchisko.persistence.service.EntityService;
 
 /**
@@ -116,6 +121,10 @@ public class ContributorServiceTest extends ESRealClientTestBase {
 
 		ContributorService ret = new ContributorService();
 		ret.entityService = Mockito.mock(EntityService.class);
+		ret.taskService = Mockito.mock(TaskService.class);
+		TaskManager tm = Mockito.mock(TaskManager.class);
+		Mockito.when(ret.taskService.getTaskManager()).thenReturn(tm);
+		ret.contributorProfileService = Mockito.mock(ContributorProfileService.class);
 		ret.searchClientService = new SearchClientService();
 		ret.searchClientService.client = client;
 		ret.log = Logger.getLogger("testlogger");
@@ -700,8 +709,321 @@ public class ContributorServiceTest extends ESRealClientTestBase {
 	}
 
 	@Test
-	public void createOrUpdateFromProfile() {
-		// TODO CONTRIBUTOR_PROFILE unit test for ContributorService#createOrUpdateFromProfile
+	public void patchEmailUniqueness() throws Exception {
+		Client client = prepareESClientForUnitTest();
+		ContributorService tested = getTested(client);
+		try {
+			tested.init();
+			Thread.sleep(100);
+
+			indexInsertDocument(ContributorService.SEARCH_INDEX_NAME, ContributorService.SEARCH_INDEX_TYPE, "10",
+					"{\"code\":\"test1\",\"email\":[\"me@test.org\",\"you@test.org\"]"
+							+ ", \"type_specific_code\" : {\"code_type1\":\"test\",\"code_type2\":[\"ct2_1_1\",\"ct2_1_2\"]}" + "}");
+			indexInsertDocument(ContributorService.SEARCH_INDEX_NAME, ContributorService.SEARCH_INDEX_TYPE, "20",
+					"{\"code\":\"test2\",\"email\":[\"me@test.org\",\"test@test.org\"]"
+							+ ", \"type_specific_code\" : {\"code_type1\":\"ct1_2\",\"code_type2\":[\"ct2_2_1\",\"test\"]}" + "}");
+			indexInsertDocument(ContributorService.SEARCH_INDEX_NAME, ContributorService.SEARCH_INDEX_TYPE, "30",
+					"{\"code\":\"test3\",\"email\":[\"me@test.org\"]"
+							+ ", \"type_specific_code\" : {\"code_type1\":\"ct1_3\",\"code_type2\":[\"ct2_3_1\",\"test_3_2\"]}" + "}");
+			indexInsertDocument(ContributorService.SEARCH_INDEX_NAME, ContributorService.SEARCH_INDEX_TYPE, "40",
+					"{\"code\":\"test4\",\"email\":[\"no@no.org\",\"you@test.org\"]"
+							+ ", \"type_specific_code\" : {\"code_type1\":\"ct1_3\",\"code_type2\":[\"ct2_3_1\",\"test_3_2\"]}" + "}");
+			indexInsertDocument(ContributorService.SEARCH_INDEX_NAME, ContributorService.SEARCH_INDEX_TYPE, "50",
+					"{\"code\":\"test5\",\"email\":[\"no@test.org\"]"
+							+ ", \"type_specific_code\" : {\"code_type1\":\"ct1_3\",\"code_type2\":[\"ct2_3_1\",\"test_3_2\"]}" + "}");
+			indexFlushAndRefresh(ContributorService.SEARCH_INDEX_NAME);
+
+			Set<String> toRenormalizeContributorIds = new HashSet<>();
+			Map<String, Object> contributorEntityContent = new HashMap<>();
+			contributorEntityContent.put(ContributorService.FIELD_EMAIL,
+					TestUtils.createListOfStrings("me@test.org", "you@test.org"));
+			tested.patchEmailUniqueness(toRenormalizeContributorIds, "10", contributorEntityContent);
+			Assert.assertEquals(3, toRenormalizeContributorIds.size());
+			Assert.assertTrue(toRenormalizeContributorIds.contains("test2"));
+			Assert.assertTrue(toRenormalizeContributorIds.contains("test3"));
+			Assert.assertTrue(toRenormalizeContributorIds.contains("test4"));
+
+			// assert content in index
+			indexFlushAndRefresh(ContributorService.SEARCH_INDEX_NAME);
+			Assert.assertEquals(1, tested.findByEmail("me@test.org").getHits().getTotalHits());
+			Assert.assertEquals(1, tested.findByEmail("you@test.org").getHits().getTotalHits());
+
+			TestUtils.assertJsonContent("{\"code\":\"test1\",\"email\":[\"me@test.org\",\"you@test.org\"]"
+					+ ", \"type_specific_code\" : {\"code_type1\":\"test\",\"code_type2\":[\"ct2_1_1\",\"ct2_1_2\"]}" + "}",
+					indexGetDocument(ContributorService.SEARCH_INDEX_NAME, ContributorService.SEARCH_INDEX_TYPE, "10"));
+			TestUtils.assertJsonContent("{\"code\":\"test2\",\"email\":[\"test@test.org\"]"
+					+ ", \"type_specific_code\" : {\"code_type1\":\"ct1_2\",\"code_type2\":[\"ct2_2_1\",\"test\"]}" + "}",
+					indexGetDocument(ContributorService.SEARCH_INDEX_NAME, ContributorService.SEARCH_INDEX_TYPE, "20"));
+			TestUtils.assertJsonContent("{\"code\":\"test3\",\"email\":[]"
+					+ ", \"type_specific_code\" : {\"code_type1\":\"ct1_3\",\"code_type2\":[\"ct2_3_1\",\"test_3_2\"]}" + "}",
+					indexGetDocument(ContributorService.SEARCH_INDEX_NAME, ContributorService.SEARCH_INDEX_TYPE, "30"));
+			TestUtils.assertJsonContent("{\"code\":\"test4\",\"email\":[\"no@no.org\"]"
+					+ ", \"type_specific_code\" : {\"code_type1\":\"ct1_3\",\"code_type2\":[\"ct2_3_1\",\"test_3_2\"]}" + "}",
+					indexGetDocument(ContributorService.SEARCH_INDEX_NAME, ContributorService.SEARCH_INDEX_TYPE, "40"));
+			TestUtils.assertJsonContent("{\"code\":\"test5\",\"email\":[\"no@test.org\"]"
+					+ ", \"type_specific_code\" : {\"code_type1\":\"ct1_3\",\"code_type2\":[\"ct2_3_1\",\"test_3_2\"]}" + "}",
+					indexGetDocument(ContributorService.SEARCH_INDEX_NAME, ContributorService.SEARCH_INDEX_TYPE, "50"));
+
+		} finally {
+			indexDelete(ContributorService.SEARCH_INDEX_NAME);
+			finalizeESClientForUnitTest();
+		}
 	}
 
+	@Test
+	public void patchTypeSpecificCodeUniqueness() throws Exception {
+		Client client = prepareESClientForUnitTest();
+		ContributorService tested = getTested(client);
+		try {
+			tested.init();
+			Thread.sleep(100);
+
+			indexInsertDocument(
+					ContributorService.SEARCH_INDEX_NAME,
+					ContributorService.SEARCH_INDEX_TYPE,
+					"10",
+					"{\"code\":\"test1\",\"email\":[\"me@test.org\",\"you@test.org\"]"
+							+ ", \"type_specific_code\" : {\"code_type1\":\"test\",\"code_type2\":[\"ct2_1_1\",\"ct2_1_2\",\"test_3_2\"]}"
+							+ "}");
+			indexInsertDocument(
+					ContributorService.SEARCH_INDEX_NAME,
+					ContributorService.SEARCH_INDEX_TYPE,
+					"20",
+					"{\"code\":\"test2\",\"email\":[\"me@test.org\",\"test@test.org\"]"
+							+ ", \"type_specific_code\" : {\"code_type1\":[\"ct1_2\",\"test\"],\"code_type2\":[\"ct2_2_1\",\"test\"]}"
+							+ "}");
+			indexInsertDocument(ContributorService.SEARCH_INDEX_NAME, ContributorService.SEARCH_INDEX_TYPE, "30",
+					"{\"code\":\"test3\",\"email\":[\"me@test.org\"]"
+							+ ", \"type_specific_code\" : {\"code_type1\":\"test\",\"code_type2\":[\"ct2_3_1\",\"test_3_2\"]}" + "}");
+			indexInsertDocument(ContributorService.SEARCH_INDEX_NAME, ContributorService.SEARCH_INDEX_TYPE, "40",
+					"{\"code\":\"test4\",\"email\":[\"no@no.org\",\"you@test.org\"]"
+							+ ", \"type_specific_code\" : {\"code_type1\":\"ct1_3\",\"code_type2\":[\"ct2_3_1\",\"test_3_2\"]}" + "}");
+			indexInsertDocument(ContributorService.SEARCH_INDEX_NAME, ContributorService.SEARCH_INDEX_TYPE, "50",
+					"{\"code\":\"test5\",\"email\":[\"no@test.org\"]"
+							+ ", \"type_specific_code\" : {\"code_type1\":\"ct1_3\",\"code_type2\":[\"ct2_3_1\",\"test_3_2_3\"]}"
+							+ "}");
+			indexFlushAndRefresh(ContributorService.SEARCH_INDEX_NAME);
+
+			Set<String> toRenormalizeContributorIds = new HashSet<>();
+			Map<String, Object> contributorEntityContent = new HashMap<>();
+			Map<String, Object> tsc = new HashMap<>();
+			tsc.put(CODE_NAME_1, "test");
+			tsc.put(CODE_NAME_2, TestUtils.createListOfStrings("test_3_2"));
+			contributorEntityContent.put(ContributorService.FIELD_TYPE_SPECIFIC_CODE, tsc);
+
+			tested.patchTypeSpecificCodeUniqueness(toRenormalizeContributorIds, "10", contributorEntityContent);
+			Assert.assertEquals(3, toRenormalizeContributorIds.size());
+			Assert.assertTrue(toRenormalizeContributorIds.contains("test2"));
+			Assert.assertTrue(toRenormalizeContributorIds.contains("test3"));
+			Assert.assertTrue(toRenormalizeContributorIds.contains("test4"));
+
+			// assert content in index
+			indexFlushAndRefresh(ContributorService.SEARCH_INDEX_NAME);
+			Assert.assertEquals(1, tested.findByTypeSpecificCode(CODE_NAME_1, "test").getHits().getTotalHits());
+			Assert.assertEquals(1, tested.findByTypeSpecificCode(CODE_NAME_2, "test_3_2").getHits().getTotalHits());
+
+			TestUtils
+					.assertJsonContent(
+							"{\"code\":\"test1\",\"email\":[\"me@test.org\",\"you@test.org\"]"
+									+ ", \"type_specific_code\" : {\"code_type1\":\"test\",\"code_type2\":[\"ct2_1_1\",\"ct2_1_2\",\"test_3_2\"]}"
+									+ "}",
+							indexGetDocument(ContributorService.SEARCH_INDEX_NAME, ContributorService.SEARCH_INDEX_TYPE, "10"));
+
+			TestUtils.assertJsonContent("{\"code\":\"test2\",\"email\":[\"me@test.org\",\"test@test.org\"]"
+					+ ", \"type_specific_code\" : {\"code_type1\":[\"ct1_2\"],\"code_type2\":[\"ct2_2_1\",\"test\"]}" + "}",
+					indexGetDocument(ContributorService.SEARCH_INDEX_NAME, ContributorService.SEARCH_INDEX_TYPE, "20"));
+			TestUtils.assertJsonContent("{\"code\":\"test3\",\"email\":[\"me@test.org\"]"
+					+ ", \"type_specific_code\" : {\"code_type2\":[\"ct2_3_1\"]}" + "}",
+					indexGetDocument(ContributorService.SEARCH_INDEX_NAME, ContributorService.SEARCH_INDEX_TYPE, "30"));
+			TestUtils.assertJsonContent("{\"code\":\"test4\",\"email\":[\"no@no.org\",\"you@test.org\"]"
+					+ ", \"type_specific_code\" : {\"code_type1\":\"ct1_3\",\"code_type2\":[\"ct2_3_1\"]}" + "}",
+					indexGetDocument(ContributorService.SEARCH_INDEX_NAME, ContributorService.SEARCH_INDEX_TYPE, "40"));
+			TestUtils.assertJsonContent("{\"code\":\"test5\",\"email\":[\"no@test.org\"]"
+					+ ", \"type_specific_code\" : {\"code_type1\":\"ct1_3\",\"code_type2\":[\"ct2_3_1\",\"test_3_2_3\"]}" + "}",
+					indexGetDocument(ContributorService.SEARCH_INDEX_NAME, ContributorService.SEARCH_INDEX_TYPE, "50"));
+
+		} finally {
+			indexDelete(ContributorService.SEARCH_INDEX_NAME);
+			finalizeESClientForUnitTest();
+		}
+	}
+
+	@SuppressWarnings("unchecked")
+	@Test
+	public void createOrUpdateFromProfile() throws Exception {
+		Client client = prepareESClientForUnitTest();
+		ContributorService tested = getTested(client);
+		try {
+			tested.init();
+			Thread.sleep(100);
+
+			// case - create new record
+			{
+				Map<String, List<String>> typeSpecificCodes = new HashMap<>();
+				typeSpecificCodes.put(CODE_NAME_1, TestUtils.createListOfStrings("test"));
+				ContributorProfile profile = new ContributorProfile("John Doe", "john@doe.com", TestUtils.createListOfStrings(
+						"john@doe.com", "john@doe.org"), typeSpecificCodes);
+
+				String code = "John Doe <john@doe.com>";
+				Assert.assertEquals(code, tested.createOrUpdateFromProfile(profile, null, null));
+
+				indexFlushAndRefresh(ContributorService.SEARCH_INDEX_NAME);
+				TestUtils
+						.assertJsonContent(
+								"{\"type_specific_code\":{\"code_type1\":[\"test\"]},\"email\":[\"john@doe.com\",\"john@doe.org\"],\"code\":\"John Doe <john@doe.com>\"}",
+								tested.findOneByCode(code).getSource());
+			}
+
+			// case - update with only small changes (emails and codes) - check duplicities in other records are patched as
+			// necessary
+			indexInsertDocument(
+					ContributorService.SEARCH_INDEX_NAME,
+					ContributorService.SEARCH_INDEX_TYPE,
+					"10",
+					"{\"code\":\"test1\",\"email\":[\"me@test.org\",\"john@doe.com\"]"
+							+ ", \"type_specific_code\" : {\"code_type1\":\"test\",\"code_type2\":[\"ct2_1_1\",\"ct2_1_2\",\"test_3_2\"]}"
+							+ "}");
+			indexFlushAndRefresh(ContributorService.SEARCH_INDEX_NAME);
+
+			{
+				Mockito.reset(tested.contributorProfileService, tested.taskService.getTaskManager());
+				Map<String, List<String>> typeSpecificCodes = new HashMap<>();
+				typeSpecificCodes.put(CODE_NAME_1, TestUtils.createListOfStrings("test", "test2"));
+				typeSpecificCodes.put(CODE_NAME_2, TestUtils.createListOfStrings("test2"));
+				ContributorProfile profile = new ContributorProfile("John Doe", "john@doe.com", TestUtils.createListOfStrings(
+						"john@doe.com", "john@doere.org"), typeSpecificCodes);
+
+				String code = "John Doe <john@doe.com>";
+				Assert.assertEquals(code, tested.createOrUpdateFromProfile(profile, null, null));
+
+				TestUtils
+						.assertJsonContent(
+								"{\"type_specific_code\":{\"code_type1\":[\"test\",\"test2\"],\"code_type2\":[\"test2\"]},\"email\":[\"john@doe.com\",\"john@doe.org\",\"john@doere.org\"],\"code\":\"John Doe <john@doe.com>\"}",
+								tested.findOneByCode(code).getSource());
+				// assert other record is patched and reindex started
+				TestUtils.assertJsonContent("{\"code\":\"test1\",\"email\":[\"me@test.org\"]"
+						+ ", \"type_specific_code\" : {\"code_type2\":[\"ct2_1_1\",\"ct2_1_2\",\"test_3_2\"]}" + "}",
+						indexGetDocument(ContributorService.SEARCH_INDEX_NAME, ContributorService.SEARCH_INDEX_TYPE, "10"));
+				Mockito.verify(tested.taskService.getTaskManager()).createTask(
+						Mockito.eq(ReindexingTaskTypes.RENORMALIZE_BY_CONTRIBUTOR_CODE.getTaskType()), Mockito.anyMap());
+				Mockito.verifyZeroInteractions(tested.contributorProfileService);
+			}
+
+			// case - found by both id and code
+			{
+				Mockito.reset(tested.contributorProfileService, tested.taskService.getTaskManager());
+				Map<String, List<String>> typeSpecificCodes = new HashMap<>();
+				typeSpecificCodes.put(CODE_NAME_1, TestUtils.createListOfStrings("test", "test2"));
+				typeSpecificCodes.put(CODE_NAME_2, TestUtils.createListOfStrings("test2"));
+				ContributorProfile profile = new ContributorProfile("John Doe", "john@doe.com", TestUtils.createListOfStrings(
+						"john@doe.com", "john@doerere.org"), typeSpecificCodes);
+
+				String code = "John Doe <john@doe.com>";
+				Assert.assertEquals(code, tested.createOrUpdateFromProfile(profile, CODE_NAME_1, "test"));
+
+				// note that update from profile is additive only, so new email address is added, but old one no more in profile
+				// is kept in Contributor record!
+				TestUtils
+						.assertJsonContent(
+								"{\"type_specific_code\":{\"code_type1\":[\"test\",\"test2\"],\"code_type2\":[\"test2\"]},\"email\":[\"john@doe.com\",\"john@doe.org\",\"john@doere.org\",\"john@doerere.org\"],\"code\":\"John Doe <john@doe.com>\"}",
+								tested.findOneByCode(code).getSource());
+				Mockito.verifyZeroInteractions(tested.contributorProfileService);
+				Mockito.verifyZeroInteractions(tested.taskService.getTaskManager());
+			}
+
+			// case - primary email changed, but we find it over code
+			{
+				Mockito.reset(tested.contributorProfileService, tested.taskService.getTaskManager());
+				Map<String, List<String>> typeSpecificCodes = new HashMap<>();
+				typeSpecificCodes.put(CODE_NAME_1, TestUtils.createListOfStrings("test", "test2"));
+				typeSpecificCodes.put(CODE_NAME_2, TestUtils.createListOfStrings("test2", "test3"));
+				ContributorProfile profile = new ContributorProfile("John Doe", "jdoe@doe.com", TestUtils.createListOfStrings(
+						"jdoe@doe.com", "john@doerere.org"), typeSpecificCodes);
+
+				// note that code is not changed in this case
+				String code = "John Doe <john@doe.com>";
+				Assert.assertEquals(code, tested.createOrUpdateFromProfile(profile, CODE_NAME_1, "test"));
+
+				TestUtils
+						.assertJsonContent(
+								"{\"type_specific_code\":{\"code_type1\":[\"test\",\"test2\"],\"code_type2\":[\"test2\",\"test3\"]},\"email\":[\"john@doe.com\",\"john@doe.org\",\"john@doere.org\",\"john@doerere.org\",\"jdoe@doe.com\"],\"code\":\"John Doe <john@doe.com>\"}",
+								tested.findOneByCode(code).getSource());
+				Mockito.verifyZeroInteractions(tested.contributorProfileService);
+				Mockito.verifyZeroInteractions(tested.taskService.getTaskManager());
+			}
+
+			// case - find by email only (name and code changed)
+			{
+				Mockito.reset(tested.contributorProfileService, tested.taskService.getTaskManager());
+				Map<String, List<String>> typeSpecificCodes = new HashMap<>();
+				ContributorProfile profile = new ContributorProfile("John Doere", "jdoe@doe.com",
+						TestUtils.createListOfStrings("jdoe@doe.com", "john@doererere.org"), typeSpecificCodes);
+
+				// note that code is not changed in this case
+				String code = "John Doe <john@doe.com>";
+				Assert.assertEquals(code, tested.createOrUpdateFromProfile(profile, null, null));
+
+				TestUtils
+						.assertJsonContent(
+								"{\"type_specific_code\":{\"code_type1\":[\"test\",\"test2\"],\"code_type2\":[\"test2\",\"test3\"]},\"email\":[\"john@doe.com\",\"john@doe.org\",\"john@doere.org\",\"john@doerere.org\",\"jdoe@doe.com\",\"john@doererere.org\"],\"code\":\"John Doe <john@doe.com>\"}",
+								tested.findOneByCode(code).getSource());
+				Mockito.verifyZeroInteractions(tested.contributorProfileService);
+				Mockito.verifyZeroInteractions(tested.taskService.getTaskManager());
+			}
+
+		} finally {
+			indexDelete(ContributorService.SEARCH_INDEX_NAME);
+			finalizeESClientForUnitTest();
+		}
+	}
+
+	@SuppressWarnings("unchecked")
+	@Test
+	public void createOrUpdateFromProfile_merge() throws Exception {
+		Client client = prepareESClientForUnitTest();
+		ContributorService tested = getTested(client);
+		try {
+			tested.init();
+			Thread.sleep(100);
+
+			// TODO CONTRIBUTOR_PROFILE unit test case - find two distinct records by id and code, so we have to merge them
+			indexInsertDocument(
+					ContributorService.SEARCH_INDEX_NAME,
+					ContributorService.SEARCH_INDEX_TYPE,
+					"10",
+					"{\"type_specific_code\":{\"code_type1\":[\"test_2\"]},\"email\":[\"john@doe.com\",\"john@doe.org\"],\"code\":\"John Doe <john@doe.com>\"}");
+			indexInsertDocument(
+					ContributorService.SEARCH_INDEX_NAME,
+					ContributorService.SEARCH_INDEX_TYPE,
+					"20",
+					"{\"type_specific_code\":{\"code_type1\":[\"test\"],\"code_type3\":[\"test_3\"]},\"email\":[\"john@doe.org\",\"jdoe@doe.org\"],\"code\":\"John Doe <john@doe.org>\"}");
+
+			indexFlushAndRefresh(ContributorService.SEARCH_INDEX_NAME);
+
+			Map<String, List<String>> typeSpecificCodes = new HashMap<>();
+			typeSpecificCodes.put(CODE_NAME_1, TestUtils.createListOfStrings("test"));
+			typeSpecificCodes.put(CODE_NAME_2, TestUtils.createListOfStrings("test2"));
+			ContributorProfile profile = new ContributorProfile("John Doe", "john@doe.com",
+					TestUtils.createListOfStrings("john@doe.com"), typeSpecificCodes);
+
+			String code = "John Doe <john@doe.com>";
+			Assert.assertEquals(code, tested.createOrUpdateFromProfile(profile, CODE_NAME_1, "test"));
+
+			// assert content is merged into first record
+			TestUtils
+					.assertJsonContent(
+							"{\"type_specific_code\":{\"code_type1\":[\"test_2\",\"test\"],\"code_type2\":[\"test2\"],\"code_type3\":[\"test_3\"]},\"email\":[\"john@doe.com\",\"john@doe.org\",\"jdoe@doe.org\"],\"code\":\"John Doe <john@doe.com>\"}",
+							indexGetDocument(ContributorService.SEARCH_INDEX_NAME, ContributorService.SEARCH_INDEX_TYPE, "10"));
+			// assert other record is deleted
+			Assert.assertNull(indexGetDocument(ContributorService.SEARCH_INDEX_NAME, ContributorService.SEARCH_INDEX_TYPE,
+					"20"));
+			Mockito.verify(tested.taskService.getTaskManager()).createTask(
+					Mockito.eq(ReindexingTaskTypes.RENORMALIZE_BY_CONTRIBUTOR_CODE.getTaskType()), Mockito.anyMap());
+			Mockito.verify(tested.contributorProfileService).deleteByContributorCode("John Doe <john@doe.org>");
+
+		} finally {
+			indexDelete(ContributorService.SEARCH_INDEX_NAME);
+			finalizeESClientForUnitTest();
+		}
+	}
 }

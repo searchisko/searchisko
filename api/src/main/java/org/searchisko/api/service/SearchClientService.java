@@ -138,4 +138,14 @@ public class SearchClientService extends ElasticsearchClientService {
 		getClient().admin().indices().refresh(new RefreshRequest(indexName));
 	}
 
+	/**
+	 * Perform ES index flush and refresh operations - block current thread until operation is performed.
+	 * 
+	 * @param indexName to flush
+	 */
+	public void performIndexFlushAndRefreshBlocking(String... indexName) {
+		getClient().admin().indices().flush(new FlushRequest(indexName)).actionGet();
+		getClient().admin().indices().refresh(new RefreshRequest(indexName)).actionGet();
+	}
+
 }

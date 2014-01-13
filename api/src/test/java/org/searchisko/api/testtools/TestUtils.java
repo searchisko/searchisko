@@ -297,13 +297,11 @@ public abstract class TestUtils {
 	 * Assert passed in JSON string is same as JSON content of given file loaded from classpath.
 	 * 
 	 * @param expectedJsonString expected JSON content to assert for equality
-	 * @param actualJsonString JSON content to assert for equality
+	 * @param actualJsonMap JSON content to assert for equality
 	 * @throws IOException
 	 */
-	public static void assertJsonContent(String expectedJsonString, Map<String, Object> actualJsonString)
-			throws IOException {
-		JsonNode actualRootNode = getMapper().readValue(SearchUtils.convertJsonMapToString(actualJsonString),
-				JsonNode.class);
+	public static void assertJsonContent(String expectedJsonString, Map<String, Object> actualJsonMap) throws IOException {
+		JsonNode actualRootNode = getMapper().readValue(SearchUtils.convertJsonMapToString(actualJsonMap), JsonNode.class);
 		JsonNode expectedRootNode = getMapper().readValue(expectedJsonString, JsonNode.class);
 		Assert.assertEquals(expectedRootNode, actualRootNode);
 	}
@@ -311,15 +309,14 @@ public abstract class TestUtils {
 	/**
 	 * Assert passed in JSON content is same as JSON content of given file loaded from classpath.
 	 * 
-	 * @param expectedJsonString expected JSON content to assert for equality
-	 * @param actualJsonString JSON content to assert for equality
+	 * @param expectedJsonMap expected JSON content to assert for equality
+	 * @param actualJsonMap JSON content to assert for equality
 	 * @throws IOException
 	 */
-	public static void assertJsonContent(Map<String, Object> expectedJsonString, Map<String, Object> actualJsonString)
+	public static void assertJsonContent(Map<String, Object> expectedJsonMap, Map<String, Object> actualJsonMap)
 			throws IOException {
-		JsonNode actualRootNode = getMapper().readValue(SearchUtils.convertJsonMapToString(actualJsonString),
-				JsonNode.class);
-		JsonNode expectedRootNode = getMapper().readValue(SearchUtils.convertJsonMapToString(expectedJsonString),
+		JsonNode actualRootNode = getMapper().readValue(SearchUtils.convertJsonMapToString(actualJsonMap), JsonNode.class);
+		JsonNode expectedRootNode = getMapper().readValue(SearchUtils.convertJsonMapToString(expectedJsonMap),
 				JsonNode.class);
 		Assert.assertEquals(expectedRootNode, actualRootNode);
 	}

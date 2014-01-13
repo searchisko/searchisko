@@ -5,10 +5,11 @@
  */
 package org.searchisko.api.service;
 
-import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -246,18 +247,20 @@ public class ContributorService implements EntityService {
 	 * @param profile to create/update Contributor from
 	 * @param typeSpecificCodeField profile has been loaded for. Can be null not to use this code to search for
 	 *          Contributor.
-	 * @param typeSpecificCode profile has been loaded for.
+	 * @param typeSpecificCodeValue profile has been loaded for.
 	 * @return contributor code (unique contributor id within Searchisko used in other documents) for Contributor record
 	 */
 	public String createOrUpdateFromProfile(ContributorProfile profile, String typeSpecificCodeField,
-			String typeSpecificCode) {
+			String typeSpecificCodeValue) {
 
-		List<String> toRenormalizeContributorIds = new ArrayList<>();
+		Set<String> toRenormalizeContributorIds = new HashSet<>();
 
 		String contributorCode = createContributorId(profile.getFullName(), profile.getPrimaryEmail());
 
+		searchClientService.performIndexFlushAndRefreshBlocking(SEARCH_INDEX_NAME);
 		SearchHit contributorById = findOneByCode(contributorCode);
-		SearchHit contributorByTsc = findOneByTypeSpecificCode(typeSpecificCodeField, typeSpecificCode, contributorCode);
+		SearchHit contributorByTsc = findOneByTypeSpecificCode(typeSpecificCodeField, typeSpecificCodeValue,
+				contributorCode);
 
 		String contributorEntityId = null;
 		Map<String, Object> contributorEntityContent = null;
@@ -283,6 +286,7 @@ public class ContributorService implements EntityService {
 		} else {
 			SearchHit contributorByEmail = findOneByEmail(profile.getPrimaryEmail(), profile.getEmails());
 			if (contributorByEmail != null) {
+				contributorCode = getContributorCode(contributorByEmail.getSource());
 				contributorEntityId = contributorByEmail.getId();
 				contributorEntityContent = contributorByEmail.getSource();
 			} else {
@@ -296,19 +300,27 @@ public class ContributorService implements EntityService {
 		newDataFromProfile.put(FIELD_TYPE_SPECIFIC_CODE, profile.getTypeSpecificCodes());
 		mergeContributorData(contributorEntityContent, newDataFromProfile);
 
-		// TODO CONTRIBUTOR_PROFILE check email and typeSpecificCode uniqueness (remove them from other Contributor records
-		// if any and reindex);
+		patchEmailUniqueness(toRenormalizeContributorIds, contributorEntityId, contributorEntityContent);
+		patchTypeSpecificCodeUniqueness(toRenormalizeContributorIds, contributorEntityId, contributorEntityContent);
 
 		if (contributorEntityId != null)
 			create(contributorEntityId, contributorEntityContent);
 		else
 			create(contributorEntityContent);
 
+		searchClientService.performIndexFlushAndRefreshBlocking(SEARCH_INDEX_NAME);
+
 		if (!toRenormalizeContributorIds.isEmpty()) {
 			if (log.isLoggable(Level.FINE))
 				log.fine("We are going to renormalize content for contributor codes: " + toRenormalizeContributorIds);
 			Map<String, Object> taskConfig = new HashMap<String, Object>();
 			taskConfig.put(ReindexingTaskFactory.CFG_CONTRIBUTOR_CODE, toRenormalizeContributorIds);
+			taskConfig
+					.put("description", "contributor '"
+							+ contributorCode
+							+ "' update from profile"
+							+ (typeSpecificCodeField != null ? " loaded for " + typeSpecificCodeField + "=" + typeSpecificCodeValue
+									: ""));
 			try {
 				taskService.getTaskManager().createTask(ReindexingTaskTypes.RENORMALIZE_BY_CONTRIBUTOR_CODE.getTaskType(),
 						taskConfig);
@@ -316,9 +328,96 @@ public class ContributorService implements EntityService {
 				log.severe("Problem to start contributor renormalization task: " + e.getMessage());
 			}
 		}
-
 		return contributorCode;
+	}
 
+	@SuppressWarnings("unchecked")
+	protected void patchEmailUniqueness(Set<String> toRenormalizeContributorIds, String contributorEntityId,
+			Map<String, Object> contributorEntityContent) {
+		try {
+			List<String> emails = (List<String>) contributorEntityContent.get(FIELD_EMAIL);
+			if (emails != null && !emails.isEmpty()) {
+				for (String email : emails) {
+					searchClientService.performIndexFlushAndRefreshBlocking(SEARCH_INDEX_NAME);
+					SearchResponse sr = findByEmail(email);
+					if (sr != null) {
+						for (SearchHit sh : sr.getHits().getHits()) {
+							if (!contributorEntityId.equals(sh.getId())) {
+								Map<String, Object> shData = sh.getSource();
+								List<String> shEmails = (List<String>) shData.get(FIELD_EMAIL);
+								if (shEmails != null) {
+									shEmails.remove(email);
+									create(sh.getId(), shData);
+									toRenormalizeContributorIds.add(getContributorCode(shData));
+								}
+							}
+						}
+					}
+				}
+			}
+		} catch (Exception e) {
+			log.warning("Problem during Contributor's email uniqueness patching: " + e.getMessage());
+		}
+	}
+
+	@SuppressWarnings("unchecked")
+	protected void patchTypeSpecificCodeUniqueness(Set<String> toRenormalizeContributorIds, String contributorEntityId,
+			Map<String, Object> contributorEntityContent) {
+		try {
+			Map<String, Object> tsc = (Map<String, Object>) contributorEntityContent.get(FIELD_TYPE_SPECIFIC_CODE);
+			if (tsc != null) {
+				for (String typeSpecificCodeField : tsc.keySet()) {
+					Object o = tsc.get(typeSpecificCodeField);
+					if (o != null) {
+						if (o instanceof List) {
+							List<Object> cvl = (List<Object>) o;
+							if (cvl != null && !cvl.isEmpty()) {
+								for (Object cv : cvl) {
+									patchTypeSpecificCodeUniqueness(toRenormalizeContributorIds, contributorEntityId,
+											typeSpecificCodeField, cv);
+								}
+							}
+						} else if ((o instanceof String) || (o instanceof Number)) {
+							patchTypeSpecificCodeUniqueness(toRenormalizeContributorIds, contributorEntityId, typeSpecificCodeField,
+									o);
+						} else {
+							log.warning("Unsupported Contributor's type_specific_code." + typeSpecificCodeField
+									+ " value type for contributor entity id: " + contributorEntityId);
+						}
+					}
+				}
+			}
+		} catch (Exception e) {
+			log.warning("Problem during Contributor's type_specific_code uniqueness patching: " + e.getMessage());
+		}
+	}
+
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	private void patchTypeSpecificCodeUniqueness(Set<String> toRenormalizeContributorIds, String contributorEntityId,
+			String codeName, Object codeValue) {
+		searchClientService.performIndexFlushAndRefreshBlocking(SEARCH_INDEX_NAME);
+		SearchResponse sr = findByTypeSpecificCode(codeName, codeValue.toString());
+		if (sr != null) {
+			for (SearchHit sh : sr.getHits().getHits()) {
+				if (!contributorEntityId.equals(sh.getId())) {
+					Map<String, Object> shData = sh.getSource();
+					Map<String, Object> tsc = (Map<String, Object>) shData.get(FIELD_TYPE_SPECIFIC_CODE);
+					Object o = tsc.get(codeName);
+					if (o != null) {
+						if (o instanceof List) {
+							((List) o).remove(codeValue);
+						} else if (!(o instanceof Map)) {
+							tsc.remove(codeName);
+						} else {
+							log.warning("Unsupported Contributor's type_specific_code." + codeName
+									+ " value type for contributor entity id: " + sh.getId());
+						}
+						create(sh.getId(), shData);
+						toRenormalizeContributorIds.add(getContributorCode(shData));
+					}
+				}
+			}
+		}
 	}
 
 	protected void mergeContributorData(Map<String, Object> mergeToContributor, Map<String, Object> mergeFromContributor) {
@@ -391,30 +490,35 @@ public class ContributorService implements EntityService {
 	}
 
 	protected SearchHit findOneByEmail(String primaryEmail, List<String> emails) {
-		if (primaryEmail != null) {
-			SearchResponse sr = findByEmail(primaryEmail);
-			if (sr != null) {
-				log.fine("Number of Contributor records found by primaryEmail=" + primaryEmail + " is "
-						+ sr.getHits().getTotalHits());
-				if (sr.getHits().getTotalHits() > 0) {
-					return sr.getHits().getHits()[0];
+		try {
+			if (primaryEmail != null) {
+				searchClientService.performIndexFlushAndRefreshBlocking(SEARCH_INDEX_NAME);
+				SearchResponse sr = findByEmail(primaryEmail);
+				if (sr != null) {
+					log.fine("Number of Contributor records found by primaryEmail=" + primaryEmail + " is "
+							+ sr.getHits().getTotalHits());
+					if (sr.getHits().getTotalHits() > 0) {
+						return sr.getHits().getHits()[0];
+					}
 				}
 			}
-		}
-		if (emails != null) {
-			for (String email : emails) {
-				if (primaryEmail == null || !primaryEmail.equals(email)) {
-					SearchResponse sr = findByEmail(email);
-					if (sr != null) {
-						log.fine("Number of Contributor records found by email=" + email + " is " + sr.getHits().getTotalHits());
-						if (sr.getHits().getTotalHits() > 0) {
-							return sr.getHits().getHits()[0];
+			if (emails != null) {
+				for (String email : emails) {
+					if (primaryEmail == null || !primaryEmail.equals(email)) {
+						SearchResponse sr = findByEmail(email);
+						if (sr != null) {
+							log.fine("Number of Contributor records found by email=" + email + " is " + sr.getHits().getTotalHits());
+							if (sr.getHits().getTotalHits() > 0) {
+								return sr.getHits().getHits()[0];
+							}
 						}
 					}
 				}
 			}
+			return null;
+		} catch (IndexMissingException e) {
+			return null;
 		}
-		return null;
 	}
 
 	/**
