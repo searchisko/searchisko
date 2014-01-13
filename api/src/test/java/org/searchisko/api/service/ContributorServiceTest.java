@@ -859,6 +859,8 @@ public class ContributorServiceTest extends ESRealClientTestBase {
 
 			// case - create new record
 			{
+				Mockito.when(tested.entityService.create(Mockito.anyMap())).thenReturn("" + System.currentTimeMillis());
+
 				Map<String, List<String>> typeSpecificCodes = new HashMap<>();
 				typeSpecificCodes.put(CODE_NAME_1, TestUtils.createListOfStrings("test"));
 				ContributorProfile profile = new ContributorProfile("John Doe", "john@doe.com", TestUtils.createListOfStrings(
