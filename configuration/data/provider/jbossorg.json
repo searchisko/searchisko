@@ -330,6 +330,25 @@
             "name" : "data_jbossorg_mailing_list",
             "type" : "jbossorg_mailing_list_message"
         }
+    },
+    "jbossorg_contributor_profile": {
+      "description": "Contributor profile - additional information to contributor system profiles",
+      "sys_type": "contributor_profile",
+      "sys_content_content-type" : "text/plain",
+      "search_all_excluded": "true",
+      "input_preprocessors": [
+        {
+          "name": "Contributor consistency validator",
+          "class"    : "org.jboss.elasticsearch.tools.content.RequiredValidatorPreprocessor",
+          "settings" : {
+              "field"  : "sys_contributors"
+           } 
+        }
+      ],
+      "index": {
+        "name": "data_contributor_profile",
+        "type": "jbossorg_contributor_profile"
+      }
     }
   }
 }
