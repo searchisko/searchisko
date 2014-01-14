@@ -5,23 +5,22 @@
  */
 package org.searchisko.api.service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import javax.ejb.LocalBean;
-import javax.ejb.Stateless;
-import javax.inject.Inject;
-import javax.inject.Named;
-
 import org.elasticsearch.action.search.SearchResponse;
 import org.searchisko.api.ContentObjectFields;
 import org.searchisko.api.rest.security.ContributorAuthenticationInterceptor;
 import org.searchisko.api.util.SearchUtils;
 import org.searchisko.contribprofile.model.ContributorProfile;
 import org.searchisko.contribprofile.provider.Jive6ContributorProfileProvider;
+
+import javax.ejb.Singleton;
+import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
+import javax.inject.Named;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Service for handling 'Contributor profiles'.
@@ -30,8 +29,8 @@ import org.searchisko.contribprofile.provider.Jive6ContributorProfileProvider;
  * @author Vlastimil Elias (velias at redhat dot com)
  */
 @Named
-@Stateless
-@LocalBean
+@ApplicationScoped
+@Singleton
 public class ContributorProfileService {
 
 	public static final String FIELD_TSC_JBOSSORG_USERNAME = "jbossorg_username";
