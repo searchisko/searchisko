@@ -4,7 +4,7 @@ DCP Development Guide
 ## Technologies used
 
 * ElasticSearch fulltext search engine
-* JBoss EAP 6.1.1 - Java EE 6 - JAX-RS RestEasy, CDI, EJB Session beans, Hibernate JPA
+* JBoss EAP 6.2 - Java EE 6 - JAX-RS RestEasy, CDI, EJB Session beans, Hibernate JPA
 * Jackson for JSON processing
 * JUnit, Mockito for unit tests
 * Arquillian for functional tests
@@ -62,7 +62,7 @@ used to build for different target environments (the `localhost` profile is acti
 #### localhost development
 
 Build project with `localhost` development profile. 
-Deploy `ROOT.war` to the JBoss EAP 6.1.1 `standalone` configuration, i.e. copy it
+Deploy `ROOT.war` to the JBoss EAP 6.2 `standalone` configuration, i.e. copy it
 to the `$EAP6HOME/standalone/deployments` folder. 
 You can use [Eclipse with JBoss Tools](http://www.jboss.org/tools) or 
 [JBoss Developer Studio](https://devstudio.jboss.com) for this.
@@ -105,7 +105,7 @@ and add 'MySQL Database 5.1' cartridge into it. Then push content of this git
 repo into the OpenShift application's git repo. Then DCP is built and deployed automatically.
 
 The DCP REST API is then available at `http://your_openshift_aplication_url/v1/rest/`  
-The ElasticSearch search node REST API is available only from gear shell at `http://$OPENSHIFT_INTERNAL_IP:15000/`, 
+The ElasticSearch search node REST API is available only from gear shell at `http://$OPENSHIFT_JBOSSEAP_IP:15000/`,
 you have to use port forwarding to access it from outside.
 
 #### staging/production
