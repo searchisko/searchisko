@@ -6,6 +6,8 @@
 package org.searchisko.api.service;
 
 import org.elasticsearch.action.search.SearchResponse;
+import org.elasticsearch.indices.IndexMissingException;
+import org.elasticsearch.search.SearchHit;
 import org.searchisko.api.ContentObjectFields;
 import org.searchisko.api.rest.security.ContributorAuthenticationInterceptor;
 import org.searchisko.api.util.SearchUtils;
@@ -36,6 +38,10 @@ public class ContributorProfileService {
 	public static final String FIELD_TSC_JBOSSORG_USERNAME = "jbossorg_username";
 	public static final String FIELD_TSC_GITHUB_USERNAME = "github_username";
 
+	public static final String SEARCH_INDEX_NAME = "data_contributor_profile";
+
+	public static final String SEARCH_INDEX_TYPE = "jbossorg_contributor_profile";
+
 	@Inject
 	protected Logger log;
 
@@ -45,17 +51,47 @@ public class ContributorProfileService {
 	@Inject
 	protected ContributorService contributorService;
 
+	@Inject
+	protected SearchClientService searchClientService;
+
+	/**
+	 * Updates search index by current entity identified by id
+	 *
+	 * @param id
+	 * @param entity
+	 */
+	private void updateSearchIndex(String id, Map<String, Object> entity) {
+		if (log.isLoggable(Level.FINE)) {
+			log.log(Level.FINE, "Updating profile, id: {0}, data: {1}", new Object[]{id, entity});
+		}
+		searchClientService.performPut(SEARCH_INDEX_NAME, SEARCH_INDEX_TYPE, id, entity);
+		searchClientService.performIndexFlushAndRefresh(SEARCH_INDEX_NAME);
+	}
+
+	/**
+	 * Put entity to search index
+	 *
+	 * @param entity
+	 */
+	private void putToSearchIndex(Map<String, Object> entity) {
+		if (log.isLoggable(Level.FINE)) {
+			log.log(Level.FINE, "Updating profile, data: {0}", entity);
+		}
+		searchClientService.performPut(SEARCH_INDEX_NAME, SEARCH_INDEX_TYPE, entity);
+		searchClientService.performIndexFlushAndRefresh(SEARCH_INDEX_NAME);
+	}
+
 	/**
 	 * Get contributor id based on username and authentication method.
 	 *
 	 * @param authenticationScheme we pass username for. This allows to use more authentication methods for contributors
-	 *          to be used in same time. You can see {@link ContributorAuthenticationInterceptor} for possible values.
-	 * @param username of contributor in passed in <code>authenticationScheme</code> to get profile for
-	 * @param forceCreate if <code>true</code> we need contributor id so backend should create it for logged in user if
-	 *          not created yet. If <code>false</code> then we do not need it currently, so system can't create it but
-	 *          return null instead.
+	 *                             to be used in same time. You can see {@link ContributorAuthenticationInterceptor} for possible values.
+	 * @param username             of contributor in passed in <code>authenticationScheme</code> to get profile for
+	 * @param forceCreate          if <code>true</code> we need contributor id so backend should create it for logged in user if
+	 *                             not created yet. If <code>false</code> then we do not need it currently, so system can't create it but
+	 *                             return null instead.
 	 * @return contributor id - can be null if <code><forceCreate</code> is false and contributor record do not exists yet
-	 *         for current user.
+	 * for current user.
 	 */
 	public String getContributorId(String authenticationScheme, String username, boolean forceCreate) {
 		if (ContributorAuthenticationInterceptor.AUTH_METHOD_CAS.equals(authenticationScheme)) {
@@ -90,12 +126,13 @@ public class ContributorProfileService {
 	 * Create or Update contributor profile based on username and authentication method.
 	 *
 	 * @param authenticationScheme we pass username for. This allows to use more authentication methods for contributors
-	 *          to be used in same time. You can see {@link ContributorAuthenticationInterceptor} for possible values.
-	 * @param username of contributor in passed in <code>authenticationScheme</code> to get profile for
-	 * @return contributor id
+	 *                             to be used in same time. You can see {@link ContributorAuthenticationInterceptor} for possible values.
+	 * @param username             of contributor in passed in <code>authenticationScheme</code> to get profile for
+	 * @return contributor code
 	 */
 	public String createOrUpdateProfile(String authenticationScheme, String username) {
 		log.log(Level.FINE, "Create or update profile for username {0}", username);
+
 		if (ContributorAuthenticationInterceptor.AUTH_METHOD_CAS.equals(authenticationScheme)) {
 
 			// TODO CONTRIBUTOR_PROFILE we call this method when user successfully authenticate which may be rather often. So
@@ -103,30 +140,52 @@ public class ContributorProfileService {
 
 			ContributorProfile profile = contributorProfileProvider.getProfile(username);
 			if (profile == null) {
-				log.warning("User not found in contributor profile provider for jboss.org username: " + username);
+				log.log(Level.WARNING, "User not found in contributor profile provider for jboss.org username: {0}", username);
 				return null;
 			}
 
-			String contributorId = contributorService.createOrUpdateFromProfile(profile, FIELD_TSC_JBOSSORG_USERNAME,
+			String contributorCode = contributorService.createOrUpdateFromProfile(profile, FIELD_TSC_JBOSSORG_USERNAME,
 					username);
-
-			// TODO CONTRIBUTOR_PROFILE create and insert contributor_profile document into search index
 
 			Map<String, Object> profileData = profile.getProfileData();
 			List<String> contributors = new ArrayList<>(1);
-			contributors.add(contributorId);
+			contributors.add(contributorCode);
 
 			profileData.put(ContentObjectFields.SYS_CONTRIBUTORS, contributors);
 
-			return contributorId;
+			// Search profiles with same sys_contributors and update them.
+			SearchResponse matchingProfiles = findByContributorCode(contributorCode);
+			if (matchingProfiles != null && matchingProfiles.getHits().getTotalHits() > 0) {
+				for (SearchHit p : matchingProfiles.getHits().getHits()) {
+					updateSearchIndex(p.getId(), profileData);
+				}
+			} else {
+				putToSearchIndex(profileData);
+			}
+
+
+			return contributorCode;
 		} else {
-			throw new IllegalArgumentException("Usernames from " + authenticationScheme + " are not supported");
+			throw new IllegalArgumentException("Username from " + authenticationScheme + " are not supported");
 		}
 
 	}
 
+	public SearchResponse findByContributorCode(String contributorCode) {
+		try {
+			return searchClientService.performFilterByOneField(SEARCH_INDEX_NAME, SEARCH_INDEX_TYPE, ContentObjectFields.SYS_CONTRIBUTORS, contributorCode);
+		} catch (IndexMissingException e) {
+			return null;
+		}
+	}
+
 	public void deleteByContributorCode(String code) {
-		// TODO CONTRIBUTOR_PROFILE implement profile deletion
+		SearchResponse matchingProfiles = findByContributorCode(code);
+		if (matchingProfiles != null && matchingProfiles.getHits().getTotalHits() > 0) {
+			for (SearchHit p : matchingProfiles.getHits().getHits()) {
+				searchClientService.performDelete(SEARCH_INDEX_NAME, SEARCH_INDEX_TYPE, p.getId());
+			}
+		}
 	}
 
 }
