@@ -156,8 +156,13 @@ public class ContributorProfileService {
 			// Search profiles with same sys_contributors and update them.
 			SearchResponse matchingProfiles = findByContributorCode(contributorCode);
 			if (matchingProfiles != null && matchingProfiles.getHits().getTotalHits() > 0) {
-				for (SearchHit p : matchingProfiles.getHits().getHits()) {
-					updateSearchIndex(p.getId(), profileData);
+				if (matchingProfiles.getHits().getTotalHits() != 1) {
+					log.log(Level.SEVERE, "Data inconsistency: Contributor has more than one profile in search index. " +
+							"Skipping updating them. Contributor code: {0}", contributorCode);
+				} else {
+					for (SearchHit p : matchingProfiles.getHits().getHits()) {
+						updateSearchIndex(p.getId(), profileData);
+					}
 				}
 			} else {
 				putToSearchIndex(profileData);
