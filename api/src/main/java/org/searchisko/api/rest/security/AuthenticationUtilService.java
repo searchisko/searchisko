@@ -69,7 +69,7 @@ public class AuthenticationUtilService {
 	 *                                   {@link ContributorAllowed} is used without <code>optional</code>.
 	 */
 	public String getAuthenticatedContributor(SecurityContext securityContext, boolean forceCreate) throws NotAuthenticatedException {
-		log.log(Level.FINEST, "Get Authenticated Contributor, forcCreate: {0}", forceCreate);
+		log.log(Level.FINEST, "Get Authenticated Contributor, forceCreate: {0}", forceCreate);
 
 		if (!isAuthenticatedUserOfType(securityContext, AuthenticatedUserType.CONTRIBUTOR)) {
 			log.fine("User is not authenticated");
