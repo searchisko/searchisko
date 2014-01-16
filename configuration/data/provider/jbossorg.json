@@ -335,7 +335,6 @@
       "description": "Contributor profile - additional information to contributor system profiles",
       "sys_type": "contributor_profile",
       "sys_content_content-type" : "text/plain",
-      "search_all_excluded": "true",
       "input_preprocessors": [
         {
           "name": "Contributor consistency validator",
