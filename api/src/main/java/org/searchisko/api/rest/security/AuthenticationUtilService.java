@@ -10,6 +10,7 @@ import java.util.logging.Logger;
 
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
+import javax.inject.Named;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.SecurityContext;
 
@@ -21,10 +22,11 @@ import org.searchisko.api.util.SearchUtils;
 
 /**
  * Authentication utility service. Use it in your RestServices if you need info about currently logged in user!
- * 
+ *
  * @author Libor Krzyzanek
  * @author Vlastimil Elias (velias at redhat dot com)
  */
+@Named
 @RequestScoped
 public class AuthenticationUtilService {
 
@@ -34,9 +36,6 @@ public class AuthenticationUtilService {
 	@Inject
 	protected ContributorProfileService contributorProfileService;
 
-	@Context
-	protected SecurityContext securityContext;
-
 	/**
 	 * request scoped cache.
 	 */
@@ -45,15 +44,14 @@ public class AuthenticationUtilService {
 	/**
 	 * Get name of authenticated/logged in 'provider' based on security user principal. Can be used only in methods where
 	 * {@link ProviderAllowed} annotation is applied.
-	 * 
+	 *
 	 * @return name of authenticated provider
 	 * @throws NotAuthenticatedException if Provider is not authenticated. Use {@link ProviderAllowed} annotation to your
-	 *           REST service to prevent this exception.
-	 * 
+	 *                                   REST service to prevent this exception.
 	 * @see ProviderSecurityPreProcessInterceptor
 	 */
-	public String getAuthenticatedProvider() throws NotAuthenticatedException {
-		if (!isAuthenticatedUserOfType(AuthenticatedUserType.PROVIDER)) {
+	public String getAuthenticatedProvider(SecurityContext securityContext) throws NotAuthenticatedException {
+		if (!isAuthenticatedUserOfType(securityContext, AuthenticatedUserType.PROVIDER)) {
 			throw new NotAuthenticatedException(AuthenticatedUserType.PROVIDER);
 		}
 		return securityContext.getUserPrincipal().getName();
@@ -62,18 +60,21 @@ public class AuthenticationUtilService {
 	/**
 	 * Get 'contributor id' for currently authenticated/logged in user based on security user principal. Can be used only
 	 * in methods where {@link ContributorAllowed} annotation is applied.
-	 * 
+	 *
 	 * @param forceCreate if <code>true</code> we need contributor id so backend should create it for logged in user if
-	 *          not created yet. If <code>false</code> then we do not need it currently, so system can't create it but
-	 *          return null instead.
+	 *                    not created yet. If <code>false</code> then we do not need it currently, so system can't create it but
+	 *                    return null instead.
 	 * @return contributor id - can be null if <code><forceCreate</code> is false and contributor record do not exists yet
-	 *         for current user.
+	 * for current user.
 	 * @throws NotAuthenticatedException in case contributor is not authenticated/logged in. This should never happen if
-	 *           security interceptor is correctly implemented and configured for this class and
-	 *           {@link ContributorAllowed} is used without <code>optional</code>.
+	 *                                   security interceptor is correctly implemented and configured for this class and
+	 *                                   {@link ContributorAllowed} is used without <code>optional</code>.
 	 */
-	public String getAuthenticatedContributor(boolean forceCreate) throws NotAuthenticatedException {
-		if (!isAuthenticatedUserOfType(AuthenticatedUserType.CONTRIBUTOR)) {
+	public String getAuthenticatedContributor(SecurityContext securityContext, boolean forceCreate) throws NotAuthenticatedException {
+		log.log(Level.FINEST, "Get Authenticated Contributor, forcCreate: {0}", forceCreate);
+
+		if (!isAuthenticatedUserOfType(securityContext, AuthenticatedUserType.CONTRIBUTOR)) {
+			log.fine("User is not authenticated");
 			cachedContributorId = null;
 			throw new NotAuthenticatedException(AuthenticatedUserType.CONTRIBUTOR);
 		}
@@ -86,6 +87,8 @@ public class AuthenticationUtilService {
 				securityContext.getAuthenticationScheme(), securityContext.getUserPrincipal().getName(), forceCreate));
 		cachedContributorId = cid;
 
+		log.log(Level.FINE, "Contributor ID for authenticated user: {0}", cid);
+
 		return cid;
 	}
 
@@ -93,8 +96,8 @@ public class AuthenticationUtilService {
 	 * Force update of currently logged in contributor profile. No any exception is thrown. Should be called after
 	 * contributor authentication.
 	 */
-	public void updateAuthenticatedContributorProfile() {
-		if (isAuthenticatedUserOfType(AuthenticatedUserType.CONTRIBUTOR)) {
+	public void updateAuthenticatedContributorProfile(SecurityContext securityContext) {
+		if (isAuthenticatedUserOfType(securityContext, AuthenticatedUserType.CONTRIBUTOR)) {
 			try {
 				String uname = SearchUtils.trimToNull(securityContext.getUserPrincipal().getName());
 				if (uname != null) {
@@ -109,13 +112,16 @@ public class AuthenticationUtilService {
 
 	/**
 	 * Check if user of given type is authenticated.
-	 * 
+	 *
 	 * @param userType to check
 	 * @return true if user of given type is authenticated.
 	 */
-	public boolean isAuthenticatedUserOfType(AuthenticatedUserType userType) {
+	public boolean isAuthenticatedUserOfType(SecurityContext securityContext, AuthenticatedUserType userType) {
+		if (log.isLoggable(Level.FINEST)) {
+			log.log(Level.FINEST, "Security Context: {0}, role to check: {1}", new Object[]{securityContext, userType.roleName()});
+		}
 		return securityContext != null && securityContext.getUserPrincipal() != null
 				&& securityContext.isUserInRole(userType.roleName());
-	};
+	}
 
 }

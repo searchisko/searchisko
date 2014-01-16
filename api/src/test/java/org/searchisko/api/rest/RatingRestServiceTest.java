@@ -13,17 +13,20 @@ import java.util.logging.Logger;
 
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response.Status;
+import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.core.UriInfo;
 
 import junit.framework.Assert;
 
 import org.elasticsearch.action.get.GetResponse;
+import org.jasig.cas.client.authentication.SimplePrincipal;
 import org.jboss.resteasy.specimpl.MultivaluedMapImpl;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.searchisko.api.ContentObjectFields;
 import org.searchisko.api.rest.exception.RequiredFieldException;
 import org.searchisko.api.rest.security.AuthenticationUtilService;
+import org.searchisko.api.rest.security.ContributorCustomSecurityContext;
 import org.searchisko.api.service.ProviderService;
 import org.searchisko.api.service.SearchClientService;
 import org.searchisko.api.testtools.TestUtils;
@@ -347,7 +350,7 @@ public class RatingRestServiceTest {
 		tested.providerService = Mockito.mock(ProviderService.class);
 		tested.searchClientService = Mockito.mock(SearchClientService.class);
 		tested.authenticationUtilService = Mockito.mock(AuthenticationUtilService.class);
-		Mockito.when(tested.authenticationUtilService.getAuthenticatedContributor(Mockito.anyBoolean())).thenReturn(
+		Mockito.when(tested.authenticationUtilService.getAuthenticatedContributor(Mockito.any(SecurityContext.class), Mockito.anyBoolean())).thenReturn(
 				MOCK_CONTRIB_ID);
 		return tested;
 	}

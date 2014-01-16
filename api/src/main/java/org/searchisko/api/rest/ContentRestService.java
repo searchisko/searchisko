@@ -19,9 +19,11 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
+import javax.ws.rs.core.SecurityContext;
 
 import org.elasticsearch.action.delete.DeleteResponse;
 import org.elasticsearch.action.get.GetResponse;
@@ -71,6 +73,9 @@ public class ContentRestService extends RestServiceBase {
 
 	@Inject
 	protected AuthenticationUtilService authenticationUtilService;
+
+	@Context
+	protected SecurityContext securityContext;
 
 	@GET
 	@Path("/")
@@ -175,7 +180,7 @@ public class ContentRestService extends RestServiceBase {
 			return Response.status(Status.BAD_REQUEST).entity("Some content for pushing must be defined").build();
 		}
 
-		Map<String, Object> provider = providerService.findProvider(authenticationUtilService.getAuthenticatedProvider());
+		Map<String, Object> provider = providerService.findProvider(authenticationUtilService.getAuthenticatedProvider(securityContext));
 		Map<String, Object> typeDef = ProviderService.extractContentType(provider, type);
 		if (typeDef == null) {
 			throw new BadFieldException("type");
@@ -188,7 +193,7 @@ public class ContentRestService extends RestServiceBase {
 		String indexType = ProviderService.extractIndexType(typeDef, type);
 
 		// fill some normalized fields - should be last step to avoid changing them via preprocessors
-		content.put(ContentObjectFields.SYS_CONTENT_PROVIDER, authenticationUtilService.getAuthenticatedProvider());
+		content.put(ContentObjectFields.SYS_CONTENT_PROVIDER, authenticationUtilService.getAuthenticatedProvider(securityContext));
 		content.put(ContentObjectFields.SYS_CONTENT_ID, contentId);
 		content.put(ContentObjectFields.SYS_CONTENT_TYPE, type);
 		content.put(ContentObjectFields.SYS_ID, sysContentId);
@@ -250,7 +255,7 @@ public class ContentRestService extends RestServiceBase {
 			throw new RequiredFieldException("type");
 		}
 
-		Map<String, Object> provider = providerService.findProvider(authenticationUtilService.getAuthenticatedProvider());
+		Map<String, Object> provider = providerService.findProvider(authenticationUtilService.getAuthenticatedProvider(securityContext));
 		Map<String, Object> typeDef = ProviderService.extractContentType(provider, type);
 		if (typeDef == null) {
 			throw new BadFieldException("type");

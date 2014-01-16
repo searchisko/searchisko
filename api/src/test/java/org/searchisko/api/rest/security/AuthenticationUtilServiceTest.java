@@ -39,7 +39,7 @@ public class AuthenticationUtilServiceTest {
 
 		// CASE - not authenticated - security context is empty
 		try {
-			tested.getAuthenticatedProvider();
+			tested.getAuthenticatedProvider(null);
 			Assert.fail("Exception must be thrown");
 		} catch (NotAuthenticatedException e) {
 			// OK
@@ -48,19 +48,18 @@ public class AuthenticationUtilServiceTest {
 		// CASE - not authenticated - security context is bad type
 		{
 			SecurityContext scMock = Mockito.mock(SecurityContext.class);
-			tested.securityContext = scMock;
 			Mockito.when(scMock.getUserPrincipal()).thenReturn(new SimplePrincipal("aa"));
 			try {
-				tested.getAuthenticatedProvider();
+				tested.getAuthenticatedProvider(scMock);
 				Assert.fail("Exception must be thrown");
 			} catch (NotAuthenticatedException e) {
 				// OK
 			}
 		}
 		{
-			tested.securityContext = new ContributorCustomSecurityContext(new SimplePrincipal("aa"), true, "aa");
+			SecurityContext securityContext = new ContributorCustomSecurityContext(new SimplePrincipal("aa"), true, "aa");
 			try {
-				tested.getAuthenticatedProvider();
+				tested.getAuthenticatedProvider(securityContext);
 				Assert.fail("Exception must be thrown");
 			} catch (NotAuthenticatedException e) {
 				// OK
@@ -69,9 +68,9 @@ public class AuthenticationUtilServiceTest {
 
 		// CASE - not authenticated - security context is correct type but principal is empty
 		{
-			tested.securityContext = new ProviderCustomSecurityContext(null, false, false, "a");
+			SecurityContext securityContext = new ProviderCustomSecurityContext(null, false, false, "a");
 			try {
-				tested.getAuthenticatedProvider();
+				tested.getAuthenticatedProvider(securityContext);
 				Assert.fail("Exception must be thrown");
 			} catch (NotAuthenticatedException e) {
 				// OK
@@ -80,15 +79,15 @@ public class AuthenticationUtilServiceTest {
 
 		// CASE - provider authenticated OK
 		{
-			tested.securityContext = new ProviderCustomSecurityContext(new SimplePrincipal("aa"), false, false, "a");
-			Assert.assertEquals("aa", tested.getAuthenticatedProvider());
+			SecurityContext securityContext = new ProviderCustomSecurityContext(new SimplePrincipal("aa"), false, false, "a");
+			Assert.assertEquals("aa", tested.getAuthenticatedProvider(securityContext));
 		}
 
 		// CASE - provider authenticated OK - subclass of security context is evaluated OK (due proxying in CDI)
 		{
-			tested.securityContext = new ProviderCustomSecurityContext(new SimplePrincipal("aa"), false, false, "a") {
+			SecurityContext securityContext = new ProviderCustomSecurityContext(new SimplePrincipal("aa"), false, false, "a") {
 			};
-			Assert.assertEquals("aa", tested.getAuthenticatedProvider());
+			Assert.assertEquals("aa", tested.getAuthenticatedProvider(securityContext));
 		}
 	}
 
@@ -98,7 +97,7 @@ public class AuthenticationUtilServiceTest {
 		// CASE - not authenticated - security context is empty
 		try {
 			AuthenticationUtilService tested = getTested();
-			tested.getAuthenticatedContributor(false);
+			tested.getAuthenticatedContributor(null, false);
 			Assert.fail("Exception must be thrown");
 		} catch (NotAuthenticatedException e) {
 			// OK
@@ -108,10 +107,9 @@ public class AuthenticationUtilServiceTest {
 		{
 			AuthenticationUtilService tested = getTested();
 			SecurityContext scMock = Mockito.mock(SecurityContext.class);
-			tested.securityContext = scMock;
 			Mockito.when(scMock.getUserPrincipal()).thenReturn(new SimplePrincipal("aa"));
 			try {
-				tested.getAuthenticatedContributor(false);
+				tested.getAuthenticatedContributor(scMock, false);
 				Assert.fail("Exception must be thrown");
 			} catch (NotAuthenticatedException e) {
 				// OK
@@ -119,9 +117,9 @@ public class AuthenticationUtilServiceTest {
 		}
 		{
 			AuthenticationUtilService tested = getTested();
-			tested.securityContext = new ProviderCustomSecurityContext(new SimplePrincipal("aa"), true, true, "aa");
+			SecurityContext securityContext = new ProviderCustomSecurityContext(new SimplePrincipal("aa"), true, true, "aa");
 			try {
-				tested.getAuthenticatedContributor(false);
+				tested.getAuthenticatedContributor(securityContext, false);
 				Assert.fail("Exception must be thrown");
 			} catch (NotAuthenticatedException e) {
 				// OK
@@ -131,9 +129,9 @@ public class AuthenticationUtilServiceTest {
 		// CASE - not authenticated - security context is correct type but principal is empty
 		{
 			AuthenticationUtilService tested = getTested();
-			tested.securityContext = new ContributorCustomSecurityContext(null, true, "a");
+			SecurityContext securityContext = new ContributorCustomSecurityContext(null, true, "a");
 			try {
-				tested.getAuthenticatedContributor(false);
+				tested.getAuthenticatedContributor(securityContext, false);
 				Assert.fail("Exception must be thrown");
 			} catch (NotAuthenticatedException e) {
 				// OK
@@ -146,13 +144,13 @@ public class AuthenticationUtilServiceTest {
 			boolean forceCreate = true;
 			tested.contributorProfileService = Mockito.mock(ContributorProfileService.class);
 			Mockito.when(tested.contributorProfileService.getContributorId("a", "aa", forceCreate)).thenReturn("bb");
-			tested.securityContext = new ContributorCustomSecurityContext(new SimplePrincipal("aa"), true, "a");
-			Assert.assertEquals("bb", tested.getAuthenticatedContributor(forceCreate));
+			SecurityContext securityContext = new ContributorCustomSecurityContext(new SimplePrincipal("aa"), true, "a");
+			Assert.assertEquals("bb", tested.getAuthenticatedContributor(securityContext, forceCreate));
 			Mockito.verify(tested.contributorProfileService, Mockito.times(1)).getContributorId(Mockito.anyString(),
 					Mockito.anyString(), Mockito.anyBoolean());
 
 			// second run uses cache
-			Assert.assertEquals("bb", tested.getAuthenticatedContributor(forceCreate));
+			Assert.assertEquals("bb", tested.getAuthenticatedContributor(securityContext, forceCreate));
 			Mockito.verify(tested.contributorProfileService, Mockito.times(1)).getContributorId(Mockito.anyString(),
 					Mockito.anyString(), Mockito.anyBoolean());
 		}
@@ -164,14 +162,14 @@ public class AuthenticationUtilServiceTest {
 			tested.contributorProfileService = Mockito.mock(ContributorProfileService.class);
 			Mockito.when(tested.contributorProfileService.getContributorId("a", "aa", forceCreate)).thenReturn(null);
 			// we prepare subclass of security context to check it is evaluated OK (due proxying in CDI)
-			tested.securityContext = new ContributorCustomSecurityContext(new SimplePrincipal("aa"), true, "a") {
+			SecurityContext securityContext = new ContributorCustomSecurityContext(new SimplePrincipal("aa"), true, "a") {
 			};
-			Assert.assertEquals(null, tested.getAuthenticatedContributor(forceCreate));
+			Assert.assertEquals(null, tested.getAuthenticatedContributor(securityContext, forceCreate));
 			Mockito.verify(tested.contributorProfileService, Mockito.times(1)).getContributorId(Mockito.anyString(),
 					Mockito.anyString(), Mockito.anyBoolean());
 
 			// second run do not uses cache for this case
-			Assert.assertEquals(null, tested.getAuthenticatedContributor(forceCreate));
+			Assert.assertEquals(null, tested.getAuthenticatedContributor(securityContext, forceCreate));
 			Mockito.verify(tested.contributorProfileService, Mockito.times(2)).getContributorId(Mockito.anyString(),
 					Mockito.anyString(), Mockito.anyBoolean());
 		}
@@ -185,13 +183,13 @@ public class AuthenticationUtilServiceTest {
 			tested.contributorProfileService = Mockito.mock(ContributorProfileService.class);
 			Mockito.when(tested.contributorProfileService.getContributorId("a", "aa", forceCreate)).thenReturn(null);
 			Mockito.when(tested.contributorProfileService.getContributorId("a", "aa", forceCreate2)).thenReturn("bb");
-			tested.securityContext = new ContributorCustomSecurityContext(new SimplePrincipal("aa"), true, "a");
-			Assert.assertEquals(null, tested.getAuthenticatedContributor(forceCreate));
+			SecurityContext securityContext = new ContributorCustomSecurityContext(new SimplePrincipal("aa"), true, "a");
+			Assert.assertEquals(null, tested.getAuthenticatedContributor(securityContext, forceCreate));
 			Mockito.verify(tested.contributorProfileService, Mockito.times(1)).getContributorId(Mockito.anyString(),
 					Mockito.anyString(), Mockito.anyBoolean());
 
 			// second run do not uses cache in this case
-			Assert.assertEquals("bb", tested.getAuthenticatedContributor(forceCreate2));
+			Assert.assertEquals("bb", tested.getAuthenticatedContributor(securityContext, forceCreate2));
 			Mockito.verify(tested.contributorProfileService, Mockito.times(2)).getContributorId(Mockito.anyString(),
 					Mockito.anyString(), Mockito.anyBoolean());
 		}
@@ -206,23 +204,22 @@ public class AuthenticationUtilServiceTest {
 		// CASE - not authenticated - no call to service
 		{
 			Mockito.reset(tested.contributorProfileService);
-			tested.updateAuthenticatedContributorProfile();
+			tested.updateAuthenticatedContributorProfile(null);
 			Mockito.verifyZeroInteractions(tested.contributorProfileService);
 		}
 		{
 			Mockito.reset(tested.contributorProfileService);
 			SecurityContext scMock = Mockito.mock(SecurityContext.class);
-			tested.securityContext = scMock;
 			Mockito.when(scMock.getUserPrincipal()).thenReturn(new SimplePrincipal("aa"));
-			tested.updateAuthenticatedContributorProfile();
+			tested.updateAuthenticatedContributorProfile(scMock);
 			Mockito.verifyZeroInteractions(tested.contributorProfileService);
 		}
 
-		tested.securityContext = new ContributorCustomSecurityContext(new SimplePrincipal("aa"), true, "a");
+		SecurityContext securityContext = new ContributorCustomSecurityContext(new SimplePrincipal("aa"), true, "a");
 		// case - service call OK
 		{
 			Mockito.reset(tested.contributorProfileService);
-			tested.updateAuthenticatedContributorProfile();
+			tested.updateAuthenticatedContributorProfile(securityContext);
 			Mockito.verify(tested.contributorProfileService).createOrUpdateProfile("a", "aa");
 		}
 
@@ -231,7 +228,7 @@ public class AuthenticationUtilServiceTest {
 			Mockito.reset(tested.contributorProfileService);
 			Mockito.doThrow(new RuntimeException("Test exception from profile update"))
 					.when(tested.contributorProfileService).createOrUpdateProfile(Mockito.anyString(), Mockito.anyString());
-			tested.updateAuthenticatedContributorProfile();
+			tested.updateAuthenticatedContributorProfile(securityContext);
 			Mockito.verify(tested.contributorProfileService).createOrUpdateProfile("a", "aa");
 		}
 

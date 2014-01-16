@@ -603,7 +603,7 @@ public class ContentRestServiceTest extends ESRealClientTestBase {
 		tested.contentEnhancementsService = Mockito.mock(ContentEnhancementsService.class);
 		tested.log = Logger.getLogger("testlogger");
 		tested.authenticationUtilService = Mockito.mock(AuthenticationUtilService.class);
-		Mockito.when(tested.authenticationUtilService.getAuthenticatedProvider()).thenReturn("jbossorg");
+		Mockito.when(tested.authenticationUtilService.getAuthenticatedProvider(null)).thenReturn("jbossorg");
 
 		return tested;
 	}

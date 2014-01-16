@@ -21,11 +21,8 @@ import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
+import javax.ws.rs.core.*;
 import javax.ws.rs.core.Response.Status;
-import javax.ws.rs.core.UriInfo;
 
 import org.elasticsearch.action.get.GetResponse;
 import org.searchisko.api.ContentObjectFields;
@@ -71,6 +68,9 @@ public class RatingRestService extends RestServiceBase {
 	@Inject
 	protected AuthenticationUtilService authenticationUtilService;
 
+	@Context
+	protected SecurityContext securityContext;
+
 	/**
 	 * CORS handler for OPTIONS http request.
 	 */
@@ -95,7 +95,7 @@ public class RatingRestService extends RestServiceBase {
 			throw new RequiredFieldException(QUERY_PARAM_ID);
 		}
 
-		String currentContributorId = authenticationUtilService.getAuthenticatedContributor(false);
+		String currentContributorId = authenticationUtilService.getAuthenticatedContributor(securityContext, false);
 		if (currentContributorId != null) {
 			List<Rating> rl = ratingPersistenceService.getRatings(currentContributorId, contentSysId);
 			if (rl != null && !rl.isEmpty()) {
@@ -130,7 +130,7 @@ public class RatingRestService extends RestServiceBase {
 
 		Map<String, Object> ret = new HashMap<>();
 
-		String currentContributorId = authenticationUtilService.getAuthenticatedContributor(false);
+		String currentContributorId = authenticationUtilService.getAuthenticatedContributor(securityContext, false);
 		if (currentContributorId == null || uriInfo == null) {
 			return ret;
 		}
@@ -165,7 +165,7 @@ public class RatingRestService extends RestServiceBase {
 	@CORSSupport
 	public Object postRating(@PathParam(QUERY_PARAM_ID) String contentSysId, Map<String, Object> requestContent) {
 
-		String currentContributorId = authenticationUtilService.getAuthenticatedContributor(true);
+		String currentContributorId = authenticationUtilService.getAuthenticatedContributor(securityContext, true);
 
 		contentSysId = SearchUtils.trimToNull(contentSysId);
 

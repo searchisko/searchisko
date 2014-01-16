@@ -39,7 +39,7 @@ import org.searchisko.api.util.SearchUtils;
  * SSO login. It stores authenticated {@link Principal} with CAS usernamename in
  * {@link ContributorCustomSecurityContext} instance into {@link SecurityContext} to be used later by authorization
  * interceptor {@link ContributorSecurityPreProcessInterceptor} if necessary.
- * 
+ *
  * @author Vlastimil Elias (velias at redhat dot com)
  */
 @Provider
@@ -114,8 +114,10 @@ public class ContributorAuthenticationInterceptor implements PreProcessIntercept
 			Principal principal = new SimplePrincipal(username);
 			ResteasyProviderFactory.pushContext(SecurityContext.class, new ContributorCustomSecurityContext(principal, true,
 					authenticationScheme));
-			log.log(Level.FINE, "Request authenticated for Contributor with username '{0}' using method {1}", new Object[] {
-					username, authenticationScheme });
+			if (log.isLoggable(Level.FINE)) {
+				log.log(Level.FINE, "Request authenticated for Contributor with username {0} using method {1}", new Object[]{
+						username, authenticationScheme});
+			}
 		}
 
 		return null;
