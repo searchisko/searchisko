@@ -44,7 +44,7 @@ public class Jive6ContributorProfileProvider implements ContributorProfileProvid
 	@Inject
 	protected Logger log;
 
-	public static final String JIVE_PROFILE_REST_API = "https://community.jboss.org/api/core/v3/people/username/";
+	public static final String JIVE_PROFILE_REST_API = "/api/core/v3/people/username/";
 
 	protected DefaultHttpClient httpClient;
 
@@ -55,11 +55,12 @@ public class Jive6ContributorProfileProvider implements ContributorProfileProvid
 
 	@Override
 	public ContributorProfile getProfile(String jbossorgUsername) {
-		HttpGet httpGet = new HttpGet(JIVE_PROFILE_REST_API + jbossorgUsername);
-
 		// TODO CONTRIBUTOR_PROFILE set username/password for accessing Jive over some config file
 		String username = "";
 		String password = "";
+		String jive6Url = "https://community.jboss.org";
+
+		HttpGet httpGet = new HttpGet(jive6Url + JIVE_PROFILE_REST_API + jbossorgUsername);
 
 		UsernamePasswordCredentials credentials = new UsernamePasswordCredentials(username, password);
 		httpGet.addHeader(BasicScheme.authenticate(credentials, "US-ASCII", false));
@@ -67,8 +68,7 @@ public class Jive6ContributorProfileProvider implements ContributorProfileProvid
 		try {
 			HttpResponse response = httpClient.execute(httpGet);
 			if (response.getStatusLine().getStatusCode() >= 300) {
-				log.log(Level.WARNING, "Cannot get profile data form Jive, reason: {0}", response.getStatusLine()
-						.getReasonPhrase());
+				log.log(Level.WARNING, "Cannot get profile data form Jive, reason: {0}", response);
 				return null;
 			}
 			byte[] data = EntityUtils.toByteArray(response.getEntity());
@@ -146,9 +146,9 @@ public class Jive6ContributorProfileProvider implements ContributorProfileProvid
 		profileData.put("id", "jbossorg_contribprofile-" + username);
 		profileData.put(ContentObjectFields.SYS_ID, "jbossorg_contribprofile-" + username);
 
-
 		profileData.put("name", map.get("name"));
 		profileData.put("displayName", map.get("displayName"));
+		profileData.put(ContentObjectFields.SYS_TITLE, map.get("displayName"));
 
 		profileData.put(ContentObjectFields.TAGS, map.get("tags"));
 		profileData.put(ContentObjectFields.SYS_TAGS, map.get("tags"));
