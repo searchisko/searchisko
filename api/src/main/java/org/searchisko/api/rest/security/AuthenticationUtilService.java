@@ -5,20 +5,18 @@
  */
 package org.searchisko.api.rest.security;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import javax.enterprise.context.RequestScoped;
-import javax.inject.Inject;
-import javax.inject.Named;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.SecurityContext;
-
 import org.searchisko.api.annotations.security.ContributorAllowed;
 import org.searchisko.api.annotations.security.ProviderAllowed;
 import org.searchisko.api.rest.exception.NotAuthenticatedException;
 import org.searchisko.api.service.ContributorProfileService;
 import org.searchisko.api.util.SearchUtils;
+
+import javax.enterprise.context.RequestScoped;
+import javax.inject.Inject;
+import javax.inject.Named;
+import javax.ws.rs.core.SecurityContext;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Authentication utility service. Use it in your RestServices if you need info about currently logged in user!
