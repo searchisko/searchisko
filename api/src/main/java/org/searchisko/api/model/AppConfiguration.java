@@ -38,6 +38,15 @@ public class AppConfiguration implements Serializable {
 	 */
 	private int contributorProfileUpdateThreshold;
 
+	/**
+	 * Contributor Profile Provider configuration
+	 */
+	private ContributorProfileProviderConfig contributorProfileProviderConfig;
+
+	public AppConfiguration(String appDataPath) {
+		this.appDataPath = appDataPath;
+	}
+
 	public ClientType getClientType() {
 		return clientType;
 	}
@@ -68,5 +77,73 @@ public class AppConfiguration implements Serializable {
 
 	public void setContributorProfileUpdateThreshold(int contributorProfileUpdateThreshold) {
 		this.contributorProfileUpdateThreshold = contributorProfileUpdateThreshold;
+	}
+
+	public ContributorProfileProviderConfig getContributorProfileProviderConfig() {
+		return contributorProfileProviderConfig;
+	}
+
+	public void setContributorProfileProviderConfig(ContributorProfileProviderConfig contributorProfileProviderConfig) {
+		this.contributorProfileProviderConfig = contributorProfileProviderConfig;
+	}
+
+	public static class ContributorProfileProviderConfig {
+		protected String urlbase;
+		protected String username;
+		protected String password;
+
+		public ContributorProfileProviderConfig(String urlbase) {
+			this.urlbase = urlbase;
+		}
+
+		public ContributorProfileProviderConfig(String urlbase, String username, String password) {
+			this.urlbase = urlbase;
+			this.username = username;
+			this.password = password;
+		}
+
+		public String getUrlbase() {
+			return urlbase;
+		}
+
+		public void setUrlbase(String urlbase) {
+			this.urlbase = urlbase;
+		}
+
+		public String getUsername() {
+			return username;
+		}
+
+		public void setUsername(String username) {
+			this.username = username;
+		}
+
+		public String getPassword() {
+			return password;
+		}
+
+		public void setPassword(String password) {
+			this.password = password;
+		}
+
+		@Override
+		public String toString() {
+			return "ContributorProfileProviderConfig{" +
+					"urlbase='" + urlbase + '\'' +
+					", username='" + username + '\'' +
+					", password='" + password + '\'' +
+					'}';
+		}
+	}
+
+	@Override
+	public String toString() {
+		return "AppConfiguration{" +
+				"clientType=" + clientType +
+				", appDataPath='" + appDataPath + '\'' +
+				", providerCreateInitData=" + providerCreateInitData +
+				", contributorProfileUpdateThreshold=" + contributorProfileUpdateThreshold +
+				", contributorProfileProviderConfig=" + contributorProfileProviderConfig +
+				'}';
 	}
 }

@@ -5,12 +5,6 @@
  */
 package org.searchisko.api.service;
 
-import java.io.IOException;
-import java.text.ParseException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.logging.Logger;
-
 import org.apache.lucene.document.DateTools;
 import org.elasticsearch.ElasticSearchException;
 import org.elasticsearch.action.ActionListener;
@@ -23,20 +17,21 @@ import org.elasticsearch.rest.RestStatus;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
 import org.elasticsearch.search.internal.InternalSearchHit;
-import org.searchisko.api.model.AppConfiguration;
-import org.searchisko.api.model.AppConfiguration.ClientType;
-import org.searchisko.api.model.PastIntervalValue;
-import org.searchisko.api.model.QuerySettings;
-import org.searchisko.api.model.QuerySettings.Filters;
-import org.searchisko.api.model.SortByValue;
-import org.searchisko.api.model.StatsConfiguration;
-import org.searchisko.api.model.TimeoutConfiguration;
-import org.searchisko.api.testtools.TestUtils;
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
+import org.searchisko.api.model.*;
+import org.searchisko.api.model.AppConfiguration.ClientType;
+import org.searchisko.api.model.QuerySettings.Filters;
+import org.searchisko.api.testtools.TestUtils;
+
+import java.io.IOException;
+import java.text.ParseException;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.logging.Logger;
 
 /**
  * Unit test for {@link StatsClientService}
@@ -48,11 +43,10 @@ public class StatsClientServiceTest {
 	@Test
 	public void init_embedded() throws Exception {
 		AppConfigurationService acs = new AppConfigurationService();
-		AppConfiguration ac = new AppConfiguration();
+		AppConfiguration ac = new AppConfiguration(System.getProperty("java.io.tmpdir"));
 		acs.appConfiguration = ac;
 		ac.setClientType(ClientType.EMBEDDED);
 		ac.setProviderCreateInitData(false);
-		ac.setAppDataPath(System.getProperty("java.io.tmpdir"));
 
 		StatsClientService tested = new StatsClientService();
 		tested.appConfigurationService = acs;

@@ -5,12 +5,12 @@
  */
 package org.searchisko.api.service;
 
-import java.util.logging.Logger;
-
-import org.searchisko.api.model.AppConfiguration;
-import org.searchisko.api.model.AppConfiguration.ClientType;
 import org.junit.Assert;
 import org.junit.Test;
+import org.searchisko.api.model.AppConfiguration;
+import org.searchisko.api.model.AppConfiguration.ClientType;
+
+import java.util.logging.Logger;
 
 /**
  * Unit test for {@link SearchClientService}
@@ -22,11 +22,10 @@ public class SearchClientServiceTest {
 	@Test
 	public void init_embedded() throws Exception {
 		AppConfigurationService acs = new AppConfigurationService();
-		AppConfiguration ac = new AppConfiguration();
+		AppConfiguration ac = new AppConfiguration(System.getProperty("java.io.tmpdir"));
 		acs.appConfiguration = ac;
 		ac.setClientType(ClientType.EMBEDDED);
 		ac.setProviderCreateInitData(false);
-		ac.setAppDataPath(System.getProperty("java.io.tmpdir"));
 
 		SearchClientService tested = new SearchClientService();
 		tested.appConfigurationService = acs;

@@ -12,6 +12,7 @@ import javax.annotation.PostConstruct;
 import javax.ejb.Singleton;
 import javax.ejb.Startup;
 import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.inject.Produces;
 import javax.inject.Inject;
 import javax.inject.Named;
 import java.io.IOException;
@@ -37,6 +38,7 @@ public class AppConfigurationService {
 
 	protected AppConfiguration appConfiguration;
 
+	@Produces
 	public AppConfiguration getAppConfiguration() {
 		return appConfiguration;
 	}
@@ -62,7 +64,7 @@ public class AppConfigurationService {
 			inStream.close();
 		}
 
-		appConfiguration = new AppConfiguration();
+		appConfiguration = new AppConfiguration(prop.getProperty("es.client.embedded.data.path"));
 
 		String clientType = prop.getProperty("es.client.type", "transport");
 		if ("embedded".equals(clientType)) {
@@ -71,12 +73,17 @@ public class AppConfigurationService {
 			appConfiguration.setClientType(ClientType.TRANSPORT);
 		}
 
-		log.info("Data path: " + prop.getProperty("es.client.embedded.data.path"));
-
-		appConfiguration.setAppDataPath(prop.getProperty("es.client.embedded.data.path"));
 		appConfiguration.setProviderCreateInitData(Boolean.parseBoolean(prop
 				.getProperty("provider.createInitData", "false")));
 		appConfiguration.setContributorProfileUpdateThreshold(
 				Integer.parseInt(prop.getProperty("contributorprofile.updatethreshold", "10")));
+
+		AppConfiguration.ContributorProfileProviderConfig cppc = new AppConfiguration.ContributorProfileProviderConfig(
+				prop.getProperty("contributorprofile.provider.urlbase"),
+				prop.getProperty("contributorprofile.provider.username"),
+				prop.getProperty("contributorprofile.provider.password"));
+		appConfiguration.setContributorProfileProviderConfig(cppc);
+
+		log.log(Level.INFO, "App Configuration: {0}", appConfiguration);
 	}
 }

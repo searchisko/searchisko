@@ -14,6 +14,7 @@ import org.apache.http.util.EntityUtils;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.type.TypeReference;
 import org.searchisko.api.ContentObjectFields;
+import org.searchisko.api.model.AppConfiguration;
 import org.searchisko.api.service.ContributorProfileService;
 import org.searchisko.api.util.SearchUtils;
 import org.searchisko.contribprofile.model.ContributorProfile;
@@ -46,6 +47,9 @@ public class Jive6ContributorProfileProvider implements ContributorProfileProvid
 
 	public static final String JIVE_PROFILE_REST_API = "/api/core/v3/people/username/";
 
+	@Inject
+	protected AppConfiguration appConfiguration;
+
 	protected DefaultHttpClient httpClient;
 
 	@PostConstruct
@@ -55,10 +59,9 @@ public class Jive6ContributorProfileProvider implements ContributorProfileProvid
 
 	@Override
 	public ContributorProfile getProfile(String jbossorgUsername) {
-		// TODO CONTRIBUTOR_PROFILE set username/password for accessing Jive over some config file
-		String username = "";
-		String password = "";
-		String jive6Url = "https://community.jboss.org";
+		String username = appConfiguration.getContributorProfileProviderConfig().getUsername();
+		String password = appConfiguration.getContributorProfileProviderConfig().getPassword();
+		String jive6Url = appConfiguration.getContributorProfileProviderConfig().getUrlbase();
 
 		HttpGet httpGet = new HttpGet(jive6Url + JIVE_PROFILE_REST_API + jbossorgUsername);
 
