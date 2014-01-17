@@ -33,6 +33,11 @@ public class AppConfiguration implements Serializable {
 	 */
 	private boolean providerCreateInitData;
 
+	/**
+	 * Threshold for updating contributor profiles
+	 */
+	private int contributorProfileUpdateThreshold;
+
 	public ClientType getClientType() {
 		return clientType;
 	}
@@ -57,4 +62,11 @@ public class AppConfiguration implements Serializable {
 		this.providerCreateInitData = providerCreateInitData;
 	}
 
+	public int getContributorProfileUpdateThreshold() {
+		return contributorProfileUpdateThreshold;
+	}
+
+	public void setContributorProfileUpdateThreshold(int contributorProfileUpdateThreshold) {
+		this.contributorProfileUpdateThreshold = contributorProfileUpdateThreshold;
+	}
 }

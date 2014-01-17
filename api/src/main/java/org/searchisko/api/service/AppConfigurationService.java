@@ -5,11 +5,8 @@
  */
 package org.searchisko.api.service;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Properties;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.searchisko.api.model.AppConfiguration;
+import org.searchisko.api.model.AppConfiguration.ClientType;
 
 import javax.annotation.PostConstruct;
 import javax.ejb.Singleton;
@@ -17,9 +14,11 @@ import javax.ejb.Startup;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
-
-import org.searchisko.api.model.AppConfiguration;
-import org.searchisko.api.model.AppConfiguration.ClientType;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Application configuration service
@@ -77,6 +76,7 @@ public class AppConfigurationService {
 		appConfiguration.setAppDataPath(prop.getProperty("es.client.embedded.data.path"));
 		appConfiguration.setProviderCreateInitData(Boolean.parseBoolean(prop
 				.getProperty("provider.createInitData", "false")));
-
+		appConfiguration.setContributorProfileUpdateThreshold(
+				Integer.parseInt(prop.getProperty("contributorprofile.updatethreshold", "10")));
 	}
 }

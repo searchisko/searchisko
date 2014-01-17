@@ -54,6 +54,9 @@ public class ContributorProfileService {
 	@Inject
 	protected SearchClientService searchClientService;
 
+	@Inject
+	protected AppConfigurationService appConfigurationService;
+
 	/**
 	 * Updates search index by current entity identified by id
 	 *
@@ -134,8 +137,7 @@ public class ContributorProfileService {
 		log.log(Level.FINE, "Create or update profile for username {0}", username);
 
 		if (ContributorAuthenticationInterceptor.AUTH_METHOD_CAS.equals(authenticationScheme)) {
-			// TODO: Contributor Profile: Move update threshold to configuration
-			final int UPDATE_THRESHOLD_IN_MINUTES = 10;
+			int thresholdInMinutes = appConfigurationService.getAppConfiguration().getContributorProfileUpdateThreshold();
 
 			// Get matching contributor profile and check when it was updated
 			SearchResponse currentContributors = contributorService.findByTypeSpecificCode(FIELD_TSC_JBOSSORG_USERNAME, username);
@@ -147,7 +149,7 @@ public class ContributorProfileService {
 				if (currentProfiles != null && currentProfiles.getHits().getTotalHits() > 0) {
 					SearchHit profile = currentProfiles.getHits().getAt(0);
 					Object updated = profile.getSource().get(ContentObjectFields.SYS_UPDATED);
-					if (SearchUtils.isDateAfter(updated, UPDATE_THRESHOLD_IN_MINUTES)) {
+					if (SearchUtils.isDateAfter(updated, thresholdInMinutes)) {
 						log.log(Level.FINE, "Contributor Profile update is not needed right now");
 						return null;
 					}
