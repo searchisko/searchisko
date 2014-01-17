@@ -134,9 +134,28 @@ public class ContributorProfileService {
 		log.log(Level.FINE, "Create or update profile for username {0}", username);
 
 		if (ContributorAuthenticationInterceptor.AUTH_METHOD_CAS.equals(authenticationScheme)) {
+			// TODO: Contributor Profile: Move update threshold to configuration
+			final int UPDATE_THRESHOLD_IN_MINUTES = 10;
 
-			// TODO CONTRIBUTOR_PROFILE we call this method when user successfully authenticate which may be rather often. So
-			// perform profile update only once a time (store last update timestamp in profile's field sys_updated and use it).
+			// Get matching contributor profile and check when it was updated
+			SearchResponse currentContributors = contributorService.findByTypeSpecificCode(FIELD_TSC_JBOSSORG_USERNAME, username);
+			if (currentContributors != null && currentContributors.getHits().getTotalHits() > 0) {
+				SearchHit contributor = currentContributors.getHits().getAt(0);
+				String contributorCode = ContributorService.getContributorCode(contributor.getSource());
+
+				SearchResponse currentProfiles = findByContributorCode(contributorCode);
+				if (currentProfiles != null && currentProfiles.getHits().getTotalHits() > 0) {
+					SearchHit profile = currentProfiles.getHits().getAt(0);
+					Object updated = profile.getSource().get(ContentObjectFields.SYS_UPDATED);
+					if (SearchUtils.isDateAfter(updated, UPDATE_THRESHOLD_IN_MINUTES)) {
+						log.log(Level.FINE, "Contributor Profile update is not needed right now");
+						return null;
+					}
+
+				}
+			}
+
+			log.log(Level.INFO, "Going to update contributor profile for username: {0}", username);
 
 			ContributorProfile profile = contributorProfileProvider.getProfile(username);
 			if (profile == null) {
@@ -167,7 +186,6 @@ public class ContributorProfileService {
 			} else {
 				putToSearchIndex(profileData);
 			}
-
 
 			return contributorCode;
 		} else {

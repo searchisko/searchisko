@@ -5,19 +5,16 @@
  */
 package org.searchisko.api.util;
 
-import java.io.IOException;
-import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import org.codehaus.jackson.JsonParseException;
 import org.codehaus.jackson.map.JsonMappingException;
+import org.elasticsearch.common.joda.time.LocalDateTime;
 import org.junit.Assert;
 import org.junit.Test;
 import org.searchisko.api.testtools.TestUtils;
+
+import java.io.IOException;
+import java.text.ParseException;
+import java.util.*;
 
 /**
  * Unit test for {@link SearchUtils}.
@@ -54,6 +51,16 @@ public class SearchUtilsTest {
 				.assertEquals(1361386810123l, SearchUtils.dateFromISOString("2013-02-20T20:00:10.123+01:00", false).getTime());
 
 		Assert.assertEquals(1361390410123l, SearchUtils.dateFromISOString("2013-02-20T20:00:10.123Z", false).getTime());
+
+	}
+
+	@Test
+	public void isDateBefore() {
+		Assert.assertTrue(SearchUtils.isDateAfter(new Date(), 1));
+		Assert.assertFalse(SearchUtils.isDateAfter(SearchUtils.dateFromISOString("2013-02-20T20:00:10.123+0100", false), 10));
+		Assert.assertTrue(SearchUtils.isDateAfter(SearchUtils.dateFromISOString("2100-02-20T20:00:10.123+0100", false), 10));
+		LocalDateTime now = new LocalDateTime();
+		Assert.assertTrue(SearchUtils.isDateAfter(now.minusMinutes(9).toDate(), 10));
 
 	}
 

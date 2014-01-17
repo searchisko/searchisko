@@ -86,6 +86,9 @@ public class Jive6ContributorProfileProviderTest {
 
 		profileData.put(ContentObjectFields.SYS_CONTRIBUTORS, contributors);
 
+		// sys_updated is not tested because it contains current time
+		contributorProfile.remove(ContentObjectFields.SYS_UPDATED);
+
 		StringWriter stringWriter = new StringWriter();
 		IOUtils.copy(Jive6ContributorProfileProviderTest.class.getResourceAsStream("Jive6ProfileDataConverted.json"), stringWriter, "UTF-8");
 		String expectedString = stringWriter.toString();

@@ -5,26 +5,22 @@
  */
 package org.searchisko.api.util;
 
+import org.codehaus.jackson.map.ObjectMapper;
+import org.codehaus.jackson.type.TypeReference;
+import org.elasticsearch.common.joda.time.LocalDateTime;
+import org.elasticsearch.common.joda.time.format.ISODateTimeFormat;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.TimeZone;
+import java.util.*;
+import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import org.codehaus.jackson.map.ObjectMapper;
-import org.codehaus.jackson.type.TypeReference;
-import org.elasticsearch.common.joda.time.format.ISODateTimeFormat;
 
 /**
  * Distinct utility methods.
- * 
+ *
  * @author Libor Krzyzanek
  * @author Vlastimil Elias (velias at redhat dot com)
  */
@@ -34,7 +30,7 @@ public class SearchUtils {
 
 	/**
 	 * Load properties from defined path e.g. "/app.properties"
-	 * 
+	 *
 	 * @param path
 	 * @return newly initialized {@link Properties}
 	 * @throws IOException
@@ -51,7 +47,7 @@ public class SearchUtils {
 
 	/**
 	 * Trim string and return null if empty.
-	 * 
+	 *
 	 * @param value to trim
 	 * @return trimmed value or null if empty
 	 */
@@ -66,7 +62,7 @@ public class SearchUtils {
 
 	/**
 	 * Check if String is blank.
-	 * 
+	 *
 	 * @param value to check
 	 * @return true if value is blank (so null or empty or whitespaces only string)
 	 */
@@ -76,7 +72,7 @@ public class SearchUtils {
 
 	/**
 	 * Convert JSON Map structure into String with JSON content.
-	 * 
+	 *
 	 * @param jsonMapValue to convert
 	 * @return
 	 * @throws IOException
@@ -91,7 +87,7 @@ public class SearchUtils {
 
 	/**
 	 * Get ISO date time formatter.
-	 * 
+	 *
 	 * @return DateFormat instance for ISO format
 	 */
 	public static DateFormat getISODateFormat() {
@@ -103,7 +99,7 @@ public class SearchUtils {
 
 	/**
 	 * Parse ISO date time formatted string into {@link Date} instance.
-	 * 
+	 *
 	 * @param string ISO formatted date string to parse
 	 * @param silent if true then null is returned instead of {@link IllegalArgumentException} thrown
 	 * @return parsed date or null
@@ -123,8 +119,44 @@ public class SearchUtils {
 	}
 
 	/**
+	 * Test if Date is after date computed as current date minus threshold
+	 *
+	 * @param date               date to be tested. Can be String in ISO format or java.util.date
+	 * @param thresholdInMinutes threshold in minutes
+	 * @return false if sysUpdated is newer otherwise true
+	 */
+	public static boolean isDateAfter(Object date, int thresholdInMinutes) {
+		LocalDateTime d = null;
+		if (date instanceof Date) {
+			d = new LocalDateTime(((Date) date).getTime());
+		} else if (date instanceof String) {
+			try {
+				d = new LocalDateTime(SearchUtils.dateFromISOString((String) date, true));
+			} catch (Exception e) {
+				// should never happen. See dateFromISOString method
+			}
+		}
+		log.log(Level.FINEST, "date to check: {0}", d);
+
+		if (d != null) {
+			LocalDateTime now = new LocalDateTime();
+			LocalDateTime test = now.minusMinutes(thresholdInMinutes);
+
+			if (log.isLoggable(Level.FINEST)){
+				log.log(Level.FINEST, "date to test again: {0}, threshold: {1}", new Object[] {test, thresholdInMinutes});
+			}
+
+			if (d.isBefore(test)) {
+				return false;
+			}
+		}
+
+		return true;
+	}
+
+	/**
 	 * Convert String with JSON content into JSON Map structure.
-	 * 
+	 *
 	 * @param jsonData string to convert
 	 * @return JSON MAP structure
 	 * @throws IOException
@@ -139,7 +171,7 @@ public class SearchUtils {
 
 	/**
 	 * Get Integer value from value in Json Map. Can convert from {@link String} and {@link Number} values.
-	 * 
+	 *
 	 * @param map to get Integer value from
 	 * @param key in map to get value from
 	 * @return Integer value if found. <code>null</code> if value is not present in map.
@@ -165,7 +197,7 @@ public class SearchUtils {
 	 * Merge values from source into target JSON Map. Target Map is more important during merge, so in case of some
 	 * conflicts target Map wins and original value is preserved. Lists (used for JSON Array) merging do not create
 	 * duplication (uses <code>equals()</code> to detect them). Structure inside source Map is not changed any way.
-	 * 
+	 *
 	 * @param source Map to merge values from
 	 * @param target Map to merge values into
 	 */

@@ -157,7 +157,7 @@ public class Jive6ContributorProfileProvider implements ContributorProfileProvid
 		profileData.put(ContentObjectFields.SYS_CREATED, map.get("published"));
 
 		profileData.put("updated", map.get("updated"));
-		profileData.put(ContentObjectFields.SYS_UPDATED, map.get("updated"));
+		profileData.put(ContentObjectFields.SYS_UPDATED, new Date());
 
 		Map<String, Object> resourcesObject = (Map<String, Object>) map.get("resources");
 		try {
