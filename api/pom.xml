@@ -205,7 +205,21 @@
             </exclusions>
         </dependency>
 
-        <!-- Unit test dependencies -->
+		<!-- Needed to be here instead of individual profiles because it has transitive dependecy on httpclient
+		 which is needed for DCP API iteself -->
+		<dependency>
+			<groupId>org.jboss.elasticsearch</groupId>
+			<artifactId>elasticsearch-river-jira</artifactId>
+			<version>${elasticsearch-river-jira.version}</version>
+			<!-- re-enabled commons-logging otherwise httpclient doesn't work -->
+		</dependency>
+		<dependency>
+			<groupId>org.jboss.elasticsearch</groupId>
+			<artifactId>elasticsearch-river-remote</artifactId>
+			<version>${elasticsearch-river-remote.version}</version>
+		</dependency>
+
+		<!-- Unit test dependencies -->
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
@@ -268,9 +282,9 @@
                             </Dependencies>
                         </manifestEntries>
                     </archive>
-                    <outputDirectory>${project.parent.basedir}/deployments</outputDirectory>
                     <warName>ROOT</warName>
-                    <attachClasses>true</attachClasses>
+                    <!-- TODO: Move attachClasses to separate profile since it's needed only for ftests -->
+					<attachClasses>true</attachClasses>
                     <webResources>
                         <resource>
                             <directory>${basedir}/src/main/webapp/WEB-INF</directory>
@@ -383,24 +397,12 @@
                 <es.client.embedded.data.path>${env.PWD}/.dcp_data</es.client.embedded.data.path>
                 <persistence.xml.jta-data-source>java:jboss/datasources/SearchiskoDS</persistence.xml.jta-data-source>
                 <persistence.xml.hibernate.dialect>org.hibernate.dialect.H2Dialect</persistence.xml.hibernate.dialect>
-                <datasource.connection.url>jdbc:h2:mem:searchisko;DB_CLOSE_DELAY=-1</datasource.connection.url>
+                <!-- By Default h2 database is persisted -->
+				<datasource.connection.url>jdbc:h2:searchisko</datasource.connection.url>
                 <datasource.driver>h2</datasource.driver>
                 <datasource.username>sa</datasource.username>
                 <datasource.password>sa</datasource.password>
             </properties>
-            <dependencies>
-                <dependency>
-                    <groupId>org.jboss.elasticsearch</groupId>
-                    <artifactId>elasticsearch-river-jira</artifactId>
-                    <version>${elasticsearch-river-jira.version}</version>
-					<!-- re-enabled commons-logging otherwise httpclient doesn't work -->
-                </dependency>
-                <dependency>
-                    <groupId>org.jboss.elasticsearch</groupId>
-                    <artifactId>elasticsearch-river-remote</artifactId>
-                    <version>${elasticsearch-river-remote.version}</version>
-                </dependency>
-            </dependencies>
             <build>
                 <filters>
                     <filter>src/main/profiles/${filter.name}/sso.properties</filter>
@@ -452,18 +454,6 @@
                 <datasource.username>sa</datasource.username>
                 <datasource.password>sa</datasource.password>
             </properties>
-            <dependencies>
-                <dependency>
-                    <groupId>org.jboss.elasticsearch</groupId>
-                    <artifactId>elasticsearch-river-jira</artifactId>
-                    <version>${elasticsearch-river-jira.version}</version>
-                </dependency>
-                <dependency>
-                    <groupId>org.jboss.elasticsearch</groupId>
-                    <artifactId>elasticsearch-river-remote</artifactId>
-                    <version>${elasticsearch-river-remote.version}</version>
-                </dependency>
-            </dependencies>
             <build>
                 <filters>
                     <filter>src/main/profiles/${filter.name}/sso.properties</filter>
@@ -493,25 +483,14 @@
                 <datasource.username>${env.OPENSHIFT_MYSQL_DB_USERNAME}</datasource.username>
                 <datasource.password>${env.OPENSHIFT_MYSQL_DB_PASSWORD}</datasource.password>
             </properties>
-            <dependencies>
-                <dependency>
-                    <groupId>org.jboss.elasticsearch</groupId>
-                    <artifactId>elasticsearch-river-jira</artifactId>
-                    <version>${elasticsearch-river-jira.version}</version>
-                </dependency>
-                <dependency>
-                    <groupId>org.jboss.elasticsearch</groupId>
-                    <artifactId>elasticsearch-river-remote</artifactId>
-                    <version>${elasticsearch-river-remote.version}</version>
-                </dependency>
-            </dependencies>
             <build>
                 <plugins>
                     <plugin>
-                        <!-- This is used to exclude unwanted JAR files from `deployments` folder. -->
+                        <!-- This is used to exclude unwanted JAR files from `deployments` folder and put ROOT.war to deployments DIR. -->
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-war-plugin</artifactId>
                         <configuration>
+							<outputDirectory>${project.parent.basedir}/deployments</outputDirectory>
                             <attachClasses>false</attachClasses>
                         </configuration>
                     </plugin>
