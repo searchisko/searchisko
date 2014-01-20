@@ -32,7 +32,7 @@
     <version>1.0.Beta-01</version>
 
     <properties>
-        <es.client.embedded.data.path>${env.PWD}/.dcp_data</es.client.embedded.data.path>
+        <es.client.embedded.data.path>${user.home}/.dcp_data</es.client.embedded.data.path>
     </properties>
 
     <dependencyManagement>

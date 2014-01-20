@@ -394,7 +394,7 @@
             </activation>
             <properties>
                 <filter.name>localhost</filter.name>
-                <es.client.embedded.data.path>${env.PWD}/.dcp_data</es.client.embedded.data.path>
+                <es.client.embedded.data.path>${user.home}/.dcp_data</es.client.embedded.data.path>
                 <persistence.xml.jta-data-source>java:jboss/datasources/SearchiskoDS</persistence.xml.jta-data-source>
                 <persistence.xml.hibernate.dialect>org.hibernate.dialect.H2Dialect</persistence.xml.hibernate.dialect>
                 <!-- By Default h2 database is persisted -->
