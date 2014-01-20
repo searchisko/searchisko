@@ -143,11 +143,11 @@ public class Jive6ContributorProfileProvider implements ContributorProfileProvid
 		Object username = jiveObject.get("username");
 
 		profileData.put(ContentObjectFields.SYS_CONTENT_PROVIDER, "jbossorg");
-		profileData.put(ContentObjectFields.SYS_TYPE, "contribprofile");
-		profileData.put(ContentObjectFields.SYS_CONTENT_TYPE, "jbossorg_contribprofile");
+		profileData.put(ContentObjectFields.SYS_TYPE, "contributor_profile");
+		profileData.put(ContentObjectFields.SYS_CONTENT_TYPE, "jbossorg_contributor_profile");
 
-		profileData.put("id", "jbossorg_contribprofile-" + username);
-		profileData.put(ContentObjectFields.SYS_ID, "jbossorg_contribprofile-" + username);
+		profileData.put("id", "jbossorg_contributor_profile-" + username);
+		profileData.put(ContentObjectFields.SYS_ID, "jbossorg_contributor_profile-" + username);
 
 		profileData.put("name", map.get("name"));
 		profileData.put("displayName", map.get("displayName"));
