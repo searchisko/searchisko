@@ -1,7 +1,31 @@
 {
     "jbossorg_contributor_profile" : {
-        "_all" : {"enabled" : false},
+        "_all" : { "enabled" : false },
         "properties" : {
+			"id"	         : { "type": "string", "store" : "no", "index" : "not_analyzed" },
+			"name" : {
+				"type" : "object",
+				"properties" : {
+					"givenName"  : { "type": "string" },
+					"familyName" : { "type": "string" },
+					"formatted"  : { "type": "string" }
+				}
+			},
+			"displayName"	 : { "type": "string", "store" : "no", "index" : "not_analyzed" },
+			"tags"	         : { "type": "string", "store" : "no", "index" : "not_analyzed" },
+			"published"	     : { "type": "date",   "store" : "no", "index" : "not_analyzed" },
+			"updated"	     : { "type": "date",   "store" : "no", "index" : "not_analyzed" },
+			"profileUrl"	 : { "type": "string", "store" : "no", "index" : "not_analyzed" },
+			"timeZone"       : { "type": "string", "store" : "no", "index" : "not_analyzed" },
+			"thumbnailUrl"	 : { "type": "string", "store" : "no", "index" : "not_analyzed" },
+			"aboutMe"	     : { "type": "string", "store" : "no", "index" : "not_analyzed" },
+			"accounts" : {
+				"type" : "object",
+				"properties" : {
+					"domain"     : { "type": "string", "store" : "no", "index" : "not_analyzed" },
+					"username"   : { "type": "string", "store" : "no", "index" : "not_analyzed" }
+				}
+			}
         }
     }
 }

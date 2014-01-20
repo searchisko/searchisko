@@ -23,6 +23,7 @@ as an inspiration. You will have your own content.
 ###List of available *sys_type*s
 
 + [project_info](content/project_info.md) the basic data about the [community project](https://www.jboss.org/projects.html). 
++ [contributor_profile](content/contributor_profile.md) the data about contributor profiles
 + [blogpost](content/blogpost.md) the data about blog posts related to the project
 + [issue](content/issue.md) the data from project's issue tracker (JIRA, Bugzilla, 
   etc...) about project bugs, feature requests etc.
