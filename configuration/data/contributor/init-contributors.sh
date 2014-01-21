@@ -34,6 +34,11 @@ echo -n "" > $outputfile
 
 for filename in *.json;
 do
+    # Check for no json files
+    if [ $filename="*.json" ]; then
+        echo "Nothing to push."
+    	break
+    fi
 	code="${filename%.*}"
 	echo -ne "Pushing $code"
 
