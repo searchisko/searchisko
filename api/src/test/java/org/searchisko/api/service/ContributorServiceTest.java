@@ -988,7 +988,7 @@ public class ContributorServiceTest extends ESRealClientTestBase {
 			tested.init();
 			Thread.sleep(100);
 
-			// TODO CONTRIBUTOR_PROFILE unit test case - find two distinct records by id and code, so we have to merge them
+			// case - find two distinct records by id and code, so we have to merge them
 			indexInsertDocument(
 					ContributorService.SEARCH_INDEX_NAME,
 					ContributorService.SEARCH_INDEX_TYPE,
