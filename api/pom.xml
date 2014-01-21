@@ -475,7 +475,7 @@
             <properties>
                 <filter.name>openshift</filter.name>
                 <es.client.embedded.data.path>${env.OPENSHIFT_DATA_DIR}</es.client.embedded.data.path>
-                <es.network.host>${env.OPENSHIFT_INTERNAL_IP}</es.network.host>
+                <es.network.host>${env.OPENSHIFT_JBOSSEAP_IP}</es.network.host>
                 <persistence.xml.jta-data-source>java:jboss/datasources/SearchiskoDS</persistence.xml.jta-data-source>
                 <persistence.xml.hibernate.dialect>org.hibernate.dialect.MySQLDialect</persistence.xml.hibernate.dialect>
                 <datasource.connection.url>jdbc:mysql://${env.OPENSHIFT_MYSQL_DB_HOST}:${env.OPENSHIFT_MYSQL_DB_PORT}/${env.OPENSHIFT_APP_NAME}</datasource.connection.url>
