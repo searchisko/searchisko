@@ -101,8 +101,10 @@ No details yet. This is internal server.
 
 Simply login to [OpenShift](https://openshift.redhat.com), create new Application 
 with 'JBoss Enterprise Application Platform 6.0 Cartridge ' 
-and add 'MySQL Database 5.1' cartridge into it. Then push content of this git 
-repo into the OpenShift application's git repo. Then DCP is built and deployed automatically.
+and add 'MySQL Database 5.1' cartridge into it.
+
+Then push content of this git repo (`git push openshift master` or `git push openshift {local_branch_name}:master` if working on branch)
+into the OpenShift application's git repo. Then DCP is built and deployed automatically.
 
 The DCP REST API is then available at `http://your_openshift_aplication_url/v1/rest/`  
 The ElasticSearch search node REST API is available only from gear shell at `http://$OPENSHIFT_INTERNAL_IP:15000/`, 
