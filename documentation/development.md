@@ -110,6 +110,14 @@ The DCP REST API is then available at `http://your_openshift_aplication_url/v1/r
 The ElasticSearch search node REST API is available only from gear shell at `http://$OPENSHIFT_JBOSSEAP_IP:15000/`,
 you have to use port forwarding to access it from outside.
 
+To enable Access to Contributor Profile Provider (community.jboss.org) as authenticated user create a file ${OPENSHIFT_DATA_DIR}/.searchiskoenv with following variables:
+
+     # Searchisko variables
+     echo "Setting DCP variables"
+     export SEARCHISKO_CB_PROVIDER_USERNAME="community.jboss.org username"
+     export SEARCHISKO_CB_PROVIDER_PASSWORD="community.jboss.org password"
+
+
 #### staging/production
 
 TODO
