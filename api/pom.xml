@@ -476,6 +476,9 @@
                 <filter.name>openshift</filter.name>
                 <es.client.embedded.data.path>${env.OPENSHIFT_DATA_DIR}</es.client.embedded.data.path>
                 <es.network.host>${env.OPENSHIFT_JBOSSEAP_IP}</es.network.host>
+				<!-- Variables defined on Openshift in  ${OPENSHIFT_DATA_DIR}/.searchiskoenv file (called during pre_build action hook -->
+				<contributorprofile.provider.username>${env.SEARCHISKO_CB_PROVIDER_USERNAME}</contributorprofile.provider.username>
+                <contributorprofile.provider.password>${env.SEARCHISKO_CB_PROVIDER_PASSWORD}</contributorprofile.provider.password>
                 <persistence.xml.jta-data-source>java:jboss/datasources/SearchiskoDS</persistence.xml.jta-data-source>
                 <persistence.xml.hibernate.dialect>org.hibernate.dialect.MySQLDialect</persistence.xml.hibernate.dialect>
                 <datasource.connection.url>jdbc:mysql://${env.OPENSHIFT_MYSQL_DB_HOST}:${env.OPENSHIFT_MYSQL_DB_PORT}/${env.OPENSHIFT_APP_NAME}</datasource.connection.url>
