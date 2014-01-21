@@ -131,7 +131,7 @@ public class AppConfiguration implements Serializable {
 			return "ContributorProfileProviderConfig{" +
 					"urlbase='" + urlbase + '\'' +
 					", username='" + username + '\'' +
-					", password='" + password + '\'' +
+					", password=<SKIPPED>" +
 					'}';
 		}
 	}
