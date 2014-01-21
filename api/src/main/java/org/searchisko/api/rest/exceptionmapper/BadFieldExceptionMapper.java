@@ -43,6 +43,6 @@ public class BadFieldExceptionMapper implements ExceptionMapper<BadFieldExceptio
         }
 
         return Response.status(Response.Status.BAD_REQUEST)
-                .entity(MessageFormat.format("Required parameter '{0}' not set", exception.getFieldName())).build();
+                .entity(MessageFormat.format("Bad parameter ''{0}''", exception.getFieldName())).build();
     }
 }

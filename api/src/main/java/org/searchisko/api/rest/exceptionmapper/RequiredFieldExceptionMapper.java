@@ -43,6 +43,6 @@ public class RequiredFieldExceptionMapper implements ExceptionMapper<RequiredFie
         }
 
         return Response.status(Response.Status.BAD_REQUEST)
-                .entity(MessageFormat.format("Required parameter '{0}' not set", exception.getFieldName())).build();
+                .entity(MessageFormat.format("Required parameter ''{0}'' not set", exception.getFieldName())).build();
     }
 }
