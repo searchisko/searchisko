@@ -9,6 +9,9 @@
 clear
 
 dcpurl=https://dcp-jbossorgdev.rhcloud.com
+if [ -n "${OPENSHIFT_APP_DNS}" ]; then
+  dcpurl=http://${OPENSHIFT_APP_DNS}
+fi
 if [ -n "$1" ]; then
   dcpurl=$1
 fi
