@@ -24,6 +24,7 @@ public class JpaRatingPersistenceServiceTest extends JpaTestBase {
 	private static final String CONTENT_ID_1 = "contId1";
 	private static final String CONTRIB_ID_2 = "contribId2";
 	private static final String CONTRIB_ID_1 = "contribId1";
+	private static final String CONTRIB_ID_3 = "contribId3";
 
 	{
 		logger = Logger.getLogger(JpaRatingPersistenceServiceTest.class.getName());
@@ -114,6 +115,41 @@ public class JpaRatingPersistenceServiceTest extends JpaTestBase {
 		Assert.assertEquals(1, rs.getNumber());
 
 		em.getTransaction().commit();
+	}
+
+	@Test
+	public void mergeRatingsForContributors() {
+		JpaRatingPersistenceService tested = getTested();
+
+		em.getTransaction().begin();
+		tested.rate(CONTRIB_ID_1, CONTENT_ID_1, 1);
+		tested.rate(CONTRIB_ID_1, CONTENT_ID_3, 4);
+
+		tested.rate(CONTRIB_ID_2, CONTENT_ID_1, 5);
+		tested.rate(CONTRIB_ID_2, CONTENT_ID_2, 3);
+
+		tested.rate(CONTRIB_ID_3, CONTENT_ID_1, 2);
+		tested.rate(CONTRIB_ID_3, CONTENT_ID_2, 2);
+		em.getTransaction().commit();
+
+		em.getTransaction().begin();
+		tested.mergeRatingsForContributors(CONTRIB_ID_1, CONTRIB_ID_2);
+		em.getTransaction().commit();
+
+		em.getTransaction().begin();
+		// assert removed from first
+		Assert.assertEquals(0, tested.getRatings(CONTRIB_ID_1, CONTENT_ID_1, CONTENT_ID_2, CONTENT_ID_3).size());
+
+		// assert merged to second
+		Assert.assertEquals(3, tested.getRatings(CONTRIB_ID_2, CONTENT_ID_1, CONTENT_ID_2, CONTENT_ID_3).size());
+		Assert.assertEquals(5, tested.getRatings(CONTRIB_ID_2, CONTENT_ID_1).get(0).getRating());
+		Assert.assertEquals(3, tested.getRatings(CONTRIB_ID_2, CONTENT_ID_2).get(0).getRating());
+		Assert.assertEquals(4, tested.getRatings(CONTRIB_ID_2, CONTENT_ID_3).get(0).getRating());
+
+		// assert third untouched
+		Assert.assertEquals(2, tested.getRatings(CONTRIB_ID_3, CONTENT_ID_1, CONTENT_ID_2, CONTENT_ID_3).size());
+		em.getTransaction().commit();
+
 	}
 
 }

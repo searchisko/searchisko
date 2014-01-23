@@ -33,6 +33,15 @@ public interface RatingPersistenceService {
 	void rate(String contributorId, String contentId, int rating);
 
 	/**
+	 * Merge ratings for contributors. Get ratings from first contributor and reassign them to second one for content he
+	 * didn't rated yet. Then delete rest of ratings from first contributor.
+	 * 
+	 * @param contributorIdFrom to get ratings from
+	 * @param contributorIdTo to assign ratings to.
+	 */
+	void mergeRatingsForContributors(String contributorIdFrom, String contributorIdTo);
+
+	/**
 	 * Count rating statistics (average rating and number of ratings) for given content.
 	 * 
 	 * @param contentId to count statistics for
