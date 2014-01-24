@@ -17,6 +17,7 @@
 		<extension module="org.jboss.as.jdr" />
 		<extension module="org.jboss.as.jmx" />
 		<extension module="org.jboss.as.jpa" />
+		<extension module="org.jboss.as.jsf"/>
 		<extension module="org.jboss.as.jsr77" />
 		<extension module="org.jboss.as.logging" />
 		<extension module="org.jboss.as.mail" />
@@ -485,7 +486,7 @@
 				<alias name="localhost" />
 			</virtual-server>
 			<!-- #33 - Added Global Valve to fix https issue  -->
-			<valve name="remoteipvalve" module="org.jboss.as.web" class-name="org.apache.catalina.valves.RemoteIpValve">
+			<valve module="org.jboss.as.web" class-name="org.apache.catalina.valves.RemoteIpValve">
 				<param param-name="protocolHeader" param-value="x-forwarded-proto"/>
 			</valve>
 		</subsystem>
