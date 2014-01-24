@@ -28,6 +28,7 @@ import org.searchisko.api.testtools.ESRealClientTestBase;
 import org.searchisko.api.testtools.TestUtils;
 import org.searchisko.contribprofile.model.ContributorProfile;
 import org.searchisko.persistence.service.EntityService;
+import org.searchisko.persistence.service.RatingPersistenceService;
 
 /**
  * Unit test for {@link ContributorService}
@@ -127,6 +128,7 @@ public class ContributorServiceTest extends ESRealClientTestBase {
 		ret.contributorProfileService = Mockito.mock(ContributorProfileService.class);
 		ret.searchClientService = new SearchClientService();
 		ret.searchClientService.client = client;
+		ret.ratingPersistenceService = Mockito.mock(RatingPersistenceService.class);
 		ret.log = Logger.getLogger("testlogger");
 		return ret;
 	}
@@ -970,6 +972,7 @@ public class ContributorServiceTest extends ESRealClientTestBase {
 								"{\"type_specific_code\":{\"code_type1\":[\"test\",\"test2\"],\"code_type2\":[\"test2\",\"test3\"]},\"email\":[\"john@doe.com\",\"john@doe.org\",\"john@doere.org\",\"john@doerere.org\",\"jdoe@doe.com\",\"john@doererere.org\"],\"code\":\"John Doe <john@doe.com>\"}",
 								tested.findOneByCode(code).getSource());
 				Mockito.verifyZeroInteractions(tested.contributorProfileService);
+				Mockito.verifyZeroInteractions(tested.ratingPersistenceService);
 				Mockito.verifyZeroInteractions(tested.taskService.getTaskManager());
 			}
 
@@ -1022,6 +1025,8 @@ public class ContributorServiceTest extends ESRealClientTestBase {
 			Mockito.verify(tested.taskService.getTaskManager()).createTask(
 					Mockito.eq(ReindexingTaskTypes.RENORMALIZE_BY_CONTRIBUTOR_CODE.getTaskType()), Mockito.anyMap());
 			Mockito.verify(tested.contributorProfileService).deleteByContributorCode("John Doe <john@doe.org>");
+			Mockito.verify(tested.ratingPersistenceService).mergeRatingsForContributors("John Doe <john@doe.org>",
+					"John Doe <john@doe.com>");
 
 		} finally {
 			indexDelete(ContributorService.SEARCH_INDEX_NAME);

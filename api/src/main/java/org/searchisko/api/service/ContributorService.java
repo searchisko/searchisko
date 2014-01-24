@@ -32,6 +32,7 @@ import org.searchisko.api.util.Resources;
 import org.searchisko.api.util.SearchUtils;
 import org.searchisko.contribprofile.model.ContributorProfile;
 import org.searchisko.persistence.service.EntityService;
+import org.searchisko.persistence.service.RatingPersistenceService;
 
 /**
  * Service containing Contributor related operations.
@@ -84,6 +85,9 @@ public class ContributorService implements EntityService {
 
 	@Inject
 	protected ContributorProfileService contributorProfileService;
+
+	@Inject
+	protected RatingPersistenceService ratingPersistenceService;
 
 	@PostConstruct
 	public void init() {
@@ -275,6 +279,8 @@ public class ContributorService implements EntityService {
 				mergeContributorData(contributorEntityContent, contributorByTsc.getSource());
 				delete(contributorByTsc.getId());
 				contributorProfileService.deleteByContributorCode(contributorCodeFromTsc);
+				ratingPersistenceService.mergeRatingsForContributors(contributorCodeFromTsc,
+						getContributorCode(contributorEntityContent));
 			}
 		} else if (contributorById == null && contributorByTsc != null) {
 			contributorCode = getContributorCode(contributorByTsc.getSource());
