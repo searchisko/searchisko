@@ -26,6 +26,8 @@ import org.elasticsearch.indices.IndexMissingException;
 import org.elasticsearch.search.SearchHit;
 import org.searchisko.api.reindexer.ReindexingTaskFactory;
 import org.searchisko.api.reindexer.ReindexingTaskTypes;
+import org.searchisko.api.rest.exception.BadFieldException;
+import org.searchisko.api.rest.exception.RequiredFieldException;
 import org.searchisko.api.tasker.TaskConfigurationException;
 import org.searchisko.api.tasker.UnsupportedTaskException;
 import org.searchisko.api.util.Resources;
@@ -135,6 +137,10 @@ public class ContributorService implements EntityService {
 
 	@Override
 	public String create(Map<String, Object> entity) {
+
+		String newCode = validateCodeRequired(entity);
+		validateCodeUniqueness(newCode, null);
+
 		String id = entityService.create(entity);
 
 		updateSearchIndex(id, entity);
@@ -144,20 +150,55 @@ public class ContributorService implements EntityService {
 
 	@Override
 	public void create(String id, Map<String, Object> entity) {
+
+		String newCode = validateCodeRequired(entity);
+		validateCodeUniqueness(newCode, id);
+		validateCodeNotChanged(id, newCode);
+
 		entityService.create(id, entity);
 		updateSearchIndex(id, entity);
 	}
 
 	@Override
 	public void update(String id, Map<String, Object> entity) {
+		String newCode = validateCodeRequired(entity);
+		validateCodeNotChanged(id, newCode);
 		entityService.update(id, entity);
 		updateSearchIndex(id, entity);
+	}
+
+	private void validateCodeUniqueness(String newCode, String id) {
+		SearchHit sh = findOneByCode(newCode);
+		if (sh != null && (id == null || !id.equals(sh.getId()))) {
+			throw new BadFieldException(FIELD_CODE, "Provided 'code' value is duplicit with contributor.id=" + sh.getId());
+		}
+	}
+
+	private void validateCodeNotChanged(String id, String newCode) {
+		Map<String, Object> oldEntity = get(id);
+		if (oldEntity != null) {
+			String oldCode = SearchUtils.trimToNull(getContributorCode(oldEntity));
+			if (oldCode != null && !newCode.equals(oldCode)) {
+				throw new BadFieldException(FIELD_CODE,
+						"contributor code can't be changed by plain 'update' operation, use 'merge' operation instead.");
+			}
+		}
+	}
+
+	private String validateCodeRequired(Map<String, Object> entity) {
+		String newCode = SearchUtils.trimToNull(getContributorCode(entity));
+		if (newCode == null) {
+			throw new RequiredFieldException(FIELD_CODE);
+		}
+		return newCode;
 	}
 
 	@Override
 	public void delete(String id) {
 		entityService.delete(id);
 		searchClientService.performDelete(SEARCH_INDEX_NAME, SEARCH_INDEX_TYPE, id);
+		searchClientService.performIndexFlushAndRefresh(SEARCH_INDEX_NAME);
+		// TODO CONTENT_RATING delete all ratings for given contributor
 	}
 
 	/**
