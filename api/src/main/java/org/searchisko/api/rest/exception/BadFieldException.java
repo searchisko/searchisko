@@ -26,7 +26,7 @@ public class BadFieldException extends IllegalArgumentException {
 	private String description;
 
 	public BadFieldException(String fieldName, Throwable cause) {
-		super(cause);
+		super(fieldName, cause);
 		this.fieldName = fieldName;
 	}
 
@@ -34,6 +34,7 @@ public class BadFieldException extends IllegalArgumentException {
 	 * @param fieldName name of bad field
 	 */
 	public BadFieldException(String fieldName) {
+		super(fieldName);
 		this.fieldName = fieldName;
 	}
 
@@ -42,12 +43,13 @@ public class BadFieldException extends IllegalArgumentException {
 	 * @param description optional detailed description why is field bad.
 	 */
 	public BadFieldException(String fieldName, String description) {
+		super("fieldName=" + fieldName + ", description=" + description);
 		this.fieldName = fieldName;
 		this.description = description;
 	}
 
 	/**
-	 * @return name of bad firld
+	 * @return name of bad field
 	 */
 	public String getFieldName() {
 		return fieldName;

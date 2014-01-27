@@ -173,7 +173,7 @@ public class ContributorService implements EntityService {
 		SearchHit sh = findOneByCode(newCode);
 		if (sh != null && (id == null || !id.equals(sh.getId()))) {
 			throw new BadFieldException(FIELD_CODE, "Provided 'code' value '" + newCode
-					+ "' is duplicit with contributor.id=" + sh.getId());
+					+ "' is duplicit with contributor.id=" + sh.getId() + " value: " + getContributorCode(sh.getSource()));
 		}
 	}
 
