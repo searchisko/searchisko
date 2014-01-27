@@ -60,4 +60,9 @@ public class BadFieldException extends IllegalArgumentException {
 		return description;
 	}
 
+	@Override
+	public String toString() {
+		return "BadFieldException [fieldName=" + fieldName + ", description=" + description + "]";
+	}
+
 }

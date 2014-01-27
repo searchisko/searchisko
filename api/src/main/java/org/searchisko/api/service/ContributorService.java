@@ -168,9 +168,12 @@ public class ContributorService implements EntityService {
 	}
 
 	private void validateCodeUniqueness(String newCode, String id) {
+		if (newCode == null)
+			return;
 		SearchHit sh = findOneByCode(newCode);
 		if (sh != null && (id == null || !id.equals(sh.getId()))) {
-			throw new BadFieldException(FIELD_CODE, "Provided 'code' value is duplicit with contributor.id=" + sh.getId());
+			throw new BadFieldException(FIELD_CODE, "Provided 'code' value '" + newCode
+					+ "' is duplicit with contributor.id=" + sh.getId());
 		}
 	}
 
@@ -481,7 +484,7 @@ public class ContributorService implements EntityService {
 	}
 
 	protected SearchHit findOneByCode(String contributorCode) {
-		SearchHit contributorById = null;
+		SearchHit sh = null;
 		SearchResponse sr = findByCode(contributorCode);
 		if (sr != null) {
 			log.fine("Number of Contributor records found by code=" + contributorCode + " is " + sr.getHits().getTotalHits());
@@ -490,10 +493,10 @@ public class ContributorService implements EntityService {
 					log.warning("Contributor configuration problem! We found more Contributor definitions for code="
 							+ contributorCode + ". For now we use first one, but problem should be resolved by administrator!");
 				}
-				contributorById = sr.getHits().getHits()[0];
+				sh = sr.getHits().getHits()[0];
 			}
 		}
-		return contributorById;
+		return sh;
 	}
 
 	protected SearchHit findOneByTypeSpecificCode(String typeSpecificCodeField, String typeSpecificCodeValue,

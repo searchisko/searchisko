@@ -273,9 +273,10 @@ public class ContributorServiceTest extends ESRealClientTestBase {
 
 			// case - insert to existing index
 			{
+				Mockito.reset(tested.entityService);
 				Map<String, Object> entity = new HashMap<String, Object>();
 				entity.put("name", "v2");
-				entity.put(ContributorService.FIELD_CODE, CODE_1);
+				entity.put(ContributorService.FIELD_CODE, CODE_2);
 				Mockito.when(tested.entityService.create(entity)).thenReturn("2");
 
 				String id = tested.create(entity);
@@ -287,7 +288,6 @@ public class ContributorServiceTest extends ESRealClientTestBase {
 				r = indexGetDocument(ContributorService.SEARCH_INDEX_NAME, ContributorService.SEARCH_INDEX_TYPE, "1");
 				Assert.assertNotNull(r);
 				Assert.assertEquals("v1", r.get("name"));
-
 			}
 
 		} finally {
@@ -366,7 +366,7 @@ public class ContributorServiceTest extends ESRealClientTestBase {
 			{
 				Map<String, Object> entity = new HashMap<String, Object>();
 				entity.put("name", "v2");
-				entity.put(ContributorService.FIELD_CODE, CODE_1);
+				entity.put(ContributorService.FIELD_CODE, CODE_2);
 				tested.create("2", entity);
 				Mockito.verify(tested.entityService).create("2", entity);
 				Map<String, Object> r = indexGetDocument(ContributorService.SEARCH_INDEX_NAME,
@@ -574,6 +574,7 @@ public class ContributorServiceTest extends ESRealClientTestBase {
 				SearchResponse sr = tested.findByCode(CODE_1);
 				Assert.assertEquals(1, sr.getHits().getTotalHits());
 				Assert.assertEquals("20", sr.getHits().getHits()[0].getId());
+				Assert.assertEquals("20", tested.findOneByCode(CODE_1).getId());
 
 				sr = tested.findByCode(CODE_2);
 				Assert.assertEquals(1, sr.getHits().getTotalHits());
