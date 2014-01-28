@@ -13,14 +13,17 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
 
+import javax.enterprise.event.Event;
 import javax.ws.rs.core.StreamingOutput;
 
 import junit.framework.Assert;
 
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.Client;
+import org.hamcrest.CustomMatcher;
 import org.junit.Test;
 import org.mockito.Mockito;
+import org.searchisko.api.events.ContributorDeletedEvent;
 import org.searchisko.api.reindexer.ReindexingTaskTypes;
 import org.searchisko.api.rest.ESDataOnlyResponse;
 import org.searchisko.api.rest.exception.BadFieldException;
@@ -33,7 +36,8 @@ import org.searchisko.persistence.service.EntityService;
 import org.searchisko.persistence.service.RatingPersistenceService;
 
 /**
- * Unit test for {@link ContributorService}
+ * Unit test for {@link ContributorService}.<br>
+ * TODO CONTRIBUTOR test events
  * 
  * @author Vlastimil Elias (velias at redhat dot com)
  */
@@ -118,6 +122,7 @@ public class ContributorServiceTest extends ESRealClientTestBase {
 		Assert.assertNull(ContributorService.extractContributorName(" <john@doe.org>"));
 	}
 
+	@SuppressWarnings("unchecked")
 	private ContributorService getTested(Client client) {
 		if (client == null)
 			client = Mockito.mock(Client.class);
@@ -131,6 +136,9 @@ public class ContributorServiceTest extends ESRealClientTestBase {
 		ret.searchClientService = new SearchClientService();
 		ret.searchClientService.client = client;
 		ret.ratingPersistenceService = Mockito.mock(RatingPersistenceService.class);
+		ret.eventCreate = Mockito.mock(Event.class);
+		ret.eventUpdate = Mockito.mock(Event.class);
+		ret.eventDelete = Mockito.mock(Event.class);
 		ret.log = Logger.getLogger("testlogger");
 		return ret;
 	}
@@ -517,11 +525,12 @@ public class ContributorServiceTest extends ESRealClientTestBase {
 			indexDelete(ContributorService.SEARCH_INDEX_NAME);
 			tested.init();
 			Thread.sleep(100);
-			// case - index exists but record not in it
+			// case - index exists but record not in it, no event is fired
 			{
 				Mockito.reset(tested.entityService);
 				tested.delete("1");
 				Mockito.verify(tested.entityService).delete("1");
+				Mockito.verifyZeroInteractions(tested.eventDelete);
 			}
 
 			indexInsertDocument(ContributorService.SEARCH_INDEX_NAME, ContributorService.SEARCH_INDEX_TYPE, "10",
@@ -531,11 +540,27 @@ public class ContributorServiceTest extends ESRealClientTestBase {
 			indexInsertDocument(ContributorService.SEARCH_INDEX_NAME, ContributorService.SEARCH_INDEX_TYPE, "30",
 					"{\"name\":\"test3\",\"idx\":\"3\"}");
 			indexFlushAndRefresh(ContributorService.SEARCH_INDEX_NAME);
-			// case - index exists and record deleted
+			// case - index and record exists, so is record deleted and event fired
 			{
 				Mockito.reset(tested.entityService);
+				Map<String, Object> entity = new HashMap<>();
+				entity.put(ContributorService.FIELD_CODE, CODE_1);
+				// mock this to simulate record exists
+				Mockito.when(tested.entityService.get("10")).thenReturn(entity);
+
 				tested.delete("10");
 				Mockito.verify(tested.entityService).delete("10");
+				Mockito.verify(tested.eventDelete).fire(
+						Mockito.argThat(new CustomMatcher<ContributorDeletedEvent>(
+								"ContributorDeletedEvent [contributorId=10, contributorCode=" + CODE_1 + "]") {
+
+							@Override
+							public boolean matches(Object paramObject) {
+								ContributorDeletedEvent e = (ContributorDeletedEvent) paramObject;
+								return e.getContributorCode().endsWith(CODE_1) & e.getContributorId().endsWith("10");
+							}
+
+						}));
 				Assert.assertNull(indexGetDocument(ContributorService.SEARCH_INDEX_NAME, ContributorService.SEARCH_INDEX_TYPE,
 						"10"));
 				Assert.assertNotNull(indexGetDocument(ContributorService.SEARCH_INDEX_NAME,

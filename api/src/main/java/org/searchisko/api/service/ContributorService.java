@@ -16,6 +16,7 @@ import java.util.logging.Logger;
 import javax.annotation.PostConstruct;
 import javax.ejb.LocalBean;
 import javax.ejb.Stateless;
+import javax.enterprise.event.Event;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.ws.rs.core.StreamingOutput;
@@ -24,6 +25,9 @@ import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.indices.IndexMissingException;
 import org.elasticsearch.search.SearchHit;
+import org.searchisko.api.events.ContributorCreatedEvent;
+import org.searchisko.api.events.ContributorDeletedEvent;
+import org.searchisko.api.events.ContributorUpdatedEvent;
 import org.searchisko.api.reindexer.ReindexingTaskFactory;
 import org.searchisko.api.reindexer.ReindexingTaskTypes;
 import org.searchisko.api.rest.exception.BadFieldException;
@@ -38,6 +42,14 @@ import org.searchisko.persistence.service.RatingPersistenceService;
 
 /**
  * Service containing Contributor related operations.
+ * <p>
+ * This service fires CDI events:
+ * <ul>
+ * <li> {@link ContributorCreatedEvent}
+ * <li> {@link ContributorUpdatedEvent}
+ * <li> {@link ContributorDeletedEvent}
+ * </ul>
+ * TODO CONTRIBUTOR implements code change/merge operations
  * 
  * @author Libor Krzyzanek
  * @author Vlastimil Elias (velias at redhat dot com)
@@ -91,6 +103,14 @@ public class ContributorService implements EntityService {
 	@Inject
 	protected RatingPersistenceService ratingPersistenceService;
 
+	@Inject
+	protected Event<ContributorCreatedEvent> eventCreate;
+	@Inject
+	protected Event<ContributorUpdatedEvent> eventUpdate;
+
+	@Inject
+	protected Event<ContributorDeletedEvent> eventDelete;
+
 	@PostConstruct
 	public void init() {
 		try {
@@ -135,8 +155,24 @@ public class ContributorService implements EntityService {
 		searchClientService.performIndexFlushAndRefresh(SEARCH_INDEX_NAME);
 	}
 
+	/**
+	 * Create contributor and generate id for it.
+	 * <p>
+	 * A {@link ContributorCreatedEvent} is fired.
+	 */
 	@Override
 	public String create(Map<String, Object> entity) {
+		return create(entity, true);
+	}
+
+	/**
+	 * Same as {@link #create(Map)} but allows to control if {@link ContributorCreatedEvent} is fired or not.
+	 * 
+	 * @param entity data about contributor
+	 * @param fireEvent true to fire ContributorCreatedEvent
+	 * @return id of created contributor
+	 */
+	public String create(Map<String, Object> entity, boolean fireEvent) {
 
 		String newCode = validateCodeRequired(entity);
 		validateCodeUniqueness(newCode, null);
@@ -145,26 +181,84 @@ public class ContributorService implements EntityService {
 
 		updateSearchIndex(id, entity);
 
+		if (fireEvent) {
+			log.fine("Going to fire ContributorCreatedEvent");
+			eventCreate.fire(new ContributorCreatedEvent(id, newCode, entity));
+		}
+
 		return id;
 	}
 
+	/**
+	 * Create or update Contributor for given id.
+	 * <p>
+	 * A {@link ContributorCreatedEvent} or {@link ContributorUpdatedEvent} is fired.
+	 */
 	@Override
 	public void create(String id, Map<String, Object> entity) {
+		create(id, entity, true);
+	}
+
+	/**
+	 * Same as {@link #create(String, Map)} but allows to control if Event is fired or not.
+	 * 
+	 * @param id of contributor
+	 * @param entity
+	 * @param fireEvent true to fire events
+	 */
+	public void create(String id, Map<String, Object> entity, boolean fireEvent) {
 
 		String newCode = validateCodeRequired(entity);
 		validateCodeUniqueness(newCode, id);
-		validateCodeNotChanged(id, newCode);
+		boolean exists = validateCodeNotChanged(id, newCode);
 
 		entityService.create(id, entity);
 		updateSearchIndex(id, entity);
+
+		if (fireEvent) {
+			if (exists) {
+				log.fine("Going to fire ContributorUpdatedEvent");
+				eventUpdate.fire(new ContributorUpdatedEvent(id, newCode, entity));
+			} else {
+				log.fine("Going to fire ContributorCreatedEvent");
+				eventCreate.fire(new ContributorCreatedEvent(id, newCode, entity));
+			}
+		}
+
 	}
 
+	/**
+	 * Update or create Contributor for given id.
+	 * <p>
+	 * A {@link ContributorCreatedEvent} or {@link ContributorUpdatedEvent} is fired.
+	 */
 	@Override
 	public void update(String id, Map<String, Object> entity) {
+		update(id, entity, true);
+	}
+
+	/**
+	 * Same as {@link #update(String, Map)} but allows to control if Event is fired or not.
+	 * 
+	 * @param id of contributor
+	 * @param entity
+	 * @param fireEvent true to fire events
+	 */
+	public void update(String id, Map<String, Object> entity, boolean fireEvent) {
 		String newCode = validateCodeRequired(entity);
-		validateCodeNotChanged(id, newCode);
+		boolean exists = validateCodeNotChanged(id, newCode);
 		entityService.update(id, entity);
 		updateSearchIndex(id, entity);
+
+		if (fireEvent) {
+			if (exists) {
+				log.fine("Going to fire ContributorUpdatedEvent");
+				eventUpdate.fire(new ContributorUpdatedEvent(id, newCode, entity));
+			} else {
+				log.fine("Going to fire ContributorCreatedEvent");
+				eventCreate.fire(new ContributorCreatedEvent(id, newCode, entity));
+			}
+		}
 	}
 
 	private void validateCodeUniqueness(String newCode, String id) {
@@ -177,7 +271,12 @@ public class ContributorService implements EntityService {
 		}
 	}
 
-	private void validateCodeNotChanged(String id, String newCode) {
+	/**
+	 * @param id of contributor
+	 * @param newCode to validate against old code
+	 * @return true if old entity exists for given id
+	 */
+	private boolean validateCodeNotChanged(String id, String newCode) {
 		Map<String, Object> oldEntity = get(id);
 		if (oldEntity != null) {
 			String oldCode = SearchUtils.trimToNull(getContributorCode(oldEntity));
@@ -185,7 +284,9 @@ public class ContributorService implements EntityService {
 				throw new BadFieldException(FIELD_CODE,
 						"contributor code can't be changed by plain 'update' operation, use 'merge' operation instead.");
 			}
+			return true;
 		}
+		return false;
 	}
 
 	private String validateCodeRequired(Map<String, Object> entity) {
@@ -196,12 +297,35 @@ public class ContributorService implements EntityService {
 		return newCode;
 	}
 
+	/**
+	 * Delete contributor.
+	 * <p>
+	 * A {@link ContributorDeletedEvent} is fired if contributor existed.
+	 */
 	@Override
 	public void delete(String id) {
+		String code = deleteImpl(id);
+		if (code != null) {
+			log.fine("Going to fire ContributorDeletedEvent");
+			eventDelete.fire(new ContributorDeletedEvent(id, SearchUtils.trimToNull(code)));
+			log.fine("ContributorDeletedEvent fire finished");
+		}
+	}
+
+	/**
+	 * Real implementation of delete, do not fire event.
+	 * 
+	 * @param id of contributor to delete.
+	 * @return contributor code. Null if contributor is not found.
+	 */
+	protected String deleteImpl(String id) {
+		Map<String, Object> entity = entityService.get(id);
 		entityService.delete(id);
 		searchClientService.performDelete(SEARCH_INDEX_NAME, SEARCH_INDEX_TYPE, id);
 		searchClientService.performIndexFlushAndRefresh(SEARCH_INDEX_NAME);
-		// TODO CONTENT_RATING delete all ratings for given contributor
+		if (entity == null)
+			return null;
+		return getContributorCode(entity);
 	}
 
 	/**
@@ -321,7 +445,7 @@ public class ContributorService implements EntityService {
 						+ "' into contributor '" + contributorCode + "'");
 				toRenormalizeContributorIds.add(contributorCodeFromTsc);
 				mergeContributorData(contributorEntityContent, contributorByTsc.getSource());
-				delete(contributorByTsc.getId());
+				deleteImpl(contributorByTsc.getId());
 				contributorProfileService.deleteByContributorCode(contributorCodeFromTsc);
 				ratingPersistenceService.mergeRatingsForContributors(contributorCodeFromTsc,
 						getContributorCode(contributorEntityContent));
@@ -354,9 +478,9 @@ public class ContributorService implements EntityService {
 		patchTypeSpecificCodeUniqueness(toRenormalizeContributorIds, contributorEntityId, contributorEntityContent);
 
 		if (contributorEntityId != null)
-			create(contributorEntityId, contributorEntityContent);
+			create(contributorEntityId, contributorEntityContent, false);
 		else
-			create(contributorEntityContent);
+			create(contributorEntityContent, false);
 
 		searchClientService.performIndexFlushAndRefreshBlocking(SEARCH_INDEX_NAME);
 

@@ -6,6 +6,7 @@
 package org.searchisko.persistence.service;
 
 import java.sql.Timestamp;
+import java.util.Arrays;
 import java.util.List;
 
 import javax.ejb.LocalBean;
@@ -86,6 +87,19 @@ public class JpaRatingPersistenceService implements RatingPersistenceService {
 				.executeUpdate();
 		em.createQuery("delete from Rating r where r.contributorId = ?1").setParameter(1, contributorIdFrom)
 				.executeUpdate();
+	}
+
+	@Override
+	public void deleteRatingsForContributor(String contributorId) {
+		if (contributorId != null)
+			em.createQuery("delete from Rating r where r.contributorId = ?1").setParameter(1, contributorId).executeUpdate();
+	}
+
+	@Override
+	public void deleteRatingsForContent(String... contentId) {
+		if (contentId != null && contentId.length > 0)
+			em.createQuery("delete from Rating r where r.contentId in ?1").setParameter(1, Arrays.asList(contentId))
+					.executeUpdate();
 	}
 
 }

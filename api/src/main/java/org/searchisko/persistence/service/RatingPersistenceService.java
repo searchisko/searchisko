@@ -42,6 +42,20 @@ public interface RatingPersistenceService {
 	void mergeRatingsForContributors(String contributorIdFrom, String contributorIdTo);
 
 	/**
+	 * Delete all ratings for given contributor.
+	 * 
+	 * @param contributorId we want to delete rating for
+	 */
+	void deleteRatingsForContributor(String contributorId);
+
+	/**
+	 * Delete all ratings for given content.
+	 * 
+	 * @param contentId to delete ratings for
+	 */
+	void deleteRatingsForContent(String... contentId);
+
+	/**
 	 * Count rating statistics (average rating and number of ratings) for given content.
 	 * 
 	 * @param contentId to count statistics for

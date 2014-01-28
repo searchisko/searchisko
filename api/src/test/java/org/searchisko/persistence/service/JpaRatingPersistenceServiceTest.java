@@ -152,4 +152,80 @@ public class JpaRatingPersistenceServiceTest extends JpaTestBase {
 
 	}
 
+	@Test
+	public void deleteRatingsForContributor() {
+		JpaRatingPersistenceService tested = getTested();
+
+		em.getTransaction().begin();
+		tested.rate(CONTRIB_ID_1, CONTENT_ID_1, 1);
+		tested.rate(CONTRIB_ID_1, CONTENT_ID_3, 4);
+
+		tested.rate(CONTRIB_ID_2, CONTENT_ID_1, 5);
+		tested.rate(CONTRIB_ID_2, CONTENT_ID_2, 3);
+
+		tested.rate(CONTRIB_ID_3, CONTENT_ID_1, 2);
+		tested.rate(CONTRIB_ID_3, CONTENT_ID_2, 2);
+		em.getTransaction().commit();
+
+		em.getTransaction().begin();
+		// case - no NPE
+		tested.deleteRatingsForContributor(null);
+		// case - delete
+		tested.deleteRatingsForContributor(CONTRIB_ID_1);
+		em.getTransaction().commit();
+
+		em.getTransaction().begin();
+		// assert removed from first
+		Assert.assertEquals(0, tested.getRatings(CONTRIB_ID_1, CONTENT_ID_1, CONTENT_ID_2, CONTENT_ID_3).size());
+
+		// assert second untouched
+		Assert.assertEquals(2, tested.getRatings(CONTRIB_ID_2, CONTENT_ID_1, CONTENT_ID_2, CONTENT_ID_3).size());
+		// assert third untouched
+		Assert.assertEquals(2, tested.getRatings(CONTRIB_ID_3, CONTENT_ID_1, CONTENT_ID_2, CONTENT_ID_3).size());
+		em.getTransaction().commit();
+
+	}
+
+	@Test
+	public void deleteRatingsForContent() {
+		JpaRatingPersistenceService tested = getTested();
+
+		em.getTransaction().begin();
+		tested.rate(CONTRIB_ID_1, CONTENT_ID_1, 1);
+		tested.rate(CONTRIB_ID_1, CONTENT_ID_3, 4);
+
+		tested.rate(CONTRIB_ID_2, CONTENT_ID_1, 5);
+		tested.rate(CONTRIB_ID_2, CONTENT_ID_2, 3);
+
+		tested.rate(CONTRIB_ID_3, CONTENT_ID_1, 2);
+		tested.rate(CONTRIB_ID_3, CONTENT_ID_2, 2);
+		em.getTransaction().commit();
+
+		em.getTransaction().begin();
+		// case - no NPE
+		tested.deleteRatingsForContent((String[]) null);
+		tested.deleteRatingsForContent(new String[] {});
+		// case - delete for one
+		tested.deleteRatingsForContent(CONTENT_ID_1);
+		em.getTransaction().commit();
+
+		em.getTransaction().begin();
+		Assert.assertEquals(1, tested.getRatings(CONTRIB_ID_1, CONTENT_ID_1, CONTENT_ID_2, CONTENT_ID_3).size());
+		Assert.assertEquals(1, tested.getRatings(CONTRIB_ID_2, CONTENT_ID_1, CONTENT_ID_2, CONTENT_ID_3).size());
+		Assert.assertEquals(1, tested.getRatings(CONTRIB_ID_3, CONTENT_ID_1, CONTENT_ID_2, CONTENT_ID_3).size());
+		em.getTransaction().commit();
+
+		em.getTransaction().begin();
+		// case - delete for more
+		tested.deleteRatingsForContent(CONTENT_ID_2, CONTENT_ID_3);
+		em.getTransaction().commit();
+
+		em.getTransaction().begin();
+		Assert.assertEquals(0, tested.getRatings(CONTRIB_ID_1, CONTENT_ID_1, CONTENT_ID_2, CONTENT_ID_3).size());
+		Assert.assertEquals(0, tested.getRatings(CONTRIB_ID_2, CONTENT_ID_1, CONTENT_ID_2, CONTENT_ID_3).size());
+		Assert.assertEquals(0, tested.getRatings(CONTRIB_ID_3, CONTENT_ID_1, CONTENT_ID_2, CONTENT_ID_3).size());
+		em.getTransaction().commit();
+
+	}
+
 }
