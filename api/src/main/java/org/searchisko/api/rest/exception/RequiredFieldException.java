@@ -21,18 +21,24 @@ package org.searchisko.api.rest.exception;
  * Further detailed argument exception.
  */
 public class RequiredFieldException extends IllegalArgumentException {
-    private String fieldName;
+	private String fieldName;
 
-    public RequiredFieldException(String fieldName) {
-        this.fieldName = fieldName;
-    }
+	public RequiredFieldException(String fieldName) {
+		this.fieldName = fieldName;
+	}
 
-    public RequiredFieldException(String fieldName, Throwable cause) {
-        super(cause);
-        this.fieldName = fieldName;
-    }
+	public RequiredFieldException(String fieldName, Throwable cause) {
+		super(cause);
+		this.fieldName = fieldName;
+	}
 
-    public String getFieldName() {
-        return fieldName;
-    }
+	public String getFieldName() {
+		return fieldName;
+	}
+
+	@Override
+	public String toString() {
+		return "RequiredFieldException [fieldName=" + fieldName + "]";
+	}
+
 }

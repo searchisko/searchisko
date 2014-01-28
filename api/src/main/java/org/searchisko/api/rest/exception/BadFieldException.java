@@ -21,18 +21,50 @@ package org.searchisko.api.rest.exception;
  * Exception to further extend {@link IllegalArgumentException} to provide information about invalid fields.
  */
 public class BadFieldException extends IllegalArgumentException {
-    private String fieldName;
+	private String fieldName;
 
-    public BadFieldException(String fieldName, Throwable cause) {
-        super(cause);
-        this.fieldName = fieldName;
-    }
+	private String description;
 
-    public BadFieldException(String fieldName) {
-        this.fieldName = fieldName;
-    }
+	public BadFieldException(String fieldName, Throwable cause) {
+		super(fieldName, cause);
+		this.fieldName = fieldName;
+	}
 
-    public String getFieldName() {
-        return fieldName;
-    }
+	/**
+	 * @param fieldName name of bad field
+	 */
+	public BadFieldException(String fieldName) {
+		super(fieldName);
+		this.fieldName = fieldName;
+	}
+
+	/**
+	 * @param fieldName name of bad field
+	 * @param description optional detailed description why is field bad.
+	 */
+	public BadFieldException(String fieldName, String description) {
+		super("fieldName=" + fieldName + ", description=" + description);
+		this.fieldName = fieldName;
+		this.description = description;
+	}
+
+	/**
+	 * @return name of bad field
+	 */
+	public String getFieldName() {
+		return fieldName;
+	}
+
+	/**
+	 * @return optional detailerd description why is field bad
+	 */
+	public String getDescription() {
+		return description;
+	}
+
+	@Override
+	public String toString() {
+		return "BadFieldException [fieldName=" + fieldName + ", description=" + description + "]";
+	}
+
 }

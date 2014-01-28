@@ -23,6 +23,8 @@ import org.junit.Test;
 import org.mockito.Mockito;
 import org.searchisko.api.reindexer.ReindexingTaskTypes;
 import org.searchisko.api.rest.ESDataOnlyResponse;
+import org.searchisko.api.rest.exception.BadFieldException;
+import org.searchisko.api.rest.exception.RequiredFieldException;
 import org.searchisko.api.tasker.TaskManager;
 import org.searchisko.api.testtools.ESRealClientTestBase;
 import org.searchisko.api.testtools.TestUtils;
@@ -221,17 +223,50 @@ public class ContributorServiceTest extends ESRealClientTestBase {
 		Mockito.verifyNoMoreInteractions(tested.entityService);
 	}
 
-	@Test
-	public void create_noid() {
+	@Test(expected = RequiredFieldException.class)
+	public void create_noid_codeRequiredValidation() {
+		ContributorService tested = getTested(null);
+
+		Map<String, Object> entity = new HashMap<String, Object>();
+		entity.put("name", "v1");
+		tested.create(entity);
+	}
+
+	@Test(expected = BadFieldException.class)
+	public void create_noid_codeDuplicityValidation() throws InterruptedException {
 		Client client = prepareESClientForUnitTest();
 		ContributorService tested = getTested(client);
 		try {
 
-			// case - insert to noexisting index
 			indexDelete(ContributorService.SEARCH_INDEX_NAME);
+			tested.init();
+			Thread.sleep(100);
+
+			Map<String, Object> entity = new HashMap<String, Object>();
+			entity.put(ContributorService.FIELD_CODE, "code_1");
+			tested.create("1", entity);
+			tested.searchClientService.performIndexFlushAndRefreshBlocking(ContributorService.SEARCH_INDEX_NAME);
+			tested.create(entity);
+		} finally {
+			indexDelete(ContributorService.SEARCH_INDEX_NAME);
+			finalizeESClientForUnitTest();
+		}
+	}
+
+	@Test
+	public void create_noid() throws InterruptedException {
+		Client client = prepareESClientForUnitTest();
+		ContributorService tested = getTested(client);
+		try {
+
+			indexDelete(ContributorService.SEARCH_INDEX_NAME);
+			tested.init();
+			Thread.sleep(100);
+
 			{
 				Map<String, Object> entity = new HashMap<String, Object>();
 				entity.put("name", "v1");
+				entity.put(ContributorService.FIELD_CODE, CODE_1);
 				Mockito.when(tested.entityService.create(entity)).thenReturn("1");
 
 				String id = tested.create(entity);
@@ -241,11 +276,13 @@ public class ContributorServiceTest extends ESRealClientTestBase {
 				Assert.assertNotNull(r);
 				Assert.assertEquals("v1", r.get("name"));
 			}
+			tested.searchClientService.performIndexFlushAndRefreshBlocking(ContributorService.SEARCH_INDEX_NAME);
 
-			// case - insert to existing index
 			{
+				Mockito.reset(tested.entityService);
 				Map<String, Object> entity = new HashMap<String, Object>();
 				entity.put("name", "v2");
+				entity.put(ContributorService.FIELD_CODE, CODE_2);
 				Mockito.when(tested.entityService.create(entity)).thenReturn("2");
 
 				String id = tested.create(entity);
@@ -257,7 +294,6 @@ public class ContributorServiceTest extends ESRealClientTestBase {
 				r = indexGetDocument(ContributorService.SEARCH_INDEX_NAME, ContributorService.SEARCH_INDEX_TYPE, "1");
 				Assert.assertNotNull(r);
 				Assert.assertEquals("v1", r.get("name"));
-
 			}
 
 		} finally {
@@ -266,17 +302,74 @@ public class ContributorServiceTest extends ESRealClientTestBase {
 		}
 	}
 
-	@Test
-	public void create_id() {
+	@Test(expected = RequiredFieldException.class)
+	public void create_id_codeRequiredValidation() {
+		ContributorService tested = getTested(null);
+
+		Map<String, Object> entity = new HashMap<String, Object>();
+		entity.put("name", "v1");
+		tested.create("1", entity);
+	}
+
+	@Test(expected = BadFieldException.class)
+	public void create_id_codeChangeValidation() throws InterruptedException {
 		Client client = prepareESClientForUnitTest();
 		ContributorService tested = getTested(client);
 		try {
 
-			// case - insert noexisting object to noexisting index
 			indexDelete(ContributorService.SEARCH_INDEX_NAME);
+			tested.init();
+			Thread.sleep(100);
+
+			Map<String, Object> entity = new HashMap<String, Object>();
+			entity.put(ContributorService.FIELD_CODE, "code_1");
+			Map<String, Object> oldEntity = new HashMap<>();
+			oldEntity.put(ContributorService.FIELD_CODE, "code_2");
+			Mockito.when(tested.entityService.get("1")).thenReturn(oldEntity);
+
+			tested.create("1", entity);
+		} finally {
+			indexDelete(ContributorService.SEARCH_INDEX_NAME);
+			finalizeESClientForUnitTest();
+		}
+	}
+
+	@Test(expected = BadFieldException.class)
+	public void create_id_codeDuplicityValidation() throws InterruptedException {
+		Client client = prepareESClientForUnitTest();
+		ContributorService tested = getTested(client);
+		try {
+
+			indexDelete(ContributorService.SEARCH_INDEX_NAME);
+			tested.init();
+			Thread.sleep(100);
+
+			Map<String, Object> entity = new HashMap<String, Object>();
+			entity.put(ContributorService.FIELD_CODE, "code_1");
+			tested.create("1", entity);
+			tested.searchClientService.performIndexFlushAndRefreshBlocking(ContributorService.SEARCH_INDEX_NAME);
+			tested.create("2", entity);
+		} finally {
+			indexDelete(ContributorService.SEARCH_INDEX_NAME);
+			finalizeESClientForUnitTest();
+		}
+	}
+
+	@Test
+	public void create_id() throws InterruptedException {
+		Client client = prepareESClientForUnitTest();
+		ContributorService tested = getTested(client);
+		try {
+
+			indexDelete(ContributorService.SEARCH_INDEX_NAME);
+			tested.init();
+			Thread.sleep(100);
+
+			// case - insert new objects
 			{
 				Map<String, Object> entity = new HashMap<String, Object>();
 				entity.put("name", "v1");
+				entity.put(ContributorService.FIELD_CODE, CODE_1);
 
 				tested.create("1", entity);
 				Mockito.verify(tested.entityService).create("1", entity);
@@ -285,11 +378,12 @@ public class ContributorServiceTest extends ESRealClientTestBase {
 				Assert.assertNotNull(r);
 				Assert.assertEquals("v1", r.get("name"));
 			}
+			tested.searchClientService.performIndexFlushAndRefreshBlocking(ContributorService.SEARCH_INDEX_NAME);
 
-			// case - insert noexisting object to existing index
 			{
 				Map<String, Object> entity = new HashMap<String, Object>();
 				entity.put("name", "v2");
+				entity.put(ContributorService.FIELD_CODE, CODE_2);
 				tested.create("2", entity);
 				Mockito.verify(tested.entityService).create("2", entity);
 				Map<String, Object> r = indexGetDocument(ContributorService.SEARCH_INDEX_NAME,
@@ -300,11 +394,13 @@ public class ContributorServiceTest extends ESRealClientTestBase {
 				Assert.assertNotNull(r);
 				Assert.assertEquals("v1", r.get("name"));
 			}
+			tested.searchClientService.performIndexFlushAndRefreshBlocking(ContributorService.SEARCH_INDEX_NAME);
 
 			// case - update existing object
 			{
 				Map<String, Object> entity = new HashMap<String, Object>();
 				entity.put("name", "v1_1");
+				entity.put(ContributorService.FIELD_CODE, CODE_1);
 				tested.create("1", entity);
 				Mockito.verify(tested.entityService).create("1", entity);
 				Map<String, Object> r = indexGetDocument(ContributorService.SEARCH_INDEX_NAME,
@@ -321,6 +417,28 @@ public class ContributorServiceTest extends ESRealClientTestBase {
 		}
 	}
 
+	@Test(expected = RequiredFieldException.class)
+	public void update_codeRequiredValidation() {
+		ContributorService tested = getTested(null);
+
+		Map<String, Object> entity = new HashMap<String, Object>();
+		entity.put("name", "v1");
+		tested.update("1", entity);
+	}
+
+	@Test(expected = BadFieldException.class)
+	public void update_codeChangeValidation() {
+		ContributorService tested = getTested(null);
+
+		Map<String, Object> entity = new HashMap<String, Object>();
+		entity.put(ContributorService.FIELD_CODE, "code_1");
+		Map<String, Object> oldEntity = new HashMap<>();
+		oldEntity.put(ContributorService.FIELD_CODE, "code_2");
+		Mockito.when(tested.entityService.get("1")).thenReturn(oldEntity);
+
+		tested.update("1", entity);
+	}
+
 	@Test
 	public void update() {
 		Client client = prepareESClientForUnitTest();
@@ -333,6 +451,7 @@ public class ContributorServiceTest extends ESRealClientTestBase {
 				Mockito.reset(tested.entityService);
 				Map<String, Object> entity = new HashMap<String, Object>();
 				entity.put("name", "v1");
+				entity.put(ContributorService.FIELD_CODE, "code");
 
 				tested.update("1", entity);
 				Mockito.verify(tested.entityService).update("1", entity);
@@ -347,6 +466,7 @@ public class ContributorServiceTest extends ESRealClientTestBase {
 				Mockito.reset(tested.entityService);
 				Map<String, Object> entity = new HashMap<String, Object>();
 				entity.put("name", "v2");
+				entity.put(ContributorService.FIELD_CODE, "code");
 				tested.update("2", entity);
 				Mockito.verify(tested.entityService).update("2", entity);
 				Map<String, Object> r = indexGetDocument(ContributorService.SEARCH_INDEX_NAME,
@@ -363,6 +483,7 @@ public class ContributorServiceTest extends ESRealClientTestBase {
 				Mockito.reset(tested.entityService);
 				Map<String, Object> entity = new HashMap<String, Object>();
 				entity.put("name", "v1_1");
+				entity.put(ContributorService.FIELD_CODE, "code");
 				tested.update("1", entity);
 				Mockito.verify(tested.entityService).update("1", entity);
 				Map<String, Object> r = indexGetDocument(ContributorService.SEARCH_INDEX_NAME,
@@ -394,7 +515,8 @@ public class ContributorServiceTest extends ESRealClientTestBase {
 			}
 
 			indexDelete(ContributorService.SEARCH_INDEX_NAME);
-			indexCreate(ContributorService.SEARCH_INDEX_NAME);
+			tested.init();
+			Thread.sleep(100);
 			// case - index exists but record not in it
 			{
 				Mockito.reset(tested.entityService);
@@ -450,6 +572,7 @@ public class ContributorServiceTest extends ESRealClientTestBase {
 				Assert.assertNull(tested.findOneByCode(CODE_1));
 			}
 
+			indexDelete(ContributorService.SEARCH_INDEX_NAME);
 			tested.init();
 			Thread.sleep(100);
 			// case - search from empty index
@@ -471,6 +594,7 @@ public class ContributorServiceTest extends ESRealClientTestBase {
 				SearchResponse sr = tested.findByCode(CODE_1);
 				Assert.assertEquals(1, sr.getHits().getTotalHits());
 				Assert.assertEquals("20", sr.getHits().getHits()[0].getId());
+				Assert.assertEquals("20", tested.findOneByCode(CODE_1).getId());
 
 				sr = tested.findByCode(CODE_2);
 				Assert.assertEquals(1, sr.getHits().getTotalHits());

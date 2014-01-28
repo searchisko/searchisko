@@ -33,16 +33,16 @@ import org.searchisko.api.rest.exception.RequiredFieldException;
  */
 @Provider
 public class RequiredFieldExceptionMapper implements ExceptionMapper<RequiredFieldException> {
-    @Inject
-    protected Logger log;
+	@Inject
+	protected Logger log;
 
-    @Override
-    public Response toResponse(RequiredFieldException exception) {
-        if (log.isLoggable(Level.FINE)) {
-            log.log(Level.FINE, exception.getMessage(), exception);
-        }
+	@Override
+	public Response toResponse(RequiredFieldException exception) {
+		if (log.isLoggable(Level.FINE)) {
+			log.log(Level.FINE, exception.getMessage(), exception);
+		}
 
-        return Response.status(Response.Status.BAD_REQUEST)
-                .entity(MessageFormat.format("Required parameter ''{0}'' not set", exception.getFieldName())).build();
-    }
+		return Response.status(Response.Status.BAD_REQUEST)
+				.entity(MessageFormat.format("Required parameter ''{0}'' is not set", exception.getFieldName())).build();
+	}
 }

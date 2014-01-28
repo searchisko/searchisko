@@ -33,16 +33,20 @@ import org.searchisko.api.rest.exception.BadFieldException;
  */
 @Provider
 public class BadFieldExceptionMapper implements ExceptionMapper<BadFieldException> {
-    @Inject
-    protected Logger log;
+	@Inject
+	protected Logger log;
 
-    @Override
-    public Response toResponse(BadFieldException exception) {
-        if (log.isLoggable(Level.FINE)) {
-            log.log(Level.FINE, exception.getMessage(), exception);
-        }
+	@Override
+	public Response toResponse(BadFieldException exception) {
+		if (log.isLoggable(Level.FINE)) {
+			log.log(Level.FINE, exception.getMessage(), exception);
+		}
 
-        return Response.status(Response.Status.BAD_REQUEST)
-                .entity(MessageFormat.format("Bad parameter ''{0}''", exception.getFieldName())).build();
-    }
+		return Response
+				.status(Response.Status.BAD_REQUEST)
+				.entity(
+						exception.getDescription() != null ? MessageFormat.format("Bad parameter/field ''{0}'': {1}",
+								exception.getFieldName(), exception.getDescription()) : MessageFormat.format(
+								"Bad parameter/field ''{0}''", exception.getFieldName())).build();
+	}
 }
