@@ -182,8 +182,9 @@ public class ContributorService implements EntityService {
 		updateSearchIndex(id, entity);
 
 		if (fireEvent) {
-			log.fine("Going to fire ContributorCreatedEvent");
-			eventCreate.fire(new ContributorCreatedEvent(id, newCode, entity));
+			ContributorCreatedEvent event = new ContributorCreatedEvent(id, newCode, entity);
+			log.log(Level.FINE, "Going to fire event {0}", event);
+			eventCreate.fire(event);
 		}
 
 		return id;
@@ -217,11 +218,13 @@ public class ContributorService implements EntityService {
 
 		if (fireEvent) {
 			if (exists) {
-				log.fine("Going to fire ContributorUpdatedEvent");
-				eventUpdate.fire(new ContributorUpdatedEvent(id, newCode, entity));
+				ContributorUpdatedEvent event = new ContributorUpdatedEvent(id, newCode, entity);
+				log.log(Level.FINE, "Going to fire event {0}", event);
+				eventUpdate.fire(event);
 			} else {
-				log.fine("Going to fire ContributorCreatedEvent");
-				eventCreate.fire(new ContributorCreatedEvent(id, newCode, entity));
+				ContributorCreatedEvent event = new ContributorCreatedEvent(id, newCode, entity);
+				log.log(Level.FINE, "Going to fire event {0}", event);
+				eventCreate.fire(event);
 			}
 		}
 
@@ -252,11 +255,13 @@ public class ContributorService implements EntityService {
 
 		if (fireEvent) {
 			if (exists) {
-				log.fine("Going to fire ContributorUpdatedEvent");
-				eventUpdate.fire(new ContributorUpdatedEvent(id, newCode, entity));
+				ContributorUpdatedEvent event = new ContributorUpdatedEvent(id, newCode, entity);
+				log.log(Level.FINE, "Going to fire event {0}", event);
+				eventUpdate.fire(event);
 			} else {
-				log.fine("Going to fire ContributorCreatedEvent");
-				eventCreate.fire(new ContributorCreatedEvent(id, newCode, entity));
+				ContributorCreatedEvent event = new ContributorCreatedEvent(id, newCode, entity);
+				log.log(Level.FINE, "Going to fire event {0}", event);
+				eventCreate.fire(event);
 			}
 		}
 	}
@@ -306,8 +311,9 @@ public class ContributorService implements EntityService {
 	public void delete(String id) {
 		String code = deleteImpl(id);
 		if (code != null) {
-			log.fine("Going to fire ContributorDeletedEvent");
-			eventDelete.fire(new ContributorDeletedEvent(id, SearchUtils.trimToNull(code)));
+			ContributorDeletedEvent event = new ContributorDeletedEvent(id, SearchUtils.trimToNull(code));
+			log.log(Level.FINE, "Going to fire event {0}", event);
+			eventDelete.fire(event);
 			log.fine("ContributorDeletedEvent fire finished");
 		}
 	}

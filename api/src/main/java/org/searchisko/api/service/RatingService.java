@@ -40,7 +40,7 @@ public class RatingService {
 	 * @param event to process
 	 */
 	public void contributorDeletedEventHandler(@Observes ContributorDeletedEvent event) {
-		log.log(Level.FINE, "contributorDeletedEventHandler called for event {}", event);
+		log.log(Level.FINE, "contributorDeletedEventHandler called for event {0}", event);
 		if (event != null && event.getContributorCode() != null)
 			ratingPersistenceService.deleteRatingsForContributor(event.getContributorCode());
 	}
