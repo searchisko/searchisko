@@ -8,18 +8,16 @@ package org.searchisko.api.rest;
 import java.util.Map;
 import java.util.logging.Logger;
 
+import javax.ws.rs.core.SecurityContext;
+
 import junit.framework.Assert;
 
-import org.jboss.resteasy.plugins.server.embedded.SimplePrincipal;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.searchisko.api.rest.exception.NotAuthenticatedException;
 import org.searchisko.api.rest.security.AuthenticatedUserType;
 import org.searchisko.api.rest.security.AuthenticationUtilService;
-import org.searchisko.api.rest.security.ContributorCustomSecurityContext;
 import org.searchisko.api.testtools.TestUtils;
-
-import javax.ws.rs.core.SecurityContext;
 
 /**
  * Unit test for {@link AuthStatusRestService}
@@ -76,7 +74,8 @@ public class AuthStatusRestServiceTest {
 		// case - contributor id returned
 		{
 			Mockito.reset(tested.authenticationUtilService);
-			Mockito.when(tested.authenticationUtilService.getAuthenticatedContributor(scMock, false)).thenReturn("aaa <jb@jk.po>");
+			Mockito.when(tested.authenticationUtilService.getAuthenticatedContributor(scMock, false)).thenReturn(
+					"aaa <jb@jk.po>");
 
 			Map<String, Object> ret = tested.authStatus();
 

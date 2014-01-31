@@ -14,6 +14,7 @@ import javax.enterprise.event.Observes;
 import javax.inject.Inject;
 import javax.inject.Named;
 
+import org.searchisko.api.events.ContentDeletedEvent;
 import org.searchisko.api.events.ContributorDeletedEvent;
 import org.searchisko.persistence.service.RatingPersistenceService;
 
@@ -35,7 +36,7 @@ public class RatingService {
 	protected RatingPersistenceService ratingPersistenceService;
 
 	/**
-	 * CDI Event handler for {@link ContributorDeletedEvent} used to patch ratings when contributor is deleted.
+	 * CDI Event handler for {@link ContributorDeletedEvent} used to remove ratings when contributor is deleted.
 	 * 
 	 * @param event to process
 	 */
@@ -45,6 +46,15 @@ public class RatingService {
 			ratingPersistenceService.deleteRatingsForContributor(event.getContributorCode());
 	}
 
-	// TODO RATINGS #4 - delete ratings if content is deleted
+	/**
+	 * CDI Event handler for {@link ContentDeletedEvent} used to remove ratings when content is deleted.
+	 * 
+	 * @param event to process
+	 */
+	public void contentDeletedEventHandler(@Observes ContentDeletedEvent event) {
+		log.log(Level.FINE, "contentDeletedEventHandler called for event {0}", event);
+		if (event != null && event.getContentId() != null)
+			ratingPersistenceService.deleteRatingsForContent(event.getContentId());
+	}
 
 }

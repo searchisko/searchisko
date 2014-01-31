@@ -23,7 +23,9 @@ import org.elasticsearch.client.Client;
 import org.hamcrest.CustomMatcher;
 import org.junit.Test;
 import org.mockito.Mockito;
+import org.searchisko.api.events.ContributorCreatedEvent;
 import org.searchisko.api.events.ContributorDeletedEvent;
+import org.searchisko.api.events.ContributorUpdatedEvent;
 import org.searchisko.api.reindexer.ReindexingTaskTypes;
 import org.searchisko.api.rest.ESDataOnlyResponse;
 import org.searchisko.api.rest.exception.BadFieldException;
@@ -35,9 +37,19 @@ import org.searchisko.contribprofile.model.ContributorProfile;
 import org.searchisko.persistence.service.EntityService;
 import org.searchisko.persistence.service.RatingPersistenceService;
 
+import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertNotNull;
+import static junit.framework.Assert.fail;
+
+import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.when;
+
 /**
  * Unit test for {@link ContributorService}.<br>
- * TODO CONTRIBUTOR test events
  * 
  * @author Vlastimil Elias (velias at redhat dot com)
  */
@@ -208,27 +220,27 @@ public class ContributorServiceTest extends ESRealClientTestBase {
 
 		// case - value is returned
 		Map<String, Object> value = new HashMap<String, Object>();
-		Mockito.when(tested.entityService.get("10")).thenReturn(value);
+		when(tested.entityService.get("10")).thenReturn(value);
 		Assert.assertEquals(value, tested.get("10"));
 
 		// case - null is returned
 		Mockito.reset(tested.entityService);
-		Mockito.when(tested.entityService.get("10")).thenReturn(null);
-		Assert.assertEquals(null, tested.get("10"));
-		Mockito.verify(tested.entityService).get("10");
-		Mockito.verifyNoMoreInteractions(tested.entityService);
+		when(tested.entityService.get("10")).thenReturn(null);
+		assertEquals(null, tested.get("10"));
+		verify(tested.entityService).get("10");
+		verifyNoMoreInteractions(tested.entityService);
 
 		// case - exception is passed
-		Mockito.reset(tested.entityService);
-		Mockito.when(tested.entityService.get("10")).thenThrow(new RuntimeException("testex"));
+		reset(tested.entityService);
+		when(tested.entityService.get("10")).thenThrow(new RuntimeException("testex"));
 		try {
 			tested.get("10");
-			Assert.fail("RuntimeException expected");
+			fail("RuntimeException expected");
 		} catch (RuntimeException e) {
 			// OK
 		}
-		Mockito.verify(tested.entityService).get("10");
-		Mockito.verifyNoMoreInteractions(tested.entityService);
+		verify(tested.entityService).get("10");
+		verifyNoMoreInteractions(tested.entityService);
 	}
 
 	@Test(expected = RequiredFieldException.class)
@@ -237,7 +249,12 @@ public class ContributorServiceTest extends ESRealClientTestBase {
 
 		Map<String, Object> entity = new HashMap<String, Object>();
 		entity.put("name", "v1");
-		tested.create(entity);
+		try {
+			tested.create(entity);
+		} finally {
+			verifyZeroInteractions(tested.eventUpdate);
+			verifyZeroInteractions(tested.eventCreate);
+		}
 	}
 
 	@Test(expected = BadFieldException.class)
@@ -251,11 +268,14 @@ public class ContributorServiceTest extends ESRealClientTestBase {
 			Thread.sleep(100);
 
 			Map<String, Object> entity = new HashMap<String, Object>();
-			entity.put(ContributorService.FIELD_CODE, "code_1");
+			entity.put(ContributorService.FIELD_CODE, CODE_1);
+			when(tested.entityService.get("1")).thenReturn(null);
 			tested.create("1", entity);
 			tested.searchClientService.performIndexFlushAndRefreshBlocking(ContributorService.SEARCH_INDEX_NAME);
 			tested.create(entity);
 		} finally {
+			verifyZeroInteractions(tested.eventUpdate);
+			verify(tested.eventCreate, times(1)).fire(prepareContributorCreatedEventMatcher("1", CODE_1));
 			indexDelete(ContributorService.SEARCH_INDEX_NAME);
 			finalizeESClientForUnitTest();
 		}
@@ -275,33 +295,38 @@ public class ContributorServiceTest extends ESRealClientTestBase {
 				Map<String, Object> entity = new HashMap<String, Object>();
 				entity.put("name", "v1");
 				entity.put(ContributorService.FIELD_CODE, CODE_1);
-				Mockito.when(tested.entityService.create(entity)).thenReturn("1");
+				when(tested.entityService.create(entity)).thenReturn("1");
 
 				String id = tested.create(entity);
-				Assert.assertEquals("1", id);
+				assertEquals("1", id);
 				Map<String, Object> r = indexGetDocument(ContributorService.SEARCH_INDEX_NAME,
 						ContributorService.SEARCH_INDEX_TYPE, "1");
-				Assert.assertNotNull(r);
-				Assert.assertEquals("v1", r.get("name"));
+				assertNotNull(r);
+				assertEquals("v1", r.get("name"));
+				verify(tested.eventCreate).fire(prepareContributorCreatedEventMatcher(id, CODE_1));
+				verifyZeroInteractions(tested.eventUpdate);
 			}
 			tested.searchClientService.performIndexFlushAndRefreshBlocking(ContributorService.SEARCH_INDEX_NAME);
 
 			{
-				Mockito.reset(tested.entityService);
+				reset(tested.entityService, tested.eventCreate, tested.eventUpdate);
+				reset(tested.entityService);
 				Map<String, Object> entity = new HashMap<String, Object>();
 				entity.put("name", "v2");
 				entity.put(ContributorService.FIELD_CODE, CODE_2);
-				Mockito.when(tested.entityService.create(entity)).thenReturn("2");
+				when(tested.entityService.create(entity)).thenReturn("2");
 
 				String id = tested.create(entity);
-				Assert.assertEquals("2", id);
+				assertEquals("2", id);
 				Map<String, Object> r = indexGetDocument(ContributorService.SEARCH_INDEX_NAME,
 						ContributorService.SEARCH_INDEX_TYPE, "2");
-				Assert.assertNotNull(r);
-				Assert.assertEquals("v2", r.get("name"));
+				assertNotNull(r);
+				assertEquals("v2", r.get("name"));
 				r = indexGetDocument(ContributorService.SEARCH_INDEX_NAME, ContributorService.SEARCH_INDEX_TYPE, "1");
-				Assert.assertNotNull(r);
-				Assert.assertEquals("v1", r.get("name"));
+				assertNotNull(r);
+				assertEquals("v1", r.get("name"));
+				verify(tested.eventCreate).fire(prepareContributorCreatedEventMatcher(id, CODE_2));
+				verifyZeroInteractions(tested.eventUpdate);
 			}
 
 		} finally {
@@ -378,46 +403,57 @@ public class ContributorServiceTest extends ESRealClientTestBase {
 				Map<String, Object> entity = new HashMap<String, Object>();
 				entity.put("name", "v1");
 				entity.put(ContributorService.FIELD_CODE, CODE_1);
+				when(tested.entityService.get("1")).thenReturn(null);
 
 				tested.create("1", entity);
 				Mockito.verify(tested.entityService).create("1", entity);
 				Map<String, Object> r = indexGetDocument(ContributorService.SEARCH_INDEX_NAME,
 						ContributorService.SEARCH_INDEX_TYPE, "1");
-				Assert.assertNotNull(r);
-				Assert.assertEquals("v1", r.get("name"));
+				assertNotNull(r);
+				assertEquals("v1", r.get("name"));
+				verify(tested.eventCreate).fire(prepareContributorCreatedEventMatcher("1", CODE_1));
+				verifyZeroInteractions(tested.eventUpdate);
 			}
 			tested.searchClientService.performIndexFlushAndRefreshBlocking(ContributorService.SEARCH_INDEX_NAME);
 
 			{
+				reset(tested.entityService, tested.eventCreate, tested.eventUpdate);
+				when(tested.entityService.get("2")).thenReturn(null);
 				Map<String, Object> entity = new HashMap<String, Object>();
 				entity.put("name", "v2");
 				entity.put(ContributorService.FIELD_CODE, CODE_2);
 				tested.create("2", entity);
-				Mockito.verify(tested.entityService).create("2", entity);
+				verify(tested.entityService).create("2", entity);
 				Map<String, Object> r = indexGetDocument(ContributorService.SEARCH_INDEX_NAME,
 						ContributorService.SEARCH_INDEX_TYPE, "2");
-				Assert.assertNotNull(r);
-				Assert.assertEquals("v2", r.get("name"));
+				assertNotNull(r);
+				assertEquals("v2", r.get("name"));
 				r = indexGetDocument(ContributorService.SEARCH_INDEX_NAME, ContributorService.SEARCH_INDEX_TYPE, "1");
-				Assert.assertNotNull(r);
-				Assert.assertEquals("v1", r.get("name"));
+				assertNotNull(r);
+				assertEquals("v1", r.get("name"));
+				verify(tested.eventCreate).fire(prepareContributorCreatedEventMatcher("2", CODE_2));
+				verifyZeroInteractions(tested.eventUpdate);
 			}
 			tested.searchClientService.performIndexFlushAndRefreshBlocking(ContributorService.SEARCH_INDEX_NAME);
 
 			// case - update existing object
 			{
+				reset(tested.entityService, tested.eventCreate, tested.eventUpdate);
+				when(tested.entityService.get("1")).thenReturn(new HashMap<String, Object>());
 				Map<String, Object> entity = new HashMap<String, Object>();
 				entity.put("name", "v1_1");
 				entity.put(ContributorService.FIELD_CODE, CODE_1);
 				tested.create("1", entity);
-				Mockito.verify(tested.entityService).create("1", entity);
+				verify(tested.entityService).create("1", entity);
 				Map<String, Object> r = indexGetDocument(ContributorService.SEARCH_INDEX_NAME,
 						ContributorService.SEARCH_INDEX_TYPE, "2");
-				Assert.assertNotNull(r);
-				Assert.assertEquals("v2", r.get("name"));
+				assertNotNull(r);
+				assertEquals("v2", r.get("name"));
 				r = indexGetDocument(ContributorService.SEARCH_INDEX_NAME, ContributorService.SEARCH_INDEX_TYPE, "1");
-				Assert.assertNotNull(r);
-				Assert.assertEquals("v1_1", r.get("name"));
+				assertNotNull(r);
+				assertEquals("v1_1", r.get("name"));
+				verifyZeroInteractions(tested.eventCreate);
+				verify(tested.eventUpdate).fire(prepareContributorUpdatedEventMatcher("1", CODE_1));
 			}
 		} finally {
 			indexDelete(ContributorService.SEARCH_INDEX_NAME);
@@ -457,9 +493,10 @@ public class ContributorServiceTest extends ESRealClientTestBase {
 			indexDelete(ContributorService.SEARCH_INDEX_NAME);
 			{
 				Mockito.reset(tested.entityService);
+				when(tested.entityService.get("1")).thenReturn(null);
 				Map<String, Object> entity = new HashMap<String, Object>();
 				entity.put("name", "v1");
-				entity.put(ContributorService.FIELD_CODE, "code");
+				entity.put(ContributorService.FIELD_CODE, CODE_1);
 
 				tested.update("1", entity);
 				Mockito.verify(tested.entityService).update("1", entity);
@@ -467,14 +504,18 @@ public class ContributorServiceTest extends ESRealClientTestBase {
 						ContributorService.SEARCH_INDEX_TYPE, "1");
 				Assert.assertNotNull(r);
 				Assert.assertEquals("v1", r.get("name"));
+
+				verify(tested.eventCreate).fire(prepareContributorCreatedEventMatcher("1", CODE_1));
+				verifyZeroInteractions(tested.eventUpdate);
 			}
 
 			// case - insert noexisting object to existing index
 			{
-				Mockito.reset(tested.entityService);
+				Mockito.reset(tested.entityService, tested.eventCreate, tested.eventUpdate);
 				Map<String, Object> entity = new HashMap<String, Object>();
 				entity.put("name", "v2");
-				entity.put(ContributorService.FIELD_CODE, "code");
+				entity.put(ContributorService.FIELD_CODE, CODE_2);
+				when(tested.entityService.get("2")).thenReturn(null);
 				tested.update("2", entity);
 				Mockito.verify(tested.entityService).update("2", entity);
 				Map<String, Object> r = indexGetDocument(ContributorService.SEARCH_INDEX_NAME,
@@ -484,14 +525,17 @@ public class ContributorServiceTest extends ESRealClientTestBase {
 				r = indexGetDocument(ContributorService.SEARCH_INDEX_NAME, ContributorService.SEARCH_INDEX_TYPE, "1");
 				Assert.assertNotNull(r);
 				Assert.assertEquals("v1", r.get("name"));
+				verify(tested.eventCreate).fire(prepareContributorCreatedEventMatcher("2", CODE_2));
+				verifyZeroInteractions(tested.eventUpdate);
 			}
 
 			// case - update existing object
 			{
-				Mockito.reset(tested.entityService);
+				Mockito.reset(tested.entityService, tested.eventCreate, tested.eventUpdate);
 				Map<String, Object> entity = new HashMap<String, Object>();
 				entity.put("name", "v1_1");
-				entity.put(ContributorService.FIELD_CODE, "code");
+				entity.put(ContributorService.FIELD_CODE, CODE_1);
+				when(tested.entityService.get("1")).thenReturn(new HashMap<String, Object>());
 				tested.update("1", entity);
 				Mockito.verify(tested.entityService).update("1", entity);
 				Map<String, Object> r = indexGetDocument(ContributorService.SEARCH_INDEX_NAME,
@@ -501,6 +545,8 @@ public class ContributorServiceTest extends ESRealClientTestBase {
 				r = indexGetDocument(ContributorService.SEARCH_INDEX_NAME, ContributorService.SEARCH_INDEX_TYPE, "1");
 				Assert.assertNotNull(r);
 				Assert.assertEquals("v1_1", r.get("name"));
+				verifyZeroInteractions(tested.eventCreate);
+				verify(tested.eventUpdate).fire(prepareContributorUpdatedEventMatcher("1", CODE_1));
 			}
 		} finally {
 			indexDelete(ContributorService.SEARCH_INDEX_NAME);
@@ -517,9 +563,9 @@ public class ContributorServiceTest extends ESRealClientTestBase {
 			indexDelete(ContributorService.SEARCH_INDEX_NAME);
 			// case - delete from noexisting index
 			{
-				Mockito.reset(tested.entityService);
+				reset(tested.entityService);
 				tested.delete("1");
-				Mockito.verify(tested.entityService).delete("1");
+				verify(tested.entityService).delete("1");
 			}
 
 			indexDelete(ContributorService.SEARCH_INDEX_NAME);
@@ -527,10 +573,10 @@ public class ContributorServiceTest extends ESRealClientTestBase {
 			Thread.sleep(100);
 			// case - index exists but record not in it, no event is fired
 			{
-				Mockito.reset(tested.entityService);
+				reset(tested.entityService);
 				tested.delete("1");
-				Mockito.verify(tested.entityService).delete("1");
-				Mockito.verifyZeroInteractions(tested.eventDelete);
+				verify(tested.entityService).delete("1");
+				verifyZeroInteractions(tested.eventDelete);
 			}
 
 			indexInsertDocument(ContributorService.SEARCH_INDEX_NAME, ContributorService.SEARCH_INDEX_TYPE, "10",
@@ -542,7 +588,7 @@ public class ContributorServiceTest extends ESRealClientTestBase {
 			indexFlushAndRefresh(ContributorService.SEARCH_INDEX_NAME);
 			// case - index and record exists, so is record deleted and event fired
 			{
-				Mockito.reset(tested.entityService);
+				reset(tested.entityService, tested.eventDelete);
 				Map<String, Object> entity = new HashMap<>();
 				entity.put(ContributorService.FIELD_CODE, CODE_1);
 				// mock this to simulate record exists
@@ -557,7 +603,7 @@ public class ContributorServiceTest extends ESRealClientTestBase {
 							@Override
 							public boolean matches(Object paramObject) {
 								ContributorDeletedEvent e = (ContributorDeletedEvent) paramObject;
-								return e.getContributorCode().endsWith(CODE_1) & e.getContributorId().endsWith("10");
+								return e.getContributorCode().equals(CODE_1) & e.getContributorId().equals("10");
 							}
 
 						}));
@@ -1181,5 +1227,35 @@ public class ContributorServiceTest extends ESRealClientTestBase {
 			indexDelete(ContributorService.SEARCH_INDEX_NAME);
 			finalizeESClientForUnitTest();
 		}
+	}
+
+	private ContributorCreatedEvent prepareContributorCreatedEventMatcher(final String expectedId,
+			final String expectedCode) {
+		return Mockito.argThat(new CustomMatcher<ContributorCreatedEvent>("ContributorCreatedEvent [contributorId="
+				+ expectedId + " contributorCode=" + expectedCode + "]") {
+
+			@Override
+			public boolean matches(Object paramObject) {
+				ContributorCreatedEvent e = (ContributorCreatedEvent) paramObject;
+				return e.getContributorId().equals(expectedId) && e.getContributorCode().equals(expectedCode)
+						&& e.getContributorData() != null;
+			}
+
+		});
+	}
+
+	private ContributorUpdatedEvent prepareContributorUpdatedEventMatcher(final String expectedId,
+			final String expectedCode) {
+		return Mockito.argThat(new CustomMatcher<ContributorUpdatedEvent>("ContributorUpdatedEvent [contributorId="
+				+ expectedId + " contributorCode=" + expectedCode + "]") {
+
+			@Override
+			public boolean matches(Object paramObject) {
+				ContributorUpdatedEvent e = (ContributorUpdatedEvent) paramObject;
+				return e.getContributorId().equals(expectedId) && e.getContributorCode().equals(expectedCode)
+						&& e.getContributorData() != null;
+			}
+
+		});
 	}
 }

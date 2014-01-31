@@ -8,9 +8,14 @@ package org.searchisko.api.service;
 import java.util.logging.Logger;
 
 import org.junit.Test;
-import org.mockito.Mockito;
+import org.searchisko.api.events.ContentDeletedEvent;
 import org.searchisko.api.events.ContributorDeletedEvent;
 import org.searchisko.persistence.service.RatingPersistenceService;
+
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyZeroInteractions;
 
 /**
  * Unit test for {@link RatingService}.
@@ -24,21 +29,38 @@ public class RatingServiceTest {
 		RatingService tested = getTested();
 
 		tested.contributorDeletedEventHandler(null);
-		Mockito.verifyZeroInteractions(tested.ratingPersistenceService);
+		verifyZeroInteractions(tested.ratingPersistenceService);
 
-		Mockito.reset(tested.ratingPersistenceService);
+		reset(tested.ratingPersistenceService);
 		tested.contributorDeletedEventHandler(new ContributorDeletedEvent("id", null));
-		Mockito.verifyZeroInteractions(tested.ratingPersistenceService);
+		verifyZeroInteractions(tested.ratingPersistenceService);
 
-		Mockito.reset(tested.ratingPersistenceService);
+		reset(tested.ratingPersistenceService);
 		tested.contributorDeletedEventHandler(new ContributorDeletedEvent("id", "code"));
-		Mockito.verify(tested.ratingPersistenceService).deleteRatingsForContributor("code");
+		verify(tested.ratingPersistenceService).deleteRatingsForContributor("code");
+
+	}
+
+	@Test
+	public void contentDeletedEventHandler() {
+		RatingService tested = getTested();
+
+		tested.contentDeletedEventHandler(null);
+		verifyZeroInteractions(tested.ratingPersistenceService);
+
+		reset(tested.ratingPersistenceService);
+		tested.contentDeletedEventHandler(new ContentDeletedEvent(null));
+		verifyZeroInteractions(tested.ratingPersistenceService);
+
+		reset(tested.ratingPersistenceService);
+		tested.contentDeletedEventHandler(new ContentDeletedEvent("id"));
+		verify(tested.ratingPersistenceService).deleteRatingsForContent("id");
 
 	}
 
 	private RatingService getTested() {
 		RatingService ret = new RatingService();
-		ret.ratingPersistenceService = Mockito.mock(RatingPersistenceService.class);
+		ret.ratingPersistenceService = mock(RatingPersistenceService.class);
 		ret.log = Logger.getLogger("testlogger");
 		return ret;
 	}

@@ -8,8 +8,10 @@ package org.searchisko.api.rest;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.logging.Level;
 
 import javax.enterprise.context.RequestScoped;
+import javax.enterprise.event.Event;
 import javax.inject.Inject;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -37,6 +39,8 @@ import org.searchisko.api.ContentObjectFields;
 import org.searchisko.api.annotations.header.CORSSupport;
 import org.searchisko.api.annotations.security.GuestAllowed;
 import org.searchisko.api.annotations.security.ProviderAllowed;
+import org.searchisko.api.events.ContentDeletedEvent;
+import org.searchisko.api.events.ContentStoredEvent;
 import org.searchisko.api.rest.exception.BadFieldException;
 import org.searchisko.api.rest.exception.RequiredFieldException;
 import org.searchisko.api.rest.security.AuthenticationUtilService;
@@ -46,11 +50,10 @@ import org.searchisko.api.service.SearchClientService;
 import org.searchisko.persistence.service.ContentPersistenceService;
 
 /**
- * REST API for Content
+ * REST API for Content related operations.
  * 
  * @author Libor Krzyzanek
  * @author Vlastimil Elias (velias at redhat dot com)
- * 
  */
 @RequestScoped
 @Path("/content/{type}")
@@ -76,6 +79,12 @@ public class ContentRestService extends RestServiceBase {
 
 	@Context
 	protected SecurityContext securityContext;
+
+	@Inject
+	protected Event<ContentStoredEvent> eventContentStored;
+
+	@Inject
+	protected Event<ContentDeletedEvent> eventContentDeleted;
 
 	@GET
 	@Path("/")
@@ -162,6 +171,11 @@ public class ContentRestService extends RestServiceBase {
 		}
 	}
 
+	/**
+	 * Store new content into Searchisko.
+	 * 
+	 * This method fires {@link ContentStoredEvent}.
+	 */
 	@POST
 	@Path("/{contentId}")
 	@Consumes(MediaType.APPLICATION_JSON)
@@ -180,7 +194,8 @@ public class ContentRestService extends RestServiceBase {
 			return Response.status(Status.BAD_REQUEST).entity("Some content for pushing must be defined").build();
 		}
 
-		Map<String, Object> provider = providerService.findProvider(authenticationUtilService.getAuthenticatedProvider(securityContext));
+		Map<String, Object> provider = providerService.findProvider(authenticationUtilService
+				.getAuthenticatedProvider(securityContext));
 		Map<String, Object> typeDef = ProviderService.extractContentType(provider, type);
 		if (typeDef == null) {
 			throw new BadFieldException("type");
@@ -193,7 +208,8 @@ public class ContentRestService extends RestServiceBase {
 		String indexType = ProviderService.extractIndexType(typeDef, type);
 
 		// fill some normalized fields - should be last step to avoid changing them via preprocessors
-		content.put(ContentObjectFields.SYS_CONTENT_PROVIDER, authenticationUtilService.getAuthenticatedProvider(securityContext));
+		content.put(ContentObjectFields.SYS_CONTENT_PROVIDER,
+				authenticationUtilService.getAuthenticatedProvider(securityContext));
 		content.put(ContentObjectFields.SYS_CONTENT_ID, contentId);
 		content.put(ContentObjectFields.SYS_CONTENT_TYPE, type);
 		content.put(ContentObjectFields.SYS_ID, sysContentId);
@@ -230,6 +246,11 @@ public class ContentRestService extends RestServiceBase {
 		// Push to search subsystem
 		IndexResponse ir = searchClientService.getClient().prepareIndex(indexName, indexType, sysContentId)
 				.setSource(content).execute().actionGet();
+
+		ContentStoredEvent event = new ContentStoredEvent(sysContentId, content);
+		log.log(Level.FINE, "Going to fire event {0}", event);
+		eventContentStored.fire(event);
+
 		Map<String, String> retJson = new LinkedHashMap<String, String>();
 		if (ir.getVersion() > 1) {
 			retJson.put("status", "update");
@@ -241,6 +262,9 @@ public class ContentRestService extends RestServiceBase {
 		return Response.ok(retJson).build();
 	}
 
+	/**
+	 * Delete content from Searchisko. This method fires {@link ContentDeletedEvent}.
+	 */
 	@DELETE
 	@Path("/{contentId}")
 	@ProviderAllowed
@@ -255,7 +279,8 @@ public class ContentRestService extends RestServiceBase {
 			throw new RequiredFieldException("type");
 		}
 
-		Map<String, Object> provider = providerService.findProvider(authenticationUtilService.getAuthenticatedProvider(securityContext));
+		Map<String, Object> provider = providerService.findProvider(authenticationUtilService
+				.getAuthenticatedProvider(securityContext));
 		Map<String, Object> typeDef = ProviderService.extractContentType(provider, type);
 		if (typeDef == null) {
 			throw new BadFieldException("type");
@@ -272,6 +297,12 @@ public class ContentRestService extends RestServiceBase {
 
 		DeleteResponse dr = searchClientService.getClient().prepareDelete(indexName, indexType, sysContentId).execute()
 				.actionGet();
+
+		if (!dr.isNotFound()) {
+			ContentDeletedEvent event = new ContentDeletedEvent(sysContentId);
+			log.log(Level.FINE, "Going to fire event {0}", event);
+			eventContentDeleted.fire(event);
+		}
 
 		if (dr.isNotFound() && !Boolean.parseBoolean(ignoreMissing)) {
 			return Response.status(Status.NOT_FOUND).entity("Content not found to be deleted.").build();

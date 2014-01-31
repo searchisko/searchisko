@@ -12,13 +12,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
+import javax.enterprise.event.Event;
 import javax.ws.rs.core.Response;
 
 import org.elasticsearch.common.settings.SettingsException;
-import org.junit.Assert;
+import org.hamcrest.CustomMatcher;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.searchisko.api.ContentObjectFields;
+import org.searchisko.api.events.ContentDeletedEvent;
+import org.searchisko.api.events.ContentStoredEvent;
 import org.searchisko.api.rest.exception.BadFieldException;
 import org.searchisko.api.rest.exception.RequiredFieldException;
 import org.searchisko.api.rest.security.AuthenticationUtilService;
@@ -27,6 +30,20 @@ import org.searchisko.api.service.ProviderService;
 import org.searchisko.api.testtools.ESRealClientTestBase;
 import org.searchisko.api.testtools.TestUtils;
 import org.searchisko.persistence.service.ContentPersistenceService;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.when;
+
+import static org.searchisko.api.testtools.TestUtils.assertResponseStatus;
+import static org.searchisko.api.testtools.TestUtils.assetStreamingOutputContent;
 
 /**
  * Unit test for {@link ContentRestService}
@@ -127,92 +144,94 @@ public class ContentRestServiceTest extends ESRealClientTestBase {
 			// case - insert when index is not found
 			String sys_content_type = "known";
 			{
-				Mockito.reset(tested.contentPersistenceService);
+				reset(tested.contentPersistenceService, tested.eventContentStored);
 				indexDelete(INDEX_NAME);
 				content.clear();
 				content.put("test", "testvalue");
 				String sysId = tested.providerService.generateSysId(sys_content_type, "1");
-				Response r = TestUtils.assertResponseStatus(tested.pushContent(sys_content_type, "1", content),
-						Response.Status.OK);
-				Assert.assertEquals("insert", ((Map<String, String>) r.getEntity()).get("status"));
-				Mockito.verify(tested.providerService).runPreprocessors(sys_content_type, PREPROCESSORS, content);
+				Response r = assertResponseStatus(tested.pushContent(sys_content_type, "1", content), Response.Status.OK);
+				assertEquals("insert", ((Map<String, String>) r.getEntity()).get("status"));
+				verify(tested.providerService).runPreprocessors(sys_content_type, PREPROCESSORS, content);
 				// verify enhancements called
-				Mockito.verify(tested.contentEnhancementsService).handleContentRatingFields(content, sysId);
-				Mockito.verify(tested.contentEnhancementsService).handleExternalTags(content, sysId);
+				verify(tested.contentEnhancementsService).handleContentRatingFields(content, sysId);
+				verify(tested.contentEnhancementsService).handleExternalTags(content, sysId);
 				indexFlushAndRefresh(INDEX_NAME);
 				Map<String, Object> doc = indexGetDocument(INDEX_NAME, INDEX_TYPE,
 						tested.providerService.generateSysId(sys_content_type, "1"));
-				Assert.assertNotNull(doc);
-				Assert.assertEquals("testvalue", doc.get("test"));
-				Assert.assertEquals("jbossorg", doc.get(ContentObjectFields.SYS_CONTENT_PROVIDER));
-				Assert.assertEquals("1", doc.get(ContentObjectFields.SYS_CONTENT_ID));
-				Assert.assertEquals(sys_content_type, doc.get(ContentObjectFields.SYS_CONTENT_TYPE));
-				Assert.assertEquals("my_sys_type", doc.get(ContentObjectFields.SYS_TYPE));
-				Assert.assertEquals(null, doc.get(ContentObjectFields.SYS_CONTENT_CONTENT_TYPE));
-				Assert.assertEquals(sysId, doc.get(ContentObjectFields.SYS_ID));
-				Assert.assertNotNull(doc.get(ContentObjectFields.SYS_UPDATED));
-				Assert.assertEquals(null, doc.get(ContentObjectFields.SYS_TAGS));
-				Mockito.verifyNoMoreInteractions(tested.contentPersistenceService);
+				assertNotNull(doc);
+				assertEquals("testvalue", doc.get("test"));
+				assertEquals("jbossorg", doc.get(ContentObjectFields.SYS_CONTENT_PROVIDER));
+				assertEquals("1", doc.get(ContentObjectFields.SYS_CONTENT_ID));
+				assertEquals(sys_content_type, doc.get(ContentObjectFields.SYS_CONTENT_TYPE));
+				assertEquals("my_sys_type", doc.get(ContentObjectFields.SYS_TYPE));
+				assertEquals(null, doc.get(ContentObjectFields.SYS_CONTENT_CONTENT_TYPE));
+				assertEquals(sysId, doc.get(ContentObjectFields.SYS_ID));
+				assertNotNull(doc.get(ContentObjectFields.SYS_UPDATED));
+				assertEquals(null, doc.get(ContentObjectFields.SYS_TAGS));
+				verify(tested.eventContentStored).fire(prepareContentStoredEventMatcher(sysId));
+				verifyNoMoreInteractions(tested.contentPersistenceService);
 			}
 
 			// case - insert when index is found, fill sys_updated if not provided in content, process tags provided in
 			// content, fill sys_content_content-type because sys_content is present
 			{
-				Mockito.reset(tested.providerService, tested.contentPersistenceService);
+				reset(tested.providerService, tested.contentPersistenceService, tested.eventContentStored);
 				setupProviderServiceMock(tested);
 				content.put("test2", "testvalue2");
 				content.put(ContentObjectFields.SYS_CONTENT, "sys content");
 				content.remove(ContentObjectFields.SYS_UPDATED);
 				String[] tags = new String[] { "tag_value" };
 				content.put("tags", tags);
-				Response r = TestUtils.assertResponseStatus(tested.pushContent(sys_content_type, "2", content),
-						Response.Status.OK);
-				Assert.assertEquals("insert", ((Map<String, String>) r.getEntity()).get("status"));
-				Mockito.verify(tested.providerService).runPreprocessors(sys_content_type, PREPROCESSORS, content);
+				Response r = assertResponseStatus(tested.pushContent(sys_content_type, "2", content), Response.Status.OK);
+				assertEquals("insert", ((Map<String, String>) r.getEntity()).get("status"));
+				verify(tested.providerService).runPreprocessors(sys_content_type, PREPROCESSORS, content);
 				indexFlushAndRefresh(INDEX_NAME);
 				Map<String, Object> doc = indexGetDocument(INDEX_NAME, INDEX_TYPE,
 						tested.providerService.generateSysId(sys_content_type, "2"));
-				Assert.assertNotNull(doc);
-				Assert.assertEquals("testvalue", doc.get("test"));
-				Assert.assertEquals("testvalue2", doc.get("test2"));
-				Assert.assertEquals("jbossorg", doc.get(ContentObjectFields.SYS_CONTENT_PROVIDER));
-				Assert.assertEquals("2", doc.get(ContentObjectFields.SYS_CONTENT_ID));
-				Assert.assertEquals(sys_content_type, doc.get(ContentObjectFields.SYS_CONTENT_TYPE));
-				Assert.assertEquals("my_sys_type", doc.get(ContentObjectFields.SYS_TYPE));
-				Assert.assertEquals("text/plain", doc.get(ContentObjectFields.SYS_CONTENT_CONTENT_TYPE));
-				Assert.assertEquals(tested.providerService.generateSysId(sys_content_type, "2"),
-						doc.get(ContentObjectFields.SYS_ID));
-				Assert.assertNotNull(doc.get(ContentObjectFields.SYS_UPDATED));
-				Assert.assertEquals("tag_value", ((List<String>) doc.get(ContentObjectFields.SYS_TAGS)).get(0));
-				Mockito.verifyNoMoreInteractions(tested.contentPersistenceService);
+				assertNotNull(doc);
+				assertEquals("testvalue", doc.get("test"));
+				assertEquals("testvalue2", doc.get("test2"));
+				assertEquals("jbossorg", doc.get(ContentObjectFields.SYS_CONTENT_PROVIDER));
+				assertEquals("2", doc.get(ContentObjectFields.SYS_CONTENT_ID));
+				assertEquals(sys_content_type, doc.get(ContentObjectFields.SYS_CONTENT_TYPE));
+				assertEquals("my_sys_type", doc.get(ContentObjectFields.SYS_TYPE));
+				assertEquals("text/plain", doc.get(ContentObjectFields.SYS_CONTENT_CONTENT_TYPE));
+				String expectedContentId = tested.providerService.generateSysId(sys_content_type, "2");
+
+				assertEquals(expectedContentId, doc.get(ContentObjectFields.SYS_ID));
+				assertNotNull(doc.get(ContentObjectFields.SYS_UPDATED));
+				assertEquals("tag_value", ((List<String>) doc.get(ContentObjectFields.SYS_TAGS)).get(0));
+				verify(tested.eventContentStored).fire(prepareContentStoredEventMatcher(expectedContentId));
+				verifyNoMoreInteractions(tested.contentPersistenceService);
 			}
 
 			// case - rewrite document in index
 			{
-				Mockito.reset(tested.providerService, tested.contentPersistenceService);
+				reset(tested.providerService, tested.contentPersistenceService, tested.eventContentStored);
 				setupProviderServiceMock(tested);
 				content.clear();
 				content.put("test3", "testvalue3");
-				Response r = TestUtils.assertResponseStatus(tested.pushContent(sys_content_type, "1", content),
-						Response.Status.OK);
-				Assert.assertEquals("update", ((Map<String, String>) r.getEntity()).get("status"));
-				Mockito.verify(tested.providerService).runPreprocessors(sys_content_type, PREPROCESSORS, content);
+				Response r = assertResponseStatus(tested.pushContent(sys_content_type, "1", content), Response.Status.OK);
+				assertEquals("update", ((Map<String, String>) r.getEntity()).get("status"));
+				verify(tested.providerService).runPreprocessors(sys_content_type, PREPROCESSORS, content);
 				indexFlushAndRefresh(INDEX_NAME);
 				Map<String, Object> doc = indexGetDocument(INDEX_NAME, INDEX_TYPE,
 						tested.providerService.generateSysId(sys_content_type, "1"));
-				Assert.assertNotNull(doc);
-				Assert.assertEquals(null, doc.get("test"));
-				Assert.assertEquals("testvalue3", doc.get("test3"));
-				Assert.assertEquals("jbossorg", doc.get(ContentObjectFields.SYS_CONTENT_PROVIDER));
-				Assert.assertEquals("1", doc.get(ContentObjectFields.SYS_CONTENT_ID));
-				Assert.assertEquals(sys_content_type, doc.get(ContentObjectFields.SYS_CONTENT_TYPE));
-				Assert.assertEquals("my_sys_type", doc.get(ContentObjectFields.SYS_TYPE));
-				Assert.assertEquals(null, doc.get(ContentObjectFields.SYS_CONTENT_CONTENT_TYPE));
-				Assert.assertEquals(tested.providerService.generateSysId(sys_content_type, "1"),
-						doc.get(ContentObjectFields.SYS_ID));
-				Assert.assertNotNull(doc.get(ContentObjectFields.SYS_UPDATED));
-				Assert.assertEquals(null, doc.get(ContentObjectFields.SYS_TAGS));
-				Mockito.verifyNoMoreInteractions(tested.contentPersistenceService);
+				assertNotNull(doc);
+				assertEquals(null, doc.get("test"));
+				assertEquals("testvalue3", doc.get("test3"));
+				assertEquals("jbossorg", doc.get(ContentObjectFields.SYS_CONTENT_PROVIDER));
+				assertEquals("1", doc.get(ContentObjectFields.SYS_CONTENT_ID));
+				assertEquals(sys_content_type, doc.get(ContentObjectFields.SYS_CONTENT_TYPE));
+				assertEquals("my_sys_type", doc.get(ContentObjectFields.SYS_TYPE));
+				assertEquals(null, doc.get(ContentObjectFields.SYS_CONTENT_CONTENT_TYPE));
+				String expectedContentId = tested.providerService.generateSysId(sys_content_type, "1");
+				assertEquals(expectedContentId, doc.get(ContentObjectFields.SYS_ID));
+				assertNotNull(doc.get(ContentObjectFields.SYS_UPDATED));
+				assertEquals(null, doc.get(ContentObjectFields.SYS_TAGS));
+
+				verify(tested.eventContentStored).fire(prepareContentStoredEventMatcher(expectedContentId));
+				verifyNoMoreInteractions(tested.contentPersistenceService);
 			}
 		} finally {
 			indexDelete(INDEX_NAME);
@@ -230,37 +249,37 @@ public class ContentRestServiceTest extends ESRealClientTestBase {
 			// case - insert when index is not found, remove sys_content_content-type because sys_content not present
 			String sys_content_type = "persist";
 			{
-				Mockito.reset(tested.contentPersistenceService);
+				Mockito.reset(tested.contentPersistenceService, tested.eventContentStored);
 				indexDelete(INDEX_NAME);
 				content.clear();
 				content.put("test", "testvalue");
 				content.put(ContentObjectFields.SYS_CONTENT_CONTENT_TYPE, "text/html");
-				Response r = TestUtils.assertResponseStatus(tested.pushContent(sys_content_type, "1", content),
-						Response.Status.OK);
-				Assert.assertEquals("insert", ((Map<String, String>) r.getEntity()).get("status"));
+				Response r = assertResponseStatus(tested.pushContent(sys_content_type, "1", content), Response.Status.OK);
+				assertEquals("insert", ((Map<String, String>) r.getEntity()).get("status"));
 				indexFlushAndRefresh(INDEX_NAME);
 				Map<String, Object> doc = indexGetDocument(INDEX_NAME, INDEX_TYPE,
 						tested.providerService.generateSysId(sys_content_type, "1"));
-				Assert.assertNotNull(doc);
-				Assert.assertEquals("testvalue", doc.get("test"));
-				Assert.assertEquals("jbossorg", doc.get(ContentObjectFields.SYS_CONTENT_PROVIDER));
-				Assert.assertEquals("1", doc.get(ContentObjectFields.SYS_CONTENT_ID));
-				Assert.assertEquals(sys_content_type, doc.get(ContentObjectFields.SYS_CONTENT_TYPE));
-				Assert.assertEquals("my_sys_type", doc.get(ContentObjectFields.SYS_TYPE));
-				Assert.assertEquals(null, doc.get(ContentObjectFields.SYS_CONTENT_CONTENT_TYPE));
-				Assert.assertEquals(tested.providerService.generateSysId(sys_content_type, "1"),
-						doc.get(ContentObjectFields.SYS_ID));
-				Assert.assertNotNull(doc.get(ContentObjectFields.SYS_UPDATED));
-				Assert.assertEquals(null, doc.get(ContentObjectFields.SYS_TAGS));
-				Mockito.verify(tested.contentPersistenceService).store(
-						tested.providerService.generateSysId(sys_content_type, "1"), sys_content_type, content);
-				Mockito.verifyNoMoreInteractions(tested.contentPersistenceService);
+				assertNotNull(doc);
+				assertEquals("testvalue", doc.get("test"));
+				assertEquals("jbossorg", doc.get(ContentObjectFields.SYS_CONTENT_PROVIDER));
+				assertEquals("1", doc.get(ContentObjectFields.SYS_CONTENT_ID));
+				assertEquals(sys_content_type, doc.get(ContentObjectFields.SYS_CONTENT_TYPE));
+				assertEquals("my_sys_type", doc.get(ContentObjectFields.SYS_TYPE));
+				assertEquals(null, doc.get(ContentObjectFields.SYS_CONTENT_CONTENT_TYPE));
+				String expectedContentId = tested.providerService.generateSysId(sys_content_type, "1");
+				assertEquals(expectedContentId, doc.get(ContentObjectFields.SYS_ID));
+				assertNotNull(doc.get(ContentObjectFields.SYS_UPDATED));
+				assertEquals(null, doc.get(ContentObjectFields.SYS_TAGS));
+				verify(tested.contentPersistenceService).store(tested.providerService.generateSysId(sys_content_type, "1"),
+						sys_content_type, content);
+				verify(tested.eventContentStored).fire(prepareContentStoredEventMatcher(expectedContentId));
+				verifyNoMoreInteractions(tested.contentPersistenceService);
 			}
 
 			// case - insert when index is found, fill sys_updated if not provided in content, process tags provided in
 			// content, rewrite sys_content_content-type because sys_content is present
 			{
-				Mockito.reset(tested.providerService, tested.contentPersistenceService);
+				reset(tested.providerService, tested.contentPersistenceService, tested.eventContentStored);
 				setupProviderServiceMock(tested);
 				content.put("test2", "testvalue2");
 				content.put(ContentObjectFields.SYS_CONTENT, "sys content");
@@ -268,61 +287,87 @@ public class ContentRestServiceTest extends ESRealClientTestBase {
 				content.remove(ContentObjectFields.SYS_UPDATED);
 				String[] tags = new String[] { "tag_value" };
 				content.put("tags", tags);
-				Response r = TestUtils.assertResponseStatus(tested.pushContent(sys_content_type, "2", content),
-						Response.Status.OK);
-				Assert.assertEquals("insert", ((Map<String, String>) r.getEntity()).get("status"));
+				Response r = assertResponseStatus(tested.pushContent(sys_content_type, "2", content), Response.Status.OK);
+				assertEquals("insert", ((Map<String, String>) r.getEntity()).get("status"));
 				indexFlushAndRefresh(INDEX_NAME);
 				Map<String, Object> doc = indexGetDocument(INDEX_NAME, INDEX_TYPE,
 						tested.providerService.generateSysId(sys_content_type, "2"));
-				Assert.assertNotNull(doc);
-				Assert.assertEquals("testvalue", doc.get("test"));
-				Assert.assertEquals("testvalue2", doc.get("test2"));
-				Assert.assertEquals("jbossorg", doc.get(ContentObjectFields.SYS_CONTENT_PROVIDER));
-				Assert.assertEquals("2", doc.get(ContentObjectFields.SYS_CONTENT_ID));
-				Assert.assertEquals(sys_content_type, doc.get(ContentObjectFields.SYS_CONTENT_TYPE));
-				Assert.assertEquals("my_sys_type", doc.get(ContentObjectFields.SYS_TYPE));
-				Assert.assertEquals("text/plain", doc.get(ContentObjectFields.SYS_CONTENT_CONTENT_TYPE));
-				Assert.assertEquals(tested.providerService.generateSysId(sys_content_type, "2"),
-						doc.get(ContentObjectFields.SYS_ID));
-				Assert.assertNotNull(doc.get(ContentObjectFields.SYS_UPDATED));
-				Assert.assertEquals("tag_value", ((List<String>) doc.get(ContentObjectFields.SYS_TAGS)).get(0));
-				Mockito.verify(tested.contentPersistenceService).store(
-						tested.providerService.generateSysId(sys_content_type, "2"), sys_content_type, content);
-				Mockito.verifyNoMoreInteractions(tested.contentPersistenceService);
+				assertNotNull(doc);
+				assertEquals("testvalue", doc.get("test"));
+				assertEquals("testvalue2", doc.get("test2"));
+				assertEquals("jbossorg", doc.get(ContentObjectFields.SYS_CONTENT_PROVIDER));
+				assertEquals("2", doc.get(ContentObjectFields.SYS_CONTENT_ID));
+				assertEquals(sys_content_type, doc.get(ContentObjectFields.SYS_CONTENT_TYPE));
+				assertEquals("my_sys_type", doc.get(ContentObjectFields.SYS_TYPE));
+				assertEquals("text/plain", doc.get(ContentObjectFields.SYS_CONTENT_CONTENT_TYPE));
+				String expectedContentId = tested.providerService.generateSysId(sys_content_type, "2");
+				assertEquals(expectedContentId, doc.get(ContentObjectFields.SYS_ID));
+				assertNotNull(doc.get(ContentObjectFields.SYS_UPDATED));
+				assertEquals("tag_value", ((List<String>) doc.get(ContentObjectFields.SYS_TAGS)).get(0));
+				verify(tested.contentPersistenceService).store(tested.providerService.generateSysId(sys_content_type, "2"),
+						sys_content_type, content);
+
+				verify(tested.eventContentStored).fire(prepareContentStoredEventMatcher(expectedContentId));
+				verifyNoMoreInteractions(tested.contentPersistenceService);
 			}
 
 			// case - rewrite document in index
 			{
-				Mockito.reset(tested.providerService, tested.contentPersistenceService);
+				reset(tested.providerService, tested.contentPersistenceService, tested.eventContentStored);
 				setupProviderServiceMock(tested);
 				content.clear();
 				content.put("test3", "testvalue3");
-				Response r = TestUtils.assertResponseStatus(tested.pushContent(sys_content_type, "1", content),
-						Response.Status.OK);
-				Assert.assertEquals("update", ((Map<String, String>) r.getEntity()).get("status"));
+				Response r = assertResponseStatus(tested.pushContent(sys_content_type, "1", content), Response.Status.OK);
+				assertEquals("update", ((Map<String, String>) r.getEntity()).get("status"));
 				indexFlushAndRefresh(INDEX_NAME);
 				Map<String, Object> doc = indexGetDocument(INDEX_NAME, INDEX_TYPE,
 						tested.providerService.generateSysId(sys_content_type, "1"));
-				Assert.assertNotNull(doc);
-				Assert.assertEquals(null, doc.get("test"));
-				Assert.assertEquals("testvalue3", doc.get("test3"));
-				Assert.assertEquals("jbossorg", doc.get(ContentObjectFields.SYS_CONTENT_PROVIDER));
-				Assert.assertEquals("1", doc.get(ContentObjectFields.SYS_CONTENT_ID));
-				Assert.assertEquals(sys_content_type, doc.get(ContentObjectFields.SYS_CONTENT_TYPE));
-				Assert.assertEquals("my_sys_type", doc.get(ContentObjectFields.SYS_TYPE));
-				Assert.assertEquals(null, doc.get(ContentObjectFields.SYS_CONTENT_CONTENT_TYPE));
-				Assert.assertEquals(tested.providerService.generateSysId(sys_content_type, "1"),
-						doc.get(ContentObjectFields.SYS_ID));
-				Assert.assertNotNull(doc.get(ContentObjectFields.SYS_UPDATED));
-				Assert.assertEquals(null, doc.get(ContentObjectFields.SYS_TAGS));
-				Mockito.verify(tested.contentPersistenceService).store(
-						tested.providerService.generateSysId(sys_content_type, "1"), sys_content_type, content);
-				Mockito.verifyNoMoreInteractions(tested.contentPersistenceService);
+				assertNotNull(doc);
+				assertEquals(null, doc.get("test"));
+				assertEquals("testvalue3", doc.get("test3"));
+				assertEquals("jbossorg", doc.get(ContentObjectFields.SYS_CONTENT_PROVIDER));
+				assertEquals("1", doc.get(ContentObjectFields.SYS_CONTENT_ID));
+				assertEquals(sys_content_type, doc.get(ContentObjectFields.SYS_CONTENT_TYPE));
+				assertEquals("my_sys_type", doc.get(ContentObjectFields.SYS_TYPE));
+				assertEquals(null, doc.get(ContentObjectFields.SYS_CONTENT_CONTENT_TYPE));
+				assertEquals(tested.providerService.generateSysId(sys_content_type, "1"), doc.get(ContentObjectFields.SYS_ID));
+				assertNotNull(doc.get(ContentObjectFields.SYS_UPDATED));
+				assertEquals(null, doc.get(ContentObjectFields.SYS_TAGS));
+				String expectedContentId = tested.providerService.generateSysId(sys_content_type, "1");
+				verify(tested.contentPersistenceService).store(expectedContentId, sys_content_type, content);
+				verify(tested.eventContentStored).fire(prepareContentStoredEventMatcher(expectedContentId));
+				verifyNoMoreInteractions(tested.contentPersistenceService);
 			}
 		} finally {
 			indexDelete(INDEX_NAME);
 			finalizeESClientForUnitTest();
 		}
+	}
+
+	private ContentStoredEvent prepareContentStoredEventMatcher(final String expectedContentId) {
+		return Mockito.argThat(new CustomMatcher<ContentStoredEvent>("ContentStoredEvent [contributorId="
+				+ expectedContentId + "]") {
+
+			@Override
+			public boolean matches(Object paramObject) {
+				ContentStoredEvent e = (ContentStoredEvent) paramObject;
+				return e.getContentId().equals(expectedContentId) && e.getContentData() != null;
+			}
+
+		});
+	}
+
+	private ContentDeletedEvent prepareContentDeletedEventMatcher(final String expectedContentId) {
+		return Mockito.argThat(new CustomMatcher<ContentDeletedEvent>("ContentDeletedEvent [contributorId="
+				+ expectedContentId + "]") {
+
+			@Override
+			public boolean matches(Object paramObject) {
+				ContentDeletedEvent e = (ContentDeletedEvent) paramObject;
+				return e.getContentId().equals(expectedContentId);
+			}
+
+		});
 	}
 
 	@Test
@@ -371,56 +416,63 @@ public class ContentRestServiceTest extends ESRealClientTestBase {
 
 			// case - delete when index is not found
 			{
-				Mockito.reset(tested.contentPersistenceService);
+				reset(tested.contentPersistenceService, tested.eventContentDeleted);
 				indexDelete(INDEX_NAME);
-				TestUtils.assertResponseStatus(tested.deleteContent("known", "1", null), Response.Status.NOT_FOUND);
-				TestUtils.assertResponseStatus(tested.deleteContent("persist", "1", null), Response.Status.NOT_FOUND);
-				Mockito.verify(tested.contentPersistenceService).delete(tested.providerService.generateSysId("persist", "1"),
-						"persist");
-				Mockito.verifyNoMoreInteractions(tested.contentPersistenceService);
+				assertResponseStatus(tested.deleteContent("known", "1", null), Response.Status.NOT_FOUND);
+				assertResponseStatus(tested.deleteContent("persist", "1", null), Response.Status.NOT_FOUND);
+				verify(tested.contentPersistenceService)
+						.delete(tested.providerService.generateSysId("persist", "1"), "persist");
+				verifyZeroInteractions(tested.eventContentDeleted);
+				verifyNoMoreInteractions(tested.contentPersistenceService);
 			}
 
 			// case - delete when document doesn't exist in index
 			{
-				Mockito.reset(tested.contentPersistenceService);
+				reset(tested.contentPersistenceService, tested.eventContentDeleted);
 				indexDelete(INDEX_NAME);
 				indexCreate(INDEX_NAME);
 				indexInsertDocument(INDEX_NAME, INDEX_TYPE, "known-2", "{\"test2\":\"test2\"}");
 				indexFlushAndRefresh(INDEX_NAME);
-				TestUtils.assertResponseStatus(tested.deleteContent("known", "1", null), Response.Status.NOT_FOUND);
-				TestUtils.assertResponseStatus(tested.deleteContent("persist", "1", null), Response.Status.NOT_FOUND);
-				Assert.assertNotNull(indexGetDocument(INDEX_NAME, INDEX_TYPE, "known-2"));
-				Mockito.verify(tested.contentPersistenceService).delete(tested.providerService.generateSysId("persist", "1"),
-						"persist");
-				Mockito.verifyNoMoreInteractions(tested.contentPersistenceService);
+				assertResponseStatus(tested.deleteContent("known", "1", null), Response.Status.NOT_FOUND);
+				assertResponseStatus(tested.deleteContent("persist", "1", null), Response.Status.NOT_FOUND);
+				assertNotNull(indexGetDocument(INDEX_NAME, INDEX_TYPE, "known-2"));
+				verify(tested.contentPersistenceService)
+						.delete(tested.providerService.generateSysId("persist", "1"), "persist");
+				verifyZeroInteractions(tested.eventContentDeleted);
+				verifyNoMoreInteractions(tested.contentPersistenceService);
 			}
 
 			// case - delete when document exist in index
 			{
-				Mockito.reset(tested.contentPersistenceService);
+				reset(tested.contentPersistenceService, tested.eventContentDeleted);
 				indexInsertDocument(INDEX_NAME, INDEX_TYPE, "known-1", "{\"test1\":\"test1\"}");
 				indexInsertDocument(INDEX_NAME, INDEX_TYPE, "persist-1", "{\"test1\":\"testper1\"}");
 				indexFlushAndRefresh(INDEX_NAME);
-				TestUtils.assertResponseStatus(tested.deleteContent("known", "1", null), Response.Status.OK);
-				Assert.assertNull(indexGetDocument(INDEX_NAME, INDEX_TYPE, "known-1"));
-				TestUtils.assertResponseStatus(tested.deleteContent("persist", "1", null), Response.Status.OK);
-				Assert.assertNull(indexGetDocument(INDEX_NAME, INDEX_TYPE, "persist-1"));
-				Assert.assertNotNull(indexGetDocument(INDEX_NAME, INDEX_TYPE, "known-2"));
+				assertResponseStatus(tested.deleteContent("known", "1", null), Response.Status.OK);
+				verify(tested.eventContentDeleted).fire(prepareContentDeletedEventMatcher("known-1"));
+				assertNull(indexGetDocument(INDEX_NAME, INDEX_TYPE, "known-1"));
+				assertResponseStatus(tested.deleteContent("persist", "1", null), Response.Status.OK);
+				assertNull(indexGetDocument(INDEX_NAME, INDEX_TYPE, "persist-1"));
+				assertNotNull(indexGetDocument(INDEX_NAME, INDEX_TYPE, "known-2"));
+				verify(tested.eventContentDeleted).fire(prepareContentDeletedEventMatcher("persist-1"));
 				// another subsequent deletes
-				TestUtils.assertResponseStatus(tested.deleteContent("known", "1", null), Response.Status.NOT_FOUND);
-				TestUtils.assertResponseStatus(tested.deleteContent("persist", "1", null), Response.Status.NOT_FOUND);
-				TestUtils.assertResponseStatus(tested.deleteContent("known", "2", null), Response.Status.OK);
-				Assert.assertNull(indexGetDocument(INDEX_NAME, INDEX_TYPE, "known-1"));
-				Assert.assertNull(indexGetDocument(INDEX_NAME, INDEX_TYPE, "known-2"));
+				assertResponseStatus(tested.deleteContent("known", "1", null), Response.Status.NOT_FOUND);
+				assertResponseStatus(tested.deleteContent("persist", "1", null), Response.Status.NOT_FOUND);
+				assertResponseStatus(tested.deleteContent("known", "2", null), Response.Status.OK);
+				verify(tested.eventContentDeleted).fire(prepareContentDeletedEventMatcher("known-2"));
+				assertNull(indexGetDocument(INDEX_NAME, INDEX_TYPE, "known-1"));
+				assertNull(indexGetDocument(INDEX_NAME, INDEX_TYPE, "known-2"));
 
 				// test ignore_missing parameter
-				TestUtils.assertResponseStatus(tested.deleteContent("known", "1", null), Response.Status.NOT_FOUND);
-				TestUtils.assertResponseStatus(tested.deleteContent("known", "1", "false"), Response.Status.NOT_FOUND);
-				TestUtils.assertResponseStatus(tested.deleteContent("known", "1", "true"), Response.Status.OK);
+				assertResponseStatus(tested.deleteContent("known", "1", null), Response.Status.NOT_FOUND);
+				assertResponseStatus(tested.deleteContent("known", "1", "false"), Response.Status.NOT_FOUND);
+				assertResponseStatus(tested.deleteContent("known", "1", "true"), Response.Status.OK);
 
-				Mockito.verify(tested.contentPersistenceService, Mockito.times(2)).delete(
+				verify(tested.contentPersistenceService, Mockito.times(2)).delete(
 						tested.providerService.generateSysId("persist", "1"), "persist");
-				Mockito.verifyNoMoreInteractions(tested.contentPersistenceService);
+
+				verifyNoMoreInteractions(tested.eventContentDeleted);
+				verifyNoMoreInteractions(tested.contentPersistenceService);
 
 			}
 
@@ -464,12 +516,11 @@ public class ContentRestServiceTest extends ESRealClientTestBase {
 
 			// case - type is valid, but nothing is found because index is missing
 			indexDelete(INDEX_NAME);
-			TestUtils.assertResponseStatus(tested.getAllContent("known", null, null, null), Response.Status.NOT_FOUND);
+			assertResponseStatus(tested.getAllContent("known", null, null, null), Response.Status.NOT_FOUND);
 
 			// case - nothing found because index is empty
 			indexCreate(INDEX_NAME);
-			TestUtils.assetStreamingOutputContent("{\"total\":0,\"hits\":[]}",
-					tested.getAllContent("known", null, null, null));
+			assetStreamingOutputContent("{\"total\":0,\"hits\":[]}", tested.getAllContent("known", null, null, null));
 
 			// case - something found, no from and size param used
 			indexInsertDocument(INDEX_NAME, INDEX_TYPE, "known-1",
@@ -481,7 +532,7 @@ public class ContentRestServiceTest extends ESRealClientTestBase {
 			indexInsertDocument(INDEX_NAME, INDEX_TYPE, "known-4",
 					"{\"name\":\"test4\",\"sys_updated\":0,\"sys_content_id\":\"4\"}");
 			indexFlushAndRefresh(INDEX_NAME);
-			TestUtils.assetStreamingOutputContent("{\"total\":4,\"hits\":["
+			assetStreamingOutputContent("{\"total\":4,\"hits\":["
 					+ "{\"id\":\"1\",\"data\":{\"sys_updated\":0,\"sys_content_id\":\"1\",\"name\":\"test1\"}},"
 					+ "{\"id\":\"2\",\"data\":{\"sys_updated\":0,\"sys_content_id\":\"2\",\"name\":\"test2\"}},"
 					+ "{\"id\":\"3\",\"data\":{\"sys_updated\":0,\"sys_content_id\":\"3\",\"name\":\"test3\"}},"
@@ -489,7 +540,7 @@ public class ContentRestServiceTest extends ESRealClientTestBase {
 					tested.getAllContent("known", null, null, null));
 
 			// case - something found, from and size param used
-			TestUtils.assetStreamingOutputContent("{\"total\":4,\"hits\":["
+			assetStreamingOutputContent("{\"total\":4,\"hits\":["
 					+ "{\"id\":\"2\",\"data\":{\"sys_updated\":0,\"sys_content_id\":\"2\",\"name\":\"test2\"}},"
 					+ "{\"id\":\"3\",\"data\":{\"sys_updated\":0,\"sys_content_id\":\"3\",\"name\":\"test3\"}}" + "]}",
 					tested.getAllContent("known", 1, 2, null));
@@ -499,15 +550,13 @@ public class ContentRestServiceTest extends ESRealClientTestBase {
 					"{\"name\":\"test5\", \"sys_updated\" : 1,\"sys_content_id\":\"5\"}");
 			indexFlushAndRefresh(INDEX_NAME);
 			// on ASC our record with id 5 is last, so we set from=4
-			TestUtils
-					.assetStreamingOutputContent(
-							"{\"total\":5,\"hits\":[{\"id\":\"5\",\"data\":{\"sys_updated\":1,\"sys_content_id\":\"5\",\"name\":\"test5\"}}]}",
-							tested.getAllContent("known", 4, 1, "asc"));
+			assetStreamingOutputContent(
+					"{\"total\":5,\"hits\":[{\"id\":\"5\",\"data\":{\"sys_updated\":1,\"sys_content_id\":\"5\",\"name\":\"test5\"}}]}",
+					tested.getAllContent("known", 4, 1, "asc"));
 			// on DESC our record with id 5 is first, so we set from=0
-			TestUtils
-					.assetStreamingOutputContent(
-							"{\"total\":5,\"hits\":[{\"id\":\"5\",\"data\":{\"sys_updated\":1,\"sys_content_id\":\"5\",\"name\":\"test5\"}}]}",
-							tested.getAllContent("known", 0, 1, "DESC"));
+			assetStreamingOutputContent(
+					"{\"total\":5,\"hits\":[{\"id\":\"5\",\"data\":{\"sys_updated\":1,\"sys_content_id\":\"5\",\"name\":\"test5\"}}]}",
+					tested.getAllContent("known", 0, 1, "DESC"));
 
 		} finally {
 			indexDelete(INDEX_NAME);
@@ -565,17 +614,17 @@ public class ContentRestServiceTest extends ESRealClientTestBase {
 
 			// case - type is valid, but nothing is found for passed id because index is missing
 			indexDelete(INDEX_NAME);
-			TestUtils.assertResponseStatus(tested.getContent("known", "12"), Response.Status.NOT_FOUND);
+			assertResponseStatus(tested.getContent("known", "12"), Response.Status.NOT_FOUND);
 
 			// case - index is present bud document is not found
 			indexCreate(INDEX_NAME);
 			indexInsertDocument(INDEX_NAME, INDEX_TYPE, "known-1", "{\"name\":\"test\"}");
-			TestUtils.assertResponseStatus(tested.getContent("known", "2"), Response.Status.NOT_FOUND);
+			assertResponseStatus(tested.getContent("known", "2"), Response.Status.NOT_FOUND);
 
 			// case - document found
 			@SuppressWarnings("unchecked")
 			Map<String, Object> ret = (Map<String, Object>) tested.getContent("known", "1");
-			Assert.assertEquals("test", ret.get("name"));
+			assertEquals("test", ret.get("name"));
 
 		} finally {
 			indexDelete(INDEX_NAME);
@@ -591,19 +640,24 @@ public class ContentRestServiceTest extends ESRealClientTestBase {
 	 *          up client in finally!
 	 * @return instance for test
 	 */
+	@SuppressWarnings("unchecked")
 	protected ContentRestService getTested(boolean initEsClient) {
 		ContentRestService tested = new ContentRestService();
 		if (initEsClient)
 			tested.searchClientService = prepareSearchClientServiceMock();
 
-		tested.providerService = Mockito.mock(ProviderService.class);
+		tested.providerService = mock(ProviderService.class);
 		setupProviderServiceMock(tested);
 
-		tested.contentPersistenceService = Mockito.mock(ContentPersistenceService.class);
-		tested.contentEnhancementsService = Mockito.mock(ContentEnhancementsService.class);
+		tested.contentPersistenceService = mock(ContentPersistenceService.class);
+		tested.contentEnhancementsService = mock(ContentEnhancementsService.class);
 		tested.log = Logger.getLogger("testlogger");
-		tested.authenticationUtilService = Mockito.mock(AuthenticationUtilService.class);
-		Mockito.when(tested.authenticationUtilService.getAuthenticatedProvider(null)).thenReturn("jbossorg");
+		tested.authenticationUtilService = mock(AuthenticationUtilService.class);
+
+		tested.eventContentDeleted = mock(Event.class);
+		tested.eventContentStored = mock(Event.class);
+
+		when(tested.authenticationUtilService.getAuthenticatedProvider(null)).thenReturn("jbossorg");
 
 		return tested;
 	}
@@ -634,7 +688,7 @@ public class ContentRestServiceTest extends ESRealClientTestBase {
 		typeDefPersist.put(ProviderService.SYS_TYPE, "my_sys_type");
 		typeDefPersist.put(ProviderService.PERSIST, "true");
 		typeDefPersist.put(ProviderService.SYS_CONTENT_CONTENT_TYPE, "text/plain");
-		Mockito.when(tested.providerService.findContentType("persist")).thenReturn(typeDefPersist);
+		when(tested.providerService.findContentType("persist")).thenReturn(typeDefPersist);
 
 		Map<String, Object> typeDefSysContent = new HashMap<String, Object>();
 		Map<String, Object> typeDefSysContentIndex = new HashMap<String, Object>();
@@ -642,10 +696,10 @@ public class ContentRestServiceTest extends ESRealClientTestBase {
 		typeDefSysContentIndex.put("name", INDEX_NAME);
 		typeDefSysContentIndex.put("type", INDEX_TYPE);
 		typeDefSysContent.put(ProviderService.SYS_TYPE, "my_sys_type");
-		Mockito.when(tested.providerService.findContentType("invalid-content-type")).thenReturn(typeDefSysContent);
+		when(tested.providerService.findContentType("invalid-content-type")).thenReturn(typeDefSysContent);
 
 		Map<String, Object> providerDef = new HashMap<String, Object>();
-		Mockito.when(tested.providerService.findProvider("jbossorg")).thenReturn(providerDef);
+		when(tested.providerService.findProvider("jbossorg")).thenReturn(providerDef);
 		Map<String, Object> typesDef = new HashMap<String, Object>();
 		providerDef.put(ProviderService.TYPE, typesDef);
 		typesDef.put("invalid", new HashMap<String, Object>());
