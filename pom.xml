@@ -98,6 +98,7 @@
         <resteasy-client.version>3.0.4.Final</resteasy-client.version>
         <rest-assured.version>1.8.1</rest-assured.version>
         <hamcrest.version>1.2.1</hamcrest.version>
+		<httpclient.version>4.2.3</httpclient.version>
     </properties>
 
     <dependencyManagement>
@@ -148,6 +149,13 @@
                 <artifactId>hamcrest-core</artifactId>
                 <version>${hamcrest.version}</version>
             </dependency>
+			<!-- httpclient needed by API but it's transitive dependency by river-jira and rest-assured -->
+			<!-- Thanks to this only definitino one version is used for both api and ftest modules -->
+			<dependency>
+				<groupId>org.apache.httpcomponents</groupId>
+				<artifactId>httpclient</artifactId>
+				<version>${httpclient.version}</version>
+			</dependency>
         </dependencies>
     </dependencyManagement>
 
