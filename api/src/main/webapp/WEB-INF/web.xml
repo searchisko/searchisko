@@ -11,7 +11,7 @@
         <session-timeout>30</session-timeout>
         <cookie-config>
             <!-- Define if cookies should be transported only via secured connection -->
-            <secure>true</secure>
+            <secure>false</secure>
         </cookie-config>
     </session-config>
 
