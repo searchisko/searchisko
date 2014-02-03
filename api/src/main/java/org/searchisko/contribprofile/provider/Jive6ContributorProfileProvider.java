@@ -5,6 +5,7 @@
  */
 package org.searchisko.contribprofile.provider;
 
+import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.methods.HttpGet;
@@ -70,11 +71,13 @@ public class Jive6ContributorProfileProvider implements ContributorProfileProvid
 
 		try {
 			HttpResponse response = httpClient.execute(httpGet);
+			HttpEntity entity = response.getEntity();
 			if (response.getStatusLine().getStatusCode() >= 300) {
+				EntityUtils.consume(entity);
 				log.log(Level.WARNING, "Cannot get profile data form Jive, reason: {0}", response);
 				return null;
 			}
-			byte[] data = EntityUtils.toByteArray(response.getEntity());
+			byte[] data = EntityUtils.toByteArray(entity);
 			if (log.isLoggable(Level.FINEST)) {
 				log.log(Level.FINEST, "data from Jive: {0}", new String(data));
 			}
