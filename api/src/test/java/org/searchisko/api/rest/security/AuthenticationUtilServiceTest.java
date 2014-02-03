@@ -117,7 +117,8 @@ public class AuthenticationUtilServiceTest {
 		}
 		{
 			AuthenticationUtilService tested = getTested();
-			SecurityContext securityContext = new ProviderCustomSecurityContext(new SimplePrincipal("aa"), true, true, "aa");
+			SecurityContext securityContext = new ProviderCustomSecurityContext(new SimplePrincipal("aa"), true, true,
+					ContributorAuthenticationInterceptor.AUTH_METHOD_CAS);
 			try {
 				tested.getAuthenticatedContributor(securityContext, false);
 				Assert.fail("Exception must be thrown");
@@ -143,8 +144,11 @@ public class AuthenticationUtilServiceTest {
 			AuthenticationUtilService tested = getTested();
 			boolean forceCreate = true;
 			tested.contributorProfileService = Mockito.mock(ContributorProfileService.class);
-			Mockito.when(tested.contributorProfileService.getContributorId("a", "aa", forceCreate)).thenReturn("bb");
-			SecurityContext securityContext = new ContributorCustomSecurityContext(new SimplePrincipal("aa"), true, "a");
+			Mockito.when(
+					tested.contributorProfileService.getContributorId(ContributorProfileService.FIELD_TSC_JBOSSORG_USERNAME,
+							"aa", forceCreate)).thenReturn("bb");
+			SecurityContext securityContext = new ContributorCustomSecurityContext(new SimplePrincipal("aa"), true,
+					ContributorAuthenticationInterceptor.AUTH_METHOD_CAS);
 			Assert.assertEquals("bb", tested.getAuthenticatedContributor(securityContext, forceCreate));
 			Mockito.verify(tested.contributorProfileService, Mockito.times(1)).getContributorId(Mockito.anyString(),
 					Mockito.anyString(), Mockito.anyBoolean());
@@ -160,10 +164,12 @@ public class AuthenticationUtilServiceTest {
 			AuthenticationUtilService tested = getTested();
 			boolean forceCreate = false;
 			tested.contributorProfileService = Mockito.mock(ContributorProfileService.class);
-			Mockito.when(tested.contributorProfileService.getContributorId("a", "aa", forceCreate)).thenReturn(null);
+			Mockito.when(
+					tested.contributorProfileService.getContributorId(ContributorProfileService.FIELD_TSC_JBOSSORG_USERNAME,
+							"aa", forceCreate)).thenReturn(null);
 			// we prepare subclass of security context to check it is evaluated OK (due proxying in CDI)
-			SecurityContext securityContext = new ContributorCustomSecurityContext(new SimplePrincipal("aa"), true, "a") {
-			};
+			SecurityContext securityContext = new ContributorCustomSecurityContext(new SimplePrincipal("aa"), true,
+					ContributorAuthenticationInterceptor.AUTH_METHOD_CAS);
 			Assert.assertEquals(null, tested.getAuthenticatedContributor(securityContext, forceCreate));
 			Mockito.verify(tested.contributorProfileService, Mockito.times(1)).getContributorId(Mockito.anyString(),
 					Mockito.anyString(), Mockito.anyBoolean());
@@ -181,9 +187,14 @@ public class AuthenticationUtilServiceTest {
 			boolean forceCreate = false;
 			boolean forceCreate2 = true;
 			tested.contributorProfileService = Mockito.mock(ContributorProfileService.class);
-			Mockito.when(tested.contributorProfileService.getContributorId("a", "aa", forceCreate)).thenReturn(null);
-			Mockito.when(tested.contributorProfileService.getContributorId("a", "aa", forceCreate2)).thenReturn("bb");
-			SecurityContext securityContext = new ContributorCustomSecurityContext(new SimplePrincipal("aa"), true, "a");
+			Mockito.when(
+					tested.contributorProfileService.getContributorId(ContributorProfileService.FIELD_TSC_JBOSSORG_USERNAME,
+							"aa", forceCreate)).thenReturn(null);
+			Mockito.when(
+					tested.contributorProfileService.getContributorId(ContributorProfileService.FIELD_TSC_JBOSSORG_USERNAME,
+							"aa", forceCreate2)).thenReturn("bb");
+			SecurityContext securityContext = new ContributorCustomSecurityContext(new SimplePrincipal("aa"), true,
+					ContributorAuthenticationInterceptor.AUTH_METHOD_CAS);
 			Assert.assertEquals(null, tested.getAuthenticatedContributor(securityContext, forceCreate));
 			Mockito.verify(tested.contributorProfileService, Mockito.times(1)).getContributorId(Mockito.anyString(),
 					Mockito.anyString(), Mockito.anyBoolean());
@@ -215,12 +226,14 @@ public class AuthenticationUtilServiceTest {
 			Mockito.verifyZeroInteractions(tested.contributorProfileService);
 		}
 
-		SecurityContext securityContext = new ContributorCustomSecurityContext(new SimplePrincipal("aa"), true, "a");
+		SecurityContext securityContext = new ContributorCustomSecurityContext(new SimplePrincipal("aa"), true,
+				ContributorAuthenticationInterceptor.AUTH_METHOD_CAS);
 		// case - service call OK
 		{
 			Mockito.reset(tested.contributorProfileService);
 			tested.updateAuthenticatedContributorProfile(securityContext);
-			Mockito.verify(tested.contributorProfileService).createOrUpdateProfile("a", "aa");
+			Mockito.verify(tested.contributorProfileService).createOrUpdateProfile(
+					ContributorProfileService.FIELD_TSC_JBOSSORG_USERNAME, "aa");
 		}
 
 		// case - service call exception is not propagated
@@ -229,7 +242,18 @@ public class AuthenticationUtilServiceTest {
 			Mockito.doThrow(new RuntimeException("Test exception from profile update"))
 					.when(tested.contributorProfileService).createOrUpdateProfile(Mockito.anyString(), Mockito.anyString());
 			tested.updateAuthenticatedContributorProfile(securityContext);
-			Mockito.verify(tested.contributorProfileService).createOrUpdateProfile("a", "aa");
+			Mockito.verify(tested.contributorProfileService).createOrUpdateProfile(
+					ContributorProfileService.FIELD_TSC_JBOSSORG_USERNAME, "aa");
+		}
+
+		// case - no service call for unsupported auth scheme
+		securityContext = new ContributorCustomSecurityContext(new SimplePrincipal("aa"), true, "a");
+		{
+			Mockito.reset(tested.contributorProfileService);
+			Mockito.doThrow(new RuntimeException("Test exception from profile update"))
+					.when(tested.contributorProfileService).createOrUpdateProfile(Mockito.anyString(), Mockito.anyString());
+			tested.updateAuthenticatedContributorProfile(securityContext);
+			Mockito.verifyZeroInteractions(tested.contributorProfileService);
 		}
 
 	}

@@ -5,6 +5,7 @@
  */
 package org.searchisko.api.service;
 
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -14,9 +15,12 @@ import javax.enterprise.event.Observes;
 import javax.inject.Inject;
 import javax.inject.Named;
 
+import org.searchisko.api.ContentObjectFields;
+import org.searchisko.api.events.ContentBeforeIndexedEvent;
 import org.searchisko.api.events.ContentDeletedEvent;
 import org.searchisko.api.events.ContributorDeletedEvent;
 import org.searchisko.persistence.service.RatingPersistenceService;
+import org.searchisko.persistence.service.RatingPersistenceService.RatingStats;
 
 /**
  * Business logic for Content Ratings. It can provide some more complicated operations at top of
@@ -55,6 +59,24 @@ public class RatingService {
 		log.log(Level.FINE, "contentDeletedEventHandler called for event {0}", event);
 		if (event != null && event.getContentId() != null)
 			ratingPersistenceService.deleteRatingsForContent(event.getContentId());
+	}
+
+	/**
+	 * CDI event handler for {@link ContentBeforeIndexedEvent}. Used to add content rating fields into content data before
+	 * indexed.
+	 * 
+	 */
+	public void handleContentRatingFields(@Observes ContentBeforeIndexedEvent event) {
+		log.log(Level.FINE, "handleContentRatingFields called for event {0}", event);
+		RatingStats rs = ratingPersistenceService.countRatingStats(event.getContentId());
+		Map<String, Object> content = event.getContentData();
+		if (rs != null) {
+			content.put(ContentObjectFields.SYS_RATING_AVG, rs.getAverage());
+			content.put(ContentObjectFields.SYS_RATING_NUM, rs.getNumber());
+		} else {
+			content.remove(ContentObjectFields.SYS_RATING_AVG);
+			content.remove(ContentObjectFields.SYS_RATING_NUM);
+		}
 	}
 
 }

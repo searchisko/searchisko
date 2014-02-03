@@ -327,8 +327,12 @@ public class ContributorService implements EntityService {
 	protected String deleteImpl(String id) {
 		Map<String, Object> entity = entityService.get(id);
 		entityService.delete(id);
-		searchClientService.performDelete(SEARCH_INDEX_NAME, SEARCH_INDEX_TYPE, id);
-		searchClientService.performIndexFlushAndRefresh(SEARCH_INDEX_NAME);
+		try {
+			searchClientService.performDelete(SEARCH_INDEX_NAME, SEARCH_INDEX_TYPE, id);
+			searchClientService.performIndexFlushAndRefresh(SEARCH_INDEX_NAME);
+		} catch (SearchIndexMissingException e) {
+			// OK
+		}
 		if (entity == null)
 			return null;
 		return getContributorCode(entity);
@@ -345,7 +349,7 @@ public class ContributorService implements EntityService {
 	public SearchResponse findByCode(String code) {
 		try {
 			return searchClientService.performFilterByOneField(SEARCH_INDEX_NAME, SEARCH_INDEX_TYPE, FIELD_CODE, code);
-		} catch (IndexMissingException e) {
+		} catch (SearchIndexMissingException e) {
 			return null;
 		}
 	}
@@ -361,7 +365,7 @@ public class ContributorService implements EntityService {
 	public SearchResponse findByEmail(String email) {
 		try {
 			return searchClientService.performFilterByOneField(SEARCH_INDEX_NAME, SEARCH_INDEX_TYPE, FIELD_EMAIL, email);
-		} catch (IndexMissingException e) {
+		} catch (SearchIndexMissingException e) {
 			return null;
 		}
 	}
@@ -379,7 +383,7 @@ public class ContributorService implements EntityService {
 		try {
 			return searchClientService.performFilterByOneField(SEARCH_INDEX_NAME, SEARCH_INDEX_TYPE, FIELD_TYPE_SPECIFIC_CODE
 					+ "." + codeName, codeValue);
-		} catch (IndexMissingException e) {
+		} catch (SearchIndexMissingException e) {
 			return null;
 		}
 	}

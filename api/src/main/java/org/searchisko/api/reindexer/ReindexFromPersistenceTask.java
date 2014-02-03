@@ -8,6 +8,8 @@ package org.searchisko.api.reindexer;
 import java.util.Date;
 import java.util.Map;
 
+import javax.enterprise.event.Event;
+
 import org.elasticsearch.action.bulk.BulkRequestBuilder;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.common.settings.SettingsException;
@@ -16,7 +18,7 @@ import org.elasticsearch.index.query.FilterBuilders;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.jboss.elasticsearch.tools.content.InvalidDataException;
 import org.searchisko.api.ContentObjectFields;
-import org.searchisko.api.service.ContentEnhancementsService;
+import org.searchisko.api.events.ContentBeforeIndexedEvent;
 import org.searchisko.api.service.ProviderService;
 import org.searchisko.api.service.SearchClientService;
 import org.searchisko.api.tasker.Task;
@@ -38,17 +40,17 @@ public class ReindexFromPersistenceTask extends Task {
 
 	protected String sysContentType;
 
-	protected ContentEnhancementsService contentEnhancementsService;
+	protected Event<ContentBeforeIndexedEvent> eventBeforeIndexed;
 
 	public ReindexFromPersistenceTask(ContentPersistenceService contentPersistenceService,
 			ProviderService providerService, SearchClientService searchClientService,
-			ContentEnhancementsService contentEnhancementsService, String sysContentType) {
+			Event<ContentBeforeIndexedEvent> eventBeforeIndexed, String sysContentType) {
 		super();
 		this.contentPersistenceService = contentPersistenceService;
 		this.providerService = providerService;
 		this.searchClientService = searchClientService;
 		this.sysContentType = sysContentType;
-		this.contentEnhancementsService = contentEnhancementsService;
+		this.eventBeforeIndexed = eventBeforeIndexed;
 	}
 
 	/**
@@ -89,8 +91,7 @@ public class ReindexFromPersistenceTask extends Task {
 							continue;
 						}
 
-						contentEnhancementsService.handleExternalTags(content, id);
-						contentEnhancementsService.handleContentRatingFields(content, id);
+						eventBeforeIndexed.fire(new ContentBeforeIndexedEvent(id, content));
 
 						// Push to search subsystem
 						brb.add(client.prepareIndex(indexName, indexType, id).setSource(content));

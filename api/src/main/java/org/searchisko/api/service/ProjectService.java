@@ -16,7 +16,6 @@ import javax.inject.Named;
 import javax.ws.rs.core.StreamingOutput;
 
 import org.elasticsearch.action.search.SearchResponse;
-import org.elasticsearch.indices.IndexMissingException;
 import org.searchisko.persistence.service.EntityService;
 
 /**
@@ -108,7 +107,11 @@ public class ProjectService implements EntityService {
 	@Override
 	public void delete(String id) {
 		entityService.delete(id);
-		searchClientService.performDelete(SEARCH_INDEX_NAME, SEARCH_INDEX_TYPE, id);
+		try {
+			searchClientService.performDelete(SEARCH_INDEX_NAME, SEARCH_INDEX_TYPE, id);
+		} catch (SearchIndexMissingException e) {
+			// OK
+		}
 	}
 
 	/**
@@ -122,7 +125,7 @@ public class ProjectService implements EntityService {
 	public SearchResponse findByCode(String code) {
 		try {
 			return searchClientService.performFilterByOneField(SEARCH_INDEX_NAME, SEARCH_INDEX_TYPE, FIELD_CODE, code);
-		} catch (IndexMissingException e) {
+		} catch (SearchIndexMissingException e) {
 			return null;
 		}
 	}
@@ -140,7 +143,7 @@ public class ProjectService implements EntityService {
 		try {
 			return searchClientService.performFilterByOneField(SEARCH_INDEX_NAME, SEARCH_INDEX_TYPE, FIELD_TYPE_SPECIFIC_CODE
 					+ "." + codeName, codeValue);
-		} catch (IndexMissingException e) {
+		} catch (SearchIndexMissingException e) {
 			return null;
 		}
 	}

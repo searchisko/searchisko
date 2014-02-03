@@ -39,12 +39,12 @@ import org.searchisko.api.ContentObjectFields;
 import org.searchisko.api.annotations.header.CORSSupport;
 import org.searchisko.api.annotations.security.GuestAllowed;
 import org.searchisko.api.annotations.security.ProviderAllowed;
+import org.searchisko.api.events.ContentBeforeIndexedEvent;
 import org.searchisko.api.events.ContentDeletedEvent;
 import org.searchisko.api.events.ContentStoredEvent;
 import org.searchisko.api.rest.exception.BadFieldException;
 import org.searchisko.api.rest.exception.RequiredFieldException;
 import org.searchisko.api.rest.security.AuthenticationUtilService;
-import org.searchisko.api.service.ContentEnhancementsService;
 import org.searchisko.api.service.ProviderService;
 import org.searchisko.api.service.SearchClientService;
 import org.searchisko.persistence.service.ContentPersistenceService;
@@ -72,9 +72,6 @@ public class ContentRestService extends RestServiceBase {
 	protected ContentPersistenceService contentPersistenceService;
 
 	@Inject
-	protected ContentEnhancementsService contentEnhancementsService;
-
-	@Inject
 	protected AuthenticationUtilService authenticationUtilService;
 
 	@Context
@@ -85,6 +82,9 @@ public class ContentRestService extends RestServiceBase {
 
 	@Inject
 	protected Event<ContentDeletedEvent> eventContentDeleted;
+
+	@Inject
+	protected Event<ContentBeforeIndexedEvent> eventBeforeIndexed;
 
 	@GET
 	@Path("/")
@@ -240,8 +240,9 @@ public class ContentRestService extends RestServiceBase {
 			contentPersistenceService.store(sysContentId, type, content);
 		}
 
-		contentEnhancementsService.handleExternalTags(content, sysContentId);
-		contentEnhancementsService.handleContentRatingFields(content, sysContentId);
+		ContentBeforeIndexedEvent event1 = new ContentBeforeIndexedEvent(sysContentId, content);
+		log.log(Level.FINE, "Going to fire event {0}", event1);
+		eventBeforeIndexed.fire(event1);
 
 		// Push to search subsystem
 		IndexResponse ir = searchClientService.getClient().prepareIndex(indexName, indexType, sysContentId)

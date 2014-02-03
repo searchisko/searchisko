@@ -21,8 +21,12 @@ import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
-import javax.ws.rs.core.*;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
+import javax.ws.rs.core.SecurityContext;
+import javax.ws.rs.core.UriInfo;
 
 import org.elasticsearch.action.get.GetResponse;
 import org.searchisko.api.ContentObjectFields;
@@ -33,6 +37,7 @@ import org.searchisko.api.rest.exception.RequiredFieldException;
 import org.searchisko.api.rest.security.AuthenticationUtilService;
 import org.searchisko.api.service.ProviderService;
 import org.searchisko.api.service.SearchClientService;
+import org.searchisko.api.service.SearchIndexMissingException;
 import org.searchisko.api.util.SearchUtils;
 import org.searchisko.persistence.jpa.model.Rating;
 import org.searchisko.persistence.service.RatingPersistenceService;
@@ -154,6 +159,8 @@ public class RatingRestService extends RestServiceBase {
 					ret.put(r.getContentId(), ratingToJSON(r));
 				}
 			}
+		} else {
+			throw new RequiredFieldException(QUERY_PARAM_ID);
 		}
 		return ret;
 	}
@@ -207,31 +214,35 @@ public class RatingRestService extends RestServiceBase {
 		String indexName = ProviderService.extractIndexName(typeDef, type);
 		String indexType = ProviderService.extractIndexType(typeDef, type);
 
-		GetResponse getResponse = searchClientService.performGet(indexName, indexType, contentSysId);
-		if (!getResponse.isExists()) {
+		try {
+			GetResponse getResponse = searchClientService.performGet(indexName, indexType, contentSysId);
+			if (!getResponse.isExists()) {
+				return Response.status(Response.Status.NOT_FOUND).build();
+			}
+
+			// store rating
+			ratingPersistenceService.rate(currentContributorId, contentSysId, rating);
+
+			// count averages and store them into document
+			RatingStats rs = ratingPersistenceService.countRatingStats(contentSysId);
+			if (rs != null) {
+				Map<String, Object> data = getResponse.getSource();
+				data.put(ContentObjectFields.SYS_RATING_AVG, rs.getAverage());
+				data.put(ContentObjectFields.SYS_RATING_NUM, rs.getNumber());
+				searchClientService.performPutAsync(indexName, indexType, contentSysId, data);
+			} else {
+				log.warning("Average rating is not found for content after ratring. sys_id=" + contentSysId);
+			}
+			Map<String, Object> ret = new HashMap<>();
+			ret.put(ContentObjectFields.SYS_ID, contentSysId);
+			if (rs != null) {
+				ret.put(ContentObjectFields.SYS_RATING_AVG, rs.getAverage());
+				ret.put(ContentObjectFields.SYS_RATING_NUM, rs.getNumber());
+			}
+			return ret;
+		} catch (SearchIndexMissingException e) {
 			return Response.status(Response.Status.NOT_FOUND).build();
 		}
-
-		// store rating
-		ratingPersistenceService.rate(currentContributorId, contentSysId, rating);
-
-		// count averages and store them into document
-		RatingStats rs = ratingPersistenceService.countRatingStats(contentSysId);
-		if (rs != null) {
-			Map<String, Object> data = getResponse.getSource();
-			data.put(ContentObjectFields.SYS_RATING_AVG, rs.getAverage());
-			data.put(ContentObjectFields.SYS_RATING_NUM, rs.getNumber());
-			searchClientService.performPutAsync(indexName, indexType, contentSysId, data);
-		} else {
-			log.warning("Average rating is not found for content after ratring. sys_id=" + contentSysId);
-		}
-		Map<String, Object> ret = new HashMap<>();
-		ret.put(ContentObjectFields.SYS_ID, contentSysId);
-		if (rs != null) {
-			ret.put(ContentObjectFields.SYS_RATING_AVG, rs.getAverage());
-			ret.put(ContentObjectFields.SYS_RATING_NUM, rs.getNumber());
-		}
-		return ret;
 	}
 
 }

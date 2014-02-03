@@ -27,6 +27,7 @@ import org.searchisko.api.rest.exception.RequiredFieldException;
 import org.searchisko.api.rest.security.AuthenticationUtilService;
 import org.searchisko.api.service.ProviderService;
 import org.searchisko.api.service.SearchClientService;
+import org.searchisko.api.service.SearchIndexMissingException;
 import org.searchisko.api.testtools.TestUtils;
 import org.searchisko.persistence.jpa.model.Rating;
 import org.searchisko.persistence.service.RatingPersistenceService;
@@ -250,7 +251,7 @@ public class RatingRestServiceTest {
 	private static final String MOCK_PROVIDER_NAME = "jboss";
 
 	@Test
-	public void postRating() {
+	public void postRating() throws SearchIndexMissingException {
 		// case - unknown type
 		{
 			RatingRestService tested = getTested();

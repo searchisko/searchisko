@@ -37,6 +37,7 @@ public class ProjectServiceTest extends ESRealClientTestBase {
 		ProjectService ret = new ProjectService();
 		ret.entityService = Mockito.mock(EntityService.class);
 		ret.searchClientService = new SearchClientService();
+		ret.searchClientService.log = Logger.getLogger("testlogger");
 		ret.searchClientService.client = client;
 		ret.log = Logger.getLogger("testlogger");
 		return ret;

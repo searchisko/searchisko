@@ -20,12 +20,12 @@ import org.hamcrest.CustomMatcher;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.searchisko.api.ContentObjectFields;
+import org.searchisko.api.events.ContentBeforeIndexedEvent;
 import org.searchisko.api.events.ContentDeletedEvent;
 import org.searchisko.api.events.ContentStoredEvent;
 import org.searchisko.api.rest.exception.BadFieldException;
 import org.searchisko.api.rest.exception.RequiredFieldException;
 import org.searchisko.api.rest.security.AuthenticationUtilService;
-import org.searchisko.api.service.ContentEnhancementsService;
 import org.searchisko.api.service.ProviderService;
 import org.searchisko.api.testtools.ESRealClientTestBase;
 import org.searchisko.api.testtools.TestUtils;
@@ -153,8 +153,7 @@ public class ContentRestServiceTest extends ESRealClientTestBase {
 				assertEquals("insert", ((Map<String, String>) r.getEntity()).get("status"));
 				verify(tested.providerService).runPreprocessors(sys_content_type, PREPROCESSORS, content);
 				// verify enhancements called
-				verify(tested.contentEnhancementsService).handleContentRatingFields(content, sysId);
-				verify(tested.contentEnhancementsService).handleExternalTags(content, sysId);
+				verify(tested.eventBeforeIndexed).fire(prepareContentBeforeIndexedEventMatcher(sysId, content));
 				indexFlushAndRefresh(INDEX_NAME);
 				Map<String, Object> doc = indexGetDocument(INDEX_NAME, INDEX_TYPE,
 						tested.providerService.generateSysId(sys_content_type, "1"));
@@ -175,7 +174,8 @@ public class ContentRestServiceTest extends ESRealClientTestBase {
 			// case - insert when index is found, fill sys_updated if not provided in content, process tags provided in
 			// content, fill sys_content_content-type because sys_content is present
 			{
-				reset(tested.providerService, tested.contentPersistenceService, tested.eventContentStored);
+				reset(tested.providerService, tested.contentPersistenceService, tested.eventContentStored,
+						tested.eventBeforeIndexed);
 				setupProviderServiceMock(tested);
 				content.put("test2", "testvalue2");
 				content.put(ContentObjectFields.SYS_CONTENT, "sys content");
@@ -183,11 +183,12 @@ public class ContentRestServiceTest extends ESRealClientTestBase {
 				String[] tags = new String[] { "tag_value" };
 				content.put("tags", tags);
 				Response r = assertResponseStatus(tested.pushContent(sys_content_type, "2", content), Response.Status.OK);
+				String sysId = tested.providerService.generateSysId(sys_content_type, "2");
+				verify(tested.eventBeforeIndexed).fire(prepareContentBeforeIndexedEventMatcher(sysId, content));
 				assertEquals("insert", ((Map<String, String>) r.getEntity()).get("status"));
 				verify(tested.providerService).runPreprocessors(sys_content_type, PREPROCESSORS, content);
 				indexFlushAndRefresh(INDEX_NAME);
-				Map<String, Object> doc = indexGetDocument(INDEX_NAME, INDEX_TYPE,
-						tested.providerService.generateSysId(sys_content_type, "2"));
+				Map<String, Object> doc = indexGetDocument(INDEX_NAME, INDEX_TYPE, sysId);
 				assertNotNull(doc);
 				assertEquals("testvalue", doc.get("test"));
 				assertEquals("testvalue2", doc.get("test2"));
@@ -207,16 +208,18 @@ public class ContentRestServiceTest extends ESRealClientTestBase {
 
 			// case - rewrite document in index
 			{
-				reset(tested.providerService, tested.contentPersistenceService, tested.eventContentStored);
+				reset(tested.providerService, tested.contentPersistenceService, tested.eventContentStored,
+						tested.eventBeforeIndexed);
 				setupProviderServiceMock(tested);
 				content.clear();
 				content.put("test3", "testvalue3");
 				Response r = assertResponseStatus(tested.pushContent(sys_content_type, "1", content), Response.Status.OK);
+				String sysId = tested.providerService.generateSysId(sys_content_type, "1");
+				verify(tested.eventBeforeIndexed).fire(prepareContentBeforeIndexedEventMatcher(sysId, content));
 				assertEquals("update", ((Map<String, String>) r.getEntity()).get("status"));
 				verify(tested.providerService).runPreprocessors(sys_content_type, PREPROCESSORS, content);
 				indexFlushAndRefresh(INDEX_NAME);
-				Map<String, Object> doc = indexGetDocument(INDEX_NAME, INDEX_TYPE,
-						tested.providerService.generateSysId(sys_content_type, "1"));
+				Map<String, Object> doc = indexGetDocument(INDEX_NAME, INDEX_TYPE, sysId);
 				assertNotNull(doc);
 				assertEquals(null, doc.get("test"));
 				assertEquals("testvalue3", doc.get("test3"));
@@ -239,6 +242,20 @@ public class ContentRestServiceTest extends ESRealClientTestBase {
 		}
 	}
 
+	private ContentBeforeIndexedEvent prepareContentBeforeIndexedEventMatcher(final String expectedId,
+			final Map<String, Object> expectedContentObject) {
+		return Mockito.argThat(new CustomMatcher<ContentBeforeIndexedEvent>("ContentBeforeIndexedEvent [contentId="
+				+ expectedId + " data=" + expectedContentObject + "]") {
+
+			@Override
+			public boolean matches(Object paramObject) {
+				ContentBeforeIndexedEvent e = (ContentBeforeIndexedEvent) paramObject;
+				return e.getContentId().equals(expectedId) && e.getContentData() == expectedContentObject;
+			}
+
+		});
+	}
+
 	@SuppressWarnings("unchecked")
 	@Test
 	public void pushContent_persistence() throws Exception {
@@ -248,13 +265,17 @@ public class ContentRestServiceTest extends ESRealClientTestBase {
 
 			// case - insert when index is not found, remove sys_content_content-type because sys_content not present
 			String sys_content_type = "persist";
+
 			{
-				Mockito.reset(tested.contentPersistenceService, tested.eventContentStored);
+				Mockito.reset(tested.contentPersistenceService, tested.eventContentStored, tested.eventBeforeIndexed);
 				indexDelete(INDEX_NAME);
 				content.clear();
 				content.put("test", "testvalue");
 				content.put(ContentObjectFields.SYS_CONTENT_CONTENT_TYPE, "text/html");
 				Response r = assertResponseStatus(tested.pushContent(sys_content_type, "1", content), Response.Status.OK);
+				// verify enhancements called
+				String sysId = tested.providerService.generateSysId(sys_content_type, "1");
+				verify(tested.eventBeforeIndexed).fire(prepareContentBeforeIndexedEventMatcher(sysId, content));
 				assertEquals("insert", ((Map<String, String>) r.getEntity()).get("status"));
 				indexFlushAndRefresh(INDEX_NAME);
 				Map<String, Object> doc = indexGetDocument(INDEX_NAME, INDEX_TYPE,
@@ -279,7 +300,8 @@ public class ContentRestServiceTest extends ESRealClientTestBase {
 			// case - insert when index is found, fill sys_updated if not provided in content, process tags provided in
 			// content, rewrite sys_content_content-type because sys_content is present
 			{
-				reset(tested.providerService, tested.contentPersistenceService, tested.eventContentStored);
+				reset(tested.providerService, tested.contentPersistenceService, tested.eventContentStored,
+						tested.eventBeforeIndexed);
 				setupProviderServiceMock(tested);
 				content.put("test2", "testvalue2");
 				content.put(ContentObjectFields.SYS_CONTENT, "sys content");
@@ -288,10 +310,12 @@ public class ContentRestServiceTest extends ESRealClientTestBase {
 				String[] tags = new String[] { "tag_value" };
 				content.put("tags", tags);
 				Response r = assertResponseStatus(tested.pushContent(sys_content_type, "2", content), Response.Status.OK);
+				// verify enhancements called
+				String sysId = tested.providerService.generateSysId(sys_content_type, "2");
+				verify(tested.eventBeforeIndexed).fire(prepareContentBeforeIndexedEventMatcher(sysId, content));
 				assertEquals("insert", ((Map<String, String>) r.getEntity()).get("status"));
 				indexFlushAndRefresh(INDEX_NAME);
-				Map<String, Object> doc = indexGetDocument(INDEX_NAME, INDEX_TYPE,
-						tested.providerService.generateSysId(sys_content_type, "2"));
+				Map<String, Object> doc = indexGetDocument(INDEX_NAME, INDEX_TYPE, sysId);
 				assertNotNull(doc);
 				assertEquals("testvalue", doc.get("test"));
 				assertEquals("testvalue2", doc.get("test2"));
@@ -313,15 +337,18 @@ public class ContentRestServiceTest extends ESRealClientTestBase {
 
 			// case - rewrite document in index
 			{
-				reset(tested.providerService, tested.contentPersistenceService, tested.eventContentStored);
+				reset(tested.providerService, tested.contentPersistenceService, tested.eventContentStored,
+						tested.eventBeforeIndexed);
 				setupProviderServiceMock(tested);
 				content.clear();
 				content.put("test3", "testvalue3");
 				Response r = assertResponseStatus(tested.pushContent(sys_content_type, "1", content), Response.Status.OK);
+				// verify enhancements called
+				String sysId = tested.providerService.generateSysId(sys_content_type, "1");
+				verify(tested.eventBeforeIndexed).fire(prepareContentBeforeIndexedEventMatcher(sysId, content));
 				assertEquals("update", ((Map<String, String>) r.getEntity()).get("status"));
 				indexFlushAndRefresh(INDEX_NAME);
-				Map<String, Object> doc = indexGetDocument(INDEX_NAME, INDEX_TYPE,
-						tested.providerService.generateSysId(sys_content_type, "1"));
+				Map<String, Object> doc = indexGetDocument(INDEX_NAME, INDEX_TYPE, sysId);
 				assertNotNull(doc);
 				assertEquals(null, doc.get("test"));
 				assertEquals("testvalue3", doc.get("test3"));
@@ -650,12 +677,12 @@ public class ContentRestServiceTest extends ESRealClientTestBase {
 		setupProviderServiceMock(tested);
 
 		tested.contentPersistenceService = mock(ContentPersistenceService.class);
-		tested.contentEnhancementsService = mock(ContentEnhancementsService.class);
 		tested.log = Logger.getLogger("testlogger");
 		tested.authenticationUtilService = mock(AuthenticationUtilService.class);
 
 		tested.eventContentDeleted = mock(Event.class);
 		tested.eventContentStored = mock(Event.class);
+		tested.eventBeforeIndexed = mock(Event.class);
 
 		when(tested.authenticationUtilService.getAuthenticatedProvider(null)).thenReturn("jbossorg");
 

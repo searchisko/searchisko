@@ -5,6 +5,14 @@
  */
 package org.searchisko.contribprofile.provider;
 
+import java.io.InputStream;
+import java.io.StringWriter;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.logging.Logger;
+
 import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
 import org.junit.Test;
@@ -14,17 +22,9 @@ import org.searchisko.api.service.ContributorService;
 import org.searchisko.api.testtools.TestUtils;
 import org.searchisko.contribprofile.model.ContributorProfile;
 
-import java.io.InputStream;
-import java.io.StringWriter;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.logging.Logger;
-
 /**
  * Unit test for {@link Jive6ContributorProfileProvider}.
- *
+ * 
  * @author Libor Krzyzanek
  * @author Vlastimil Elias (velias at redhat dot com)
  */
@@ -56,7 +56,6 @@ public class Jive6ContributorProfileProviderTest {
 
 	}
 
-	@SuppressWarnings("unchecked")
 	@Test
 	public void mapRawJsonData() throws Exception {
 		Jive6ContributorProfileProvider provider = getTested();
@@ -75,7 +74,6 @@ public class Jive6ContributorProfileProviderTest {
 		Assert.assertTrue(profile.getEmails().contains("fake@fake.com"));
 		Assert.assertTrue(profile.getEmails().contains("fake2@fake.com"));
 
-
 		// TEST Contributor Profile
 		Map<String, Object> contributorProfile = profile.getProfileData();
 
@@ -90,7 +88,8 @@ public class Jive6ContributorProfileProviderTest {
 		contributorProfile.remove(ContentObjectFields.SYS_UPDATED);
 
 		StringWriter stringWriter = new StringWriter();
-		IOUtils.copy(Jive6ContributorProfileProviderTest.class.getResourceAsStream("Jive6ProfileDataConverted.json"), stringWriter, "UTF-8");
+		IOUtils.copy(Jive6ContributorProfileProviderTest.class.getResourceAsStream("Jive6ProfileDataConverted.json"),
+				stringWriter, "UTF-8");
 		String expectedString = stringWriter.toString();
 		TestUtils.assertJsonContent(expectedString, contributorProfile);
 	}

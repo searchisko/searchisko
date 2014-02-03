@@ -10,17 +10,23 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.enterprise.event.Event;
+
 import junit.framework.Assert;
 
+import org.hamcrest.CustomMatcher;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.searchisko.api.ContentObjectFields;
-import org.searchisko.api.service.ContentEnhancementsService;
+import org.searchisko.api.events.ContentBeforeIndexedEvent;
 import org.searchisko.api.service.ProviderService;
 import org.searchisko.api.service.SearchClientService;
 import org.searchisko.api.testtools.ESRealClientTestBase;
 import org.searchisko.persistence.service.ContentPersistenceService;
 import org.searchisko.persistence.service.ContentPersistenceService.ListRequest;
+
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 /**
  * Unit test for {@link ReindexFromPersistenceTask}
@@ -40,10 +46,10 @@ public class ReindexFromPersistenceTaskTest extends ESRealClientTestBase {
 		try {
 			ReindexFromPersistenceTask tested = new ReindexFromPersistenceTask();
 			tested.searchClientService = Mockito.mock(SearchClientService.class);
-			tested.contentEnhancementsService = Mockito.mock(ContentEnhancementsService.class);
 			Mockito.when(tested.searchClientService.getClient()).thenReturn(prepareESClientForUnitTest());
 			tested.sysContentType = sysContentType;
 			tested.providerService = Mockito.mock(ProviderService.class);
+			tested.eventBeforeIndexed = Mockito.mock(Event.class);
 			List<Map<String, Object>> preprocessorsDef = new ArrayList<Map<String, Object>>();
 
 			configProviderServiceMock(tested, preprocessorsDef);
@@ -67,16 +73,20 @@ public class ReindexFromPersistenceTaskTest extends ESRealClientTestBase {
 				Assert.assertNull(indexGetDocument(indexName, typeName, "tt-9"));
 				Mockito.verify(tested.providerService, Mockito.times(8)).runPreprocessors(Mockito.eq(sysContentType),
 						Mockito.eq(preprocessorsDef), Mockito.anyMap());
-				Mockito.verify(tested.contentEnhancementsService, Mockito.times(8)).handleContentRatingFields(Mockito.anyMap(),
-						Mockito.anyString());
-				Mockito.verify(tested.contentEnhancementsService, Mockito.times(8)).handleExternalTags(Mockito.anyMap(),
-						Mockito.anyString());
-
+				verify(tested.eventBeforeIndexed).fire(prepareContentBeforeIndexedEventMatcher("tt-1"));
+				verify(tested.eventBeforeIndexed).fire(prepareContentBeforeIndexedEventMatcher("tt-2"));
+				verify(tested.eventBeforeIndexed).fire(prepareContentBeforeIndexedEventMatcher("tt-3"));
+				verify(tested.eventBeforeIndexed).fire(prepareContentBeforeIndexedEventMatcher("tt-4"));
+				verify(tested.eventBeforeIndexed).fire(prepareContentBeforeIndexedEventMatcher("tt-5"));
+				verify(tested.eventBeforeIndexed).fire(prepareContentBeforeIndexedEventMatcher("tt-6"));
+				verify(tested.eventBeforeIndexed).fire(prepareContentBeforeIndexedEventMatcher("tt-7"));
+				verify(tested.eventBeforeIndexed).fire(prepareContentBeforeIndexedEventMatcher("tt-8"));
+				verifyNoMoreInteractions(tested.eventBeforeIndexed);
 			}
 
 			// case - put it into non empty index to check if records are deleted correctly
 			{
-				Mockito.reset(tested.providerService, tested.contentEnhancementsService);
+				Mockito.reset(tested.providerService, tested.eventBeforeIndexed);
 				configProviderServiceMock(tested, preprocessorsDef);
 				tested.contentPersistenceService = getContentPersistenceServiceMock(true);
 				tested.performTask();
@@ -92,12 +102,31 @@ public class ReindexFromPersistenceTaskTest extends ESRealClientTestBase {
 				Assert.assertNull(indexGetDocument(indexName, typeName, "tt-8"));
 				Mockito.verify(tested.providerService, Mockito.times(6)).runPreprocessors(Mockito.eq(sysContentType),
 						Mockito.eq(preprocessorsDef), Mockito.anyMap());
-				Mockito.verify(tested.contentEnhancementsService, Mockito.times(6)).handleContentRatingFields(Mockito.anyMap(),
-						Mockito.anyString());
+				verify(tested.eventBeforeIndexed).fire(prepareContentBeforeIndexedEventMatcher("tt-1"));
+				verify(tested.eventBeforeIndexed).fire(prepareContentBeforeIndexedEventMatcher("tt-2"));
+				verify(tested.eventBeforeIndexed).fire(prepareContentBeforeIndexedEventMatcher("tt-3"));
+				verify(tested.eventBeforeIndexed).fire(prepareContentBeforeIndexedEventMatcher("tt-4"));
+				verify(tested.eventBeforeIndexed).fire(prepareContentBeforeIndexedEventMatcher("tt-5"));
+				verify(tested.eventBeforeIndexed).fire(prepareContentBeforeIndexedEventMatcher("tt-6"));
+				verifyNoMoreInteractions(tested.eventBeforeIndexed);
+
 			}
 		} finally {
 			finalizeESClientForUnitTest();
 		}
+	}
+
+	private ContentBeforeIndexedEvent prepareContentBeforeIndexedEventMatcher(final String expectedId) {
+		return Mockito.argThat(new CustomMatcher<ContentBeforeIndexedEvent>("ContentBeforeIndexedEvent [contentId="
+				+ expectedId + "]") {
+
+			@Override
+			public boolean matches(Object paramObject) {
+				ContentBeforeIndexedEvent e = (ContentBeforeIndexedEvent) paramObject;
+				return e.getContentId().equals(expectedId) && e.getContentData() != null;
+			}
+
+		});
 	}
 
 	private void configProviderServiceMock(ReindexFromPersistenceTask tested, List<Map<String, Object>> preprocessorsDef) {

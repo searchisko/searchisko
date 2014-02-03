@@ -146,6 +146,7 @@ public class ContributorServiceTest extends ESRealClientTestBase {
 		Mockito.when(ret.taskService.getTaskManager()).thenReturn(tm);
 		ret.contributorProfileService = Mockito.mock(ContributorProfileService.class);
 		ret.searchClientService = new SearchClientService();
+		ret.searchClientService.log = Logger.getLogger("testlogger");
 		ret.searchClientService.client = client;
 		ret.ratingPersistenceService = Mockito.mock(RatingPersistenceService.class);
 		ret.eventCreate = Mockito.mock(Event.class);

@@ -14,11 +14,12 @@ import java.util.Set;
 
 import javax.ejb.Singleton;
 import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.event.Event;
 import javax.inject.Inject;
 import javax.inject.Named;
 
 import org.searchisko.api.ContentObjectFields;
-import org.searchisko.api.service.ContentEnhancementsService;
+import org.searchisko.api.events.ContentBeforeIndexedEvent;
 import org.searchisko.api.service.ContributorService;
 import org.searchisko.api.service.ProjectService;
 import org.searchisko.api.service.ProviderService;
@@ -58,7 +59,7 @@ public class ReindexingTaskFactory implements TaskFactory {
 	protected SearchClientService searchClientService;
 
 	@Inject
-	protected ContentEnhancementsService contentEnhancementsService;
+	protected Event<ContentBeforeIndexedEvent> eventBeforeIndexed;
 
 	@Override
 	public List<String> listSupportedTaskTypes() {
@@ -124,7 +125,7 @@ public class ReindexingTaskFactory implements TaskFactory {
 			throw new TaskConfigurationException("Content type '" + sysContentType + "' is not persisted.");
 		}
 		return new ReindexFromPersistenceTask(contentPersistenceService, providerService, searchClientService,
-				contentEnhancementsService, sysContentType);
+				eventBeforeIndexed, sysContentType);
 	}
 
 	private String getMandatoryConfigString(Map<String, Object> taskConfig, String propertyName)

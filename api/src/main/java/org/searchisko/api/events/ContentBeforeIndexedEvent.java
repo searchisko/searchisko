@@ -10,12 +10,13 @@ import java.util.Map;
 import org.searchisko.api.ContentObjectFields;
 
 /**
- * CDI Event emitted when some Content is stored (it means created or updated) in Searchisko. Event is emmited after
- * content is stored into search indexes and persistence store.
+ * CDI Event emitted just before some Content is stored into search index. So it is possible to add some data into
+ * content by Searchisko extensions. It is emitted when content is pushed over REST API or reindexed from persistent
+ * store.
  * 
  * @author Vlastimil Elias (velias at redhat dot com)
  */
-public class ContentStoredEvent {
+public class ContentBeforeIndexedEvent {
 
 	private String contentId;
 
@@ -24,11 +25,10 @@ public class ContentStoredEvent {
 	/**
 	 * Create event.
 	 * 
-	 * @param contentId Searchisko wide unique identifier of stored content - from field
-	 *          {@link ContentObjectFields#SYS_ID}
+	 * @param contentId Searchisko wide unique identifier of content - from field {@link ContentObjectFields#SYS_ID}
 	 * @param contentData content data object
 	 */
-	public ContentStoredEvent(String contentId, Map<String, Object> contentData) {
+	public ContentBeforeIndexedEvent(String contentId, Map<String, Object> contentData) {
 		super();
 		this.contentId = contentId;
 		this.contentData = contentData;
@@ -44,7 +44,7 @@ public class ContentStoredEvent {
 
 	@Override
 	public String toString() {
-		return "ContentStoredEvent [contentId=" + contentId + ", contentData=" + contentData + "]";
+		return "ContentBeforeIndexedEvent [contentId=" + contentId + ", contentData=" + contentData + "]";
 	}
 
 }
