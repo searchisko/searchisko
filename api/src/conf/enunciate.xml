@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<enunciate label="searchisko-api" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		   xsi:noNamespaceSchemaLocation="http://enunciate.codehaus.org/schemas/enunciate-1.28.xsd">
+	<namespaces>
+	</namespaces>
+	<modules>
+		<!-- Docs -->
+		<docs splashPackage="org.searchisko.api"
+			  title="Searchisko REST API"
+			  copyright="searchisko.org"/>
+
+		<basic-app disabled="true"/>
+		<csharp disabled="true"/>
+		<spring-app disabled="true"/>
+		<c disabled="true"/>
+		<obj-c disabled="true"/>
+		<xml disabled="true"/>
+
+
+	</modules>
+</enunciate>

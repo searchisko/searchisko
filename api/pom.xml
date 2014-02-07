@@ -509,6 +509,32 @@
                 </resources>
             </build>
         </profile>
+		<profile>
+			<!-- Profile for building API DOCS-->
+			<id>apidocs</id>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.codehaus.enunciate</groupId>
+						<artifactId>maven-enunciate-plugin</artifactId>
+						<version>1.28</version>
+						<configuration>
+							<enunciateArtifactId>docs</enunciateArtifactId>
+							<moduleName>docs</moduleName>
+							<configFile>src/conf/enunciate.xml</configFile>
+							<docsDir>${project.build.directory}/apidocs</docsDir>
+						</configuration>
+						<executions>
+							<execution>
+								<goals>
+									<goal>docs</goal>
+								</goals>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
     </profiles>
 
     <!-- Repository where enhanced CAS client can be found -->
