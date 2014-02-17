@@ -17,13 +17,13 @@
 
 package org.searchisko.ftest;
 
-import java.io.File;
-
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.jboss.shrinkwrap.resolver.api.maven.Maven;
+
+import java.io.File;
 
 public class DeploymentHelpers {
     @Deployment(testable = false)
@@ -33,6 +33,7 @@ public class DeploymentHelpers {
 
         final WebArchive war = ShrinkWrap.create(WebArchive.class, "searchisko-contributorrestservice.war")
                 .addPackages(true, "org.searchisko.api")
+				.addPackages(true, "org.searchisko.contribprofile")
                 .addPackages(true, "org.searchisko.persistence")
                 .addAsLibraries(runtimeDeps)
                 .addAsResource("META-INF/test-persistence.xml", "META-INF/persistence.xml")
