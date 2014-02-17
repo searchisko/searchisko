@@ -74,6 +74,7 @@
     </developers>
 
     <properties>
+		<filter.name>localhost</filter.name>
         <maven.compiler.source>1.7</maven.compiler.source>
         <maven.compiler.target>1.7</maven.compiler.target>
         <org.elasticsearch.version>0.90.5</org.elasticsearch.version>
@@ -85,17 +86,13 @@
         <!-- <jboss.bom.version>1.0.0.Final</jboss.bom.version> -->
         <!-- Alternatively, comment out the above line, and un-comment the line below to use version 1.0.0.Final-redhat-1 which
             is a release certified to work with JBoss EAP 6. It requires you have access to the JBoss EAP 6 maven repository. -->
-        <jboss.bom.version>1.0.0.M12-redhat-1</jboss.bom.version>
-        <infinispan.version>5.1.4.FINAL</infinispan.version>
-        <richfaces.bom.version>4.2.2.Final-redhat-1</richfaces.bom.version>
-        <filter.name>localhost</filter.name>
-        <resteasy.version>2.3.3.Final-redhat-1</resteasy.version>
+        <jboss.bom.version>6.2.0.GA</jboss.bom.version>
         <structured-content-tools.version>1.2.8</structured-content-tools.version>
         <elasticsearch-river-jira.version>1.4.1</elasticsearch-river-jira.version>
         <elasticsearch-river-remote.version>1.2.3</elasticsearch-river-remote.version>
-        <jackson.version>1.8.0</jackson.version>
+		<cas-jboss-org-client.version>1.2.6</cas-jboss-org-client.version>
+		<jackson.version>1.8.0</jackson.version>
         <version.shrinkwrap_resolver>2.0.0</version.shrinkwrap_resolver>
-        <resteasy-client.version>3.0.4.Final</resteasy-client.version>
         <rest-assured.version>1.8.1</rest-assured.version>
         <hamcrest.version>1.2.1</hamcrest.version>
 		<httpclient.version>4.2.3</httpclient.version>
@@ -115,20 +112,23 @@
                 we use the jboss-javaee-6.0-with-tools stack (you can read this as the JBoss stack of the Java EE 6 APIs, with some extras
                 tools for your project, such as Arquillian for testing) and the jboss-javaee-6.0-with-hibernate stack you can read this as
                 the JBoss stack of the Java EE 6 APIs, with extras from the Hibernate family of projects) -->
-            <dependency>
-                <groupId>org.jboss.bom</groupId>
-                <artifactId>jboss-javaee-6.0-with-tools</artifactId>
-                <version>${jboss.bom.version}</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.jboss.bom</groupId>
-                <artifactId>jboss-javaee-6.0-with-hibernate</artifactId>
-                <version>${jboss.bom.version}</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
+			<dependency>
+				<groupId>org.jboss.bom.eap</groupId>
+				<artifactId>jboss-javaee-6.0-with-tools</artifactId>
+				<version>${jboss.bom.version}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+			<!-- Dependency management for JBoss EAP 6.2 artifacts -->
+			<dependency>
+				<groupId>org.jboss.bom</groupId>
+				<artifactId>eap6-supported-artifacts</artifactId>
+				<version>${jboss.bom.version}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+
+			<!-- Unit test dependencies -->
             <dependency>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-war-plugin</artifactId>
