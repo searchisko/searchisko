@@ -163,18 +163,20 @@
         <module>api</module>
     </modules>
 
-    <reporting>
-        <!-- Have to be defined here as well otherwise suerfire report doesn't have links to sources -->
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-jxr-plugin</artifactId>
-                <version>2.3</version>
-            </plugin>
-        </plugins>
-    </reporting>
-
     <profiles>
+		<profile>
+			<id>site</id>
+			<reporting>
+				<!-- Have to be defined here as well otherwise suerefire report doesn't have links to sources -->
+				<plugins>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-jxr-plugin</artifactId>
+						<version>2.3</version>
+					</plugin>
+				</plugins>
+			</reporting>
+		</profile>
         <profile>
             <id>skiptests</id>
             <build>
