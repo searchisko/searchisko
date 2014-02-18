@@ -91,7 +91,6 @@
         <elasticsearch-river-jira.version>1.4.1</elasticsearch-river-jira.version>
         <elasticsearch-river-remote.version>1.2.3</elasticsearch-river-remote.version>
 		<cas-jboss-org-client.version>1.2.6</cas-jboss-org-client.version>
-		<jackson.version>1.8.0</jackson.version>
         <version.shrinkwrap_resolver>2.0.0</version.shrinkwrap_resolver>
         <rest-assured.version>1.8.1</rest-assured.version>
         <hamcrest.version>1.2.1</hamcrest.version>

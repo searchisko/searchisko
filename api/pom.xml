@@ -170,22 +170,18 @@
             <version>${structured-content-tools.version}</version>
         </dependency>
 
-        <!-- Needed for JSON parsing -->
-        <!-- Consider using bundled jackson in EAP -->
+        <!-- Needed for JSON parsing. Version is taken from EAP BOMs -->
         <dependency>
             <groupId>org.codehaus.jackson</groupId>
             <artifactId>jackson-core-asl</artifactId>
-            <version>${jackson.version}</version>
         </dependency>
         <dependency>
             <groupId>org.codehaus.jackson</groupId>
             <artifactId>jackson-mapper-asl</artifactId>
-            <version>${jackson.version}</version>
         </dependency>
         <dependency>
             <groupId>org.codehaus.jackson</groupId>
             <artifactId>jackson-jaxrs</artifactId>
-            <version>${jackson.version}</version>
         </dependency>
 
         <!-- SSO integration; JBoss.org custom (improved) CAS JAVA client -->
