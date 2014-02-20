@@ -203,18 +203,6 @@
     </profiles>
 
     <repositories>
-        <!-- ElasticSearch official mvn repo -->
-        <repository>
-            <id>sonatype-releases</id>
-            <name>Sonatype Releases Repository</name>
-            <url>https://oss.sonatype.org/content/repositories/releases/</url>
-            <layout>default</layout>
-            <releases>
-                <enabled>true</enabled>
-                <updatePolicy>never</updatePolicy>
-            </releases>
-        </repository>
-
         <repository>
             <id>jboss-eap-repository</id>
             <name>JBoss EAP</name>
