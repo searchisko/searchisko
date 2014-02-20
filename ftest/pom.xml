@@ -24,12 +24,12 @@
     <parent>
         <groupId>org.searchisko</groupId>
         <artifactId>parent</artifactId>
-        <version>1.0.Beta-01</version>
         <relativePath>../pom.xml</relativePath>
+		<version>${searchisko.version}</version>
     </parent>
 
     <artifactId>ftest</artifactId>
-    <version>1.0.Beta-01</version>
+    <version>${searchisko.version}</version>
 
     <properties>
         <es.client.embedded.data.path>${user.home}/.dcp_data</es.client.embedded.data.path>

@@ -7,12 +7,12 @@
         <groupId>org.searchisko</groupId>
         <artifactId>parent</artifactId>
         <relativePath>../pom.xml</relativePath>
-        <version>1.0.Beta-01</version>
+		<version>${searchisko.version}</version>
     </parent>
 
     <artifactId>api</artifactId>
     <packaging>war</packaging>
-    <version>1.0.Beta-01</version>
+    <version>${searchisko.version}</version>
 
     <properties>
         <compileSource>1.7</compileSource>
