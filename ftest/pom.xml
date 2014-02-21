@@ -25,11 +25,10 @@
         <groupId>org.searchisko</groupId>
         <artifactId>parent</artifactId>
         <relativePath>../pom.xml</relativePath>
-		<version>${searchisko.version}</version>
+		<version>0.9.0</version>
     </parent>
 
     <artifactId>ftest</artifactId>
-    <version>${searchisko.version}</version>
 
     <properties>
         <es.client.embedded.data.path>${user.home}/.dcp_data</es.client.embedded.data.path>
