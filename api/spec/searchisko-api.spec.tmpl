@@ -1,0 +1,47 @@
+%define  _deploy_dir /services/searchisko
+
+Name:           searchisko-api
+Version:        0.9.0
+Release:        1.el6
+Summary:        Searchisko API
+
+Group:          System Environment/Daemons
+License:        Apache License, Version 2.0
+URL:            http://dcp.jboss.org
+
+
+BuildRoot:      %{_tmppath}/%{name}-%{version}.%{release}-root-%(%{__id_u} -n)
+BuildArch:      noarch
+
+#set $i = 0
+#for $artifact in $all_artifacts
+  #if $artifact.startswith('api') and $artifact.endswith('.war')
+Source0: $artifact
+  #end if
+#end for
+
+Requires(post): chkconfig
+Requires(preun): chkconfig
+# This is for /sbin/service
+Requires(preun): initscripts
+
+%description
+Searchisko API
+
+%install
+rm -rf %{buildroot}
+/usr/bin/install -d %{buildroot}%{_deploy_dir}
+cp %{SOURCE0} %{buildroot}%{_deploy_dir}/
+
+
+%clean
+rm -rf %{buildroot}
+
+%files
+%defattr(-,jboss,jboss,-)
+%{_deploy_dir}
+
+
+%changelog
+* Fri Feb 21 2014 Libor Krzyzanek <lkrzyzan at, redhat.com> 0.9.0
+- Initial beta release
