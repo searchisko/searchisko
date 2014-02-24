@@ -8,7 +8,7 @@
     <packaging>pom</packaging>
     <version>0.9.0</version>
     <name>Searchisko</name>
-    <description>Searchisko - service that allows to index, search, retrieve and aggregate content from configurable resources
+    <description>Searchisko - Index, search, retrieve and aggregate content from heterogeneous resources.
     </description>
 
     <url>http://searchisko.org</url>
@@ -23,14 +23,14 @@
     </licenses>
 
     <scm>
-        <connection>scm:git:git://github.com/searchisko/searchisko-api</connection>
-        <developerConnection>scm:git:ssh://github.com/searchisko/searchisko-api</developerConnection>
-        <url>https://github.com/searchisko/searchisko-api</url>
+        <connection>scm:git:git://github.com/searchisko/searchisko</connection>
+        <developerConnection>scm:git:ssh://github.com/searchisko/searchisko</developerConnection>
+        <url>https://github.com/searchisko/searchisko</url>
     </scm>
 
     <ciManagement>
         <system>jenkins</system>
-        <url>https://build-jbossorgdev.rhcloud.com/job/dcp-api/</url>
+        <url>https://build-jbossorgdev.rhcloud.com/job/searchisko/</url>
     </ciManagement>
 
     <issueManagement>
