@@ -2,7 +2,7 @@
 
 Name:           searchisko-api
 Version:        0.9.0
-Release:        1.el6
+Release:        2.el6
 Summary:        Searchisko API
 
 Group:          System Environment/Daemons
@@ -30,9 +30,8 @@ Searchisko API
 
 %install
 rm -rf %{buildroot}
-/usr/bin/install -d %{buildroot}%{_deploy_dir}
-cp %{SOURCE0} %{buildroot}%{_deploy_dir}/
-
+/usr/bin/install -d %{buildroot}%{_deploy_dir}/%{name}.war
+unzip -d %{buildroot}%{_deploy_dir}/%{name}.war %{SOURCE0}
 
 %clean
 rm -rf %{buildroot}
@@ -43,5 +42,9 @@ rm -rf %{buildroot}
 
 
 %changelog
+* Tue Feb 25 2014 Lukas Vlcek <lvlcek at, redhat.com> 0.9.0
+- Production profile configuration
+- unzip war (we want explode application)
+
 * Fri Feb 21 2014 Libor Krzyzanek <lkrzyzan at, redhat.com> 0.9.0
 - Initial beta release

@@ -372,11 +372,27 @@
         </profile>
         <profile>
             <id>production</id>
-            <!-- TODO: I think we need to flesh this one out a bit more -->
+            <properties>
+                <filter.name>production</filter.name>
+                <persistence.xml.jta-data-source>java:jboss/datasources/SearchiskoDS</persistence.xml.jta-data-source>
+                <persistence.xml.hibernate.dialect>org.hibernate.dialect.MySQLDialect</persistence.xml.hibernate.dialect>
+            </properties>
             <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-war-plugin</artifactId>
+                        <configuration>
+                            <packagingExcludes>WEB-INF/searchisko-ds.xml</packagingExcludes>
+                        </configuration>
+                    </plugin>
+                </plugins>
+                <filters>
+                    <filter>src/main/profiles/${filter.name}/sso.properties</filter>
+                </filters>
                 <resources>
                     <resource>
-                        <directory>src/main/profiles/production</directory>
+                        <directory>src/main/profiles/${filter.name}</directory>
                     </resource>
                 </resources>
             </build>
