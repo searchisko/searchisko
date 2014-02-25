@@ -109,7 +109,7 @@ public class StatsClientService extends ElasticsearchClientService {
 				checkHealthOfCluster(client);
 			}
 		} else {
-			log.info("Statistics are dissabled");
+			log.info("Statistics are disabled");
 		}
 
 	}
