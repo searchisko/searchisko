@@ -3,7 +3,7 @@ DCP configuration - definition of search response fields
 
 **configuration API id:** `search_response_fields`
 
-This configuration document contains array with default set of fields returned from DCP 'Search API' `search` operation if set of fields is not defined in request. See related [ElasticSearch documentation](http://www.elasticsearch.org/guide/reference/api/search/fields.html) for details.
+This configuration document contains array with default set of fields returned from DCP 'Search API' `search` operation if set of fields is not defined in request. See related [ElasticSearch documentation](http://www.elasticsearch.org/guide/en/elasticsearch/reference/0.90/search-request-fields.html) for details.
 
 Example:
 

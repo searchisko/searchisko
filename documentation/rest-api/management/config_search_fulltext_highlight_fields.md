@@ -5,7 +5,7 @@ DCP configuration - definition of fields used for highlight during fulltext sear
 
 This configuration document contains Map structure where keys are names of index fields used for highlight during fulltext search in DCP 'Search API' `search` operation. 
 Value is Map containing three mandatory parameters for field highlight configuration called `fragment_size`, `number_of_fragments`,`fragment_offset`, 
-see [ElasticSearch Highlight documentation](http://www.elasticsearch.org/guide/reference/api/search/highlighting.html).
+see [ElasticSearch Highlight documentation](http://www.elasticsearch.org/guide/en/elasticsearch/reference/0.90/search-request-highlighting.html).
 
 Example:
 
