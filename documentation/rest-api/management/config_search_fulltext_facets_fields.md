@@ -49,8 +49,8 @@ The `<facet_name>` is used as value of `facet` URL parameter in [search API](htt
 
 Currently only two facets types are supported:
 
-- `terms`: refers to [Terms Facet][terms_facet] type. Recommended to use with `string` or number-like [field type][field_type]s. It works best for fields that do not have a high cardinality.
-- `date_histogram`: refers to [Date Histogram Facet][date_histogram_facet] type. It is designed to be used for [date type][date_type]. I.e. `{ "type" : "date" }`.
+- `terms`: refers to [Terms Facet][terms facet] type. Recommended to use with `string` or number-like [field type][field type]s. It works best for fields that do not have a high cardinality.
+- `date_histogram`: refers to [Date Histogram Facet][date histogram facet] type. It is designed to be used for [date type][date type]. I.e. `{ "type" : "date" }`.
 
 #### \<document_field_name\>
 
@@ -65,12 +65,12 @@ Additional settings. Currently only `size` setting is supported for `terms` face
 This setting that can be used **only with `terms` facet type**. This settings is experimental and subject to change in the future.
 
 
-_Note: faceted search capabilities of Elasticsearch are very powerful and flexible. Searchisko exposes only small set of the full Elasticsearch API functionality. However, going forward this may change and facets API will be exposed in much opened way (yet it will still need to be controlled). See full [Elasticsearch Facets documentation][elasticsearch_facets_documentation] for details._
+_Note: faceted search capabilities of Elasticsearch are very powerful and flexible. Searchisko exposes only small set of the full Elasticsearch API functionality. However, going forward this may change and facets API will be exposed in much opened way (yet it will still need to be controlled). See full [Elasticsearch Facets documentation][elasticsearch facets documentation] for details._
 
-  [mapping]:		http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/mapping.html
-  [analysis]:		http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/analysis.html
-  [field_type]: 	http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/mapping-types.html
-  [date_type]:		http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/mapping-core-types.html#date
-  [terms_facet]:	http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/search-facets-terms-facet.html
-  [date_histogram_facet]:	http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/search-facets-date-histogram-facet.html
-  [elasticsearch_facets_documentation]:	http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/search-facets.html
+  [mapping]: http://www.elasticsearch.org/guide/en/elasticsearch/reference/0.90/mapping.html
+  [analysis]: http://www.elasticsearch.org/guide/en/elasticsearch/reference/0.90/analysis.html
+  [field type]: http://www.elasticsearch.org/guide/en/elasticsearch/reference/0.90/mapping-types.html
+  [date type]: http://www.elasticsearch.org/guide/en/elasticsearch/reference/0.90/mapping-core-types.html#date
+  [terms facet]: http://www.elasticsearch.org/guide/en/elasticsearch/reference/0.90/search-facets-terms-facet.html
+  [date histogram facet]: http://www.elasticsearch.org/guide/en/elasticsearch/reference/0.90/search-facets-date-histogram-facet.html
+  [elasticsearch facets documentation]: http://www.elasticsearch.org/guide/en/elasticsearch/reference/0.90/search-facets.html
