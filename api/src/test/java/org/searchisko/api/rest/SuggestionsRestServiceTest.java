@@ -11,6 +11,7 @@ import java.util.logging.Logger;
 import org.elasticsearch.action.search.MultiSearchRequest;
 import org.elasticsearch.action.search.MultiSearchRequestBuilder;
 import org.elasticsearch.action.search.SearchRequestBuilder;
+import org.json.JSONException;
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -25,7 +26,7 @@ import org.searchisko.api.testtools.TestUtils;
 public class SuggestionsRestServiceTest {
 
 	@Test
-	public void handleSuggestionsProject() throws IOException {
+	public void handleSuggestionsProject() throws IOException, JSONException {
 		SuggestionsRestService tested = new SuggestionsRestService();
 		tested.searchClientService = Mockito.mock(SearchClientService.class);
 		tested.log = Logger.getLogger("testlogger");

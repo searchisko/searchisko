@@ -38,10 +38,7 @@ import org.searchisko.api.model.QuerySettings;
 import org.searchisko.api.model.QuerySettings.Filters;
 import org.searchisko.api.model.SortByValue;
 import org.searchisko.api.rest.exception.BadFieldException;
-import org.searchisko.api.service.ContributorService;
-import org.searchisko.api.service.SearchService;
-import org.searchisko.api.service.StatsRecordType;
-import org.searchisko.api.service.SystemInfoService;
+import org.searchisko.api.service.*;
 import org.searchisko.api.util.QuerySettingsParser;
 import org.searchisko.api.util.SearchUtils;
 
@@ -129,12 +126,13 @@ public class FeedRestService extends RestServiceBase {
 		if (querySettings.getSortBy() != SortByValue.NEW_CREATION) {
 			querySettings.setSortBy(SortByValue.NEW);
 		}
+		querySettings.setFrom(0);
+		querySettings.setSize(20);
 		Filters filters = querySettings.getFiltersInit();
-		filters.setFrom(0);
-		filters.setSize(20);
-		filters.setActivityDateFrom(null);
-		filters.setActivityDateTo(null);
-		filters.setActivityDateInterval(null);
+		// TODO: no hardcodes, we could probably remove these
+		filters.forgetUrlFilterCandidate("activity_date_from");
+		filters.forgetUrlFilterCandidate("activity_date_to");
+		filters.forgetUrlFilterCandidate("activity_date_interval");
 	}
 
 	protected Feed createAtomResponse(final QuerySettings querySettings, final SearchResponse searchResponse,
@@ -212,12 +210,12 @@ public class FeedRestService extends RestServiceBase {
 
 		Filters f = querySettings.getFiltersInit();
 
-		appendParamIfExists(sb, "project", f.getProjects());
-		appendParamIfExists(sb, "contributor", f.getContributors());
-		appendParamIfExists(sb, "tag", f.getTags());
-		appendParamIfExists(sb, "sys_type", f.getSysTypes());
-		appendParamIfExists(sb, "type", f.getContentType());
-		appendParamIfExists(sb, "content_provider", f.getSysContentProvider());
+		appendParamIfExists(sb, "project", f.getFilterCandidateValues("project"));
+		appendParamIfExists(sb, "contributor", f.getFilterCandidateValues("contributor"));
+		appendParamIfExists(sb, "tag", f.getFilterCandidateValues("tag"));
+		appendParamIfExists(sb, "sys_type", f.getFilterCandidateValues("sys_type"));
+		appendParamIfExists(sb, "type", f.getFilterCandidateValues("type"));
+		appendParamIfExists(sb, "content_provider", f.getFilterCandidateValues("content_provider"));
 		appendParamIfExists(sb, "query", querySettings.getQuery(), true);
 		if (querySettings.getSortBy() != null && querySettings.getSortBy() != SortByValue.NEW)
 			appendParamIfExists(sb, "sortBy", querySettings.getSortBy().toString());

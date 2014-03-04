@@ -7,6 +7,7 @@ package org.searchisko.api.util;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -44,42 +45,70 @@ public class QuerySettingsParser {
 	 *           and is used for error handling later!
 	 */
 	public QuerySettings parseUriParams(MultivaluedMap<String, String> params) throws IllegalArgumentException {
+
 		QuerySettings settings = new QuerySettings();
-		QuerySettings.Filters filters = settings.getFiltersInit();
 		if (params == null) {
+			settings.getFiltersInit();
 			return settings;
 		}
 
-		settings.setQuery(normalizeQueryString(params.getFirst(QuerySettings.QUERY_KEY)));
-		settings.setQueryHighlight(readBooleanParam(params, QuerySettings.QUERY_HIGHLIGHT_KEY));
-		settings.setFields(normalizeListParam(params.get(QuerySettings.FIELDS_KEY)));
+		// Make copy of all param keys. Remove key from this copy each time a particular param is processed.
+		// The idea is to process the defined parameters first (and remove relevant keys) and then process
+		// the rest, where the rest can match configured filters.
+		Set<String> paramKeys = params.keySet();
 
-		filters.setContentType(SearchUtils.trimToNull(params.getFirst(QuerySettings.Filters.CONTENT_TYPE_KEY)));
-		filters.setSysContentProvider(SearchUtils.trimToNull(params.getFirst(QuerySettings.Filters.SYS_CONTENT_PROVIDER)));
-		filters.setSysTypes(normalizeListParam(params.get(QuerySettings.Filters.SYS_TYPES_KEY)));
-		filters.setProjects(normalizeListParam(params.get(QuerySettings.Filters.PROJECTS_KEY)));
-		filters.setTags(normalizeListParam(params.get(QuerySettings.Filters.TAGS_KEY)));
-		filters.setContributors(normalizeListParam(params.get(QuerySettings.Filters.CONTRIBUTORS_KEY)));
-		filters.setActivityDateInterval(PastIntervalValue.parseRequestParameterValue(params
-				.getFirst(QuerySettings.Filters.ACTIVITY_DATE_INTERVAL_KEY)));
-		filters.setActivityDateFrom(readDateParam(params, QuerySettings.Filters.ACTIVITY_DATE_FROM_KEY));
-		filters.setActivityDateTo(readDateParam(params, QuerySettings.Filters.ACTIVITY_DATE_TO_KEY));
+		// process query
+		for (String key = QuerySettings.QUERY_KEY; paramKeys.contains(key); paramKeys.remove(key)) {
+			settings.setQuery(normalizeQueryString(params.getFirst(key)));
+		}
 
-		filters.setFrom(readIntegerParam(params, QuerySettings.Filters.FROM_KEY));
-		if (filters.getFrom() != null && filters.getFrom() < 0)
-			throw new IllegalArgumentException(QuerySettings.Filters.FROM_KEY);
-		filters.setSize(readIntegerParam(params, QuerySettings.Filters.SIZE_KEY));
-		if (filters.getSize() != null && (filters.getSize() < 0 || filters.getSize() > SearchService.RESPONSE_MAX_SIZE))
-			throw new IllegalArgumentException(QuerySettings.Filters.SIZE_KEY);
+		// process highlighting
+		for (String key = QuerySettings.QUERY_HIGHLIGHT_KEY; paramKeys.contains(key); paramKeys.remove(key)) {
+			settings.setQueryHighlight(readBooleanParam(params, key));
+		}
 
-		settings.setSortBy(SortByValue.parseRequestParameterValue(params.getFirst(QuerySettings.SORT_BY_KEY)));
+		// process fields
+		for (String key = QuerySettings.FIELDS_KEY; paramKeys.contains(key); paramKeys.remove(key)) {
+			settings.setFields(normalizeListParam(params.get(key)));
+		}
 
-		if (params.get(QuerySettings.FACETS_KEY) != null) {
-			for (String fpv : params.get(QuerySettings.FACETS_KEY)) {
-				if (fpv != null && !fpv.trim().isEmpty()) {
-					settings.addFacet(fpv);
+		// process sort
+		for (String key = QuerySettings.SORT_BY_KEY; paramKeys.contains(key); paramKeys.remove(key)) {
+			settings.setSortBy(SortByValue.parseRequestParameterValue(params.getFirst(key)));
+		}
+
+		// process facets
+		for (String key = QuerySettings.FACETS_KEY; paramKeys.contains(key); paramKeys.remove(key)) {
+			List<String> facetKeys = params.get(key);
+			if (facetKeys != null) {
+				for (String fpv : facetKeys) {
+					if (fpv != null && !fpv.trim().isEmpty()) {
+						settings.addFacet(fpv);
+					}
 				}
 			}
+		}
+
+		// process from
+		for (String key = QuerySettings.FROM_KEY; paramKeys.contains(key); paramKeys.remove(key)) {
+			settings.setFrom(readIntegerParam(params,key));
+			if (settings.getFrom() != null && settings.getFrom() < 0)
+				throw new IllegalArgumentException(key);
+		}
+
+		// process size
+		for (String key = QuerySettings.SIZE_KEY; paramKeys.contains(key); paramKeys.remove(key)) {
+			settings.setSize(readIntegerParam(params, key));
+			if (settings.getSize() != null && (settings.getSize() < 0 || settings.getSize() > SearchService.RESPONSE_MAX_SIZE))
+				throw new IllegalArgumentException(key);
+		}
+
+		// remaining url parameters can be all search filters
+		QuerySettings.Filters filters = settings.getFiltersInit();
+		for (String key: paramKeys) {
+			List<String> urlValues = SearchUtils.safeList(params.get(key));
+			if (urlValues != null)
+				filters.acknowledgeUrlFilterCandidate(key, urlValues);
 		}
 
 		if (log.isLoggable(Level.FINE)) {

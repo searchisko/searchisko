@@ -48,7 +48,14 @@
                                     "include_upper":true
                                 }
                             }
-                        }
+                        },
+						{
+							"terms":{
+								"sys_content_type":[
+									"my_content_type"
+								]
+							}
+						}
                     ]
                 }
             },
@@ -102,7 +109,14 @@
                                     "include_upper":true
                                 }
                             }
-                        }
+                        },
+						{
+							"terms":{
+								"sys_content_type":[
+									"my_content_type"
+								]
+							}
+						}
                     ]
                 }
             },
@@ -156,7 +170,14 @@
                                     "include_upper":true
                                 }
                             }
-                        }
+                        },
+						{
+							"terms":{
+								"sys_content_type":[
+									"my_content_type"
+								]
+							}
+						}
                     ]
                 }
             },
@@ -218,7 +239,14 @@
                                     "include_upper":true
                                 }
                             }
-                        }
+                        },
+						{
+							"terms":{
+								"sys_content_type":[
+									"my_content_type"
+								]
+							}
+						}
                     ]
                 }
             },
@@ -272,7 +300,14 @@
                                     "include_upper":true
                                 }
                             }
-                        }
+                        },
+						{
+							"terms":{
+								"sys_content_type":[
+									"my_content_type"
+								]
+							}
+						}
                     ]
                 }
             },

@@ -70,7 +70,7 @@ public class SearchRestService extends RestServiceBase {
 			String responseUuid = UUID.randomUUID().toString();
 
 			SearchResponse searchResponse = searchService.performSearch(querySettings, responseUuid, StatsRecordType.SEARCH);
-			Map<String, String> af = searchService.getSearchResponseAdditionalFields(querySettings);
+			Map<String, String> af = searchService.getIntervalValuesForDateHistogramFacets(querySettings);
 			af.put("uuid", responseUuid);
 			return createResponse(searchResponse, af);
 		} catch (IllegalArgumentException e) {

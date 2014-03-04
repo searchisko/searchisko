@@ -1,18 +1,29 @@
+/*
+ * JBoss, Home of Professional Open Source
+ * Copyright 2012 Red Hat Inc. and/or its affiliates and other contributors
+ * as indicated by the @authors tag. All rights reserved.
+ */
 package org.searchisko.api.model;
 
 import org.searchisko.api.util.SearchUtils;
 
 /**
- * Enum with names used for <code>activity_date_interval</code> search request param.
+ * Enum representing past interval names.
+ * This processor is used to calculate predefined intervals (week, month, ...) before reference date.
+ * It allows to configure the range filter to be used in cases like:
+ * "give me documents that have been update within last month"
+ * ... or ...
+ * "give me documents that have been update in the past but not within last week".
  *
  * @author Vlastimil Elias (velias at redhat dot com)
+ * @author Lukas Vlcek
  * @see QuerySettings
  */
-public enum PastIntervalValue {
+public enum PastIntervalValue implements ParsableIntervalConfig {
 
-	WEEK("week", 1000L * 60L * 60L * 24L * 7L), MONTH("month", 1000L * 60L * 60L * 24L * 31L), QUARTER("quarter", 1000L
-			* 60L * 60L * 24L * 31L * 3L), YEAR("year", 1000L * 60L * 60L * 24L * 365L), DAY("day", 1000L * 60L * 60L * 24L), TEST(
-			"test_val_eefgdf", 0);
+	WEEK("week", 1000L * 60L * 60L * 24L * 7L), MONTH("month", 1000L * 60L * 60L * 24L * 31L),
+	QUARTER("quarter", 1000L * 60L * 60L * 24L * 31L * 3L), YEAR("year", 1000L * 60L * 60L * 24L * 365L),
+	DAY("day", 1000L * 60L * 60L * 24L), NULL("null",null), UNDEFINED("undefined",null), TEST("test_val_eefgdf", 0L);
 
 	/**
 	 * Value used in request parameter.
@@ -20,12 +31,11 @@ public enum PastIntervalValue {
 	private String value;
 
 	/**
-	 * Time interval in millis for this value. Used for timeshift back from current timestamp if this enum item is used.
-	 * see {@link #getFromTimestamp()}
+	 * Time interval in millis for this value.
 	 */
-	private long millis;
+	private Long millis;
 
-	private PastIntervalValue(String value, long millis) {
+	private PastIntervalValue(String value, Long millis) {
 		this.value = value;
 		this.millis = millis;
 	}
@@ -35,40 +45,36 @@ public enum PastIntervalValue {
 		return this.value;
 	}
 
-	/**
-	 * Time interval in millis for this value.
-	 *
-	 * @return millis
-	 */
-	public long getMillis() {
-		return millis;
+	public long getLteValue(long value) {
+		if (this.equals(TEST)) {
+			return 125654587545L;
+		}
+		return value - this.millis;
 	}
 
-	/**
-	 * @return long value with timeshift for this enum item
-	 */
-	public long getFromTimestamp() {
-		if (millis == 0) {
-			return 125654587545l;
+	public long getGteValue(long value) {
+		if (this.equals(TEST)) {
+			return 125654587545L;
 		}
-		return System.currentTimeMillis() - millis;
+		return value - this.millis;
 	}
 
 	/**
 	 * Convert request parameter to enum item.
 	 *
 	 * @param requestVal value from request to parse
-	 * @return enum item for given request value, null if it is empty
+	 * @return enum item for given request value, {@link org.searchisko.api.model.PastIntervalValue#NULL} if it is empty
+	 *         or {@link org.searchisko.api.model.PastIntervalValue#UNDEFINED} is the value it unknown.
 	 * @throws IllegalArgumentException if request value is invalid
 	 */
-	public static PastIntervalValue parseRequestParameterValue(String requestVal) throws IllegalArgumentException {
+	public static PastIntervalValue parseRequestParameterValue(String requestVal) {
 		requestVal = SearchUtils.trimToNull(requestVal);
 		if (requestVal == null)
-			return null;
+			return NULL;
 		for (PastIntervalValue n : PastIntervalValue.values()) {
 			if (n.value.equals(requestVal))
 				return n;
 		}
-		throw new IllegalArgumentException(QuerySettings.Filters.ACTIVITY_DATE_INTERVAL_KEY);
+		return UNDEFINED;
 	}
 }

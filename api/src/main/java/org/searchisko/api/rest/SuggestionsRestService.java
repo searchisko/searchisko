@@ -83,7 +83,7 @@ public class SuggestionsRestService extends RestServiceBase {
 	@Produces(MediaType.APPLICATION_JSON)
 	@GuestAllowed
 	public Object project(@QueryParam(QuerySettings.QUERY_KEY) String query,
-			@QueryParam(QuerySettings.Filters.SIZE_KEY) Integer size) {
+			@QueryParam(QuerySettings.SIZE_KEY) Integer size) {
 
 		try {
 

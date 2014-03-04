@@ -49,6 +49,16 @@ import org.searchisko.api.util.SearchUtils;
  */
 public class FeedRestServiceTest {
 
+	final static private String CONTENT_TYPE_KEY = "type";
+	final static private String SYS_TYPES_KEY = "sys_type";
+	final static private String SYS_CONTENT_PROVIDER = "content_provider";
+	final static private String PROJECTS_KEY = "project";
+	final static private String TAGS_KEY = "tag";
+	final static private String CONTRIBUTORS_KEY = "contributor";
+	final static private String ACTIVITY_DATE_INTERVAL_KEY = "activity_date_interval";
+	final static private String ACTIVITY_DATE_FROM_KEY = "activity_date_from";
+	final static private String ACTIVITY_DATE_TO_KEY = "activity_date_to";
+
 	@Test
 	public void feed_permissions() {
 		TestUtils.assertPermissionGuest(FeedRestService.class, "feed", UriInfo.class);
@@ -72,22 +82,22 @@ public class FeedRestServiceTest {
 
 			// assert patched fields
 			Assert.assertEquals(false, qs.isQueryHighlight());
-			Assert.assertEquals(new Integer(0), qs.getFilters().getFrom());
-			Assert.assertEquals(new Integer(20), qs.getFilters().getSize());
+			Assert.assertEquals(new Integer(0), qs.getFrom());
+			Assert.assertEquals(new Integer(20), qs.getSize());
 			Assert.assertEquals(SortByValue.NEW, qs.getSortBy());
 			Assert.assertEquals(9, qs.getFields().size());
-			Assert.assertNull(qs.getFilters().getActivityDateFrom());
-			Assert.assertNull(qs.getFilters().getActivityDateTo());
-			Assert.assertNull(qs.getFilters().getActivityDateInterval());
+			Assert.assertNull(qs.getFilters().getFilterCandidateValues(ACTIVITY_DATE_FROM_KEY));
+			Assert.assertNull(qs.getFilters().getFilterCandidateValues(ACTIVITY_DATE_TO_KEY));
+			Assert.assertNull(qs.getFilters().getFilterCandidateValues(ACTIVITY_DATE_INTERVAL_KEY));
 
 			// assert preserved fields
 			Assert.assertEquals(null, qs.getFacets());
-			Assert.assertNull(qs.getFilters().getContentType());
-			Assert.assertNull(qs.getFilters().getSysContentProvider());
-			Assert.assertNull(qs.getFilters().getContributors());
-			Assert.assertNull(qs.getFilters().getSysTypes());
-			Assert.assertNull(qs.getFilters().getProjects());
-			Assert.assertNull(qs.getFilters().getTags());
+			Assert.assertNull(qs.getFilters().getFilterCandidateValues(CONTENT_TYPE_KEY));
+			Assert.assertNull(qs.getFilters().getFilterCandidateValues(SYS_CONTENT_PROVIDER));
+			Assert.assertNull(qs.getFilters().getFilterCandidateValues(CONTRIBUTORS_KEY));
+			Assert.assertNull(qs.getFilters().getFilterCandidateValues(SYS_TYPES_KEY));
+			Assert.assertNull(qs.getFilters().getFilterCandidateValues(PROJECTS_KEY));
+			Assert.assertNull(qs.getFilters().getFilterCandidateValues(TAGS_KEY));
 		}
 
 		// case - set and reset some values on nonempty QuerySettings
@@ -100,33 +110,35 @@ public class FeedRestServiceTest {
 			qs.setQuery("Querry");
 			// unsupported sort by must be changed
 			qs.setSortBy(SortByValue.OLD);
+			qs.setFrom(50);
+			qs.setSize(150);
 			Filters f = qs.getFiltersInit();
-			f.setFrom(50);
-			f.setSize(150);
-			f.setActivityDateFrom(12l);
-			f.setActivityDateTo(20l);
-			f.setActivityDateInterval(PastIntervalValue.TEST);
-			f.setContentType("ct");
-			f.setSysContentProvider("cp");
+			f.acknowledgeUrlFilterCandidate(ACTIVITY_DATE_FROM_KEY,"12l");
+			f.acknowledgeUrlFilterCandidate(ACTIVITY_DATE_TO_KEY,"20l");
+			f.acknowledgeUrlFilterCandidate(ACTIVITY_DATE_INTERVAL_KEY,PastIntervalValue.TEST.toString());
+			f.acknowledgeUrlFilterCandidate(CONTENT_TYPE_KEY,"ct");
+			f.acknowledgeUrlFilterCandidate(SYS_CONTENT_PROVIDER,"cp");
 
 			tested.patchQuerySettings(qs);
 
 			// assert patched fields
 			Assert.assertEquals(0, qs.getFacets().size());
 			Assert.assertEquals(false, qs.isQueryHighlight());
-			Assert.assertEquals(new Integer(0), qs.getFilters().getFrom());
-			Assert.assertEquals(new Integer(20), qs.getFilters().getSize());
+			Assert.assertEquals(new Integer(0), qs.getFrom());
+			Assert.assertEquals(new Integer(20), qs.getSize());
 			Assert.assertEquals(SortByValue.NEW, qs.getSortBy());
 			Assert.assertEquals(9, qs.getFields().size());
-			Assert.assertNull(qs.getFilters().getActivityDateFrom());
-			Assert.assertNull(qs.getFilters().getActivityDateTo());
-			Assert.assertNull(qs.getFilters().getActivityDateInterval());
+			Assert.assertNull(qs.getFilters().getFilterCandidateValues(ACTIVITY_DATE_FROM_KEY));
+			Assert.assertNull(qs.getFilters().getFilterCandidateValues(ACTIVITY_DATE_TO_KEY));
+			Assert.assertNull(qs.getFilters().getFilterCandidateValues(ACTIVITY_DATE_INTERVAL_KEY));
 
 			// assert preserved fields
 			Assert.assertEquals("Querry", qs.getQuery());
 			Assert.assertEquals(0, qs.getFacets().size());
-			Assert.assertEquals("ct", qs.getFilters().getContentType());
-			Assert.assertEquals("cp", qs.getFilters().getSysContentProvider());
+			Assert.assertEquals(1, qs.getFilters().getFilterCandidateValues(CONTENT_TYPE_KEY).size());
+			Assert.assertEquals("ct", qs.getFilters().getFilterCandidateValues(CONTENT_TYPE_KEY).get(0));
+			Assert.assertEquals(1, qs.getFilters().getFilterCandidateValues(SYS_CONTENT_PROVIDER).size());
+			Assert.assertEquals("cp", qs.getFilters().getFilterCandidateValues(SYS_CONTENT_PROVIDER).get(0));
 
 		}
 
@@ -201,7 +213,7 @@ public class FeedRestServiceTest {
 			MultivaluedMap<String, String> qp = new MultivaluedMapImpl<String, String>();
 			Mockito.when(uriInfo.getQueryParameters()).thenReturn(qp);
 			QuerySettings qs = new QuerySettings();
-			qs.getFiltersInit().addProject("as7");
+			qs.getFiltersInit().acknowledgeUrlFilterCandidate(PROJECTS_KEY,"as7");
 			Mockito.when(tested.querySettingsParser.parseUriParams(qp)).thenReturn(qs);
 
 			// hit 1 - only sys_description, no sys_content
@@ -412,18 +424,18 @@ public class FeedRestServiceTest {
 		// case - string param
 		{
 			QuerySettings querySettings = new QuerySettings();
-			querySettings.getFiltersInit().setContentType("conetnt_type");
-			Assert.assertEquals("Feed content for criteria type=conetnt_type", tested.constructFeedTitle(querySettings)
+			querySettings.getFiltersInit().acknowledgeUrlFilterCandidate(CONTENT_TYPE_KEY,"content_type");
+			Assert.assertEquals("Feed content for criteria type=[content_type]", tested.constructFeedTitle(querySettings)
 					.toString());
 		}
 
 		// case - list param
 		{
 			QuerySettings querySettings = new QuerySettings();
-			querySettings.getFiltersInit().addProject("as7");
+			querySettings.getFiltersInit().acknowledgeUrlFilterCandidate(PROJECTS_KEY, "as7");
 			Assert.assertEquals("Feed content for criteria project=[as7]", tested.constructFeedTitle(querySettings)
 					.toString());
-			querySettings.getFiltersInit().addProject("aerogear");
+			querySettings.getFiltersInit().acknowledgeUrlFilterCandidate(PROJECTS_KEY, "as7", "aerogear");
 			Assert.assertEquals("Feed content for criteria project=[as7, aerogear]", tested.constructFeedTitle(querySettings)
 					.toString());
 		}
@@ -431,20 +443,17 @@ public class FeedRestServiceTest {
 		// case - multiple params
 		{
 			QuerySettings querySettings = new QuerySettings();
-			querySettings.getFiltersInit().addProject("as7");
-			querySettings.getFiltersInit().addProject("aerogear");
-			querySettings.getFiltersInit().addTag("tag1");
-			querySettings.getFiltersInit().addTag("tag2");
-			querySettings.getFiltersInit().setContentType("content_type");
-			querySettings.getFiltersInit().setSysContentProvider("jbossorg");
-			querySettings.getFiltersInit().addSysType("issue");
-			querySettings.getFiltersInit().addSysType("blogpost");
-			querySettings.getFiltersInit().addContributor("John Doe <john@doe.org>");
+			querySettings.getFiltersInit().acknowledgeUrlFilterCandidate(PROJECTS_KEY, "as7", "aerogear");
+			querySettings.getFiltersInit().acknowledgeUrlFilterCandidate(TAGS_KEY, "tag1", "tag2");
+			querySettings.getFiltersInit().acknowledgeUrlFilterCandidate(CONTENT_TYPE_KEY, "content_type");
+			querySettings.getFiltersInit().acknowledgeUrlFilterCandidate(SYS_CONTENT_PROVIDER, "jbossorg");
+			querySettings.getFiltersInit().acknowledgeUrlFilterCandidate(SYS_TYPES_KEY, "issue", "blogpost");
+			querySettings.getFiltersInit().acknowledgeUrlFilterCandidate(CONTRIBUTORS_KEY, "John Doe <john@doe.org>");
 			querySettings.setQuery("querry me fulltext");
 			querySettings.setSortBy(SortByValue.NEW_CREATION);
 			Assert
 					.assertEquals(
-							"Feed content for criteria project=[as7, aerogear] and contributor=[John Doe <john@doe.org>] and tag=[tag1, tag2] and sys_type=[issue, blogpost] and type=content_type and content_provider=jbossorg and query='querry me fulltext' and sortBy=new-create",
+							"Feed content for criteria project=[as7, aerogear] and contributor=[John Doe <john@doe.org>] and tag=[tag1, tag2] and sys_type=[issue, blogpost] and type=[content_type] and content_provider=[jbossorg] and query='querry me fulltext' and sortBy=new-create",
 							tested.constructFeedTitle(querySettings).toString());
 		}
 

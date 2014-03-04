@@ -1,0 +1,36 @@
+{
+	"content_provider" : { "terms" : { "sys_content_provider" : "{{}}" }},
+	"type" : { "terms" : { "sys_content_type" : "{{}}" }},
+	"sys_type" : { "terms" : { "sys_type" : "{{}}" }},
+	"tag" : {
+		"terms" : {
+			"sys_tags" : "{{}}"
+		},
+		"_lowercase" : true
+	},
+	"project" : { "terms" : { "sys_project" : "{{}}" }},
+	"activity_date_from" : {
+		"range" : {
+			"sys_activity_dates" : {
+				"gte" : "{{}}"
+			}
+		}
+	},
+	"activity_date_to" : {
+		"range" : {
+			"sys_activity_dates" : {
+				"lte" : "{{}}"
+			}
+		}
+	},
+	"activity_date_interval" : {
+		"range" : {
+			"sys_activity_dates" : {
+				"gte" : "{{}}"
+			}
+		},
+		"_suppress" : ["activity_date_from", "activity_date_to"],
+		"_processor" : "org.searchisko.api.model.PastIntervalValue"
+	},
+	"contributor" : { "terms" : { "sys_contributors" : "{{}}" }}
+}

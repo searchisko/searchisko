@@ -5,15 +5,11 @@
  */
 package org.searchisko.api.testtools;
 
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
@@ -29,6 +25,7 @@ import org.elasticsearch.common.xcontent.XContentFactory;
 import org.elasticsearch.common.xcontent.XContentParser;
 import org.elasticsearch.common.xcontent.XContentType;
 import org.jboss.resteasy.specimpl.MultivaluedMapImpl;
+import org.json.JSONException;
 import org.junit.Assert;
 import org.mockito.Mockito;
 import org.searchisko.api.annotations.security.ContributorAllowed;
@@ -36,6 +33,8 @@ import org.searchisko.api.annotations.security.ProviderAllowed;
 import org.searchisko.api.rest.security.ContributorSecurityPreProcessInterceptor;
 import org.searchisko.api.rest.security.ProviderSecurityPreProcessInterceptor;
 import org.searchisko.api.util.SearchUtils;
+import org.skyscreamer.jsonassert.JSONAssert;
+import org.skyscreamer.jsonassert.JSONCompareMode;
 
 /**
  * Helper methods for Unit tests.
@@ -266,18 +265,16 @@ public abstract class TestUtils {
 
 	/**
 	 * Assert passed in JSON string is same as JSON content of given file loaded from classpath.
+	 * JSONs are compared in NON_EXTENSIBLE way, this means array items do not have to be in the same
+	 * order but additional fields (extensibility) is considered a fail.
 	 * 
 	 * @param expectedJsonFilePath path to JSON file inside classpath
 	 * @param actualJsonString JSON content to assert for equality
 	 * @throws IOException
 	 */
 	public static void assertJsonContentFromClasspathFile(String expectedJsonFilePath, String actualJsonString)
-			throws IOException {
-		JsonNode actualRootNode = getMapper().readValue(new ByteArrayInputStream(actualJsonString.getBytes()),
-				JsonNode.class);
-		JsonNode expectedRootNode = getMapper().readValue(TestUtils.class.getResourceAsStream(expectedJsonFilePath),
-				JsonNode.class);
-		Assert.assertEquals(expectedRootNode, actualRootNode);
+			throws IOException, JSONException {
+		JSONAssert.assertEquals(readStringFromClasspathFile(expectedJsonFilePath), actualJsonString, JSONCompareMode.NON_EXTENSIBLE);
 	}
 
 	/**

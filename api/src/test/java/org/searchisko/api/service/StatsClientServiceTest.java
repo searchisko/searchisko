@@ -12,6 +12,9 @@ import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.search.ShardSearchFailure;
 import org.elasticsearch.client.Client;
+import org.elasticsearch.common.joda.time.DateTime;
+import org.elasticsearch.common.joda.time.format.DateTimeFormatter;
+import org.elasticsearch.common.joda.time.format.ISODateTimeFormat;
 import org.elasticsearch.common.text.StringText;
 import org.elasticsearch.rest.RestStatus;
 import org.elasticsearch.search.SearchHit;
@@ -39,6 +42,9 @@ import java.util.logging.Logger;
  * @author Vlastimil Elias (velias at redhat dot com)
  */
 public class StatsClientServiceTest {
+
+	// TODO: should be on one place only
+	private static final DateTimeFormatter DATE_TIME_FORMATTER_UTC = ISODateTimeFormat.dateTime().withZoneUTC();
 
 	@Test
 	public void init_embedded() throws Exception {
@@ -156,23 +162,19 @@ public class StatsClientServiceTest {
 		qs.addField("_id");
 		qs.addField("_source");
 		qs.setSortBy(SortByValue.NEW);
+		qs.setSize(12);
+		qs.setFrom(128);
 		Filters filters = new Filters();
 		qs.setFilters(filters);
-		filters.addContributor("John Doe <john@doe.org>");
-		filters.addContributor("Bill Hur <bill@hur.eu>");
-		filters.addSysType("issue");
-		filters.addSysType("blogpost");
-		filters.addProject("jbossas7");
-		filters.addProject("jbpm");
-		filters.addTag("tag1");
-		filters.addTag("tag2");
-		filters.setActivityDateFrom(654653265465l);
-		filters.setActivityDateTo(654653365465l);
-		filters.setActivityDateInterval(PastIntervalValue.QUARTER);
-		filters.setContentType("jbossorg_jira_issue");
-		filters.setSysContentProvider("jbossorg");
-		filters.setFrom(128);
-		filters.setSize(12);
+		filters.acknowledgeUrlFilterCandidate("contributor", "John Doe <john@doe.org>", "Bill Hur <bill@hur.eu>");
+		filters.acknowledgeUrlFilterCandidate("sys_type", "issue", "blogpost");
+		filters.acknowledgeUrlFilterCandidate("project", "jbossas7", "jbpm");
+		filters.acknowledgeUrlFilterCandidate("tag", "tag1", "tag2");
+		filters.acknowledgeUrlFilterCandidate("activity_date_from", new DateTime(654653265465l).toString(DATE_TIME_FORMATTER_UTC));
+		filters.acknowledgeUrlFilterCandidate("activity_date_to", new DateTime(654653365465l).toString(DATE_TIME_FORMATTER_UTC));
+		filters.acknowledgeUrlFilterCandidate("activity_date_interval", PastIntervalValue.QUARTER.toString());
+		filters.acknowledgeUrlFilterCandidate("type", "jbossorg_jira_issue");
+		filters.acknowledgeUrlFilterCandidate("content_provider", "jbossorg");
 		{
 			TestIndexingAnswer answ = new TestIndexingAnswer(tested,
 					TestUtils.readStringFromClasspathFile("/stats/stat_exception_query.json"), StatsRecordType.SEARCH);
@@ -274,23 +276,19 @@ public class StatsClientServiceTest {
 		qs.addField("_id");
 		qs.addField("_source");
 		qs.setSortBy(SortByValue.NEW);
+		qs.setFrom(12);
+		qs.setSize(128);
 		Filters filters = new Filters();
 		qs.setFilters(filters);
-		filters.addContributor("John Doe <john@doe.org>");
-		filters.addContributor("Bill Hur <bill@hur.eu>");
-		filters.addSysType("issue");
-		filters.addSysType("blogpost");
-		filters.addProject("jbossas7");
-		filters.addProject("jbpm");
-		filters.addTag("tag1");
-		filters.addTag("tag2");
-		filters.setActivityDateFrom(654653265465l);
-		filters.setActivityDateTo(654653365465l);
-		filters.setActivityDateInterval(PastIntervalValue.QUARTER);
-		filters.setContentType("jbossorg_jira_issue");
-		filters.setSysContentProvider("jbossorg");
-		filters.setFrom(128);
-		filters.setSize(12);
+		filters.acknowledgeUrlFilterCandidate("contributor", "John Doe <john@doe.org>", "Bill Hur <bill@hur.eu>");
+		filters.acknowledgeUrlFilterCandidate("sys_type", "issue", "blogpost");
+		filters.acknowledgeUrlFilterCandidate("project", "jbossas7", "jbpm");
+		filters.acknowledgeUrlFilterCandidate("tag", "tag1", "tag2");
+		filters.acknowledgeUrlFilterCandidate("activity_date_from", new DateTime(654653265465l).toString(DATE_TIME_FORMATTER_UTC));
+		filters.acknowledgeUrlFilterCandidate("activity_date_to", new DateTime(654653365465l).toString(DATE_TIME_FORMATTER_UTC));
+		filters.acknowledgeUrlFilterCandidate("activity_date_interval", PastIntervalValue.QUARTER.toString());
+		filters.acknowledgeUrlFilterCandidate("type", "jbossorg_jira_issue");
+		filters.acknowledgeUrlFilterCandidate("content_provider", "jbossorg");
 		{
 			TestIndexingAnswer answ = new TestIndexingAnswer(tested,
 					TestUtils.readStringFromClasspathFile("/stats/stat_ok_query.json"), StatsRecordType.SEARCH);

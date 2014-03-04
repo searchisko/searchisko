@@ -61,6 +61,26 @@ public class SearchUtils {
 	}
 
 	/**
+	 * Return a new list which contains non-null and trimmed non-empty items from input list.
+	 *
+	 * @param values list of strings (for example taken form URL parameters)
+	 * @return safe list or null (never empty list)
+	 */
+	public static List<String> safeList(List<String> values) {
+		List<String> safeValues = null;
+		for (String value : values) {
+			String sv = trimToNull(value);
+			if (sv != null) {
+				if (safeValues == null) {
+					safeValues = new ArrayList<>();
+				}
+				safeValues.add(sv);
+			}
+		}
+		return safeValues;
+	}
+
+	/**
 	 * Check if String is blank.
 	 *
 	 * @param value to check

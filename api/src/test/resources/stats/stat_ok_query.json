@@ -7,37 +7,47 @@
     "timed_out":false,
     "shards_successful":2,
     "took":456,
-    "filters_activity_date_interval":"quarter",
     "date":"2012-12-21T12:12:12.121Z",
     "type":"search",
     "query_string":"my query",
     "shards_failed":1,
     "returned_hits":5,
+    "filter.content_provider":[
+		"jbossorg"
+	],
     "total_hits":129,
-    "filters_activity_date_to":"1990-09-30T00:09:25.465Z",
-    "filters_tags":[
-        "tag1",
-        "tag2"
-    ],
     "max_score":29.3,
     "shard_failure":"test reason",
-    "filters_sys_types":[
+    "filter.sys_type":[
         "issue",
         "blogpost"
     ],
-    "filters_activity_date_from":"1990-09-30T00:07:45.465Z",
-    "filters_contributors":[
-        "John Doe <john@doe.org>",
-        "Bill Hur <bill@hur.eu>"
-    ],
-    "status":"OK",
-    "filters_projects":[
+    "filter.project":[
         "jbossas7",
         "jbpm"
     ],
-    "filters_sys_content_provider":"jbossorg",
-    "filters_size":12,
-    "filters_content_type":"jbossorg_jira_issue",
+    "filter.activity_date_from":[
+		"1990-09-30T00:07:45.465Z"
+	],
+    "status":"OK",
+    "filter.activity_date_to":[
+		"1990-09-30T00:09:25.465Z"
+	],
+    "filter.tag":[
+        "tag1",
+        "tag2"
+    ],
+    "filter.activity_date_interval":[
+		"quarter"
+	],
+    "filter.size":128,
+    "filter.contributor":[
+        "John Doe <john@doe.org>",
+        "Bill Hur <bill@hur.eu>"
+    ],
+    "filter.type":[
+		"jbossorg_jira_issue"
+	],
     "query_fields":[
         "_id",
         "_source"
@@ -51,5 +61,5 @@
         "idx3",
         "idx4"
     ],
-    "filters_from":128
+    "filter.from":12
 }

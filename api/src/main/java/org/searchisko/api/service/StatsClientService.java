@@ -286,6 +286,10 @@ public class StatsClientService extends ElasticsearchClientService {
 				source.put("query_facets", querySettings.getFacets());
 			if (querySettings.getSortBy() != null)
 				source.put("query_sortBy", querySettings.getSortBy().toString());
+			if (querySettings.getFrom() != null)
+				source.put("filter.from", querySettings.getFrom());
+			if (querySettings.getSize() != null)
+				source.put("filter.size", querySettings.getSize());
 			addFilters(source, querySettings.getFilters());
 		}
 	}
@@ -298,38 +302,8 @@ public class StatsClientService extends ElasticsearchClientService {
 	 */
 	protected void addFilters(Map<String, Object> source, QuerySettings.Filters filters) {
 		if (filters != null) {
-			if (filters.getContentType() != null) {
-				source.put("filters_content_type", filters.getContentType());
-			}
-			if (filters.getProjects() != null && !filters.getProjects().isEmpty()) {
-				source.put("filters_projects", filters.getProjects());
-			}
-			if (filters.getTags() != null && !filters.getTags().isEmpty()) {
-				source.put("filters_tags", filters.getTags());
-			}
-			if (filters.getContributors() != null && !filters.getContributors().isEmpty()) {
-				source.put("filters_contributors", filters.getContributors());
-			}
-			if (filters.getSysTypes() != null && !filters.getSysTypes().isEmpty()) {
-				source.put("filters_sys_types", filters.getSysTypes());
-			}
-			if (filters.getActivityDateFrom() != null) {
-				source.put("filters_activity_date_from", DATE_TIME_FORMATTER_UTC.print(filters.getActivityDateFrom()));
-			}
-			if (filters.getActivityDateTo() != null) {
-				source.put("filters_activity_date_to", DATE_TIME_FORMATTER_UTC.print(filters.getActivityDateTo()));
-			}
-			if (filters.getActivityDateInterval() != null) {
-				source.put("filters_activity_date_interval", filters.getActivityDateInterval().toString());
-			}
-			if (filters.getSysContentProvider() != null) {
-				source.put("filters_sys_content_provider", filters.getSysContentProvider());
-			}
-			if (filters.getFrom() != null) {
-				source.put("filters_from", filters.getFrom());
-			}
-			if (filters.getSize() != null) {
-				source.put("filters_size", filters.getSize());
+			for (String key : filters.getFilterCandidatesKeys()) {
+				source.put("filter."+key, filters.getFilterCandidateValues(key));
 			}
 		}
 	}

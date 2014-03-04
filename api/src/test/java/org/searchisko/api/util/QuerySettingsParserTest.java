@@ -27,6 +27,16 @@ import org.junit.Test;
  */
 public class QuerySettingsParserTest {
 
+	final static private String CONTENT_TYPE_KEY = "type";
+	final static private String SYS_TYPES_KEY = "sys_type";
+	final static private String SYS_CONTENT_PROVIDER = "content_provider";
+	final static private String PROJECTS_KEY = "project";
+	final static private String TAGS_KEY = "tag";
+	final static private String CONTRIBUTORS_KEY = "contributor";
+	final static private String ACTIVITY_DATE_INTERVAL_KEY = "actvity_date_interval";
+	final static private String ACTIVITY_DATE_FROM_KEY = "actvity_date_from";
+	final static private String ACTIVITY_DATE_TO_KEY = "actvity_date_to";
+
 	@Test
 	public void parseUriParams_common() {
 
@@ -49,38 +59,39 @@ public class QuerySettingsParserTest {
 
 		// all params used
 		{
-			params.add(QuerySettings.Filters.CONTENT_TYPE_KEY, "mytype ");
-			params.add(QuerySettings.Filters.SYS_TYPES_KEY, "mySysType ");
-			params.add(QuerySettings.Filters.SYS_TYPES_KEY, " mySysType2");
-			params.add(QuerySettings.Filters.SYS_TYPES_KEY, " ");
-			params.add(QuerySettings.Filters.SYS_CONTENT_PROVIDER, "myprovider ");
+			params.add(CONTENT_TYPE_KEY, "mytype ");
+			params.add(SYS_TYPES_KEY, "mySysType ");
+			params.add(SYS_TYPES_KEY, " mySysType2");
+			params.add(SYS_TYPES_KEY, " ");
+			params.add(SYS_CONTENT_PROVIDER, "myprovider ");
 			params.add(QuerySettings.QUERY_KEY, "query ** query2");
 			params.add(QuerySettings.QUERY_HIGHLIGHT_KEY, "true ");
 			params.add(QuerySettings.SORT_BY_KEY, "new");
 			params.add(QuerySettings.FIELDS_KEY, "rf1");
 			params.add(QuerySettings.FIELDS_KEY, "_rf2 ");
-			params.add(QuerySettings.Filters.PROJECTS_KEY, "proj1 ");
-			params.add(QuerySettings.Filters.PROJECTS_KEY, "proj2");
-			params.add(QuerySettings.Filters.PROJECTS_KEY, " ");
-			params.add(QuerySettings.Filters.FROM_KEY, "10");
-			params.add(QuerySettings.Filters.SIZE_KEY, "20");
-			params.add(QuerySettings.Filters.TAGS_KEY, "tg1 ");
-			params.add(QuerySettings.Filters.TAGS_KEY, "tg2");
-			params.add(QuerySettings.Filters.TAGS_KEY, "  ");
-			params.add(QuerySettings.Filters.CONTRIBUTORS_KEY, "John Doe <john@doe.com> ");
-			params.add(QuerySettings.Filters.CONTRIBUTORS_KEY, " Dan Boo <boo@boo.net>");
-			params.add(QuerySettings.Filters.CONTRIBUTORS_KEY, "  ");
-			params.add(QuerySettings.Filters.ACTIVITY_DATE_INTERVAL_KEY, "week");
-			params.add(QuerySettings.Filters.ACTIVITY_DATE_FROM_KEY, "2013-01-26T20:32:36.456Z");
-			params.add(QuerySettings.Filters.ACTIVITY_DATE_TO_KEY, "2013-01-26T20:32:46.456+0100");
+			params.add(PROJECTS_KEY, "proj1 ");
+			params.add(PROJECTS_KEY, "proj2");
+			params.add(PROJECTS_KEY, " ");
+			params.add(QuerySettings.FROM_KEY, "10");
+			params.add(QuerySettings.SIZE_KEY, "20");
+			params.add(TAGS_KEY, "tg1 ");
+			params.add(TAGS_KEY, "tg2");
+			params.add(TAGS_KEY, "  ");
+			params.add(CONTRIBUTORS_KEY, "John Doe <john@doe.com> ");
+			params.add(CONTRIBUTORS_KEY, " Dan Boo <boo@boo.net>");
+			params.add(CONTRIBUTORS_KEY, "  ");
+			params.add(ACTIVITY_DATE_INTERVAL_KEY, "week");
+			params.add(ACTIVITY_DATE_FROM_KEY, "2013-01-26T20:32:36.456Z");
+			params.add(ACTIVITY_DATE_TO_KEY, "2013-01-26T20:32:46.456+0100");
 			params.add(QuerySettings.FACETS_KEY, "per_project_counts");
 			params.add(QuerySettings.FACETS_KEY, "activity_dates_histogram");
 			QuerySettings ret = tested.parseUriParams(params);
 			Assert.assertNotNull(ret);
 			// note - we test here query is sanitized in settings!
 			assertQuerySettings(ret, "mytype", "mySysType,mySysType2", "query * query2", SortByValue.NEW, "proj1,proj2", 10,
-					20, "tg1,tg2", "myprovider", "John Doe <john@doe.com>,Dan Boo <boo@boo.net>", PastIntervalValue.WEEK,
-					1359232356456L, 1359228766456L, "rf1,_rf2", true, "per_project_counts,activity_dates_histogram");
+					20, "tg1,tg2", "myprovider", "John Doe <john@doe.com>,Dan Boo <boo@boo.net>",
+					PastIntervalValue.WEEK, "2013-01-26T20:32:36.456Z", "2013-01-26T20:32:46.456+0100",
+					"rf1,_rf2", true, "per_project_counts,activity_dates_histogram");
 		}
 	}
 
@@ -96,27 +107,28 @@ public class QuerySettingsParserTest {
 	private void assertQuerySettings(QuerySettings qs, String expectedContentType, String expectedSysTypes,
 			String expectedQuery, SortByValue expectedSortBy, String expectedFilterProjects, Integer expectedFilterStart,
 			Integer expectedFilterCount, String expectedFilterTags, String expectedSysProvider, String expectedContributors,
-			PastIntervalValue expectedADInterval, Long expectedADFrom, Long expectedADTo, String expectedFields,
+			PastIntervalValue expectedADInterval, String expectedADFrom, String expectedADTo, String expectedFields,
 			boolean expectedQueryHighlight, String expectedFacets) {
 
 		Assert.assertEquals(expectedQuery, qs.getQuery());
 		Assert.assertEquals(expectedQueryHighlight, qs.isQueryHighlight());
 		Assert.assertEquals(expectedSortBy, qs.getSortBy());
-		QuerySettings.Filters filters = qs.getFilters();
-		Assert.assertNotNull("Filters instance expected not null", filters);
-		Assert.assertEquals(expectedContentType, filters.getContentType());
-		TestUtils.assertEqualsListValue(expectedSysTypes, filters.getSysTypes());
-		Assert.assertEquals(expectedSysProvider, filters.getSysContentProvider());
-		TestUtils.assertEqualsListValue(expectedFilterProjects, filters.getProjects());
-		Assert.assertEquals(expectedFilterStart, filters.getFrom());
-		Assert.assertEquals(expectedFilterCount, filters.getSize());
-		TestUtils.assertEqualsListValue(expectedFilterTags, filters.getTags());
-		TestUtils.assertEqualsListValue(expectedContributors, filters.getContributors());
-		Assert.assertEquals(expectedADInterval, filters.getActivityDateInterval());
-		Assert.assertEquals(expectedADFrom, filters.getActivityDateFrom());
-		Assert.assertEquals(expectedADTo, filters.getActivityDateTo());
+		Assert.assertEquals(expectedFilterStart, qs.getFrom());
+		Assert.assertEquals(expectedFilterCount, qs.getSize());
 		TestUtils.assertEqualsListValue(expectedFields, qs.getFields());
 		assertEqualsFacetValueList(expectedFacets, qs.getFacets());
+
+		QuerySettings.Filters filters = qs.getFilters();
+		Assert.assertNotNull("Filters instance expected not null", filters);
+		Assert.assertEquals(expectedContentType, filters.getFirstValueForFilterCandidate(CONTENT_TYPE_KEY));
+		TestUtils.assertEqualsListValue(expectedSysTypes, filters.getFilterCandidateValues(SYS_TYPES_KEY));
+		TestUtils.assertEqualsListValue(expectedSysProvider, filters.getFilterCandidateValues(SYS_CONTENT_PROVIDER));
+		TestUtils.assertEqualsListValue(expectedFilterProjects, filters.getFilterCandidateValues(PROJECTS_KEY));
+		TestUtils.assertEqualsListValue(expectedFilterTags, filters.getFilterCandidateValues(TAGS_KEY));
+		TestUtils.assertEqualsListValue(expectedContributors, filters.getFilterCandidateValues(CONTRIBUTORS_KEY));
+		TestUtils.assertEqualsListValue(expectedADInterval != null ? expectedADInterval.toString() : null, filters.getFilterCandidateValues(ACTIVITY_DATE_INTERVAL_KEY));
+		TestUtils.assertEqualsListValue(expectedADFrom, filters.getFilterCandidateValues(ACTIVITY_DATE_FROM_KEY));
+		TestUtils.assertEqualsListValue(expectedADTo, filters.getFilterCandidateValues(ACTIVITY_DATE_TO_KEY));
 	}
 
 	private void assertEqualsFacetValueList(String expectedValuesCommaSeparated, Set<String> actualValue) {
@@ -139,24 +151,24 @@ public class QuerySettingsParserTest {
 			MultivaluedMap<String, String> params = new MultivaluedMapImpl<String, String>();
 			QuerySettings ret = tested.parseUriParams(params);
 			Assert.assertNotNull(ret);
-			Assert.assertNull(ret.getFilters().getSysTypes());
+			Assert.assertNull(ret.getFilters().getFilterCandidateValues(SYS_TYPES_KEY));
 		}
 		// case - one empty param in request leads to null
 		{
 			MultivaluedMap<String, String> params = new MultivaluedMapImpl<String, String>();
-			params.add(QuerySettings.Filters.SYS_TYPES_KEY, " ");
+			params.add(SYS_TYPES_KEY, " ");
 			QuerySettings ret = tested.parseUriParams(params);
 			Assert.assertNotNull(ret);
-			Assert.assertNull(ret.getFilters().getSysTypes());
+			Assert.assertNull(ret.getFilters().getFilterCandidateValues(SYS_TYPES_KEY));
 		}
 		// case - more empty params in request lead to null
 		{
 			MultivaluedMap<String, String> params = new MultivaluedMapImpl<String, String>();
-			params.add(QuerySettings.Filters.SYS_TYPES_KEY, " ");
-			params.add(QuerySettings.Filters.SYS_TYPES_KEY, "");
+			params.add(SYS_TYPES_KEY, " ");
+			params.add(SYS_TYPES_KEY, "");
 			QuerySettings ret = tested.parseUriParams(params);
 			Assert.assertNotNull(ret);
-			Assert.assertNull(ret.getFilters().getSysTypes());
+			Assert.assertNull(ret.getFilters().getFilterCandidateValues(SYS_TYPES_KEY));
 		}
 	}
 
@@ -168,24 +180,24 @@ public class QuerySettingsParserTest {
 			MultivaluedMap<String, String> params = new MultivaluedMapImpl<String, String>();
 			QuerySettings ret = tested.parseUriParams(params);
 			Assert.assertNotNull(ret);
-			Assert.assertNull(ret.getFilters().getProjects());
+			Assert.assertNull(ret.getFilters().getFilterCandidateValues(PROJECTS_KEY));
 		}
 		// case - one empty param in request leads to null
 		{
 			MultivaluedMap<String, String> params = new MultivaluedMapImpl<String, String>();
-			params.add(QuerySettings.Filters.PROJECTS_KEY, " ");
+			params.add(PROJECTS_KEY, " ");
 			QuerySettings ret = tested.parseUriParams(params);
 			Assert.assertNotNull(ret);
-			Assert.assertNull(ret.getFilters().getProjects());
+			Assert.assertNull(ret.getFilters().getFilterCandidateValues(PROJECTS_KEY));
 		}
 		// case - more empty params in request lead to null
 		{
 			MultivaluedMap<String, String> params = new MultivaluedMapImpl<String, String>();
-			params.add(QuerySettings.Filters.PROJECTS_KEY, " ");
-			params.add(QuerySettings.Filters.PROJECTS_KEY, "");
+			params.add(PROJECTS_KEY, " ");
+			params.add(PROJECTS_KEY, "");
 			QuerySettings ret = tested.parseUriParams(params);
 			Assert.assertNotNull(ret);
-			Assert.assertNull(ret.getFilters().getProjects());
+			Assert.assertNull(ret.getFilters().getFilterCandidateValues(PROJECTS_KEY));
 		}
 	}
 
@@ -197,24 +209,24 @@ public class QuerySettingsParserTest {
 			MultivaluedMap<String, String> params = new MultivaluedMapImpl<String, String>();
 			QuerySettings ret = tested.parseUriParams(params);
 			Assert.assertNotNull(ret);
-			Assert.assertNull(ret.getFilters().getTags());
+			Assert.assertNull(ret.getFilters().getFilterCandidateValues(TAGS_KEY));
 		}
 		// case - one empty param in request leads to null
 		{
 			MultivaluedMap<String, String> params = new MultivaluedMapImpl<String, String>();
-			params.add(QuerySettings.Filters.TAGS_KEY, " ");
+			params.add(TAGS_KEY, " ");
 			QuerySettings ret = tested.parseUriParams(params);
 			Assert.assertNotNull(ret);
-			Assert.assertNull(ret.getFilters().getTags());
+			Assert.assertNull(ret.getFilters().getFilterCandidateValues(TAGS_KEY));
 		}
 		// case - more empty params in request lead to null
 		{
 			MultivaluedMap<String, String> params = new MultivaluedMapImpl<String, String>();
-			params.add(QuerySettings.Filters.TAGS_KEY, " ");
-			params.add(QuerySettings.Filters.TAGS_KEY, "");
+			params.add(TAGS_KEY, " ");
+			params.add(TAGS_KEY, "");
 			QuerySettings ret = tested.parseUriParams(params);
 			Assert.assertNotNull(ret);
-			Assert.assertNull(ret.getFilters().getTags());
+			Assert.assertNull(ret.getFilters().getFilterCandidateValues(TAGS_KEY));
 		}
 	}
 
@@ -226,24 +238,24 @@ public class QuerySettingsParserTest {
 			MultivaluedMap<String, String> params = new MultivaluedMapImpl<String, String>();
 			QuerySettings ret = tested.parseUriParams(params);
 			Assert.assertNotNull(ret);
-			Assert.assertNull(ret.getFilters().getContributors());
+			Assert.assertNull(ret.getFilters().getFilterCandidateValues(CONTRIBUTORS_KEY));
 		}
 		// case - one empty param in request leads to null
 		{
 			MultivaluedMap<String, String> params = new MultivaluedMapImpl<String, String>();
-			params.add(QuerySettings.Filters.CONTRIBUTORS_KEY, " ");
+			params.add(CONTRIBUTORS_KEY, " ");
 			QuerySettings ret = tested.parseUriParams(params);
 			Assert.assertNotNull(ret);
-			Assert.assertNull(ret.getFilters().getContributors());
+			Assert.assertNull(ret.getFilters().getFilterCandidateValues(CONTRIBUTORS_KEY));
 		}
 		// case - more empty params in request lead to null
 		{
 			MultivaluedMap<String, String> params = new MultivaluedMapImpl<String, String>();
-			params.add(QuerySettings.Filters.CONTRIBUTORS_KEY, " ");
-			params.add(QuerySettings.Filters.CONTRIBUTORS_KEY, "");
+			params.add(CONTRIBUTORS_KEY, " ");
+			params.add(CONTRIBUTORS_KEY, "");
 			QuerySettings ret = tested.parseUriParams(params);
 			Assert.assertNotNull(ret);
-			Assert.assertNull(ret.getFilters().getContributors());
+			Assert.assertNull(ret.getFilters().getFilterCandidateValues(CONTRIBUTORS_KEY));
 		}
 	}
 
@@ -255,24 +267,15 @@ public class QuerySettingsParserTest {
 			MultivaluedMap<String, String> params = new MultivaluedMapImpl<String, String>();
 			QuerySettings ret = tested.parseUriParams(params);
 			Assert.assertNotNull(ret);
-			Assert.assertNull(ret.getFilters().getActivityDateInterval());
+			Assert.assertNull(ret.getFilters().getFilterCandidateValues(ACTIVITY_DATE_INTERVAL_KEY));
 		}
 		// case - empty param in request leads to null
 		{
 			MultivaluedMap<String, String> params = new MultivaluedMapImpl<String, String>();
-			params.add(QuerySettings.Filters.ACTIVITY_DATE_INTERVAL_KEY, " ");
+			params.add(ACTIVITY_DATE_INTERVAL_KEY, " ");
 			QuerySettings ret = tested.parseUriParams(params);
 			Assert.assertNotNull(ret);
-			Assert.assertNull(ret.getFilters().getActivityDateInterval());
-		}
-		// case - bad param in request leads to exception
-		try {
-			MultivaluedMap<String, String> params = new MultivaluedMapImpl<String, String>();
-			params.add(QuerySettings.Filters.ACTIVITY_DATE_INTERVAL_KEY, "bad");
-			tested.parseUriParams(params);
-			Assert.fail("IllegalArgumentException expected");
-		} catch (IllegalArgumentException e) {
-			// OK
+			Assert.assertNull(ret.getFilters().getFilterCandidateValues(ACTIVITY_DATE_INTERVAL_KEY));
 		}
 	}
 
@@ -284,24 +287,15 @@ public class QuerySettingsParserTest {
 			MultivaluedMap<String, String> params = new MultivaluedMapImpl<String, String>();
 			QuerySettings ret = tested.parseUriParams(params);
 			Assert.assertNotNull(ret);
-			Assert.assertNull(ret.getFilters().getActivityDateFrom());
+			Assert.assertNull(ret.getFilters().getFilterCandidateValues(ACTIVITY_DATE_FROM_KEY));
 		}
 		// case - empty param in request leads to null
 		{
 			MultivaluedMap<String, String> params = new MultivaluedMapImpl<String, String>();
-			params.add(QuerySettings.Filters.ACTIVITY_DATE_FROM_KEY, " ");
+			params.add(ACTIVITY_DATE_FROM_KEY, " ");
 			QuerySettings ret = tested.parseUriParams(params);
 			Assert.assertNotNull(ret);
-			Assert.assertNull(ret.getFilters().getActivityDateFrom());
-		}
-		// case - bad param in request leads to exception
-		try {
-			MultivaluedMap<String, String> params = new MultivaluedMapImpl<String, String>();
-			params.add(QuerySettings.Filters.ACTIVITY_DATE_FROM_KEY, "bad");
-			tested.parseUriParams(params);
-			Assert.fail("IllegalArgumentException expected");
-		} catch (IllegalArgumentException e) {
-			// OK
+			Assert.assertNull(ret.getFilters().getFilterCandidateValues(ACTIVITY_DATE_FROM_KEY));
 		}
 	}
 
@@ -313,24 +307,15 @@ public class QuerySettingsParserTest {
 			MultivaluedMap<String, String> params = new MultivaluedMapImpl<String, String>();
 			QuerySettings ret = tested.parseUriParams(params);
 			Assert.assertNotNull(ret);
-			Assert.assertNull(ret.getFilters().getActivityDateTo());
+			Assert.assertNull(ret.getFilters().getFilterCandidateValues(ACTIVITY_DATE_TO_KEY));
 		}
 		// case - empty param in request leads to null
 		{
 			MultivaluedMap<String, String> params = new MultivaluedMapImpl<String, String>();
-			params.add(QuerySettings.Filters.ACTIVITY_DATE_TO_KEY, " ");
+			params.add(ACTIVITY_DATE_TO_KEY, " ");
 			QuerySettings ret = tested.parseUriParams(params);
 			Assert.assertNotNull(ret);
-			Assert.assertNull(ret.getFilters().getActivityDateTo());
-		}
-		// case - bad param in request leads to exception
-		try {
-			MultivaluedMap<String, String> params = new MultivaluedMapImpl<String, String>();
-			params.add(QuerySettings.Filters.ACTIVITY_DATE_TO_KEY, "bad");
-			tested.parseUriParams(params);
-			Assert.fail("IllegalArgumentException expected");
-		} catch (IllegalArgumentException e) {
-			// OK
+			Assert.assertNull(ret.getFilters().getFilterCandidateValues(ACTIVITY_DATE_TO_KEY));
 		}
 	}
 
@@ -385,29 +370,29 @@ public class QuerySettingsParserTest {
 		QuerySettingsParser tested = getTested();
 		{
 			MultivaluedMap<String, String> params = new MultivaluedMapImpl<String, String>();
-			params.add(QuerySettings.Filters.FROM_KEY, "10");
+			params.add(QuerySettings.FROM_KEY, "10");
 			QuerySettings ret = tested.parseUriParams(params);
 			Assert.assertNotNull(ret);
-			Assert.assertEquals(new Integer(10), ret.getFilters().getFrom());
+			Assert.assertEquals(new Integer(10), ret.getFrom());
 		}
 		{
 			MultivaluedMap<String, String> params = new MultivaluedMapImpl<String, String>();
-			params.add(QuerySettings.Filters.FROM_KEY, "0");
+			params.add(QuerySettings.FROM_KEY, "0");
 			QuerySettings ret = tested.parseUriParams(params);
 			Assert.assertNotNull(ret);
-			Assert.assertEquals(new Integer(0), ret.getFilters().getFrom());
+			Assert.assertEquals(new Integer(0), ret.getFrom());
 		}
 		{
 			MultivaluedMap<String, String> params = new MultivaluedMapImpl<String, String>();
-			params.add(QuerySettings.Filters.FROM_KEY, "");
+			params.add(QuerySettings.FROM_KEY, "");
 			QuerySettings ret = tested.parseUriParams(params);
 			Assert.assertNotNull(ret);
-			Assert.assertNull(ret.getFilters().getFrom());
+			Assert.assertNull(ret.getFrom());
 		}
 		// bad format of value
 		try {
 			MultivaluedMap<String, String> params = new MultivaluedMapImpl<String, String>();
-			params.add(QuerySettings.Filters.FROM_KEY, "10bad");
+			params.add(QuerySettings.FROM_KEY, "10bad");
 			tested.parseUriParams(params);
 			Assert.fail("IllegalArgumentException expected");
 		} catch (IllegalArgumentException e) {
@@ -416,7 +401,7 @@ public class QuerySettingsParserTest {
 		// value too low
 		try {
 			MultivaluedMap<String, String> params = new MultivaluedMapImpl<String, String>();
-			params.add(QuerySettings.Filters.FROM_KEY, "-1");
+			params.add(QuerySettings.FROM_KEY, "-1");
 			tested.parseUriParams(params);
 			Assert.fail("IllegalArgumentException expected");
 		} catch (IllegalArgumentException e) {
@@ -429,36 +414,36 @@ public class QuerySettingsParserTest {
 		QuerySettingsParser tested = getTested();
 		{
 			MultivaluedMap<String, String> params = new MultivaluedMapImpl<String, String>();
-			params.add(QuerySettings.Filters.SIZE_KEY, "10");
+			params.add(QuerySettings.SIZE_KEY, "10");
 			QuerySettings ret = tested.parseUriParams(params);
 			Assert.assertNotNull(ret);
-			Assert.assertEquals(new Integer(10), ret.getFilters().getSize());
+			Assert.assertEquals(new Integer(10), ret.getSize());
 		}
 		{
 			MultivaluedMap<String, String> params = new MultivaluedMapImpl<String, String>();
-			params.add(QuerySettings.Filters.SIZE_KEY, "0");
+			params.add(QuerySettings.SIZE_KEY, "0");
 			QuerySettings ret = tested.parseUriParams(params);
 			Assert.assertNotNull(ret);
-			Assert.assertEquals(new Integer(0), ret.getFilters().getSize());
+			Assert.assertEquals(new Integer(0), ret.getSize());
 		}
 		{
 			MultivaluedMap<String, String> params = new MultivaluedMapImpl<String, String>();
-			params.add(QuerySettings.Filters.SIZE_KEY, "" + SearchService.RESPONSE_MAX_SIZE);
+			params.add(QuerySettings.SIZE_KEY, "" + SearchService.RESPONSE_MAX_SIZE);
 			QuerySettings ret = tested.parseUriParams(params);
 			Assert.assertNotNull(ret);
-			Assert.assertEquals(new Integer(SearchService.RESPONSE_MAX_SIZE), ret.getFilters().getSize());
+			Assert.assertEquals(new Integer(SearchService.RESPONSE_MAX_SIZE), ret.getSize());
 		}
 		{
 			MultivaluedMap<String, String> params = new MultivaluedMapImpl<String, String>();
-			params.add(QuerySettings.Filters.SIZE_KEY, "");
+			params.add(QuerySettings.SIZE_KEY, "");
 			QuerySettings ret = tested.parseUriParams(params);
 			Assert.assertNotNull(ret);
-			Assert.assertNull(ret.getFilters().getSize());
+			Assert.assertNull(ret.getSize());
 		}
 		// bad format of value
 		try {
 			MultivaluedMap<String, String> params = new MultivaluedMapImpl<String, String>();
-			params.add(QuerySettings.Filters.SIZE_KEY, "10bad");
+			params.add(QuerySettings.SIZE_KEY, "10bad");
 			tested.parseUriParams(params);
 			Assert.fail("IllegalArgumentException expected");
 		} catch (IllegalArgumentException e) {
@@ -467,7 +452,7 @@ public class QuerySettingsParserTest {
 		// too low value
 		try {
 			MultivaluedMap<String, String> params = new MultivaluedMapImpl<String, String>();
-			params.add(QuerySettings.Filters.SIZE_KEY, "-1");
+			params.add(QuerySettings.SIZE_KEY, "-1");
 			tested.parseUriParams(params);
 			Assert.fail("IllegalArgumentException expected");
 		} catch (IllegalArgumentException e) {
@@ -476,7 +461,7 @@ public class QuerySettingsParserTest {
 		// too high value
 		try {
 			MultivaluedMap<String, String> params = new MultivaluedMapImpl<String, String>();
-			params.add(QuerySettings.Filters.SIZE_KEY, (SearchService.RESPONSE_MAX_SIZE + 1) + "");
+			params.add(QuerySettings.SIZE_KEY, (SearchService.RESPONSE_MAX_SIZE + 1) + "");
 			tested.parseUriParams(params);
 			Assert.fail("IllegalArgumentException expected");
 		} catch (IllegalArgumentException e) {

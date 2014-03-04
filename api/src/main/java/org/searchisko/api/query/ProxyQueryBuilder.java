@@ -121,8 +121,8 @@ public class ProxyQueryBuilder {
 		SearchSourceBuilder b = new SearchSourceBuilder();
 		b.query(qb_wth_fields);
 
-		if (settings.getFilters() != null && settings.getFilters().getFrom() != null) {
-			int from = settings.getFilters().getFrom();
+		if (settings.getFilters() != null && settings.getFrom() != null) {
+			int from = settings.getFrom();
 			if (from > 0) {
 				b.from(from);
 			}

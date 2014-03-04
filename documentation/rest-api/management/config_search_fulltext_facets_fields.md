@@ -10,37 +10,33 @@ Because of this the faceted search is limited to configured fields only.
 
 Configuration of facet-enabled fields has the following format:
 
-	{
-		"<facet_name>" : {
-			"<facet_type>" : {
-				"field" : "<document_field_name>",
-				<optional_settings>
-			},
-			<_filtered>
-		}
+	"<facet_name>" : {
+		"<facet_type>" : {
+			"field" : "<document_field_name>",
+			<optional_settings>
+		},
+		<_filtered>
 	}
 
 Example:
 
-	{
-		"activity_dates_histogram" : {
-			"date_histogram" : {
-				"field" : "sys_activity_dates"
-			}
+	"activity_dates_histogram" : {
+		"date_histogram" : {
+			"field" : "sys_activity_dates"
+		}
+	},
+	"tag_cloud" : {
+		"terms" : {
+			"field" : "sys_tags",
+			"size" : 50
+		}
+	},
+	"top_contributors" : {
+		"terms" : {
+			"field" : "sys_contributors",
+			"size" : 100
 		},
-		"tag_cloud" : {
-			"terms" : {
-				"field" : "sys_tags",
-				"size" : 50
-			}
-		},
-		"top_contributors" : {
-			"terms" : {
-				"field" : "sys_contributors",
-				"size" : 100
-			},
-			"_filtered" : { "size" : 30 }
-		},
+		"_filtered" : { "size" : 30 }
 	}
 
 #### \<facet_name\>

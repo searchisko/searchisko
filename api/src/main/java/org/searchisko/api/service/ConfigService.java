@@ -23,7 +23,7 @@ import org.searchisko.persistence.service.ListRequest;
  * 
  * @author Vlastimil Elias (velias at redhat dot com)
  * @author Libor Krzyzanek
- * 
+ * @author Lukas Vlcek
  */
 @Named
 @Stateless
@@ -34,6 +34,7 @@ public class ConfigService implements EntityService {
 	public static final String CFGNAME_SEARCH_FULLTEXT_QUERY_FIELDS = "search_fulltext_query_fields";
 	public static final String CFGNAME_SEARCH_FULLTEXT_HIGHLIGHT_FIELDS = "search_fulltext_highlight_fields";
 	public static final String CFGNAME_SEARCH_FULLTEXT_FACETS_FIELDS = "search_fulltext_facets_fields";
+	public static final String CFGNAME_SEARCH_FULLTEXT_FILTER_FIELDS = "search_fulltext_filter_fields";
 
 	@Inject
 	protected Logger log;

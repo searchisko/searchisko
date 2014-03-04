@@ -5,10 +5,7 @@
  */
 package org.searchisko.api.model;
 
-import java.util.ArrayList;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import org.searchisko.api.util.QuerySettingsParser;
 
@@ -23,195 +20,101 @@ public class QuerySettings {
 
 	public static class Filters {
 
-		public static final String CONTENT_TYPE_KEY = "type";
+		private final Map<String, List<String>> acknowledgedFilterCandidates = new HashMap<>();
+
+		// should be used only in tests
+		public void acknowledgeUrlFilterCandidate(String urlParamName, String... values) {
+			acknowledgeUrlFilterCandidate(urlParamName, Arrays.asList(values));
+		}
 
 		/**
-		 * Content Type Filtering - sys_content_type field
+		 * Remember urlParamName and all provided values.
+		 *
+		 * @param urlParamName name of URL parameter
+		 * @param values
 		 */
-		private String contentType;
-
-		public static final String SYS_TYPES_KEY = "sys_type";
+		public void acknowledgeUrlFilterCandidate(String urlParamName, List<String> values) {
+			acknowledgedFilterCandidates.put(urlParamName, values);
+		}
 
 		/**
-		 * Type Filtering - sys_type field
+		 * Forgets previously remembered urlParamNames and its values.
+		 *
+		 * @param urlParamNames
 		 */
-		private List<String> sysTypes;
-
-		public static final String SYS_CONTENT_PROVIDER = "content_provider";
-
-		private String sysContentProvider;
-
-		public static final String PROJECTS_KEY = "project";
+		public void forgetUrlFilterCandidate(String... urlParamNames) {
+			for (String paramName : urlParamNames) {
+				if (acknowledgedFilterCandidates.containsKey(paramName)) {
+					acknowledgedFilterCandidates.remove(paramName);
+				}
+			}
+		}
 
 		/**
-		 * Filtering based on project
+		 * @return set of filter names
 		 */
-		private List<String> projects = null;
+		public Set<String> getFilterCandidatesKeys() {
+			return acknowledgedFilterCandidates.keySet();
+		}
 
 		/**
-		 * Filtering based on tags
+		 * Returns all URL parameter values as provided by the client.
+		 *
+		 * @param urlParamName
+		 * @return
 		 */
-		private List<String> tags = null;
-
-		public static final String TAGS_KEY = "tag";
+		public List<String> getFilterCandidateValues(String urlParamName) {
+			return acknowledgedFilterCandidates.get(urlParamName);
+		}
 
 		/**
-		 * Filtering based on contributors
+		 * Returns a distinct set of URL values for all provided URL parameters.
+		 *
+		 * @param urlParamName
+		 * @return
 		 */
-		private List<String> contributors = null;
-
-		public static final String CONTRIBUTORS_KEY = "contributor";
+		public Set<String> getFilterCandidateValues(Set<String> urlParamName) {
+			Set<String> distinctValues = new HashSet<>();
+			for (String paramName: urlParamName) {
+				for (String value : acknowledgedFilterCandidates.get(paramName)) {
+					distinctValues.add(value);
+				}
+			}
+			return distinctValues;
+		}
 
 		/**
-		 * Filtering based on activity dates
+		 * Returns first random value for given parameter name.
+		 * Generally, client can send multiple values for one parameter name.
+		 *
+		 * @param urlParamName first value for given parameter name or null
+		 * @return
 		 */
-		private PastIntervalValue activityDateInterval;
-
-		public static final String ACTIVITY_DATE_INTERVAL_KEY = "activity_date_interval";
-
-		public static final String ACTIVITY_DATE_FROM_KEY = "activity_date_from";
-		public static final String ACTIVITY_DATE_TO_KEY = "activity_date_to";
-		private Long activityDateFrom;
-		private Long activityDateTo;
-
-		/**
-		 * Results Paging - start index
-		 */
-		private Integer from = null;
-
-		public static final String FROM_KEY = "from";
-
-		/**
-		 * Results Paging - count of returned results
-		 */
-		private Integer size = null;
-
-		public static final String SIZE_KEY = "size";
+		public String getFirstValueForFilterCandidate(String urlParamName) {
+			if (acknowledgedFilterCandidates.containsKey(urlParamName) &&
+					acknowledgedFilterCandidates.get(urlParamName).size() > 0) {
+				return acknowledgedFilterCandidates.get(urlParamName).get(0);
+			} else {
+				return null;
+			}
+		}
 
 		@Override
 		public String toString() {
-			return "Filters [contentType=" + contentType + ", sysTypes=" + sysTypes + ", sysContentProvider="
-					+ sysContentProvider + ", projects=" + projects + ", tags=" + tags + ", contributors=" + contributors
-					+ ", activityDateInterval=" + activityDateInterval + ", activityDateFrom=" + activityDateFrom
-					+ ", activityDateTo=" + activityDateTo + ", from=" + from + ", size=" + size + "]";
-		}
-
-		public Long getActivityDateFrom() {
-			return activityDateFrom;
-		}
-
-		public void setActivityDateFrom(Long activityDateFrom) {
-			this.activityDateFrom = activityDateFrom;
-		}
-
-		public Long getActivityDateTo() {
-			return activityDateTo;
-		}
-
-		public void setActivityDateTo(Long activityDateTo) {
-			this.activityDateTo = activityDateTo;
-		}
-
-		public void setProjects(List<String> projects) {
-			this.projects = projects;
-		}
-
-		public void setFrom(Integer from) {
-			this.from = from;
-		}
-
-		public List<String> getProjects() {
-			return projects;
-		}
-
-		public void addProject(String project) {
-			if (projects == null)
-				projects = new ArrayList<String>();
-			projects.add(project);
-		}
-
-		public Integer getFrom() {
-			return from;
-		}
-
-		public Integer getSize() {
-			return size;
-		}
-
-		public void setSize(Integer size) {
-			this.size = size;
-		}
-
-		public List<String> getTags() {
-			return tags;
-		}
-
-		public void setTags(List<String> tags) {
-			this.tags = tags;
-		}
-
-		public void addTag(String tag) {
-			if (tags == null)
-				tags = new ArrayList<String>();
-			tags.add(tag);
-		}
-
-		public String getContentType() {
-			return contentType;
-		}
-
-		public void setContentType(String contentType) {
-			this.contentType = contentType;
-		}
-
-		public List<String> getSysTypes() {
-			return sysTypes;
-		}
-
-		public void setSysTypes(List<String> sysTypes) {
-			this.sysTypes = sysTypes;
-		}
-
-		public void addSysType(String sysType) {
-			if (sysTypes == null)
-				sysTypes = new ArrayList<String>();
-			sysTypes.add(sysType);
-		}
-
-		public String getSysContentProvider() {
-			return sysContentProvider;
-		}
-
-		public void setSysContentProvider(String sysContentProvider) {
-			this.sysContentProvider = sysContentProvider;
-		}
-
-		public List<String> getContributors() {
-			return contributors;
-		}
-
-		public void setContributors(List<String> contributors) {
-			this.contributors = contributors;
-		}
-
-		public void addContributor(String contributor) {
-			if (contributors == null) {
-				contributors = new ArrayList<String>();
+			StringBuilder sb = new StringBuilder();
+			sb.append("Filter candidates [");
+			boolean first = true;
+			for (String key : acknowledgedFilterCandidates.keySet()) {
+				if (!first) sb.append(", ");
+				sb.append(key).append("=").append(acknowledgedFilterCandidates.get(key));
+				first = false;
 			}
-			contributors.add(contributor);
+			sb.append("]");
+			return sb.toString();
 		}
-
-		public PastIntervalValue getActivityDateInterval() {
-			return activityDateInterval;
-		}
-
-		public void setActivityDateInterval(PastIntervalValue activityDateInterval) {
-			this.activityDateInterval = activityDateInterval;
-		}
-
 	}
 
-	private Filters filters;
+	private Filters filters = null;
 
 	/**
 	 * Fulltext query
@@ -234,6 +137,20 @@ public class QuerySettings {
 	private Set<String> facets;
 
 	public static final String FACETS_KEY = "facet";
+
+	/**
+	 * Results Paging - start index
+	 */
+	private Integer from = null;
+
+	public static final String FROM_KEY = "from";
+
+	/**
+	 * Results Paging - count of returned results
+	 */
+	private Integer size = null;
+
+	public static final String SIZE_KEY = "size";
 
 	/**
 	 * Sorting of results
@@ -317,6 +234,22 @@ public class QuerySettings {
 		if (facets == null)
 			facets = new LinkedHashSet<>();
 		facets.add(value);
+	}
+
+	public void setFrom(Integer from) {
+		this.from = from;
+	}
+
+	public Integer getFrom() {
+		return from;
+	}
+
+	public Integer getSize() {
+		return size;
+	}
+
+	public void setSize(Integer size) {
+		this.size = size;
 	}
 
 	public void clearFacets() {
