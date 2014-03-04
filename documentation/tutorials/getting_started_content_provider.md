@@ -44,7 +44,7 @@ You, as a content provider, can directly provide  documents that contain fields 
 For now there are to means of getting documents into the system:
 
 * **REST API** - the recommended approach. Allows to index one document at a time. You can use threads to push more documents in parallel. Every document undergo pre-defined processing operations before actual indexing.
-* **Elasticsearch river** - an experimental approach. We can use [Elasticsearch river](http://www.elasticsearch.org/guide/en/elasticsearch/rivers/0.90/index.html) to pull data from external resources. Currently, there are two implementations that we are using ([Remote river](https://github.com/jbossorg/elasticsearch-river-remote) and [JIRA river](https://github.com/jbossorg/elasticsearch-river-jira)). These rivers need to be installed by system admin. They allow for faster indexing. The disadvantage is higher maintenance and configuration cost. Please contact jboss.org team if you want to know more about this option.
+* **Elasticsearch river** - an experimental approach. We can use [Elasticsearch river](http://www.elasticsearch.org/guide/en/elasticsearch/rivers/0.90/index.html) to pull data from external resources. Currently, there are two implementations that we are using ([Remote river](https://github.com/searchisko/elasticsearch-river-remote) and [JIRA river](https://github.com/searchisko/elasticsearch-river-jira)). These rivers need to be installed by system admin. They allow for faster indexing. The disadvantage is higher maintenance and configuration cost. Please contact jboss.org team if you want to know more about this option.
 
 ### 4. Search documents
 
