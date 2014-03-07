@@ -31,8 +31,8 @@ import org.jboss.resteasy.spi.interception.PostProcessInterceptor;
  * (see {@link org.searchisko.api.annotations.header.CORSSupport#allowedMethods()}).
  *
  * 'Access-Control-Max-Age' is set to 86400, this means pre-flight response can be cached for 24 hours.
- * 'Access-Control-Allow-Headers' is set to 'X-Requested-With, Content-Type, Content-Length'.
- * 'Access-Control-Allow-Credentials' is set to 'true'.
+ * 'Access-Control-Allow-Headers' is set to 'X-Requested-With, Content-Type, Content-Length, Origin, Accept'.
+ * 'Access-Control-Allow-Credentials' is set to <em>true</em> if withSecurity option is set to <em>true</em>.
  *
  * @author Lukas Vlcek
  */
@@ -82,8 +82,9 @@ public class CORSSupportInterceptor implements PostProcessInterceptor, AcceptedB
 				// allow to cache pre-flight response for 24 hours
 				addIntoHeaderList(method, new Header(ACCESS_CONTROL_MAX_AGE, "86400"));
 				addIntoHeaderList(method, new Header(ACCESS_CONTROL_ALLOW_HEADERS, "X-Requested-With, Content-Type, Content-Length, Origin, Accept"));
-				// TODO: should be used only if http://www.html5rocks.com/en/tutorials/cors/#toc-withcredentials
-				addIntoHeaderList(method, new Header(ACCESS_CONTROL_ALLOW_CREDENTIALS, "true"));
+				if (annotation.withSecurity() == true) {
+					addIntoHeaderList(method, new Header(ACCESS_CONTROL_ALLOW_CREDENTIALS, "true"));
+				}
 				if (annotation.allowedMethods() != null) {
 					for (String m : annotation.allowedMethods()) {
 						addIntoHeaderList(method, new Header(ACCESS_CONTROL_ALLOW_METHODS, m));

@@ -22,13 +22,15 @@ import org.searchisko.api.rest.CORSSupportInterceptor;
  * It also allows to support <em>pre-flight</em> requests by listing allowed methods for <code>OPTIONS</code> methods that
  * will be returned in response header.
  * <p/>
+ * The <em>withSecurity</em> option can be used to include 'Access-Control-Allow-Credentials: true' into <em>pre-flight</em> response.
+ * <p/>
  * Example:
  * <pre>
  * {@code
  *    @OPTIONS
  *    @Path("/{search_result_uuid}/{hit_id}")
  *    @GuestAllowed
- *    @CORSSupport(allowedMethods = {CORSSupport.PUT, CORSSupport.POST})
+ *    @CORSSupport(allowedMethods = {CORSSupport.PUT, CORSSupport.POST}, withSecurity = true)
  *    public Object writeSearchHitUsedStatisticsRecordOPTIONS() {
  *        return Response.ok().build();
  *    }
@@ -59,4 +61,9 @@ public @interface CORSSupport {
      * @return String[] array of allowed methods that will be returned in response to <code>OPTIONS</code> request.
      */
     String[] allowedMethods() default {};
+
+	/**
+	 * @return boolean flag whether xhr.withSecurity is expected to be set to 'true' in request.
+	 */
+	boolean withSecurity() default false;
 }

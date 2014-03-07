@@ -167,7 +167,7 @@ public class ContentRestService extends RestServiceBase {
 	@OPTIONS
 	@Path("/{contentId}")
 	@GuestAllowed
-	@CORSSupport(allowedMethods = { CORSSupport.POST, CORSSupport.DELETE })
+	@CORSSupport(allowedMethods = { CORSSupport.POST, CORSSupport.DELETE }, withSecurity = true)
 	public Object respondToOptionsPreflightRequest(@PathParam("contentId") String contentId) {
 		// validation
 		if (contentId == null || contentId.isEmpty()) {
