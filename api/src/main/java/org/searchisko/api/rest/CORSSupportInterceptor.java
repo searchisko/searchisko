@@ -32,6 +32,7 @@ import org.jboss.resteasy.spi.interception.PostProcessInterceptor;
  *
  * 'Access-Control-Max-Age' is set to 86400, this means pre-flight response can be cached for 24 hours.
  * 'Access-Control-Allow-Headers' is set to 'X-Requested-With, Content-Type, Content-Length'.
+ * 'Access-Control-Allow-Credentials' is set to 'true'.
  *
  * @author Lukas Vlcek
  */
@@ -45,6 +46,7 @@ public class CORSSupportInterceptor implements PostProcessInterceptor, AcceptedB
 
 	public static final String ACCESS_CONTROL_ALLOW_ORIGIN = "Access-Control-Allow-Origin";
 	public static final String ACCESS_CONTROL_ALLOW_HEADERS = "Access-Control-Allow-Headers";
+	public static final String ACCESS_CONTROL_ALLOW_CREDENTIALS = "Access-Control-Allow-Credentials";
 	public static final String ACCESS_CONTROL_ALLOW_METHODS = "Access-Control-Allow-Methods";
 	public static final String ACCESS_CONTROL_MAX_AGE = "Access-Control-Max-Age";
 
@@ -80,6 +82,7 @@ public class CORSSupportInterceptor implements PostProcessInterceptor, AcceptedB
 				// allow to cache pre-flight response for 24 hours
 				addIntoHeaderList(method, new Header(ACCESS_CONTROL_MAX_AGE, "86400"));
 				addIntoHeaderList(method, new Header(ACCESS_CONTROL_ALLOW_HEADERS, "X-Requested-With, Content-Type, Content-Length"));
+				addIntoHeaderList(method, new Header(ACCESS_CONTROL_ALLOW_CREDENTIALS, "true"));
 				if (annotation.allowedMethods() != null) {
 					for (String m : annotation.allowedMethods()) {
 						addIntoHeaderList(method, new Header(ACCESS_CONTROL_ALLOW_METHODS, m));
