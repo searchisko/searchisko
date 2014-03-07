@@ -81,7 +81,8 @@ public class CORSSupportInterceptor implements PostProcessInterceptor, AcceptedB
 			if (annotation != null) {
 				// allow to cache pre-flight response for 24 hours
 				addIntoHeaderList(method, new Header(ACCESS_CONTROL_MAX_AGE, "86400"));
-				addIntoHeaderList(method, new Header(ACCESS_CONTROL_ALLOW_HEADERS, "X-Requested-With, Content-Type, Content-Length"));
+				addIntoHeaderList(method, new Header(ACCESS_CONTROL_ALLOW_HEADERS, "X-Requested-With, Content-Type, Content-Length, Origin, Accept"));
+				// TODO: should be used only if http://www.html5rocks.com/en/tutorials/cors/#toc-withcredentials
 				addIntoHeaderList(method, new Header(ACCESS_CONTROL_ALLOW_CREDENTIALS, "true"));
 				if (annotation.allowedMethods() != null) {
 					for (String m : annotation.allowedMethods()) {
