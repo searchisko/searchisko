@@ -1,5 +1,5 @@
-DCP Development Guide
-=====================
+Searchisko Development Guide
+============================
 
 ## Technologies used
 
@@ -67,7 +67,7 @@ to the `$EAP6HOME/standalone/deployments` folder.
 You can use [Eclipse with JBoss Tools](http://www.jboss.org/tools) or 
 [JBoss Developer Studio](https://devstudio.jboss.com) for this.
 
-The DCP REST API is then available at [`http://localhost:8080/v1/rest/`](http://localhost:8080/v1/rest/)  
+The Searchisko REST API is then available at [`http://localhost:8080/v1/rest/`](http://localhost:8080/v1/rest/)  
 The ElasticSearch search node REST API is available at [`http://localhost:15000/`](http://localhost:15000/)  
 
 **Note #1**: When you use the standard configuration of the embedded h2 database then data are lost
@@ -104,9 +104,9 @@ with 'JBoss Enterprise Application Platform 6.0 Cartridge '
 and add 'MySQL Database 5.1' cartridge into it.
 
 Then push content of this git repo (`git push openshift master` or `git push openshift {local_branch_name}:master` if working on branch)
-into the OpenShift application's git repo. Then DCP is built and deployed automatically.
+into the OpenShift application's git repo. Then Searchisko is built and deployed automatically.
 
-The DCP REST API is then available at `http://your_openshift_aplication_url/v1/rest/`  
+The Searchisko REST API is then available at `http://your_openshift_aplication_url/v1/rest/`  
 The ElasticSearch search node REST API is available only from gear shell at `http://$OPENSHIFT_JBOSSEAP_IP:15000/`,
 you have to use port forwarding to access it from outside.
 
@@ -121,23 +121,23 @@ TODO
 
 ## Initialization
 
-After the DCP is deployed it's necessary to initialize it. Next initialization steps are necessary:
+After the Searchisko is deployed it's necessary to initialize it. Next initialization steps are necessary:
 
 2. Create ElasticSearch index templates and indices over ElasticSearch REST API
 3. Create ElasticSearch mappings over ElasticSearch REST API
-4. Push all DCP init data (see [`rest-api/management`](rest-api/management) subfolder) over DCP management REST API in given order:
+4. Push all Searchisko init data (see [`rest-api/management`](rest-api/management) subfolder) over Searchisko management REST API in given order:
    - content providers
-   - DCP configurations
+   - Searchisko configurations
    - projects
    - contributors
 5. Initialize ElasticSearch rivers if any used to collect data 
 
-Configuration used for jboss.org DCP instance is stored in
+Configuration used for jboss.org Searchisko instance is stored in
 [`/configuration`](/configuration) folder of this repo. You can use it as
-example for your DCP instance.
+example for your Searchisko instance.
 
 **Note** initial superprovider is automatically created with username `jbossorg`
-and password `jbossorgjbossorg` during DCP first start. You can use it for 
+and password `jbossorgjbossorg` during Searchisko first start. You can use it for 
 initialization. It's highly recommended to change default 
 password on publicly available instances!
 

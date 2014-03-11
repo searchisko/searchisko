@@ -6,13 +6,13 @@ normalize project identifier for `sys_project` field.
 It's managed over 'Management API - projects'.
 
 To allow searches for normalization processing by preprocessors, 
-project configuration documents are stored in the DCP back-end 
+project configuration documents are stored in the Searchisko back-end 
 ElasticSearch search index named `sys_projects` as type named `project`.
 
 Project configuration fields:
 
-* `code` - DCP wide unique project identifier. It is stored into 
-  `sys_project` field in content pushed into DCP and used as project
+* `code` - Searchisko instance wide unique project identifier. It is stored into 
+  `sys_project` field in content pushed into Searchisko and used as project
   identifier for Search API filters.
 * `name` - project name 
 * `description` - description of the project.

@@ -1,12 +1,12 @@
-DCP Content object
+Searchisko Content object
 ==================
 
-This document describes main content object which can be pushed to and retrieved or searched from DCP.
+This document describes main content object, which can be pushed to and retrieved or searched from Searchisko.
  
-DCP Content object is a JSON document with a free structure. There is no 
+Searchisko Content object is a JSON document with a free structure. There is no 
 restriction how many key value pairs must be defined or in what structure.
-Some system data fields are defined by DCP, some are added into the content
-inside DCP during push. Those data fields are prefixed by `sys_`:
+Some system data fields are defined by Searchisko, some are added into the content
+inside Searchisko during push. Those data fields are prefixed by `sys_`:
 
 <table border="1">
 <thead>
@@ -16,11 +16,11 @@ inside DCP during push. Those data fields are prefixed by `sys_`:
 <tbody>
 <tr>
   <td>sys_type</td>
-  <td>DCP wide normalized content type - eg. mailing list email, issue, blogpost, IRC post, commit, discussion thread - system field, always necessary.</td>
+  <td>Searchisko wide normalized content type - eg. mailing list email, issue, blogpost, IRC post, commit, discussion thread - system field, always necessary.</td>
 </tr>
 <tr>
   <td>sys_id</td>
-  <td>Content id unique in the whole DCP platform - system field, always necessary. It is constructed during the 'Content Push API' operation from <code>sys_content_type</code> and <code>sys_content_id</code>.</td>
+  <td>Content id unique in the whole Searchisko platform - system field, always necessary. It is constructed during the 'Content Push API' operation from <code>sys_content_type</code> and <code>sys_content_id</code>.</td>
 </tr>
 <tr>
   <td>sys_content_provider</td>
@@ -28,7 +28,7 @@ inside DCP during push. Those data fields are prefixed by `sys_`:
 </tr>
 <tr>
   <td>sys_content_type</td>
-  <td>Identifier of the provider defined content type for 'Content Push API'. It is unique in the whole DCP so it starts with <code>sys_content_provider</code>, eg. 'jbossorg_jira_issue', 'jbossorg_blog' etc.</td>
+  <td>Identifier of the provider defined content type for 'Content Push API'. It is unique in the whole Searchisko so it starts with <code>sys_content_provider</code>, eg. 'jbossorg_jira_issue', 'jbossorg_blog' etc.</td>
 </tr>
 <tr>
   <td>sys_content_id</td>
@@ -36,11 +36,11 @@ inside DCP during push. Those data fields are prefixed by `sys_`:
 </tr>
 <tr>
   <td>sys_updated</td>
-  <td>Date of last content update in DCP - system field, always necessary, assigned in 'Content Push API'.</td>
+  <td>Date of last content update in Searchisko - system field, always necessary, assigned in 'Content Push API'.</td>
 </tr>
 <tr>
   <td>sys_project</td>
-  <td>Normalized DCP wide identifier of the project - system field - it is used for the project facet and filter in the Search API.</td>
+  <td>Normalized Searchisko wide identifier of the project - system field - it is used for the project facet and filter in the Search API.</td>
 </tr>
 <tr>
   <td>sys_project_name</td>
@@ -48,7 +48,7 @@ inside DCP during push. Those data fields are prefixed by `sys_`:
 </tr>
 <tr>
   <td>sys_contributors</td>
-  <td>Array of contributing persons, no duplicities in array, persons identifiers normalized during push into DCP - each person represented as string <code>Name Surname <primaryemail@email.com></code> - in Search API used for persons facet and filter.</td>
+  <td>Array of contributing persons, no duplicities in array, persons identifiers normalized during push into Searchisko - each person represented as string <code>Name Surname <primaryemail@email.com></code> - in Search API used for persons facet and filter.</td>
 </tr>
 <tr>
   <td>sys_activity_dates</td>
@@ -80,7 +80,7 @@ inside DCP during push. Those data fields are prefixed by `sys_`:
 </tr>
 <tr>
   <td>sys_content_content-type</td>
-  <td>MIME identifier of content type stored in the <code>sys_content</code> field eg. <code>text/plain</code>, <code>text/html</code>, <code>text/x-markdown</code>. Must be negotiated with DCP Admins so fulltext search analyzer for <code>sys_content</code> is set correctly.</td>
+  <td>MIME identifier of content type stored in the <code>sys_content</code> field eg. <code>text/plain</code>, <code>text/html</code>, <code>text/x-markdown</code>. Must be negotiated with Searchisko Admins so fulltext search analyzer for <code>sys_content</code> is set correctly.</td>
 </tr>
 <tr>
   <td>sys_content_plaintext</td>
@@ -154,7 +154,7 @@ inside DCP during push. Those data fields are prefixed by `sys_`:
 <tbody>
 <tr>
   <td>sys_contributor</td>
-  <td>Normalized DCP contributor identifier.</td>
+  <td>Normalized Searchisko contributor identifier.</td>
 </tr>
 <tr>
   <td>email_address</td>
@@ -168,7 +168,7 @@ inside DCP during push. Those data fields are prefixed by `sys_`:
 </table>
 
 
-### DCP Content described by example:
+### Searchisko Content described by example:
 
 Free JSON Structure representing content. It can be one key - value pair or something more structured.
 It's defined only by content provider and must contain mandatory fields defined for given `sys_type`.

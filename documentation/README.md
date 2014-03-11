@@ -1,9 +1,9 @@
-DCP Documentation
-=================
+Searchisko Documentation
+========================
 
-This folder contains documentation for the Distributed Contribution Platform (DCP) project:
+This folder contains documentation for the Searchisko project:
 
-* [DCP Basic Principles and Architecture](basic_principles_and_architecture.md)
-* [DCP Development Info](development.md)
-* [DCP REST API and data types](rest-api/README.md)
+* [Searchisko Basic Principles and Architecture](basic_principles_and_architecture.md)
+* [Searchisko Development Info](development.md)
+* [Searchisko REST API and data types](rest-api/README.md)
 * [Tutorials](tutorials/README.md)

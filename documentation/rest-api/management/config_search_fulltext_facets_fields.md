@@ -1,10 +1,12 @@
-DCP configuration - configuration of fields which are allowed for facet execution
+Searchisko configuration - configuration of fields which are allowed for facet execution
 ==============================================================================
 
 **configuration API id:** `search_fulltext_facets_fields`
 
-This configuration enables configuration of [faceted search](http://en.wikipedia.org/wiki/Faceted_search) capabilities in Searchisko. Facet can be calculated on a document fields having correctly setup [mapping][mapping] and [analysis][analysis]. It is also important to note that calculation of facets can be system resources intensive (usually it requires more JVM Heap). Because of this the faceted search
-is limited to configured fields only.
+This configuration enables configuration of [faceted search](http://en.wikipedia.org/wiki/Faceted_search) capabilities in Searchisko. 
+Facet can be calculated on a document fields having correctly setup [mapping][mapping] and [analysis][analysis]. 
+It is also important to note that calculation of facets can be system resources intensive (usually it requires more JVM Heap). 
+Because of this the faceted search is limited to configured fields only.
 
 Configuration of facet-enabled fields has the following format:
 

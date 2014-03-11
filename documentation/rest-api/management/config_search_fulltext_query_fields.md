@@ -1,9 +1,9 @@
-DCP configuration - definition of fields used for fulltext search
+Searchisko configuration - definition of fields used for fulltext search
 ==================================================================
 
 **configuration API id:** `search_fulltext_query_fields`
 
-This configuration document contains Map structure where keys are names of index fields used for fulltext search in DCP 'Search API' `search` operation. 
+This configuration document contains Map structure where keys are names of index fields used for fulltext search in Searchisko 'Search API' `search` operation. 
 Value is float value representing 'boost' for this field. If value is empty no boost is used for given field.
 
 Example:

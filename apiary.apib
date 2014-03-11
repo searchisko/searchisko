@@ -1,6 +1,6 @@
 HOST: http://dcp.jboss.org/v1
 
---- Distributed Contribution Platform API v1 ---
+--- Searchisko API v1 ---
 ---
 # Overview
 
@@ -15,7 +15,7 @@ Distributed Contribution Platform main design attributes:
 * high flexibility of stored information structures
 * openness and easy use by other community members
 
-To support synergy, information stored into DCP will be normalized in these areas:
+To support synergy, information stored into Searchisko will be normalized in these areas:
 
 * information type - so all pieces of information of same type (blog post, issue, commit) originated from distinct systems can be obtained by one search request
 * project - so all information/contributions related to one project can be obtained by one search request
@@ -27,7 +27,7 @@ To support synergy, information stored into DCP will be normalized in these area
 
 [Data structures used on this API are described here](https://github.com/searchisko/searchisko/blob/master/documentation/rest-api/).
 
-[This document describes structure of main content object](https://github.com/searchisko/searchisko/blob/master/documentation/rest-api/content/dcp_content_object.md) which can be pushed to and retrieved or searched from DCP.
+[This document describes structure of main content object](https://github.com/searchisko/searchisko/blob/master/documentation/rest-api/content/dcp_content_object.md) which can be pushed to and retrieved or searched from Searchisko.
 
 # Authentication
 ## Provider authentication
@@ -51,21 +51,21 @@ In this case user is authenticated from his SSO session established against CAS 
 
 # Cross Domain Policy
 
-* (Deprecated!) DCP provides JSONP technique. If you want to use JSONP just add `callback` parameter to your request.
+* (Deprecated!) Searchisko provides JSONP technique. If you want to use JSONP just add `callback` parameter to your request.
 * CORS support: Response contains `Access-Control-Allow-Origin` HTTP header, so client browser can use search API directly.
 
 ---
 
 --
 Content Push API
-This part of API is primarily used by *content providers* to manipulate [content](https://github.com/searchisko/searchisko/blob/master/documentation/rest-api/content/dcp_content_object.md) in DCP.
+This part of API is primarily used by *content providers* to manipulate [content](https://github.com/searchisko/searchisko/blob/master/documentation/rest-api/content/dcp_content_object.md) in Searchisko.
 
-Each provider has set of 'provider types' defined in DCP, which are passed on this API as `{sys_content_type}` URL path part.
-'Provider type' is one type of content object stored into DCP by given provider (eg. issue from provider's issue tracking system, blog post from provider's blogging system etc).
+Each provider has set of 'provider types' defined in Searchisko, which are passed on this API as `{sys_content_type}` URL path part.
+'Provider type' is one type of content object stored into Searchisko by given provider (eg. issue from provider's issue tracking system, blog post from provider's blogging system etc).
 To manipulate content objects over this API provider must use identifiers unique for given 'provider type'. These identifiers are referred as `{sys_content_id}` url path part in API documentation.
 --
 
-Get one content object of specified 'provider type' and 'provider id' from DCP.
+Get one content object of specified 'provider type' and 'provider id' from Searchisko.
 GET /rest/content/{sys_content_type}/{sys_content_id}
 < 200
 < Content-Type: application/json
@@ -93,7 +93,7 @@ Get all content objects of the specified 'provider type'.
 
 * `from` index of the first content object returned in the results array. The default value is 0 (start from begin of list).
 * `size` of returned results array. Default is 10.
-* `sort` you can use 'asc' or 'desc' value to sort results by date of last update of content object in DCP (`sys_updated` field).
+* `sort` you can use 'asc' or 'desc' value to sort results by date of last update of content object in Searchisko (`sys_updated` field).
 
 ##### Response content
 The response contains a JSON structure with overall number of the content objects of specified 'provider type' in `total` field, and an array of the content objects in `hits` field. The content of the array depends on `from` and `size` request parameters.
@@ -141,8 +141,8 @@ GET /rest/content/{sys_content_type}{?from,size,sort}
   ]
 }
 
-Push the content object into DCP. The content is updated in DCP if exists  or is inserted if does not. 
-The data normalizations are performed during this request processing and the content object is extended by the DCP system data fields - the performed normalization tasks depend on the configuration for the given `sys_content_type`.
+Push the content object into Searchisko. The content is updated in Searchisko if exists  or is inserted if does not. 
+The data normalizations are performed during this request processing and the content object is extended by the Searchisko system data fields - the performed normalization tasks depend on the configuration for the given `sys_content_type`.
 
 *Provider authentication required.*
 
@@ -168,13 +168,13 @@ POST /rest/content/{sys_content_type}/{sys_content_id}
   "message":"Content was inserted successfully."
 }
 
-Delete defined content object from DCP.
+Delete defined content object from Searchisko.
 
 *Provider authentication required.* 
 
 ##### Request parameters
 
-* `ignore_missing` if set to 'true' then __200 (OK)__ is returned instead of __404 (Not Found)__ if deleted content object doesn't exists in DCP.  
+* `ignore_missing` if set to 'true' then __200 (OK)__ is returned instead of __404 (Not Found)__ if deleted content object doesn't exists in Searchisko.  
  
 DELETE /rest/content/{sys_content_type}/{sys_content_id}{?ignore_missing}
 < 200
@@ -184,7 +184,7 @@ Content deleted successfully.
 
 --
 Search API
-This part of the API is used by all systems that need to use [content](https://github.com/searchisko/searchisko/tree/master/documentation/rest-api/) stored in DCP.
+This part of the API is used by all systems that need to use [content](https://github.com/searchisko/searchisko/tree/master/documentation/rest-api/) stored in Searchisko.
 --
 
 Search contributions based on input parameters
@@ -197,7 +197,7 @@ Search contributions based on input parameters
 * `from` start index or returned entries. Default value is 0. Useful together with `size` for results pagination.
 * `size` maximal number of returned entries. Default is 10, maximal value is 500.
 * `facet` you can specify name of [facet](http://www.elasticsearch.org/guide/reference/api/search/facets/) you want to include in response. Available facet names are: `top_contributors`, `activity_dates_histogram`, `per_project_counts`, `per_sys_type_counts`, `tag_cloud`. This param can be used multiple times to get more facet data in the response. List of available facets is configurable (see [Management API][#managementapiconfiguration]).
-* `field` you can use this param multiple times to specify which [fields](http://www.elasticsearch.org/guide/reference/api/search/fields.html) from search index will be returned in results. If not used then predefined set of basic `sys_xx` fields is returned. If you want complete documents use `_source` value for this param. Be careful about performance impact of this param, consult DCP administrators if necessary!
+* `field` you can use this param multiple times to specify which [fields](http://www.elasticsearch.org/guide/reference/api/search/fields.html) from search index will be returned in results. If not used then predefined set of basic `sys_xx` fields is returned. If you want complete documents use `_source` value for this param. Be careful about performance impact of this param, consult Searchisko administrators if necessary!
 * `content_provider` filters result only to data provided by specified provider - `sys_content_provider` field
 * `type` filters result only to specific `sys_content_type`
 * `sys_type` filters result only to specific `sys_type`, This param can be used multiple times to get results for more types.
@@ -602,7 +602,7 @@ GET /rest/suggestions/project?query=gin&size=2
 --
 Feed API
 This part of the API is used by all systems that want to consume [content](https://github.com/searchisko/searchisko/tree/master/documentation/rest-api/)
-stored in DCP as feed in [Atom Syndication Format](http://tools.ietf.org/html/rfc4287). 
+stored in Searchisko as feed in [Atom Syndication Format](http://tools.ietf.org/html/rfc4287). 
 Request parameters can be used to filter feed content by distinct criteria.
 --
 
@@ -784,9 +784,9 @@ POST /rest/rating/{_id}
 --
 Management API - content providers
 
-This part of the API allows to manage configurations of *content providers*. *Content provider* is an entity which stores content into DCP (see Content Push API).
+This part of the API allows to manage configurations of *content providers*. *Content provider* is an entity which stores content into Searchisko (see Content Push API).
 
-This part of the API is used by 'DCP administrators', some operations can be used by *content providers* alone too.
+This part of the API is used by 'Searchisko administrators', some operations can be used by *content providers* alone too.
 
 [Data structure used on this API is documented here](https://github.com/searchisko/searchisko/blob/master/documentation/rest-api/management/content_provider.md).
 --
@@ -799,7 +799,7 @@ GET /rest/provider/{name}
 < Content-Type: application/json
 {
   "name": "jborg",
-  "description" : "Provider used by JBoss Community Team to manage DCP and push content from core jboss.org systems",
+  "description" : "Provider used by JBoss.org Development Team to manage DCP and push content from core jboss.org systems",
   "contact_email" : "help@jboss.org",
   "super_provider": true,
   "type": {
@@ -909,7 +909,7 @@ POST /rest/provider
 > Accept: application/json
 {
   "name" : "jborg",
-  "description" : "Provider used by JBoss Community Team to manage DCP and push content from core jboss.org systems"
+  "description" : "Provider used by JBoss.org Development Team to manage DCP and push content from core jboss.org systems"
 }
 < 200
 < Content-Type: application/json
@@ -938,7 +938,7 @@ DELETE /rest/provider/{name}
 Management API - projects
 
 This part of the API allows to manage configurations of *projects*. This configuration is used by preprocessors in 'Content Push API' to normalize project identifier for `sys_project` field.
-This part of the API is used by 'DCP administrators'. Get operations can be used without authentication.
+This part of the API is used by 'Searchisko administrators'. Get operations can be used without authentication.
 
 [Data structure used on this API is documented here](https://github.com/searchisko/searchisko/blob/master/documentation/rest-api/management/project.md).
 --
@@ -1080,7 +1080,7 @@ DELETE /rest/project/{code}
 Management API - contributors
 
 This part of the API allows to manage configurations of *contributors*. This configuration contains distinct information/identifiers used by preprocessors in 'Content Push API' to normalize project identifier for `sys_contributors` field.
-This part of the API is used by 'DCP administrators' only.
+This part of the API is used by 'Searchisko administrators' only.
 
 [Data structure used on this API is documented here](https://github.com/searchisko/searchisko/blob/master/documentation/rest-api/management/contributor.md).
 --
@@ -1143,7 +1143,7 @@ Each record in the array contains `id` field with unique id for other REST opera
   "total": "1",
   "hits": [
     {
-      "id": "unique id in DCP",
+      "id": "unique id in Searchisko",
       "data": {
         // contributor configuration object
       }
@@ -1217,9 +1217,9 @@ DELETE /rest/contributor/{id}
 --
 Management API - configuration
 
-This part of the API is used by 'DCP administrators' to manage DCP configuration documents.
-Configuration documents use distinct structures depending on DCP feature they configure. 
-They are referenced from DCP code by defined `id`. For list of supported configuration document id's and related configuration document structure see [`config_` prefixed files in management part of DCP documentation](https://github.com/searchisko/searchisko/blob/master/documentation/rest-api/management/).
+This part of the API is used by 'Searchisko administrators' to manage Searchisko configuration documents.
+Configuration documents use distinct structures depending on Searchisko feature they configure. 
+They are referenced from Searchisko code by defined `id`. For list of supported configuration document id's and related configuration document structure see [`config_` prefixed files in management part of Searchisko documentation](https://github.com/searchisko/searchisko/blob/master/documentation/rest-api/management/).
 --
 
 Get configuration document for given `id`.
@@ -1250,7 +1250,7 @@ Each record in the array contains `id` field with unique id for other REST opera
   "total": "1",
   "hits": [
     {
-      "id": "unique id in DCP",
+      "id": "unique id in Searchisko",
       "data": {
         // configuration document
       }
@@ -1304,12 +1304,12 @@ DELETE /rest/config/{id}
 --
 Management API - content reindexation tasks
 
-This part of the API is used by 'DCP administrators' to operate long running reindexation tasks.
+This part of the API is used by 'Searchisko administrators' to operate long running reindexation tasks.
 These task are used to refresh search indices in case of contributor or project mapping change.
 Special task type is used to put content from persistent store into search indices also.
 --
 
-List all task types available in DCP. Task types are used in some other calls.
+List all task types available in Searchisko. Task types are used in some other calls.
 
 GET /rest/tasks/type
 < 200
@@ -1363,7 +1363,7 @@ Create new task of given task type to be executed.
 JSON with task configuration document. Available task types and related configuration structures:
 
 * `reindex_from_persistence`
-Get all content of 'provider type' passed in task configuration from DCP persistent store (so given provider type must be defined as persistent) and store/update it into DCP search index.  
+Get all content of 'provider type' passed in task configuration from Searchisko persistent store (so given provider type must be defined as persistent) and store/update it into Searchisko search index.  
 
 ```
 {
@@ -1373,7 +1373,7 @@ Get all content of 'provider type' passed in task configuration from DCP persist
 
 
 * `renormalize_by_content_type`
-Get all content of 'provider type' passed in task configuration from DCP search index, run all data normalizations on it, and update it back into DCP search index.  
+Get all content of 'provider type' passed in task configuration from Searchisko search index, run all data normalizations on it, and update it back into Searchisko search index.  
 
 ``` 
 {
@@ -1383,7 +1383,7 @@ Get all content of 'provider type' passed in task configuration from DCP search 
 
 
 * `renormalize_by_project_code`
-Get all content with `sys_project` matching values passed in task configuration from DCP search indices, run all data normalizations on it, and update it back into DCP search index. Used for example when project code or project name changes in DCP project configuration, so we need to update content in search indices for it.
+Get all content with `sys_project` matching values passed in task configuration from Searchisko search indices, run all data normalizations on it, and update it back into Searchisko search index. Used for example when project code or project name changes in Searchisko project configuration, so we need to update content in search indices for it.
 
 ``` 
 {
@@ -1393,7 +1393,7 @@ Get all content with `sys_project` matching values passed in task configuration 
 
 
  * `renormalize_by_project_lookup_id`
-Get all content which is bound to some `sys_project` over defined values of defined normalization identifier passed in task configuration from DCP search indices, run all data normalizations on it, and update it back into DCP search index. Used mainly when new project mapping identifier is added into DCP project configuration in `type_specific_code` section, so we need to update content in search indices to be correctly bound to this project.
+Get all content which is bound to some `sys_project` over defined values of defined normalization identifier passed in task configuration from Searchisko search indices, run all data normalizations on it, and update it back into Searchisko search index. Used mainly when new project mapping identifier is added into Searchisko project configuration in `type_specific_code` section, so we need to update content in search indices to be correctly bound to this project.
 
 ``` 
 {
@@ -1404,7 +1404,7 @@ Get all content which is bound to some `sys_project` over defined values of defi
 	
 
  * `renormalize_by_contributor_lookup_id`
-Get all content which is bound to some contributor over defined values of defined normalization identifier passed in task configuration from DCP search indices, run all data normalizations on it, and update it back into DCP search index. Used mainly when new contributor mapping identifier is added into DCP project configuration in `email` or `type_specific_code` section, so we need to update content in search indices to be correctly bound to this project. 
+Get all content which is bound to some contributor over defined values of defined normalization identifier passed in task configuration from Searchisko search indices, run all data normalizations on it, and update it back into Searchisko search index. Used mainly when new contributor mapping identifier is added into Searchisko project configuration in `email` or `type_specific_code` section, so we need to update content in search indices to be correctly bound to this project. 
  
 ```
 {
@@ -1414,7 +1414,7 @@ Get all content which is bound to some contributor over defined values of define
 ```
 
 * `renormalize_by_contributor_code`
-Get all content where `sys_contributors` contains value passed in task configuration from DCP search indices, run all data normalizations on it, and update it back into DCP search index. Used for example when contributor code is changed in DCP contributor configuration, or some normalization identifier is removed from DCP contributor configuration (one normalized contributor is split into more), so we need to update content in search indices for it.
+Get all content where `sys_contributors` contains value passed in task configuration from Searchisko search indices, run all data normalizations on it, and update it back into Searchisko search index. Used for example when contributor code is changed in Searchisko contributor configuration, or some normalization identifier is removed from Searchisko contributor configuration (one normalized contributor is split into more), so we need to update content in search indices for it.
 
 ``` 
 {
