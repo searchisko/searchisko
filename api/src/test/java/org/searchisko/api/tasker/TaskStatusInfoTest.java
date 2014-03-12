@@ -10,14 +10,13 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import junit.framework.Assert;
-
-import org.searchisko.api.testtools.TestUtils;
+import org.junit.Assert;
 import org.junit.Test;
+import org.searchisko.api.testtools.TestUtils;
 
 /**
  * Unit test for {@link TaskStatusInfo}.
- *
+ * 
  * @author Vlastimil Elias (velias at redhat dot com)
  */
 public class TaskStatusInfoTest {

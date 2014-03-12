@@ -16,10 +16,9 @@ import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.core.UriInfo;
 
-import junit.framework.Assert;
-
 import org.elasticsearch.action.get.GetResponse;
 import org.jboss.resteasy.specimpl.MultivaluedMapImpl;
+import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.searchisko.api.ContentObjectFields;
@@ -326,11 +325,6 @@ public class RatingRestServiceTest {
 			Assert.assertEquals(new Double(3), indexDocumentContent.get(ContentObjectFields.SYS_RATING_AVG));
 			Assert.assertEquals(new Long(20), indexDocumentContent.get(ContentObjectFields.SYS_RATING_NUM));
 		}
-	}
-
-	@Test
-	public void postRatingOPTIONS_permissions() throws Exception {
-		TestUtils.assertPermissionGuest(RatingRestService.class, "postRatingOPTIONS");
 	}
 
 	protected Map<String, Object> mockTypeDef() {

@@ -5,13 +5,12 @@
  */
 package org.searchisko.api.service;
 
-import junit.framework.Assert;
-
+import org.junit.Assert;
 import org.junit.Test;
 
 /**
  * Unit test for {@link StatsRecordType}.
- *
+ * 
  * @author Vlastimil Elias (velias at redhat dot com)
  */
 public class StatsRecordTypeTest {

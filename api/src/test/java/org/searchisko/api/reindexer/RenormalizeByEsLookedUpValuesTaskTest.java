@@ -11,10 +11,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import junit.framework.Assert;
-
 import org.elasticsearch.client.Client;
 import org.elasticsearch.indices.IndexMissingException;
+import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;

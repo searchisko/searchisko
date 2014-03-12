@@ -7,8 +7,7 @@ package org.searchisko.api.tasker;
 
 import java.io.InterruptedIOException;
 
-import junit.framework.Assert;
-
+import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
@@ -16,7 +15,7 @@ import org.mockito.stubbing.Answer;
 
 /**
  * Unit test for {@link Task}.
- *
+ * 
  * @author Vlastimil Elias (velias at redhat dot com)
  */
 public class TaskTest {

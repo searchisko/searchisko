@@ -10,8 +10,7 @@ import java.util.logging.Logger;
 
 import javax.ws.rs.core.SecurityContext;
 
-import junit.framework.Assert;
-
+import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.searchisko.api.rest.exception.NotAuthenticatedException;

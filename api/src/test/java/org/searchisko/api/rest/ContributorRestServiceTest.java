@@ -11,9 +11,8 @@ import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.StreamingOutput;
 import javax.ws.rs.core.UriInfo;
 
-import junit.framework.Assert;
-
 import org.elasticsearch.action.search.SearchResponse;
+import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.searchisko.api.service.ContributorService;

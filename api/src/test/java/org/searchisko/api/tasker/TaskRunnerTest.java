@@ -8,17 +8,16 @@ package org.searchisko.api.tasker;
 import java.lang.Thread.State;
 import java.util.Set;
 
-import junit.framework.Assert;
-
-import org.searchisko.api.testtools.TestUtils;
+import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
+import org.searchisko.api.testtools.TestUtils;
 
 /**
  * Unit test for {@link TaskRunner}.
- *
+ * 
  * @author Vlastimil Elias (velias at redhat dot com)
  */
 public class TaskRunnerTest {

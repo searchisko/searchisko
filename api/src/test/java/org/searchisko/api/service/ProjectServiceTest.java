@@ -13,10 +13,9 @@ import java.util.logging.Logger;
 
 import javax.ws.rs.core.StreamingOutput;
 
-import junit.framework.Assert;
-
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.Client;
+import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.searchisko.api.rest.ESDataOnlyResponse;

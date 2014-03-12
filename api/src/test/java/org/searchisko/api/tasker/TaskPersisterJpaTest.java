@@ -11,17 +11,16 @@ import java.util.Map;
 import javax.persistence.EntityManager;
 import javax.persistence.LockModeType;
 
-import junit.framework.Assert;
-
-import org.searchisko.api.testtools.TestUtils;
+import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
+import org.searchisko.api.testtools.TestUtils;
 
 /**
  * Unit test for {@link TaskPersisterJpa}.
- *
+ * 
  * @author Vlastimil Elias (velias at redhat dot com)
  */
 public class TaskPersisterJpaTest {

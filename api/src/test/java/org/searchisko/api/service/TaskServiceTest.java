@@ -7,17 +7,16 @@ package org.searchisko.api.service;
 
 import java.util.logging.Logger;
 
-import junit.framework.Assert;
-
+import org.junit.Assert;
+import org.junit.Test;
+import org.mockito.Mockito;
 import org.searchisko.api.tasker.TaskFactory;
 import org.searchisko.api.tasker.TaskManager;
 import org.searchisko.api.tasker.TaskPersister;
-import org.junit.Test;
-import org.mockito.Mockito;
 
 /**
  * Unit test {@link TaskService}
- *
+ * 
  * @author Vlastimil Elias (velias at redhat dot com)
  */
 public class TaskServiceTest {

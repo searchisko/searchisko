@@ -13,17 +13,16 @@ import java.util.logging.Logger;
 
 import javax.ws.rs.core.StreamingOutput;
 
-import junit.framework.Assert;
-
+import org.junit.Assert;
+import org.junit.Test;
+import org.mockito.Mockito;
 import org.searchisko.api.rest.ESDataOnlyResponse;
 import org.searchisko.api.testtools.ESRealClientTestBase;
 import org.searchisko.persistence.service.EntityService;
-import org.junit.Test;
-import org.mockito.Mockito;
 
 /**
  * Unit test for {@link ConfigService}
- *
+ * 
  * @author Vlastimil Elias (velias at redhat dot com)
  */
 public class ConfigServiceTest extends ESRealClientTestBase {

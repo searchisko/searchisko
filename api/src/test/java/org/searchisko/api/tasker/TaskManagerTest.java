@@ -8,14 +8,13 @@ package org.searchisko.api.tasker;
 import java.util.HashMap;
 import java.util.Map;
 
-import junit.framework.Assert;
-
+import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
 
 /**
  * Unit test for {@link TaskManager}.
- *
+ * 
  * @author Vlastimil Elias (velias at redhat dot com)
  */
 public class TaskManagerTest {

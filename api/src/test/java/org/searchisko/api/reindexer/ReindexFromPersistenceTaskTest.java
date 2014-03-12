@@ -12,9 +12,8 @@ import java.util.Map;
 
 import javax.enterprise.event.Event;
 
-import junit.framework.Assert;
-
 import org.hamcrest.CustomMatcher;
+import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.searchisko.api.ContentObjectFields;
