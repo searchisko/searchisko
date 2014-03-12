@@ -33,7 +33,6 @@ import org.jboss.resteasy.plugins.providers.atom.Generator;
 import org.jboss.resteasy.plugins.providers.atom.Link;
 import org.jboss.resteasy.plugins.providers.atom.Person;
 import org.searchisko.api.ContentObjectFields;
-import org.searchisko.api.annotations.header.CORSSupport;
 import org.searchisko.api.annotations.security.GuestAllowed;
 import org.searchisko.api.model.QuerySettings;
 import org.searchisko.api.model.QuerySettings.Filters;
@@ -82,7 +81,6 @@ public class FeedRestService extends RestServiceBase {
 	@Path("/")
 	@Produces(MediaType.APPLICATION_ATOM_XML)
 	@GuestAllowed
-	@CORSSupport
 	public Object feed(@Context UriInfo uriInfo) throws URISyntaxException {
 
 		QuerySettings querySettings = null;

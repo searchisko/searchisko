@@ -23,7 +23,6 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.SecurityContext;
 
-import org.searchisko.api.annotations.header.CORSSupport;
 import org.searchisko.api.annotations.security.ProviderAllowed;
 import org.searchisko.api.rest.exception.RequiredFieldException;
 import org.searchisko.api.service.ProviderService;
@@ -31,10 +30,10 @@ import org.searchisko.api.service.SecurityService;
 
 /**
  * Provider REST API
- *
+ * 
  * @author Libor Krzyzanek
  * @author Vlastimil Elias (velias at redhat dot com)
- *
+ * 
  */
 @RequestScoped
 @Path("/provider")
@@ -60,7 +59,6 @@ public class ProviderRestService extends RestEntityServiceBase {
 	@GET
 	@Path("/")
 	@Produces(MediaType.APPLICATION_JSON)
-    @CORSSupport
 	public Object getAll(@QueryParam("from") Integer from, @QueryParam("size") Integer size) {
 		return entityService.getAll(from, size, FIELDS_TO_REMOVE);
 	}
@@ -70,11 +68,10 @@ public class ProviderRestService extends RestEntityServiceBase {
 	@Produces(MediaType.APPLICATION_JSON)
 	@ProviderAllowed
 	@Override
-    @CORSSupport
 	public Object get(@PathParam("id") String id) {
 
 		if (id == null || id.isEmpty()) {
-            throw new RequiredFieldException("id");
+			throw new RequiredFieldException("id");
 		}
 
 		// check Provider name. Only provider with same name or superprovider has access.
@@ -112,7 +109,7 @@ public class ProviderRestService extends RestEntityServiceBase {
 	public Object create(@PathParam("id") String id, Map<String, Object> data) {
 
 		if (id == null || id.isEmpty()) {
-            throw new RequiredFieldException("id");
+			throw new RequiredFieldException("id");
 		}
 
 		String nameFromData = (String) data.get(ProviderService.NAME);
@@ -142,11 +139,11 @@ public class ProviderRestService extends RestEntityServiceBase {
 	public Object changePassword(@PathParam("id") String id, String pwd) {
 
 		if (id == null || id.isEmpty()) {
-            throw new RequiredFieldException("id");
+			throw new RequiredFieldException("id");
 		}
 
 		if (pwd == null || pwd.trim().isEmpty()) {
-            throw new RequiredFieldException("pwd");
+			throw new RequiredFieldException("pwd");
 		}
 
 		// check Provider name. Only provider with same name or superprovider has access.

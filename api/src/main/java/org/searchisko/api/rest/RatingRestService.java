@@ -16,7 +16,6 @@ import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
-import javax.ws.rs.OPTIONS;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -30,9 +29,7 @@ import javax.ws.rs.core.UriInfo;
 
 import org.elasticsearch.action.get.GetResponse;
 import org.searchisko.api.ContentObjectFields;
-import org.searchisko.api.annotations.header.CORSSupport;
 import org.searchisko.api.annotations.security.ContributorAllowed;
-import org.searchisko.api.annotations.security.GuestAllowed;
 import org.searchisko.api.rest.exception.RequiredFieldException;
 import org.searchisko.api.rest.security.AuthenticationUtilService;
 import org.searchisko.api.service.ProviderService;
@@ -76,21 +73,9 @@ public class RatingRestService extends RestServiceBase {
 	@Context
 	protected SecurityContext securityContext;
 
-	/**
-	 * CORS handler for OPTIONS http request.
-	 */
-	@OPTIONS
-	@Path("/{id}")
-	@CORSSupport(allowedMethods = { CORSSupport.GET, CORSSupport.POST })
-	@GuestAllowed
-	public Object postRatingOPTIONS() {
-		return Response.ok().build();
-	}
-
 	@GET
 	@Path("/{id}")
 	@Produces(MediaType.APPLICATION_JSON)
-	@CORSSupport
 	public Object getRating(@PathParam(QUERY_PARAM_ID) String contentSysId) {
 
 		contentSysId = SearchUtils.trimToNull(contentSysId);
@@ -130,7 +115,6 @@ public class RatingRestService extends RestServiceBase {
 	@GET
 	@Path("/")
 	@Produces(MediaType.APPLICATION_JSON)
-	@CORSSupport
 	public Map<String, Object> getRatings(@Context UriInfo uriInfo) {
 
 		Map<String, Object> ret = new HashMap<>();
@@ -169,7 +153,6 @@ public class RatingRestService extends RestServiceBase {
 	@Path("/{id}")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	@CORSSupport
 	public Object postRating(@PathParam(QUERY_PARAM_ID) String contentSysId, Map<String, Object> requestContent) {
 
 		String currentContributorId = authenticationUtilService.getAuthenticatedContributor(securityContext, true);

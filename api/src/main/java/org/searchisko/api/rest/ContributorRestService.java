@@ -17,7 +17,6 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
 import org.elasticsearch.action.search.SearchResponse;
-import org.searchisko.api.annotations.header.CORSSupport;
 import org.searchisko.api.annotations.security.ProviderAllowed;
 import org.searchisko.api.service.ContributorService;
 import org.searchisko.api.util.SearchUtils;
@@ -47,7 +46,6 @@ public class ContributorRestService extends RestEntityServiceBase {
 	@GET
 	@Path("/search")
 	@Produces(MediaType.APPLICATION_JSON)
-	@CORSSupport
 	public Object search(@Context UriInfo uriInfo) {
 
 		if (uriInfo == null || uriInfo.getQueryParameters().isEmpty() || uriInfo.getQueryParameters().size() > 1) {

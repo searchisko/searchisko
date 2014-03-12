@@ -23,7 +23,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
-import org.searchisko.api.annotations.header.CORSSupport;
 import org.searchisko.api.annotations.security.ProviderAllowed;
 import org.searchisko.api.service.TaskService;
 import org.searchisko.api.tasker.TaskConfigurationException;
@@ -33,7 +32,7 @@ import org.searchisko.api.tasker.UnsupportedTaskException;
 
 /**
  * Long running Tasks execution related REST API.
- *
+ * 
  * @author Vlastimil Elias (velias at redhat dot com)
  */
 @RequestScoped
@@ -47,7 +46,6 @@ public class TaskRestService extends RestServiceBase {
 	@GET
 	@Path("/type")
 	@Produces(MediaType.APPLICATION_JSON)
-	@CORSSupport
 	public Object getTypes() {
 		return taskService.getTaskManager().listSupportedTaskTypes();
 	}
@@ -55,7 +53,6 @@ public class TaskRestService extends RestServiceBase {
 	@GET
 	@Path("/task")
 	@Produces(MediaType.APPLICATION_JSON)
-	@CORSSupport
 	public Object getTasks(@QueryParam("taskType") String taskType, @QueryParam("taskStatus") String[] taskStatus,
 			@QueryParam("from") Integer from, @QueryParam("size") Integer size) {
 
@@ -75,7 +72,6 @@ public class TaskRestService extends RestServiceBase {
 	@GET
 	@Path("/task/{taskId}")
 	@Produces(MediaType.APPLICATION_JSON)
-	@CORSSupport
 	public Object getTask(@PathParam("taskId") String taskId) {
 		TaskStatusInfo tsi = taskService.getTaskManager().getTaskStatusInfo(taskId);
 		return tsi != null ? tsi : Response.status(Status.NOT_FOUND).build();

@@ -11,7 +11,6 @@ import java.util.UUID;
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
 import javax.ws.rs.GET;
-import javax.ws.rs.OPTIONS;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
@@ -26,7 +25,6 @@ import javax.ws.rs.core.UriInfo;
 
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.indices.IndexMissingException;
-import org.searchisko.api.annotations.header.CORSSupport;
 import org.searchisko.api.annotations.security.GuestAllowed;
 import org.searchisko.api.model.QuerySettings;
 import org.searchisko.api.rest.exception.BadFieldException;
@@ -38,11 +36,11 @@ import org.searchisko.api.util.SearchUtils;
 
 /**
  * Search REST API.
- *
+ * 
  * @author Libor Krzyzanek
  * @author Vlastimil Elias (velias at redhat dot com)
  * @author Lukas Vlcek
- *
+ * 
  */
 @RequestScoped
 @Path("/search")
@@ -59,14 +57,13 @@ public class SearchRestService extends RestServiceBase {
 	@Path("/")
 	@Produces(MediaType.APPLICATION_JSON)
 	@GuestAllowed
-	@CORSSupport
 	public Object search(@Context UriInfo uriInfo) {
 
 		QuerySettings querySettings = null;
 		try {
 
 			if (uriInfo == null) {
-                throw new BadFieldException("uriInfo");
+				throw new BadFieldException("uriInfo");
 			}
 			MultivaluedMap<String, String> params = uriInfo.getQueryParameters();
 			querySettings = querySettingsParser.parseUriParams(params);
@@ -77,24 +74,15 @@ public class SearchRestService extends RestServiceBase {
 			af.put("uuid", responseUuid);
 			return createResponse(searchResponse, af);
 		} catch (IllegalArgumentException e) {
-            throw new BadFieldException("unknown", e);
+			throw new BadFieldException("unknown", e);
 		} catch (IndexMissingException e) {
 			return Response.status(Response.Status.NOT_FOUND).build();
 		}
 	}
 
-	@OPTIONS
-	@Path("/{search_result_uuid}/{hit_id}")
-	@GuestAllowed
-	@CORSSupport(allowedMethods = { CORSSupport.PUT, CORSSupport.POST })
-	public Object writeSearchHitUsedStatisticsRecordOPTIONS() {
-		return Response.ok().build();
-	}
-
 	@PUT
 	@Path("/{search_result_uuid}/{hit_id}")
 	@GuestAllowed
-	@CORSSupport
 	public Object writeSearchHitUsedStatisticsRecordPUT(@PathParam("search_result_uuid") String uuid,
 			@PathParam("hit_id") String contentId, @QueryParam("session_id") String sessionId) {
 		return writeSearchHitUsedStatisticsRecord(uuid, contentId, sessionId);
@@ -103,7 +91,6 @@ public class SearchRestService extends RestServiceBase {
 	@POST
 	@Path("/{search_result_uuid}/{hit_id}")
 	@GuestAllowed
-	@CORSSupport
 	public Object writeSearchHitUsedStatisticsRecordPOST(@PathParam("search_result_uuid") String uuid,
 			@PathParam("hit_id") String contentId, @QueryParam("session_id") String sessionId) {
 		return writeSearchHitUsedStatisticsRecord(uuid, contentId, sessionId);
@@ -113,10 +100,10 @@ public class SearchRestService extends RestServiceBase {
 			@PathParam("hit_id") String contentId, @QueryParam("session_id") String sessionId) {
 
 		if ((uuid = SearchUtils.trimToNull(uuid)) == null) {
-            throw new RequiredFieldException("search_result_uuid");
+			throw new RequiredFieldException("search_result_uuid");
 		}
 		if ((contentId = SearchUtils.trimToNull(contentId)) == null) {
-            throw new RequiredFieldException("hit_id");
+			throw new RequiredFieldException("hit_id");
 		}
 		sessionId = SearchUtils.trimToNull(sessionId);
 		boolean result = searchService.writeSearchHitUsedStatisticsRecord(uuid, contentId, sessionId);

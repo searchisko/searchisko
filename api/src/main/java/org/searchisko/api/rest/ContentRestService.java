@@ -13,7 +13,14 @@ import java.util.logging.Level;
 import javax.enterprise.context.RequestScoped;
 import javax.enterprise.event.Event;
 import javax.inject.Inject;
-import javax.ws.rs.*;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -29,7 +36,6 @@ import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.indices.IndexMissingException;
 import org.elasticsearch.search.sort.SortOrder;
 import org.searchisko.api.ContentObjectFields;
-import org.searchisko.api.annotations.header.CORSSupport;
 import org.searchisko.api.annotations.security.GuestAllowed;
 import org.searchisko.api.annotations.security.ProviderAllowed;
 import org.searchisko.api.events.ContentBeforeIndexedEvent;
@@ -83,7 +89,6 @@ public class ContentRestService extends RestServiceBase {
 	@Path("/")
 	@Produces(MediaType.APPLICATION_JSON)
 	@GuestAllowed
-	@CORSSupport
 	public Object getAllContent(@PathParam("type") String type, @QueryParam("from") Integer from,
 			@QueryParam("size") Integer size, @QueryParam("sort") String sort) {
 		if (type == null || type.isEmpty()) {
@@ -130,7 +135,6 @@ public class ContentRestService extends RestServiceBase {
 	@Path("/{contentId}")
 	@Produces(MediaType.APPLICATION_JSON)
 	@GuestAllowed
-	@CORSSupport
 	public Object getContent(@PathParam("type") String type, @PathParam("contentId") String contentId) {
 
 		// validation
@@ -164,18 +168,6 @@ public class ContentRestService extends RestServiceBase {
 		}
 	}
 
-	@OPTIONS
-	@Path("/{contentId}")
-	@GuestAllowed
-	@CORSSupport(allowedMethods = { CORSSupport.POST, CORSSupport.DELETE }, withSecurity = true)
-	public Object respondToOptionsPreflightRequest(@PathParam("contentId") String contentId) {
-		// validation
-		if (contentId == null || contentId.isEmpty()) {
-			throw new RequiredFieldException("contentId");
-		}
-		return Response.ok().build();
-	}
-
 	/**
 	 * Store new content into Searchisko.
 	 * 
@@ -185,7 +177,6 @@ public class ContentRestService extends RestServiceBase {
 	@Path("/{contentId}")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@ProviderAllowed
-	@CORSSupport
 	public Object pushContent(@PathParam("type") String type, @PathParam("contentId") String contentId,
 			Map<String, Object> content) {
 
@@ -275,7 +266,6 @@ public class ContentRestService extends RestServiceBase {
 	@DELETE
 	@Path("/{contentId}")
 	@ProviderAllowed
-	@CORSSupport
 	public Object deleteContent(@PathParam("type") String type, @PathParam("contentId") String contentId,
 			@QueryParam("ignore_missing") String ignoreMissing) {
 

@@ -27,7 +27,6 @@ import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.core.UriInfo;
 
 import org.elasticsearch.action.search.SearchResponse;
-import org.searchisko.api.annotations.header.CORSSupport;
 import org.searchisko.api.annotations.security.GuestAllowed;
 import org.searchisko.api.annotations.security.ProviderAllowed;
 import org.searchisko.api.rest.exception.RequiredFieldException;
@@ -71,7 +70,6 @@ public class ProjectRestService extends RestEntityServiceBase {
 	@Produces(MediaType.APPLICATION_JSON)
 	@Override
 	@GuestAllowed
-	@CORSSupport
 	public Object getAll(@QueryParam("from") Integer from, @QueryParam("size") Integer size) {
 		Principal principal = securityContext.getUserPrincipal();
 
@@ -87,7 +85,6 @@ public class ProjectRestService extends RestEntityServiceBase {
 	@Produces(MediaType.APPLICATION_JSON)
 	@Override
 	@GuestAllowed
-	@CORSSupport
 	public Object get(@PathParam("id") String id) {
 		Principal principal = securityContext.getUserPrincipal();
 		if (principal == null) {
@@ -136,7 +133,6 @@ public class ProjectRestService extends RestEntityServiceBase {
 	@GET
 	@Path("/search")
 	@Produces(MediaType.APPLICATION_JSON)
-	@CORSSupport
 	public Object search(@Context UriInfo uriInfo) {
 
 		if (uriInfo == null || uriInfo.getQueryParameters().isEmpty() || uriInfo.getQueryParameters().size() > 1) {
