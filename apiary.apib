@@ -50,9 +50,10 @@ In this case user is authenticated from his SSO session established against CAS 
 * __500 ("Internal error")__ - internal application error or misconfiguration, it should be reported to administrators. The body of the HTTP response contains the description of problem.
 
 # Cross Domain Policy
+Client JavaScript applications running directly in user browser can use Searchisko REST API directly, even when served from another domain, thanks to these techniques:
 
-* (Deprecated!) Searchisko provides JSONP technique. If you want to use JSONP just add `callback` parameter to your request.
-* CORS support: Response contains `Access-Control-Allow-Origin` HTTP header, so client browser can use search API directly.
+* [Cross-Origin Resource Sharing (CORS)](http://www.w3.org/TR/cors/) support: Response contains correct `Access-Control-Allow-Origin` and `Access-Control-Allow-Credentials` HTTP response headers if `Origin` request header is used. There is correct handling of CORS Preflight OPTIONS requests also. But DON'T FORGET to set `withCredentials: true` into `XMLHttpRequest` JavaScript objects to make correct use of this method!
+* [JSONP](http://en.wikipedia.org/wiki/JSONP): Searchisko provides JSONP technique, but it works only for GET requests. If you want to use JSONP, just add `callback` parameter to your request.
 
 ---
 

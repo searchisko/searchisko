@@ -1,0 +1,159 @@
+<html>
+<head>
+<title>Searchisko Content rating example</title>
+<meta charset="utf-8">
+<link rel="stylesheet" type="text/css" href="style.css">
+<script src="http://code.jquery.com/jquery-1.9.1.min.js"></script>
+<script type="text/javascript">
+	  var searchisko_url = "http://localhost:8080/searchisko-api"; //"http://dcp-jbossorgdev.rhcloud.com";
+	  
+		function getApiUrlBase() {
+			return searchisko_url + "/v1/rest/" 
+	  }
+
+	  function updateContentFromServer() {
+	  	$.ajax({ 
+				  type : "GET",
+		  	  url: getApiUrlBase() + "search"
+		  	})
+	  		.done(function( searchiskoContentList ) {
+	  			if (showData(searchiskoContentList)){
+	  			  handlePersonalizedRating(searchiskoContentList);
+	  			}
+	  		})
+	  		.error(function(xhr, err) {
+				  alert( "error during 'search' REST call" );
+				});
+		}
+
+		function showData(data){
+			var newHTML = [];
+			var ret = false;
+			for (var i = 0; i < data.hits.hits.length; i++) {
+				hit = data.hits.hits[i];
+				if (hit.fields){
+					ret = true;
+					htmlRow = '';
+					htmlRow += '<div class="hit" id="'+hit._id+'">';
+					htmlRow += '<div class="title">';
+					htmlRow += hit.fields.sys_title;
+					htmlRow += '</div>';
+	
+					htmlRow += '<div class="rating_avg">Content rating: ';
+					if(hit.fields.sys_rating_avg){
+					  htmlRow += hit.fields.sys_rating_avg;
+					} else {
+						htmlRow += "not rated yet";
+					}
+					
+					htmlRow += '</div>';
+	
+					htmlRow += '<div class="rating_num">Number of votes: ';
+					if(hit.fields.sys_rating_num){
+					  htmlRow += hit.fields.sys_rating_num;
+					} else {
+						htmlRow += "not rated yet";
+					}
+					htmlRow += '</div>';
+					
+					htmlRow += '<div class="rating_your">';
+					htmlRow += '</div>';
+	
+					htmlRow += '<div class="rating_vote">';
+					htmlRow += '</div>';
+					
+					
+					htmlRow += '</div>';
+				  newHTML.push(htmlRow);
+				}
+			}
+			$("#content-table").html(newHTML.join(""));
+			return ret;
+		}
+
+		function handlePersonalizedRating(searchiskoContentList){
+			$.ajax({ 
+				type : "GET",
+				url : getApiUrlBase() + "auth/status",
+			  xhrFields:	{ withCredentials: true},
+				success : function( data ) {
+	  			if(data.authenticated){
+	  				allowRating(searchiskoContentList);
+	    			downloadPersonalizedRating(searchiskoContentList);
+	    		} else {
+	    			alert("user is not authenticated so can't make rating");
+	      	}
+	  		}
+			})  		
+  		.error(function(xhr, err) {
+			  alert( "error during 'auth/status' REST call" );
+			});
+		}
+
+		function downloadPersonalizedRating(searchiskoContentList){
+			var ids = [];
+			for (var i = 0; i < searchiskoContentList.hits.hits.length; i++) {
+				ids.push(searchiskoContentList.hits.hits[i]._id);
+			}
+			$.ajax({ 
+				type : "GET",
+				url : getApiUrlBase() + "rating?id="+ids.join("&id="),
+			  xhrFields:	{ withCredentials: true},
+				success : function( searchiskoRatingData ) {
+					if(searchiskoRatingData){
+	  			  showPersonalizedRating(searchiskoContentList, searchiskoRatingData);
+					}
+	  		}
+			})  		
+  		.error(function(xhr, err) {
+			  alert( "error during 'rating' GET REST call" );
+			});				
+		}
+
+		function showPersonalizedRating(searchiskoContentList, searchiskoRatingData){
+			for (var i = 0; i < searchiskoContentList.hits.hits.length; i++) {
+				id = searchiskoContentList.hits.hits[i]._id;
+				if(searchiskoRatingData[id]){
+					$("#"+id+" .rating_your").html("Your rating: " + searchiskoRatingData[id].rating);
+				} else {
+					$("#"+id+" .rating_your").html("Your rating: not rated yet");
+				}
+			}			
+		}
+
+		function allowRating(searchiskoContentList){
+			for (var i = 0; i < searchiskoContentList.hits.hits.length; i++) {
+				id = searchiskoContentList.hits.hits[i]._id;
+				$("#"+id+" .rating_vote").html("Rate <a href='#' onclick='rate(\""+id+"\",\"1\")'>1</a> <a href='#' onclick='rate(\""+id+"\",\"2\")'>2</a> <a href='#' onclick='rate(\""+id+"\",\"3\")'>3</a> <a href='#' onclick='rate(\""+id+"\",\"4\")'>4</a> <a href='#' onclick='rate(\""+id+"\",\"5\")'>5</a>");
+			}			
+		}
+
+		function rate(id, rating){
+			$.ajax({ 
+				type : "POST",
+				url : getApiUrlBase() + "rating/"+id,
+				data : "{\"rating\":"+rating+"}",
+				contentType: "application/json",
+			  xhrFields:	{ withCredentials: true},
+				success : function( searchiskoRatingResponseData ) {
+					if(searchiskoRatingResponseData){
+						$("#"+id+" .rating_avg").html("Content rating: " + searchiskoRatingResponseData.sys_rating_avg);
+						$("#"+id+" .rating_num").html("Number of votes: " + searchiskoRatingResponseData.sys_rating_num);
+						$("#"+id+" .rating_your").html("Your rating: " + rating);
+					}
+	  		}
+			})  		
+  		.error(function(xhr, err) {
+			  alert( "error during 'rating' POST REST call: " + err );
+			});							
+		}
+
+	  $(document).ready( updateContentFromServer());
+	</script>
+</head>
+<body>
+		<h1>Searchisko Content rating example</h1>
+		<h3>Content from Searchisko:</h3>
+		<div id="content-table"></div>
+</body>
+</html>
