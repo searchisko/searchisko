@@ -7,7 +7,7 @@ HOST: http://dcp.jboss.org/v1
 **Searchisko** is a system intended to store and search/retrieve information related to distinct JBoss Community OSS projects, aggregated from various heterogenous source systems. 
 This system is necessary to support/extend synergy of JBoss Community in the era of more distributed development environment, when project teams tend to use third party systems instead of systems provided and maintained by JBoss Community Team.
 
-Distributed Contribution Platform main design attributes:
+Searchisko main design attributes:
 
 * high availability of services (both for common runtime and platform upgrade time)
 * simple, quick and flexible search of stored information
@@ -23,7 +23,8 @@ To support synergy, information stored into Searchisko will be normalized in the
 * tags - so you can obtain all pieces of information tagged with same value
 * activity date - so you can filter/analyze information/contributions by dates when they was created/updated
 
-**Distributed Contribution Platform** is implemented on top of [Searchisko](https://github.com/searchisko/searchisko) and provides **REST API** for information manipulation and search/retrieve described in this document.
+[Searchisko](https://github.com/searchisko/searchisko) and provides **REST API** for information manipulation and search/retrieve described in this document.
+Concrete implementation/deployment of Searchisko for JBoss Community (jboss.org website) is called **Distributed Contribution Platform** or **DCP**. 
 
 [Data structures used on this API are described here](https://github.com/searchisko/searchisko/blob/master/documentation/rest-api/).
 
@@ -38,6 +39,7 @@ Some operation calls on REST API have to be authenticated by the User (eg. Perso
 
 When Searchisko REST API is called directly from Web browser, it may be configured to cooperate with CAS SSO authentication server.
 In this case user is authenticated from his SSO session established against CAS SSO server when 'User Authentication Status API' is called from Web browser.
+DCP uses jboss.org login server running at [sso.jboss.org](https://sso.jboss.org).
 
 
 # Description of usual server HTTP response codes
