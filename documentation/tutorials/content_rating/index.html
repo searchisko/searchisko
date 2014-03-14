@@ -5,7 +5,10 @@
 <link rel="stylesheet" type="text/css" href="style.css">
 <script src="http://code.jquery.com/jquery-1.9.1.min.js"></script>
 <script type="text/javascript">
-	  var searchisko_url = "http://localhost:8080/searchisko-api"; //"http://dcp-jbossorgdev.rhcloud.com";
+
+		// localhost development
+	  //var searchisko_url = "http://localhost:8080/searchisko-api";
+	  var searchisko_url = "http://dcp-stg.jboss.org";
 	  
 		function getApiUrlBase() {
 			return searchisko_url + "/v1/rest/" 
@@ -148,12 +151,16 @@
 			});							
 		}
 
-	  $(document).ready( updateContentFromServer());
+	  $(document).ready( function(){
+	  		$("#searchiskourl").html(searchisko_url);
+	  	  updateContentFromServer();
+	    }
+	  );
 	</script>
 </head>
 <body>
 		<h1>Searchisko Content rating example</h1>
-		<h3>Content from Searchisko:</h3>
+		<h3>Content from Searchisko instance <span id="searchiskourl"></span></h3>
 		<div id="content-table"></div>
 </body>
 </html>
