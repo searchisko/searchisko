@@ -389,6 +389,22 @@ public class ContributorService implements EntityService {
 	}
 
 	/**
+	 * Find contributor which has any value available for given 'type specific code'. These codes are used to map from
+	 * third party unique identifiers to searchisko unique contributor id.
+	 * 
+	 * @param codeName name of 'type specific code', eg. <code>jbossorg_username</code>, <code>github_username</code>
+	 * @return search result - should contain zero or more contributors.
+	 */
+	public SearchResponse findByTypeSpecificCodeExistence(String codeName) {
+		try {
+			return searchClientService.performQueryByOneFieldAnyValue(SEARCH_INDEX_NAME, SEARCH_INDEX_TYPE,
+					FIELD_TYPE_SPECIFIC_CODE + "." + codeName);
+		} catch (SearchIndexMissingException e) {
+			return null;
+		}
+	}
+
+	/**
 	 * Create contributor ID from user related informations.
 	 * 
 	 * @param fullName of user
@@ -712,8 +728,39 @@ public class ContributorService implements EntityService {
 	 * @param contribStructure to get code from
 	 * @return contributor code
 	 */
-	protected static String getContributorCode(Map<String, Object> contribStructure) {
+	public static String getContributorCode(Map<String, Object> contribStructure) {
 		return (String) contribStructure.get(ContributorService.FIELD_CODE);
+	}
+
+	/**
+	 * Get first value of 'Contributor type specific code' from Contributor data structure.
+	 * 
+	 * @param contribStructure to get code from
+	 * @param contributorCodeType type of code to get
+	 * @return first code of given type or null
+	 */
+	@SuppressWarnings("unchecked")
+	public static String getContributorTypeSpecificCodeFirst(Map<String, Object> contribStructure,
+			String contributorCodeType) {
+		try {
+			Map<String, Object> tsc = (Map<String, Object>) contribStructure.get(ContributorService.FIELD_TYPE_SPECIFIC_CODE);
+			if (tsc != null) {
+				Object o = tsc.get(contributorCodeType);
+				if (o instanceof Map) {
+					// bad structure
+				} else if (o instanceof List) {
+					List<Object> l = (List<Object>) o;
+					if (l.size() > 0) {
+						return l.get(0).toString();
+					}
+				} else if (o != null) {
+					return o.toString();
+				}
+			}
+		} catch (ClassCastException e) {
+			// bad structure of contributor record, nothing to return
+		}
+		return null;
 	}
 
 }

@@ -9,16 +9,11 @@ import org.searchisko.api.tasker.UnsupportedTaskException;
 
 /**
  * Reindexing task types supported in Searchisko. See {@link ReindexingTaskFactory}.
- *
+ * 
  * @author Vlastimil Elias (velias at redhat dot com)
  */
 public enum ReindexingTaskTypes {
-	REINDEX_FROM_PERSISTENCE,
-    RENORMALIZE_BY_CONTENT_TYPE,
-    RENORMALIZE_BY_PROJECT_CODE,
-    RENORMALIZE_BY_CONTRIBUTOR_CODE,
-    RENORMALIZE_BY_CONTRIBUTOR_LOOKUP_ID,
-    RENORMALIZE_BY_PROJECT_LOOKUP_ID;
+	REINDEX_FROM_PERSISTENCE, RENORMALIZE_BY_CONTENT_TYPE, RENORMALIZE_BY_PROJECT_CODE, RENORMALIZE_BY_CONTRIBUTOR_CODE, RENORMALIZE_BY_CONTRIBUTOR_LOOKUP_ID, RENORMALIZE_BY_PROJECT_LOOKUP_ID, UPDATE_CONTRIBUTOR_PROFILE;
 
 	/**
 	 * @return task type identifier for this type
@@ -30,7 +25,7 @@ public enum ReindexingTaskTypes {
 
 	/**
 	 * Get instance for given task type identifier.
-	 *
+	 * 
 	 * @param taskType to get instance for
 	 * @return
 	 * @throws UnsupportedTaskException if requested task type is not in enum.

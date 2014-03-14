@@ -85,6 +85,30 @@ public class SearchClientService extends ElasticsearchClientService {
 	}
 
 	/**
+	 * Perform filter query into one ES index and type to get records with any value stored in one field.
+	 * 
+	 * @param indexName to search in
+	 * @param indexType to search
+	 * @param fieldName name of field to search for any value in it
+	 * @return
+	 */
+	public SearchResponse performQueryByOneFieldAnyValue(String indexName, String indexType, String fieldName)
+			throws SearchIndexMissingException {
+		try {
+			SearchRequestBuilder searchBuilder = getClient().prepareSearch(indexName).setTypes(indexType);
+
+			searchBuilder.setFilter(FilterBuilders.notFilter(FilterBuilders.missingFilter(fieldName)));
+			searchBuilder.setQuery(QueryBuilders.matchAllQuery());
+
+			final SearchResponse response = searchBuilder.execute().actionGet();
+			return response;
+		} catch (IndexMissingException e) {
+			log.log(Level.WARNING, e.getMessage());
+			throw new SearchIndexMissingException(e);
+		}
+	}
+
+	/**
 	 * Perform ElasticSearch document GET request.
 	 * 
 	 * @param indexName name of ES index to get document from

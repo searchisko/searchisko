@@ -1,0 +1,26 @@
+{
+    "jbossorg_contributor_profile" : {
+        "_all" : { "enabled" : false },
+        "properties" : {
+	        "sys_contributors"	: {
+						"type" : "multi_field",
+						"fields" : {
+							"fulltext" : { "type": "string", "index": "analyzed", "term_vector": "with_positions_offsets" },
+							"sys_contributors" : { "type": "string", "analyzer": "keyword", "store": "yes" }
+						}
+					},
+					"id"	         : { "type": "string", "store" : "no", "index" : "not_analyzed" },
+					"displayName"	 : { "type": "string", "store" : "no", "index" : "not_analyzed" },
+					"published"	     : { "type": "date",   "store" : "no", "index" : "not_analyzed" },
+					"updated"	     : { "type": "date",   "store" : "no", "index" : "not_analyzed" },
+					"profileUrl"	 : { "type": "string", "store" : "no", "index" : "not_analyzed" },
+					"accounts" : {
+						"type" : "object",
+						"properties" : {
+							"domain"     : { "type": "string", "store" : "no", "index" : "not_analyzed" },
+							"username"   : { "type": "string", "store" : "no", "index" : "not_analyzed" }
+						}
+					}
+        }
+    }
+}

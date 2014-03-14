@@ -16,6 +16,7 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 
+import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.search.SearchHit;
 import org.searchisko.api.ContentObjectFields;
@@ -59,10 +60,10 @@ public class ContributorProfileService {
 	/**
 	 * Updates search index by current entity identified by id
 	 * 
-	 * @param id
-	 * @param entity
+	 * @param id of entity to update
+	 * @param entity to update
 	 */
-	private void updateSearchIndex(String id, Map<String, Object> entity) {
+	protected void updateSearchIndex(String id, Map<String, Object> entity) {
 		if (log.isLoggable(Level.FINE)) {
 			log.log(Level.FINE, "Updating profile, id: {0}, data: {1}", new Object[] { id, entity });
 		}
@@ -71,16 +72,18 @@ public class ContributorProfileService {
 	}
 
 	/**
-	 * Put entity to search index
+	 * Put new entity to search index.
 	 * 
-	 * @param entity
+	 * @param entity to insert
+	 * @return identifier of entity in index
 	 */
-	private void putToSearchIndex(Map<String, Object> entity) {
+	protected String putToSearchIndex(Map<String, Object> entity) {
 		if (log.isLoggable(Level.FINE)) {
 			log.log(Level.FINE, "Updating profile, data: {0}", entity);
 		}
-		searchClientService.performPut(SEARCH_INDEX_NAME, SEARCH_INDEX_TYPE, entity);
+		IndexResponse ir = searchClientService.performPut(SEARCH_INDEX_NAME, SEARCH_INDEX_TYPE, entity);
 		searchClientService.performIndexFlushAndRefresh(SEARCH_INDEX_NAME);
+		return ir.getId();
 	}
 
 	/**
@@ -94,6 +97,8 @@ public class ContributorProfileService {
 	 *          return null instead.
 	 * @return contributor identifier (<code>code</code> field) - can be null if <code><forceCreate</code> is false and
 	 *         contributor record do not exists yet for current user.
+	 * @throws RuntimeException if forceCreate is true but we are not able to obtain contributor identifier (for example
+	 *           external Contributor Profile provider is not available just now)
 	 */
 	public String getContributorId(String contributorCodeType, String contributorCodeValue, boolean forceCreate) {
 
@@ -104,7 +109,7 @@ public class ContributorProfileService {
 						+ contributorCodeType + "=" + contributorCodeValue
 						+ ". For now we use first one, but problem should be resolved by administrator!");
 			}
-			String c = (String) sr.getHits().getHits()[0].getSource().get(ContributorService.FIELD_CODE);
+			String c = ContributorService.getContributorCode(sr.getHits().getHits()[0].getSource());
 			if (SearchUtils.isBlank(c)) {
 				String msg = "Contributor configuration problem! 'code' field is empty for contributor id="
 						+ sr.getHits().getHits()[0].getId();
@@ -118,8 +123,13 @@ public class ContributorProfileService {
 			return null;
 		}
 
-		return createOrUpdateProfile(contributorCodeType, contributorCodeValue);
+		String ret = createOrUpdateProfile(contributorCodeType, contributorCodeValue);
 
+		if (ret == null && forceCreate) {
+			throw new RuntimeException("Contributor record required but we are not able to create it just now.");
+		}
+
+		return ret;
 	}
 
 	/**
@@ -138,9 +148,10 @@ public class ContributorProfileService {
 		// Get matching contributor profile and check when it was updated
 		SearchResponse currentContributors = contributorService.findByTypeSpecificCode(contributorCodeType,
 				contributorCodeValue);
+		String contributorCode = null;
 		if (currentContributors != null && currentContributors.getHits().getTotalHits() > 0) {
 			SearchHit contributor = currentContributors.getHits().getAt(0);
-			String contributorCode = ContributorService.getContributorCode(contributor.getSource());
+			contributorCode = ContributorService.getContributorCode(contributor.getSource());
 
 			SearchResponse currentProfiles = findByContributorCode(contributorCode);
 			if (currentProfiles != null && currentProfiles.getHits().getTotalHits() > 0) {
@@ -148,7 +159,7 @@ public class ContributorProfileService {
 				Object updated = profile.getSource().get(ContentObjectFields.SYS_UPDATED);
 				if (SearchUtils.isDateAfter(updated, thresholdInMinutes)) {
 					log.log(Level.FINE, "Contributor Profile update is not needed right now");
-					return null;
+					return contributorCode;
 				}
 
 			}
@@ -157,17 +168,40 @@ public class ContributorProfileService {
 		log.log(Level.INFO, "Going to update contributor profile for {0}={1}", new String[] { contributorCodeType,
 				contributorCodeValue });
 
+		ContributorProfile profile = takeProfileFromProvider(contributorCodeType, contributorCodeValue);
+		if (profile == null) {
+			return contributorCode;
+		}
+
+		contributorCode = contributorService.createOrUpdateFromProfile(profile, contributorCodeType, contributorCodeValue);
+
+		updateContributorProfileInSearchIndex(contributorCode, profile);
+
+		return contributorCode;
+	}
+
+	/**
+	 * Take contributor profile from provider (ie. download it from remote server etc)
+	 * 
+	 * @param contributorCodeType to take profile for
+	 * @param contributorCodeValue to take profile for
+	 * @return profile data or null if not found
+	 */
+	protected ContributorProfile takeProfileFromProvider(String contributorCodeType, String contributorCodeValue) {
 		// TODO CONTRIBUTOR_PROFILE support for more profile providers, eg. for distinct contributorCodeType
+		if (!FIELD_TSC_JBOSSORG_USERNAME.equals(contributorCodeType)) {
+			throw new IllegalArgumentException("Unsupported contributorCodeType " + contributorCodeType);
+		}
+
 		ContributorProfile profile = contributorProfileProvider.getProfile(contributorCodeValue);
 		if (profile == null) {
 			log.log(Level.WARNING, "User not found in contributor profile provider for {0}={1}", new String[] {
 					contributorCodeType, contributorCodeValue });
-			return null;
 		}
+		return profile;
+	}
 
-		String contributorCode = contributorService.createOrUpdateFromProfile(profile, contributorCodeType,
-				contributorCodeValue);
-
+	protected void updateContributorProfileInSearchIndex(String contributorCode, ContributorProfile profile) {
 		Map<String, Object> profileData = profile.getProfileData();
 		List<String> contributors = new ArrayList<>(1);
 		contributors.add(contributorCode);
@@ -177,22 +211,34 @@ public class ContributorProfileService {
 		// Search profiles with same sys_contributors and update them.
 		SearchResponse matchingProfiles = findByContributorCode(contributorCode);
 		if (matchingProfiles != null && matchingProfiles.getHits().getTotalHits() > 0) {
-			if (matchingProfiles.getHits().getTotalHits() != 1) {
-				log.log(Level.SEVERE, "Data inconsistency: Contributor has more than one profile in search index. "
-						+ "Skipping updating them. Contributor code: {0}", contributorCode);
-			} else {
-				for (SearchHit p : matchingProfiles.getHits().getHits()) {
+			if (matchingProfiles.getHits().getTotalHits() > 1) {
+				log.log(Level.WARNING, "Data inconsistency: Contributor has more than one profile in search index. "
+						+ "Going to update first one and delete others. Contributor code: {0}", contributorCode);
+			}
+			boolean first = true;
+			for (SearchHit p : matchingProfiles.getHits().getHits()) {
+				if (first) {
 					updateSearchIndex(p.getId(), profileData);
+					first = false;
+				} else {
+					try {
+						searchClientService.performDelete(SEARCH_INDEX_NAME, SEARCH_INDEX_TYPE, p.getId());
+					} catch (SearchIndexMissingException e) {
+						// this should never happen, but to be sure
+					}
 				}
 			}
 		} else {
-			putToSearchIndex(profileData);
+			updateSearchIndex(profile.getId(), profileData);
 		}
-
-		return contributorCode;
-
 	}
 
+	/**
+	 * Find Contributor Profile for contributor with defined code.
+	 * 
+	 * @param contributorCode to find for
+	 * @return search response, null in case of missing index
+	 */
 	public SearchResponse findByContributorCode(String contributorCode) {
 		try {
 			return searchClientService.performFilterByOneField(SEARCH_INDEX_NAME, SEARCH_INDEX_TYPE,
@@ -202,7 +248,13 @@ public class ContributorProfileService {
 		}
 	}
 
-	public void deleteByContributorCode(String code) {
+	/**
+	 * Find Contributor Profile for contributor with defined code.
+	 * 
+	 * @param code to delete contributor for
+	 * @return true if profile has been really deleted (it existed)
+	 */
+	public boolean deleteByContributorCode(String code) {
 		SearchResponse matchingProfiles = findByContributorCode(code);
 		if (matchingProfiles != null && matchingProfiles.getHits().getTotalHits() > 0) {
 			for (SearchHit p : matchingProfiles.getHits().getHits()) {
@@ -210,6 +262,49 @@ public class ContributorProfileService {
 					searchClientService.performDelete(SEARCH_INDEX_NAME, SEARCH_INDEX_TYPE, p.getId());
 				} catch (SearchIndexMissingException e) {
 					// OK
+				}
+			}
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+	/**
+	 * Create or Update contributor profiles for all Contributors who have filled defined Contributor's
+	 * "Type Specific Code".
+	 * <p>
+	 * This method may run really long time!
+	 * 
+	 * @param contributorCodeType type of contributor "Type Specific Code" (eg. jboss.org username, github username etc,
+	 *          see <code>FIELD_TSC_xx</code> constants) to update profiles for.
+	 */
+	public void createOrUpdateAllProfiles(String contributorCodeType) {
+		SearchResponse allContributors = contributorService.findByTypeSpecificCodeExistence(contributorCodeType);
+		if (allContributors != null && allContributors.getHits().getTotalHits() > 0) {
+			log.log(Level.INFO, "Going to update {0} contributor profiles for Type Specific Code: " + contributorCodeType,
+					allContributors.getHits().getTotalHits());
+			for (SearchHit p : allContributors.getHits().getHits()) {
+				String contributorCode = ContributorService.getContributorCode(p.getSource());
+				try {
+					if (contributorCode == null) {
+						log.log(Level.WARNING, "Data inconsistency: Contributor with id '{0}' has no 'code'.", p.getId());
+					} else {
+						String contributorCodeValue = ContributorService.getContributorTypeSpecificCodeFirst(p.getSource(),
+								contributorCodeType);
+						ContributorProfile profile = takeProfileFromProvider(contributorCodeType, contributorCodeValue);
+						if (profile != null) {
+							updateContributorProfileInSearchIndex(contributorCode, profile);
+						} else {
+							log.log(
+									Level.WARNING,
+									"We are unable to obtain profile data for Contributor with code '{0}' for type specific code {1}={2}.",
+									new Object[] { contributorCode, contributorCodeType, contributorCodeValue });
+						}
+					}
+				} catch (Exception e) {
+					log.log(Level.WARNING, "ContributorProfile update failed for Contributor with code=" + contributorCode
+							+ " due " + e.getMessage(), e);
 				}
 			}
 		}

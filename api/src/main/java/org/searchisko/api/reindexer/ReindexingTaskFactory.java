@@ -20,6 +20,7 @@ import javax.inject.Named;
 
 import org.searchisko.api.ContentObjectFields;
 import org.searchisko.api.events.ContentBeforeIndexedEvent;
+import org.searchisko.api.service.ContributorProfileService;
 import org.searchisko.api.service.ContributorService;
 import org.searchisko.api.service.ProjectService;
 import org.searchisko.api.service.ProviderService;
@@ -61,6 +62,9 @@ public class ReindexingTaskFactory implements TaskFactory {
 	@Inject
 	protected Event<ContentBeforeIndexedEvent> eventBeforeIndexed;
 
+	@Inject
+	protected ContributorProfileService contributorProfileService;
+
 	@Override
 	public List<String> listSupportedTaskTypes() {
 		List<String> ret = new ArrayList<String>();
@@ -88,6 +92,8 @@ public class ReindexingTaskFactory implements TaskFactory {
 		case RENORMALIZE_BY_PROJECT_LOOKUP_ID:
 			return createRenormalizeByEsLookedUpValuesTask(taskConfig, ProjectService.SEARCH_INDEX_NAME,
 					ProjectService.SEARCH_INDEX_TYPE, CFG_PROJECT_ID_TYPE, CFG_PROJECT_ID_VALUE);
+		case UPDATE_CONTRIBUTOR_PROFILE:
+			return new UpdateContributorProfileTask(contributorProfileService);
 		}
 		throw new UnsupportedTaskException(taskType);
 	}

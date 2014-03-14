@@ -767,6 +767,9 @@ public class ContributorServiceTest extends ESRealClientTestBase {
 			indexInsertDocument(ContributorService.SEARCH_INDEX_NAME, ContributorService.SEARCH_INDEX_TYPE, "30",
 					"{\"code\":\"test3\",\"email\":\"he@test.org\""
 							+ ", \"type_specific_code\" : {\"code_type1\":\"ct1_3\",\"code_type2\":[\"ct2_3_1\",\"test_3_2\"]}" + "}");
+			indexInsertDocument(ContributorService.SEARCH_INDEX_NAME, ContributorService.SEARCH_INDEX_TYPE, "40",
+					"{\"code\":\"test4\",\"email\":\"he@test.org\"" + ", \"type_specific_code\" : {\"code_type1\":\"ct1_4\"}"
+							+ "}");
 			indexFlushAndRefresh(ContributorService.SEARCH_INDEX_NAME);
 			// case - search existing
 			{
@@ -780,6 +783,60 @@ public class ContributorServiceTest extends ESRealClientTestBase {
 
 				sr = tested.findByTypeSpecificCode(CODE_NAME_2, "te");
 				Assert.assertEquals(0, sr.getHits().getTotalHits());
+			}
+
+		} finally {
+			indexDelete(ContributorService.SEARCH_INDEX_NAME);
+			finalizeESClientForUnitTest();
+		}
+	}
+
+	@Test
+	public void findByTypeSpecificCodeExistence() throws InterruptedException {
+		Client client = prepareESClientForUnitTest();
+		ContributorService tested = getTested(client);
+		try {
+			// case - search from noexisting index
+			indexDelete(ContributorService.SEARCH_INDEX_NAME);
+			{
+				Assert.assertNull(tested.findByTypeSpecificCodeExistence(CODE_NAME_1));
+			}
+
+			tested.init();
+			Thread.sleep(100);
+			// case - search from empty index
+			{
+				SearchResponse sr = tested.findByTypeSpecificCodeExistence(CODE_NAME_2);
+				Assert.assertEquals(0, sr.getHits().getTotalHits());
+			}
+
+			indexInsertDocument(ContributorService.SEARCH_INDEX_NAME, ContributorService.SEARCH_INDEX_TYPE, "10",
+					"{\"code\":\"test1\",\"email\":\"me@test.org\""
+							+ ", \"type_specific_code\" : {\"code_type1\":\"test\",\"code_type2\":[\"ct2_1_1\",\"ct2_1_2\"]}" + "}");
+			indexInsertDocument(ContributorService.SEARCH_INDEX_NAME, ContributorService.SEARCH_INDEX_TYPE, "20",
+					"{\"code\":\"test2\",\"email\":\"test@test.org\"" + ", \"type_specific_code\" : {\"code_type2\":\"ct2_2_1\"}"
+							+ "}");
+			indexInsertDocument(ContributorService.SEARCH_INDEX_NAME, ContributorService.SEARCH_INDEX_TYPE, "30",
+					"{\"code\":\"test3\",\"email\":\"he@test.org\"" + ", \"type_specific_code\" : {\"code_type1\":[\"ct1_3\"]}"
+							+ "}");
+			indexInsertDocument(ContributorService.SEARCH_INDEX_NAME, ContributorService.SEARCH_INDEX_TYPE, "40",
+					"{\"code\":\"test4\",\"email\":\"he@test.org\"" + "}");
+			indexFlushAndRefresh(ContributorService.SEARCH_INDEX_NAME);
+			// case - search existing
+			{
+				SearchResponse sr = tested.findByTypeSpecificCodeExistence(CODE_NAME_1);
+				Assert.assertEquals(2, sr.getHits().getTotalHits());
+				Assert.assertEquals("10", sr.getHits().getHits()[0].getId());
+				Assert.assertEquals("30", sr.getHits().getHits()[1].getId());
+
+				sr = tested.findByTypeSpecificCodeExistence(CODE_NAME_2);
+				Assert.assertEquals(2, sr.getHits().getTotalHits());
+				Assert.assertEquals("10", sr.getHits().getHits()[0].getId());
+				Assert.assertEquals("20", sr.getHits().getHits()[1].getId());
+
+				sr = tested.findByTypeSpecificCodeExistence("unknown");
+				Assert.assertEquals(0, sr.getHits().getTotalHits());
+
 			}
 
 		} finally {
@@ -903,6 +960,46 @@ public class ContributorServiceTest extends ESRealClientTestBase {
 
 		source.put(ContributorService.FIELD_CODE, "mycode");
 		Assert.assertEquals("mycode", ContributorService.getContributorCode(source));
+	}
+
+	@Test
+	public void getContributorTypeSpecificCodeFirst() {
+		try {
+			ContributorService.getContributorTypeSpecificCodeFirst(null, "jbuname");
+			Assert.fail("NullPointerException expected");
+		} catch (NullPointerException e) {
+		}
+
+		Map<String, Object> source = new HashMap<>();
+		Assert.assertNull(ContributorService.getContributorTypeSpecificCodeFirst(source, "jbuname"));
+
+		// bad structure
+		source.put(ContributorService.FIELD_TYPE_SPECIFIC_CODE, "");
+		Assert.assertNull(ContributorService.getContributorTypeSpecificCodeFirst(source, "jbuname"));
+
+		Map<String, Object> tsc = new HashMap<>();
+		source.put(ContributorService.FIELD_TYPE_SPECIFIC_CODE, tsc);
+		Assert.assertNull(ContributorService.getContributorTypeSpecificCodeFirst(source, "jbuname"));
+
+		tsc.put("jbuname", "fiolunt");
+		Assert.assertEquals("fiolunt", ContributorService.getContributorTypeSpecificCodeFirst(source, "jbuname"));
+
+		tsc.put("jbunameint", new Integer(20));
+		Assert.assertEquals("20", ContributorService.getContributorTypeSpecificCodeFirst(source, "jbunameint"));
+
+		tsc.put("jbunamemap", new HashMap<>());
+		Assert.assertNull(ContributorService.getContributorTypeSpecificCodeFirst(source, "jbunamemap"));
+
+		List<Object> l = new ArrayList<>();
+		l.add("guterod");
+		l.add("laured");
+		tsc.put("secuname", l);
+		Assert.assertEquals("guterod", ContributorService.getContributorTypeSpecificCodeFirst(source, "secuname"));
+
+		l.add(0, new Integer(50));
+		Assert.assertEquals("50", ContributorService.getContributorTypeSpecificCodeFirst(source, "secuname"));
+
+		Assert.assertEquals("fiolunt", ContributorService.getContributorTypeSpecificCodeFirst(source, "jbuname"));
 	}
 
 	@Test
@@ -1060,8 +1157,8 @@ public class ContributorServiceTest extends ESRealClientTestBase {
 
 				Map<String, List<String>> typeSpecificCodes = new HashMap<>();
 				typeSpecificCodes.put(CODE_NAME_1, TestUtils.createListOfStrings("test"));
-				ContributorProfile profile = new ContributorProfile("John Doe", "john@doe.com", TestUtils.createListOfStrings(
-						"john@doe.com", "john@doe.org"), typeSpecificCodes);
+				ContributorProfile profile = new ContributorProfile("10", "John Doe", "john@doe.com",
+						TestUtils.createListOfStrings("john@doe.com", "john@doe.org"), typeSpecificCodes);
 
 				String code = "John Doe <john@doe.com>";
 				Assert.assertEquals(code, tested.createOrUpdateFromProfile(profile, null, null));
@@ -1089,8 +1186,8 @@ public class ContributorServiceTest extends ESRealClientTestBase {
 				Map<String, List<String>> typeSpecificCodes = new HashMap<>();
 				typeSpecificCodes.put(CODE_NAME_1, TestUtils.createListOfStrings("test", "test2"));
 				typeSpecificCodes.put(CODE_NAME_2, TestUtils.createListOfStrings("test2"));
-				ContributorProfile profile = new ContributorProfile("John Doe", "john@doe.com", TestUtils.createListOfStrings(
-						"john@doe.com", "john@doere.org"), typeSpecificCodes);
+				ContributorProfile profile = new ContributorProfile("10", "John Doe", "john@doe.com",
+						TestUtils.createListOfStrings("john@doe.com", "john@doere.org"), typeSpecificCodes);
 
 				String code = "John Doe <john@doe.com>";
 				Assert.assertEquals(code, tested.createOrUpdateFromProfile(profile, null, null));
@@ -1114,8 +1211,8 @@ public class ContributorServiceTest extends ESRealClientTestBase {
 				Map<String, List<String>> typeSpecificCodes = new HashMap<>();
 				typeSpecificCodes.put(CODE_NAME_1, TestUtils.createListOfStrings("test", "test2"));
 				typeSpecificCodes.put(CODE_NAME_2, TestUtils.createListOfStrings("test2"));
-				ContributorProfile profile = new ContributorProfile("John Doe", "john@doe.com", TestUtils.createListOfStrings(
-						"john@doe.com", "john@doerere.org"), typeSpecificCodes);
+				ContributorProfile profile = new ContributorProfile("10", "John Doe", "john@doe.com",
+						TestUtils.createListOfStrings("john@doe.com", "john@doerere.org"), typeSpecificCodes);
 
 				String code = "John Doe <john@doe.com>";
 				Assert.assertEquals(code, tested.createOrUpdateFromProfile(profile, CODE_NAME_1, "test"));
@@ -1136,8 +1233,8 @@ public class ContributorServiceTest extends ESRealClientTestBase {
 				Map<String, List<String>> typeSpecificCodes = new HashMap<>();
 				typeSpecificCodes.put(CODE_NAME_1, TestUtils.createListOfStrings("test", "test2"));
 				typeSpecificCodes.put(CODE_NAME_2, TestUtils.createListOfStrings("test2", "test3"));
-				ContributorProfile profile = new ContributorProfile("John Doe", "jdoe@doe.com", TestUtils.createListOfStrings(
-						"jdoe@doe.com", "john@doerere.org"), typeSpecificCodes);
+				ContributorProfile profile = new ContributorProfile("10", "John Doe", "jdoe@doe.com",
+						TestUtils.createListOfStrings("jdoe@doe.com", "john@doerere.org"), typeSpecificCodes);
 
 				// note that code is not changed in this case
 				String code = "John Doe <john@doe.com>";
@@ -1155,7 +1252,7 @@ public class ContributorServiceTest extends ESRealClientTestBase {
 			{
 				Mockito.reset(tested.contributorProfileService, tested.taskService.getTaskManager());
 				Map<String, List<String>> typeSpecificCodes = new HashMap<>();
-				ContributorProfile profile = new ContributorProfile("John Doere", "jdoe@doe.com",
+				ContributorProfile profile = new ContributorProfile("10", "John Doere", "jdoe@doe.com",
 						TestUtils.createListOfStrings("jdoe@doe.com", "john@doererere.org"), typeSpecificCodes);
 
 				// note that code is not changed in this case
@@ -1203,7 +1300,7 @@ public class ContributorServiceTest extends ESRealClientTestBase {
 			Map<String, List<String>> typeSpecificCodes = new HashMap<>();
 			typeSpecificCodes.put(CODE_NAME_1, TestUtils.createListOfStrings("test"));
 			typeSpecificCodes.put(CODE_NAME_2, TestUtils.createListOfStrings("test2"));
-			ContributorProfile profile = new ContributorProfile("John Doe", "john@doe.com",
+			ContributorProfile profile = new ContributorProfile("10", "John Doe", "john@doe.com",
 					TestUtils.createListOfStrings("john@doe.com"), typeSpecificCodes);
 
 			String code = "John Doe <john@doe.com>";

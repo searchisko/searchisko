@@ -11,10 +11,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.enterprise.event.Event;
+
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.searchisko.api.ContentObjectFields;
+import org.searchisko.api.service.ContributorProfileService;
 import org.searchisko.api.service.ContributorService;
 import org.searchisko.api.service.ProjectService;
 import org.searchisko.api.service.ProviderService;
@@ -124,6 +127,7 @@ public class ReindexingTaskFactoryTest {
 			Assert.assertEquals(tested.contentPersistenceService, ctask.contentPersistenceService);
 			Assert.assertEquals(tested.providerService, ctask.providerService);
 			Assert.assertEquals(tested.searchClientService, ctask.searchClientService);
+			Assert.assertEquals(tested.eventBeforeIndexed, ctask.eventBeforeIndexed);
 		}
 	}
 
@@ -693,12 +697,29 @@ public class ReindexingTaskFactoryTest {
 		}
 	}
 
+	@Test
+	public void createTask_UPDATE_CONTRIBUTOR_PROFILE() throws TaskConfigurationException, UnsupportedTaskException {
+		ReindexingTaskFactory tested = getTested();
+
+		// case - everything is OK
+		{
+
+			Map<String, Object> config = new HashMap<String, Object>();
+			Task task = tested.createTask(ReindexingTaskTypes.UPDATE_CONTRIBUTOR_PROFILE.getTaskType(), config);
+			Assert.assertEquals(UpdateContributorProfileTask.class, task.getClass());
+			UpdateContributorProfileTask ctask = (UpdateContributorProfileTask) task;
+			Assert.assertEquals(tested.contributorProfileService, ctask.contributorProfileService);
+		}
+	}
+
+	@SuppressWarnings("unchecked")
 	private ReindexingTaskFactory getTested() {
 		ReindexingTaskFactory tested = new ReindexingTaskFactory();
 		tested.contentPersistenceService = Mockito.mock(ContentPersistenceService.class);
 		tested.providerService = Mockito.mock(ProviderService.class);
 		tested.searchClientService = Mockito.mock(SearchClientService.class);
+		tested.eventBeforeIndexed = Mockito.mock(Event.class);
+		tested.contributorProfileService = Mockito.mock(ContributorProfileService.class);
 		return tested;
 	}
-
 }
