@@ -398,6 +398,33 @@
             </build>
         </profile>
         <profile>
+            <id>staging</id>
+            <properties>
+                <filter.name>staging</filter.name>
+                <persistence.xml.jta-data-source>java:jboss/datasources/SearchiskoDS</persistence.xml.jta-data-source>
+                <persistence.xml.hibernate.dialect>org.hibernate.dialect.MySQLDialect</persistence.xml.hibernate.dialect>
+            </properties>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-war-plugin</artifactId>
+                        <configuration>
+                            <packagingExcludes>WEB-INF/searchisko-ds.xml</packagingExcludes>
+                        </configuration>
+                    </plugin>
+                </plugins>
+                <filters>
+                    <filter>src/main/profiles/${filter.name}/sso.properties</filter>
+                </filters>
+                <resources>
+                    <resource>
+                        <directory>src/main/profiles/${filter.name}</directory>
+                    </resource>
+                </resources>
+            </build>
+        </profile>
+        <profile>
             <!-- development on RHEL6 based dev machine with standard installation of jboss EAP bundle -->
             <id>rhel6-dev</id>
             <properties>
