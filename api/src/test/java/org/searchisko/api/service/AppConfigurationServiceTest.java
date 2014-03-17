@@ -8,13 +8,13 @@ package org.searchisko.api.service;
 import java.io.IOException;
 import java.util.logging.Logger;
 
-import org.searchisko.api.model.AppConfiguration.ClientType;
 import org.junit.Assert;
 import org.junit.Test;
+import org.searchisko.api.model.AppConfiguration.ClientType;
 
 /**
  * Unit test for {@link AppConfigurationService}
- *
+ * 
  * @author Vlastimil Elias (velias at redhat dot com)
  */
 public class AppConfigurationServiceTest {
@@ -34,7 +34,7 @@ public class AppConfigurationServiceTest {
 		Assert.assertEquals("/test/path", tested.getAppConfiguration().getAppDataPath());
 		Assert.assertEquals(true, tested.getAppConfiguration().isProviderCreateInitData());
 
-		// case - successful load 2
+		// case - successful load 2 with overlay applied
 		tested.appConfiguration = null;
 		tested.loadConfig("/app2.properties");
 		Assert.assertNotNull(tested.getAppConfiguration());

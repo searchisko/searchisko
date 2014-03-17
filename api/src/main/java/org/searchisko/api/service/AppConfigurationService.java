@@ -5,8 +5,11 @@
  */
 package org.searchisko.api.service;
 
-import org.searchisko.api.model.AppConfiguration;
-import org.searchisko.api.model.AppConfiguration.ClientType;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.annotation.PostConstruct;
 import javax.ejb.Singleton;
@@ -15,15 +18,13 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Produces;
 import javax.inject.Inject;
 import javax.inject.Named;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Properties;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+
+import org.searchisko.api.model.AppConfiguration;
+import org.searchisko.api.model.AppConfiguration.ClientType;
 
 /**
  * Application configuration service
- *
+ * 
  * @author Libor Krzyzanek
  * @author Vlastimil Elias (velias at redhat dot com)
  */
@@ -52,18 +53,29 @@ public class AppConfigurationService {
 		Properties prop = new Properties();
 		InputStream inStream = AppConfigurationService.class.getResourceAsStream(filename);
 		if (inStream == null) {
-			log.log(Level.WARNING, "Cannot load app.properties because not found");
-			throw new IOException("Cannot load app.properties because not found");
+			log.log(Level.WARNING, "Cannot load " + filename + " because not found");
+			throw new IOException("Cannot load " + filename + " because not found");
 		}
 		try {
 			prop.load(inStream);
 		} catch (IOException e) {
-			log.log(Level.WARNING, "Cannot load app.properties", e);
+			log.log(Level.WARNING, "Cannot load " + filename, e);
 			throw e;
 		} finally {
 			inStream.close();
 		}
 
+		inStream = AppConfigurationService.class
+				.getResourceAsStream(filename.replace(".properties", "-overlay.properties"));
+		if (inStream != null) {
+			try {
+				prop.load(inStream);
+			} catch (IOException e) {
+				log.log(Level.WARNING, "Cannot load app.properties", e);
+			} finally {
+				inStream.close();
+			}
+		}
 		appConfiguration = new AppConfiguration(prop.getProperty("es.client.embedded.data.path"));
 
 		String clientType = prop.getProperty("es.client.type", "transport");
@@ -75,8 +87,8 @@ public class AppConfigurationService {
 
 		appConfiguration.setProviderCreateInitData(Boolean.parseBoolean(prop
 				.getProperty("provider.createInitData", "false")));
-		appConfiguration.setContributorProfileUpdateThreshold(
-				Integer.parseInt(prop.getProperty("contributorprofile.updatethreshold", "10")));
+		appConfiguration.setContributorProfileUpdateThreshold(Integer.parseInt(prop.getProperty(
+				"contributorprofile.updatethreshold", "10")));
 
 		AppConfiguration.ContributorProfileProviderConfig cppc = new AppConfiguration.ContributorProfileProviderConfig(
 				prop.getProperty("contributorprofile.provider.urlbase"),
