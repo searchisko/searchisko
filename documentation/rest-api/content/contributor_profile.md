@@ -1,10 +1,10 @@
-Contributor Profile Search API
-==============================
+Contributor Profile
+===================
 
 **sys\_type = "contributor_profile"**
 
-This data type stored in Searchisko contains additional information about contributor profiles.
-Data are mainly from [JBoss Community](https://community.jboss.org).
+This data type stored in Searchisko contains public information about Contributors.
+Data for DCP come from jboss.org user profile managed in Jive - [JBoss Community](https://community.jboss.org).
 
 
 ## Data structure
@@ -82,6 +82,6 @@ Description of data fields for the issue record:
 	<tr><td>timeZone</td><td>Timezone defined by Profile Provider for the profile</td></tr>
 	<tr><td>thumbnailUrl</td><td>URL containing Profile's Avatar </td></tr>
 	<tr><td>sys_description, aboutMe</td><td>BIO</td></tr>
-	<tr><td>accounts</td><td>Array of Accounts related to this profile.</td></tr>
+	<tr><td>accounts</td><td>Array of Accounts in other systems (eg, Twitter, Facebook etc.) related to this profile.</td></tr>
 </tbody>
 </table>

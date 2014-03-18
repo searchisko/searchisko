@@ -104,7 +104,7 @@ public class AuthenticationUtilService {
 				if (uname != null) {
 					// TODO CONTRIBUTOR_PROFILE we should consider to run update in another thread not to block caller
 					contributorProfileService.createOrUpdateProfile(
-							mapAuthenticationSchemeToContrinutorCodeType(securityContext.getAuthenticationScheme()), uname);
+							mapAuthenticationSchemeToContrinutorCodeType(securityContext.getAuthenticationScheme()), uname, false);
 				}
 			} catch (Exception e) {
 				log.log(Level.WARNING, "Contributor profile update failed: " + e.getMessage(), e);

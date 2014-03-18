@@ -39,7 +39,7 @@ Other data types considered in the future:
 + maven repository artifact
 
 ##Data structures for Management API
-A bunch of other information is necessary to run the Searchisko. This is managed using a 'Management API'.
+A bunch of other information is necessary to run the Searchisko. This is managed using a 'Management API' and is not public.
  
 The [`management`](management) subfolder in this directory contains files with 
 descriptions of document structures for the management API:

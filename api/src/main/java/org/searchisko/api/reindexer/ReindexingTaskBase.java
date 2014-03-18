@@ -19,9 +19,9 @@ import org.searchisko.api.tasker.Task;
 
 /**
  * Base abstract class for tasks used to reindex content in ElasticSearch search indices. Content matching some builder
- * is loaded from ES index using Scroll mechanism, some action is applied to document, and then it is stored back to
- * the ES index using bulk request.
- *
+ * is loaded from ES index using Scroll mechanism, some action is applied to document, and then it is stored back to the
+ * ES index using bulk request.
+ * 
  * @author Vlastimil Elias (velias at redhat dot com)
  */
 public abstract class ReindexingTaskBase extends Task {
@@ -88,7 +88,7 @@ public abstract class ReindexingTaskBase extends Task {
 
 	/**
 	 * Validate task configuration, called before reindexing
-	 *
+	 * 
 	 * @return true if we can continue with processing
 	 * @throws Exception if configuration is not valid
 	 */
@@ -96,7 +96,7 @@ public abstract class ReindexingTaskBase extends Task {
 
 	/**
 	 * Prepare search request to get ES documents to be reindexed.
-	 *
+	 * 
 	 * @param client to be used
 	 * @return search request builder
 	 */
@@ -104,7 +104,7 @@ public abstract class ReindexingTaskBase extends Task {
 
 	/**
 	 * Process hit
-	 *
+	 * 
 	 * @param client which can be used to access ES cluster
 	 * @param brb which can be used to store document back into ES cluster
 	 * @param hit to be processed
@@ -113,7 +113,7 @@ public abstract class ReindexingTaskBase extends Task {
 
 	/**
 	 * Perform some actions after whole reindexing is finished (indexes flush etc)
-	 *
+	 * 
 	 * @param client to be used to access ES cluster functions
 	 */
 	protected abstract void performPostReindexingProcessing(Client client);

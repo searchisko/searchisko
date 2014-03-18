@@ -6,7 +6,6 @@
 package org.searchisko.contribprofile.provider;
 
 import java.io.InputStream;
-import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -87,11 +86,9 @@ public class Jive6ContributorProfileProviderTest {
 		// sys_updated is not tested because it contains current time
 		contributorProfile.remove(ContentObjectFields.SYS_UPDATED);
 
-		StringWriter stringWriter = new StringWriter();
-		IOUtils.copy(Jive6ContributorProfileProviderTest.class.getResourceAsStream("Jive6ProfileDataConverted.json"),
-				stringWriter, "UTF-8");
-		String expectedString = stringWriter.toString();
-		TestUtils.assertJsonContent(expectedString, contributorProfile);
+		TestUtils.assertJsonContent(
+				TestUtils.loadJSONFromClasspathFile("/org/searchisko/contribprofile/provider/Jive6ProfileDataConverted.json"),
+				contributorProfile);
 	}
 
 	@Test

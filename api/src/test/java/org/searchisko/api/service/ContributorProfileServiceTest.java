@@ -35,15 +35,31 @@ public class ContributorProfileServiceTest extends ESRealClientTestBase {
 	private static final String CODE_1 = "john doe <test@test.org>";
 
 	@Test
+	public void isContributorCodeTypesSupported() {
+		ContributorProfileService tested = getTested(null);
+		Assert.assertFalse(tested.isContributorCodeTypesSupported(null));
+		Assert.assertFalse(tested.isContributorCodeTypesSupported(""));
+		Assert.assertFalse(tested.isContributorCodeTypesSupported("unknown"));
+		Assert.assertTrue(tested.isContributorCodeTypesSupported(ContributorProfileService.FIELD_TSC_JBOSSORG_USERNAME));
+
+	}
+
+	@Test
 	public void takeProfileFromProvider() {
 		ContributorProfileService tested = getTested(null);
 
+		// case - supported profile provider - profile not loaded
+		Mockito.when(tested.contributorProfileProvider.getProfile("aaa")).thenReturn(null);
+		Assert.assertNull(tested.takeProfileFromProvider(ContributorProfileService.FIELD_TSC_JBOSSORG_USERNAME, "aaa"));
+
+		// case - supported profile provider - profile loaded
+		Mockito.reset(tested.contributorProfileProvider);
 		ContributorProfile pm = Mockito.mock(ContributorProfile.class);
 		Mockito.when(tested.contributorProfileProvider.getProfile("aaa")).thenReturn(pm);
-
 		Assert.assertEquals(pm,
 				tested.takeProfileFromProvider(ContributorProfileService.FIELD_TSC_JBOSSORG_USERNAME, "aaa"));
 
+		// case - unsupported profile provider
 		try {
 			tested.takeProfileFromProvider(ContributorProfileService.FIELD_TSC_GITHUB_USERNAME, "aaa");
 			Assert.fail("IllegalArgumentException expected");

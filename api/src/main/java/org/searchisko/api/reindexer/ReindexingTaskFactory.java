@@ -93,7 +93,7 @@ public class ReindexingTaskFactory implements TaskFactory {
 			return createRenormalizeByEsLookedUpValuesTask(taskConfig, ProjectService.SEARCH_INDEX_NAME,
 					ProjectService.SEARCH_INDEX_TYPE, CFG_PROJECT_ID_TYPE, CFG_PROJECT_ID_VALUE);
 		case UPDATE_CONTRIBUTOR_PROFILE:
-			return new UpdateContributorProfileTask(contributorProfileService);
+			return new UpdateContributorProfileTask(contributorProfileService, taskConfig);
 		}
 		throw new UnsupportedTaskException(taskType);
 	}
@@ -134,7 +134,15 @@ public class ReindexingTaskFactory implements TaskFactory {
 				eventBeforeIndexed, sysContentType);
 	}
 
-	private String getMandatoryConfigString(Map<String, Object> taskConfig, String propertyName)
+	/**
+	 * Utility method to get config String value with validation.
+	 * 
+	 * @param taskConfig to get value from
+	 * @param propertyName to get value for
+	 * @return String value
+	 * @throws TaskConfigurationException if value is not present or is empty
+	 */
+	public static String getMandatoryConfigString(Map<String, Object> taskConfig, String propertyName)
 			throws TaskConfigurationException {
 		if (taskConfig == null)
 			throw new TaskConfigurationException(propertyName + " configuration property must be defined");
@@ -147,15 +155,56 @@ public class ReindexingTaskFactory implements TaskFactory {
 		return val.toString().trim();
 	}
 
-	private String[] getMandatoryConfigStringArray(Map<String, Object> taskConfig, String propertyName)
+	/**
+	 * Utility method to get config String array value with validation.
+	 * 
+	 * @param taskConfig to get value from
+	 * @param propertyName to get value for
+	 * @return String array
+	 * @throws TaskConfigurationException if array value is not present or is empty
+	 */
+	public static String[] getMandatoryConfigStringArray(Map<String, Object> taskConfig, String propertyName)
 			throws TaskConfigurationException {
-		if (taskConfig == null)
-			throw new TaskConfigurationException(propertyName + " configuration property must be defined");
+		return getConfigStringArrayImpl(taskConfig, propertyName, true);
+	}
+
+	/**
+	 * Utility method to get config String array value.
+	 * 
+	 * @param taskConfig to get value from
+	 * @param propertyName to get value for
+	 * @return String array
+	 */
+	public static String[] getConfigStringArray(Map<String, Object> taskConfig, String propertyName)
+			throws TaskConfigurationException {
+		return getConfigStringArrayImpl(taskConfig, propertyName, false);
+	}
+
+	/**
+	 * Utility method to get config String array value with validation.
+	 * 
+	 * @param taskConfig to get value from
+	 * @param propertyName to get value for
+	 * @return String array
+	 * @throws TaskConfigurationException if array value is not present or is empty
+	 */
+	private static String[] getConfigStringArrayImpl(Map<String, Object> taskConfig, String propertyName,
+			boolean mandatory) throws TaskConfigurationException {
+		if (taskConfig == null) {
+			if (mandatory)
+				throw new TaskConfigurationException(propertyName + " configuration property must be defined");
+			else
+				return null;
+		}
 
 		Object val = taskConfig.get(propertyName);
 
-		if (val == null)
-			throw new TaskConfigurationException(propertyName + " configuration property must be defined");
+		if (val == null) {
+			if (mandatory)
+				throw new TaskConfigurationException(propertyName + " configuration property must be defined");
+			else
+				return null;
+		}
 
 		Set<String> ret = new LinkedHashSet<String>();
 		if (val instanceof Collection) {
@@ -174,13 +223,16 @@ public class ReindexingTaskFactory implements TaskFactory {
 			addToSet(ret, val.toString());
 		}
 
-		if (ret.isEmpty())
+		if (mandatory && ret.isEmpty())
 			throw new TaskConfigurationException(propertyName + " configuration property must be defined");
+
+		if (ret.isEmpty())
+			return null;
 
 		return ret.toArray(new String[ret.size()]);
 	}
 
-	private void addToSet(Set<String> ret, String string) {
+	private static void addToSet(Set<String> ret, String string) {
 		if (string != null) {
 			string = string.trim();
 			if (!string.isEmpty()) {

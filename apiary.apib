@@ -1426,8 +1426,15 @@ Get all content where `sys_contributors` contains value passed in task configura
 ```
 
 * `update_contributor_profile`
-Create/Update contributor profile for all contributors listed in system with filled identifier for some Profile provider (in case of DCP only profile provider is community.jboss.org).
+Create/Update 'contributor profile' and Contributor records from Profile provider defined in `contributor_type_specific_code_type` config field. In case of DCP only profile provider available is community.jboss.org under `jbossorg_username`.
+Optional `contributor_type_specific_code_value` config field allow s you to list usernames to create/update. All contributor profiles for given type are updated if not provided.
 
+```
+{
+  "contributor_type_specific_code_type" : "jbossorg_username",
+  "contributor_type_specific_code_value" : ["jdoyle","quimby","homers"]
+}
+```
 
 ##### Response content
 The response contains a JSON structure with `id` of created task.

@@ -233,17 +233,18 @@ public class AuthenticationUtilServiceTest {
 			Mockito.reset(tested.contributorProfileService);
 			tested.updateAuthenticatedContributorProfile(securityContext);
 			Mockito.verify(tested.contributorProfileService).createOrUpdateProfile(
-					ContributorProfileService.FIELD_TSC_JBOSSORG_USERNAME, "aa");
+					ContributorProfileService.FIELD_TSC_JBOSSORG_USERNAME, "aa", false);
 		}
 
 		// case - service call exception is not propagated
 		{
 			Mockito.reset(tested.contributorProfileService);
 			Mockito.doThrow(new RuntimeException("Test exception from profile update"))
-					.when(tested.contributorProfileService).createOrUpdateProfile(Mockito.anyString(), Mockito.anyString());
+					.when(tested.contributorProfileService)
+					.createOrUpdateProfile(Mockito.anyString(), Mockito.anyString(), Mockito.eq(false));
 			tested.updateAuthenticatedContributorProfile(securityContext);
 			Mockito.verify(tested.contributorProfileService).createOrUpdateProfile(
-					ContributorProfileService.FIELD_TSC_JBOSSORG_USERNAME, "aa");
+					ContributorProfileService.FIELD_TSC_JBOSSORG_USERNAME, "aa", false);
 		}
 
 		// case - no service call for unsupported auth scheme
@@ -251,7 +252,8 @@ public class AuthenticationUtilServiceTest {
 		{
 			Mockito.reset(tested.contributorProfileService);
 			Mockito.doThrow(new RuntimeException("Test exception from profile update"))
-					.when(tested.contributorProfileService).createOrUpdateProfile(Mockito.anyString(), Mockito.anyString());
+					.when(tested.contributorProfileService)
+					.createOrUpdateProfile(Mockito.anyString(), Mockito.anyString(), Mockito.eq(false));
 			tested.updateAuthenticatedContributorProfile(securityContext);
 			Mockito.verifyZeroInteractions(tested.contributorProfileService);
 		}

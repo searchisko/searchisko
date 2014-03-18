@@ -128,6 +128,7 @@ public class Jive6ContributorProfileProvider implements ContributorProfileProvid
 		List<Map<String, Object>> emailsObject = (List<Map<String, Object>>) map.get("emails");
 
 		Map<String, List<String>> typeSpecificCodes = new HashMap<>();
+		// TODO CONTRIBUTOR_PROFILE Jive6 provider make type_specific_code obtaining from jive data configurable
 		addTypeSpecificCode(typeSpecificCodes, ContributorProfileService.FIELD_TSC_JBOSSORG_USERNAME,
 				(String) jiveObject.get("username"));
 		addTypeSpecificCode(typeSpecificCodes, ContributorProfileService.FIELD_TSC_GITHUB_USERNAME,
@@ -155,6 +156,7 @@ public class Jive6ContributorProfileProvider implements ContributorProfileProvid
 		profileData.put(ContentObjectFields.SYS_CONTENT_PROVIDER, "jbossorg");
 		profileData.put(ContentObjectFields.SYS_TYPE, "contributor_profile");
 		profileData.put(ContentObjectFields.SYS_CONTENT_TYPE, "jbossorg_contributor_profile");
+		profileData.put(ContentObjectFields.SYS_CONTENT_ID, username);
 
 		profileData.put("id", "jbossorg_contributor_profile-" + username);
 		profileData.put(ContentObjectFields.SYS_ID, "jbossorg_contributor_profile-" + username);

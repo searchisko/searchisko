@@ -6,8 +6,10 @@
 package org.searchisko.api.service;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -37,6 +39,10 @@ public class ContributorProfileService {
 
 	public static final String FIELD_TSC_JBOSSORG_USERNAME = "jbossorg_username";
 	public static final String FIELD_TSC_GITHUB_USERNAME = "github_username";
+	private static final Set<String> TSC_SUPPORTED = new HashSet<>();
+	static {
+		TSC_SUPPORTED.add(FIELD_TSC_JBOSSORG_USERNAME);
+	}
 
 	public static final String SEARCH_INDEX_NAME = "data_contributor_profile";
 
@@ -87,6 +93,20 @@ public class ContributorProfileService {
 	}
 
 	/**
+	 * Check if Contributor type specific codes is supported by this service - we have contributor profile provider for it
+	 * available, so it can be passed into other methods in this service which require external provider.
+	 * <p>
+	 * // TODO CONTRIBUTOR_PROFILE support for more profile providers, eg. for distinct contributorCodeType
+	 * 
+	 * @param type of contributor "Type Specific Code" (eg. jboss.org username, github username etc, see
+	 *          <code>FIELD_TSC_xx</code> constants) to check
+	 * @return true if given type is supported - we can handle profile update for it.
+	 */
+	public boolean isContributorCodeTypesSupported(String contributorCodeType) {
+		return TSC_SUPPORTED.contains(contributorCodeType);
+	}
+
+	/**
 	 * Get contributor id based on contributor's "Type Specific Code", eg. obtained from authentication.
 	 * 
 	 * @param contributorCodeType type of contributor's "Type Specific Code" (eg. jboss.org username, github username etc,
@@ -123,7 +143,7 @@ public class ContributorProfileService {
 			return null;
 		}
 
-		String ret = createOrUpdateProfile(contributorCodeType, contributorCodeValue);
+		String ret = createOrUpdateProfile(contributorCodeType, contributorCodeValue, false);
 
 		if (ret == null && forceCreate) {
 			throw new RuntimeException("Contributor record required but we are not able to create it just now.");
@@ -138,30 +158,34 @@ public class ContributorProfileService {
 	 * @param contributorCodeType type of contributor "Type Specific Code" (eg. jboss.org username, github username etc,
 	 *          see <code>FIELD_TSC_xx</code> constants)
 	 * @param contributorCodeValue of code to get create or update profile for.
+	 * @param forceUpdate if true profile is updated always. If false then last update date is consulted and update
+	 *          performed only for old profiles.
 	 * @return Contributor's <code>code</code>
 	 */
-	public String createOrUpdateProfile(String contributorCodeType, String contributorCodeValue) {
+	public String createOrUpdateProfile(String contributorCodeType, String contributorCodeValue, boolean forceUpdate) {
 		log.log(Level.FINE, "Create or update profile for username {0}", contributorCodeValue);
 
-		int thresholdInMinutes = appConfigurationService.getAppConfiguration().getContributorProfileUpdateThreshold();
-
-		// Get matching contributor profile and check when it was updated
-		SearchResponse currentContributors = contributorService.findByTypeSpecificCode(contributorCodeType,
-				contributorCodeValue);
 		String contributorCode = null;
-		if (currentContributors != null && currentContributors.getHits().getTotalHits() > 0) {
-			SearchHit contributor = currentContributors.getHits().getAt(0);
-			contributorCode = ContributorService.getContributorCode(contributor.getSource());
+		if (forceUpdate) {
+			int thresholdInMinutes = appConfigurationService.getAppConfiguration().getContributorProfileUpdateThreshold();
+			// Get matching contributor profile and check when it was updated
+			SearchResponse currentContributors = contributorService.findByTypeSpecificCode(contributorCodeType,
+					contributorCodeValue);
 
-			SearchResponse currentProfiles = findByContributorCode(contributorCode);
-			if (currentProfiles != null && currentProfiles.getHits().getTotalHits() > 0) {
-				SearchHit profile = currentProfiles.getHits().getAt(0);
-				Object updated = profile.getSource().get(ContentObjectFields.SYS_UPDATED);
-				if (SearchUtils.isDateAfter(updated, thresholdInMinutes)) {
-					log.log(Level.FINE, "Contributor Profile update is not needed right now");
-					return contributorCode;
+			if (currentContributors != null && currentContributors.getHits().getTotalHits() > 0) {
+				SearchHit contributor = currentContributors.getHits().getAt(0);
+				contributorCode = ContributorService.getContributorCode(contributor.getSource());
+
+				SearchResponse currentProfiles = findByContributorCode(contributorCode);
+				if (currentProfiles != null && currentProfiles.getHits().getTotalHits() > 0) {
+					SearchHit profile = currentProfiles.getHits().getAt(0);
+					Object updated = profile.getSource().get(ContentObjectFields.SYS_UPDATED);
+					if (SearchUtils.isDateAfter(updated, thresholdInMinutes)) {
+						log.log(Level.FINE, "Contributor Profile update is not needed right now");
+						return contributorCode;
+					}
+
 				}
-
 			}
 		}
 
@@ -188,8 +212,7 @@ public class ContributorProfileService {
 	 * @return profile data or null if not found
 	 */
 	protected ContributorProfile takeProfileFromProvider(String contributorCodeType, String contributorCodeValue) {
-		// TODO CONTRIBUTOR_PROFILE support for more profile providers, eg. for distinct contributorCodeType
-		if (!FIELD_TSC_JBOSSORG_USERNAME.equals(contributorCodeType)) {
+		if (!isContributorCodeTypesSupported(contributorCodeType)) {
 			throw new IllegalArgumentException("Unsupported contributorCodeType " + contributorCodeType);
 		}
 
@@ -278,36 +301,52 @@ public class ContributorProfileService {
 	 * 
 	 * @param contributorCodeType type of contributor "Type Specific Code" (eg. jboss.org username, github username etc,
 	 *          see <code>FIELD_TSC_xx</code> constants) to update profiles for.
+	 * @return number of created/updated profiles. -1 if 'contributorCodeType' is not supported.
 	 */
-	public void createOrUpdateAllProfiles(String contributorCodeType) {
-		SearchResponse allContributors = contributorService.findByTypeSpecificCodeExistence(contributorCodeType);
-		if (allContributors != null && allContributors.getHits().getTotalHits() > 0) {
-			log.log(Level.INFO, "Going to update {0} contributor profiles for Type Specific Code: " + contributorCodeType,
-					allContributors.getHits().getTotalHits());
-			for (SearchHit p : allContributors.getHits().getHits()) {
-				String contributorCode = ContributorService.getContributorCode(p.getSource());
-				try {
-					if (contributorCode == null) {
-						log.log(Level.WARNING, "Data inconsistency: Contributor with id '{0}' has no 'code'.", p.getId());
-					} else {
-						String contributorCodeValue = ContributorService.getContributorTypeSpecificCodeFirst(p.getSource(),
-								contributorCodeType);
-						ContributorProfile profile = takeProfileFromProvider(contributorCodeType, contributorCodeValue);
-						if (profile != null) {
-							updateContributorProfileInSearchIndex(contributorCode, profile);
+	public int createOrUpdateAllProfiles(String contributorCodeType) {
+		if (isContributorCodeTypesSupported(contributorCodeType)) {
+			int ret = 0;
+			SearchResponse allContributors = contributorService.findByTypeSpecificCodeExistence(contributorCodeType);
+			if (allContributors != null && allContributors.getHits().getTotalHits() > 0) {
+				log.log(Level.INFO, "Going to update {0} contributor profiles for Type Specific Code: " + contributorCodeType,
+						allContributors.getHits().getTotalHits());
+				for (SearchHit p : allContributors.getHits().getHits()) {
+					ret++;
+					String contributorEntityId = p.getId();
+					Map<String, Object> contributorEntityContent = p.getSource();
+					String contributorCode = ContributorService.getContributorCode(contributorEntityContent);
+					try {
+						if (contributorCode == null) {
+							log.log(Level.WARNING, "Data inconsistency: Contributor with id '{0}' has no 'code'.",
+									contributorEntityId);
 						} else {
-							log.log(
-									Level.WARNING,
-									"We are unable to obtain profile data for Contributor with code '{0}' for type specific code {1}={2}.",
-									new Object[] { contributorCode, contributorCodeType, contributorCodeValue });
+							String contributorCodeValue = ContributorService.getContributorTypeSpecificCodeFirst(
+									contributorEntityContent, contributorCodeType);
+							ContributorProfile profile = takeProfileFromProvider(contributorCodeType, contributorCodeValue);
+							if (profile != null) {
+								// update Contributor record to add latest codes used for mappings
+								contributorService.createOrUpdateFromProfile(profile, contributorCodeType, contributorCodeValue);
+								// update Contributor profile
+								updateContributorProfileInSearchIndex(contributorCode, profile);
+							} else {
+								log.log(
+										Level.WARNING,
+										"We are unable to obtain profile data for Contributor with code '{0}' for type specific code {1}={2}.",
+										new Object[] { contributorCode, contributorCodeType, contributorCodeValue });
+							}
 						}
+					} catch (Exception e) {
+						log.log(Level.WARNING, "ContributorProfile update failed for Contributor with code=" + contributorCode
+								+ " due " + e.getMessage(), e);
 					}
-				} catch (Exception e) {
-					log.log(Level.WARNING, "ContributorProfile update failed for Contributor with code=" + contributorCode
-							+ " due " + e.getMessage(), e);
 				}
 			}
+			return ret;
+		} else {
+			log.log(Level.FINE,
+					"We can't update profiles for type specific code {1} because no profile provider is available.",
+					contributorCodeType);
+			return -1;
 		}
 	}
-
 }

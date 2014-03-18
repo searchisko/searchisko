@@ -701,14 +701,27 @@ public class ReindexingTaskFactoryTest {
 	public void createTask_UPDATE_CONTRIBUTOR_PROFILE() throws TaskConfigurationException, UnsupportedTaskException {
 		ReindexingTaskFactory tested = getTested();
 
+		// case - invalid configuration throws exception
+		{
+			try {
+				Map<String, Object> config = new HashMap<String, Object>();
+				tested.createTask(ReindexingTaskTypes.UPDATE_CONTRIBUTOR_PROFILE.getTaskType(), config);
+				Assert.fail("TaskConfigurationException expected");
+			} catch (TaskConfigurationException e) {
+				// OK
+			}
+		}
+
 		// case - everything is OK
 		{
-
 			Map<String, Object> config = new HashMap<String, Object>();
+			config.put(UpdateContributorProfileTask.CFG_CONTRIBUTOR_TYPE_SPECIFIC_CODE_TYPE, "cct");
+			Mockito.when(tested.contributorProfileService.isContributorCodeTypesSupported("cct")).thenReturn(true);
 			Task task = tested.createTask(ReindexingTaskTypes.UPDATE_CONTRIBUTOR_PROFILE.getTaskType(), config);
 			Assert.assertEquals(UpdateContributorProfileTask.class, task.getClass());
 			UpdateContributorProfileTask ctask = (UpdateContributorProfileTask) task;
 			Assert.assertEquals(tested.contributorProfileService, ctask.contributorProfileService);
+
 		}
 	}
 

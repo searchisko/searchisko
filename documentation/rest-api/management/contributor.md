@@ -39,4 +39,4 @@ Example of contributor configuration:
 This information is not considered as public! If you have 
 to have some some public contributor informations (aka contributor profile), then simply create 
 necessary Content type and fill it with public contributor data. Searchisko has some support for this, 
-see issue #24 and [`contributor_info`](../content/contributor_info.md) content type.
+see issue #24 and [`contributor_profile`](../content/contributor_profile.md) content type.

@@ -440,7 +440,8 @@ public class ContributorService implements EntityService {
 	}
 
 	/**
-	 * Create or update Contributor record from {@link ContributorProfile} informations.
+	 * Create or update Contributor record from {@link ContributorProfile} informations loaded from provider using type
+	 * specific code.
 	 * 
 	 * @param profile to create/update Contributor from
 	 * @param typeSpecificCodeField profile has been loaded for. Can be null not to use this code to search for
