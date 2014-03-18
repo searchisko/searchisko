@@ -15,9 +15,10 @@
 	  }
 
 	  function updateContentFromServer() {
+		  var q = $("#q").val();
 	  	$.ajax({ 
 				  type : "GET",
-		  	  url: getApiUrlBase() + "search"
+		  	  url: getApiUrlBase() + "search?query=" + q
 		  	})
 	  		.done(function( searchiskoContentList ) {
 	  			if (showData(searchiskoContentList)){
@@ -161,6 +162,7 @@
 <body>
 		<h1>Searchisko Content rating example</h1>
 		<h3>Content from Searchisko instance <span id="searchiskourl"></span></h3>
+		Query: <input type="text" id="q" value="ahoj"/><button onclick="updateContentFromServer();">Refresh content</button><br/><br/>
 		<div id="content-table"></div>
 </body>
 </html>
