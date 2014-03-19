@@ -15,13 +15,16 @@ import java.util.logging.Logger;
 
 import javax.ejb.Singleton;
 import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.event.Observes;
 import javax.inject.Inject;
 import javax.inject.Named;
 
-import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.search.SearchHit;
 import org.searchisko.api.ContentObjectFields;
+import org.searchisko.api.events.ContributorCodeChangedEvent;
+import org.searchisko.api.events.ContributorDeletedEvent;
+import org.searchisko.api.events.ContributorMergedEvent;
 import org.searchisko.api.util.SearchUtils;
 import org.searchisko.contribprofile.model.ContributorProfile;
 import org.searchisko.contribprofile.provider.Jive6ContributorProfileProvider;
@@ -75,21 +78,6 @@ public class ContributorProfileService {
 		}
 		searchClientService.performPut(SEARCH_INDEX_NAME, SEARCH_INDEX_TYPE, id, entity);
 		searchClientService.performIndexFlushAndRefresh(SEARCH_INDEX_NAME);
-	}
-
-	/**
-	 * Put new entity to search index.
-	 * 
-	 * @param entity to insert
-	 * @return identifier of entity in index
-	 */
-	protected String putToSearchIndex(Map<String, Object> entity) {
-		if (log.isLoggable(Level.FINE)) {
-			log.log(Level.FINE, "Updating profile, data: {0}", entity);
-		}
-		IndexResponse ir = searchClientService.performPut(SEARCH_INDEX_NAME, SEARCH_INDEX_TYPE, entity);
-		searchClientService.performIndexFlushAndRefresh(SEARCH_INDEX_NAME);
-		return ir.getId();
 	}
 
 	/**
@@ -226,10 +214,7 @@ public class ContributorProfileService {
 
 	protected void updateContributorProfileInSearchIndex(String contributorCode, ContributorProfile profile) {
 		Map<String, Object> profileData = profile.getProfileData();
-		List<String> contributors = new ArrayList<>(1);
-		contributors.add(contributorCode);
-
-		profileData.put(ContentObjectFields.SYS_CONTRIBUTORS, contributors);
+		putContributorCodeIntoContent(contributorCode, profileData);
 
 		// Search profiles with same sys_contributors and update them.
 		SearchResponse matchingProfiles = findByContributorCode(contributorCode);
@@ -254,6 +239,16 @@ public class ContributorProfileService {
 		} else {
 			updateSearchIndex(profile.getId(), profileData);
 		}
+	}
+
+	/**
+	 * @param contributorCode
+	 * @param profileData
+	 */
+	protected void putContributorCodeIntoContent(String contributorCode, Map<String, Object> profileData) {
+		List<String> contributors = new ArrayList<>(1);
+		contributors.add(contributorCode);
+		profileData.put(ContentObjectFields.SYS_CONTRIBUTORS, contributors);
 	}
 
 	/**
@@ -349,4 +344,74 @@ public class ContributorProfileService {
 			return -1;
 		}
 	}
+
+	/**
+	 * CDI Event handler for {@link ContributorDeletedEvent} used to remove profile when contributor is deleted.
+	 * 
+	 * @param event to process
+	 */
+	public void contributorDeletedEventHandler(@Observes ContributorDeletedEvent event) {
+		log.log(Level.FINE, "contributorDeletedEventHandler called for event {0}", event);
+		if (event != null && event.getContributorCode() != null) {
+			deleteByContributorCode(event.getContributorCode());
+		} else {
+			log.warning("Invalid event " + event);
+		}
+	}
+
+	/**
+	 * CDI event handler for {@link ContributorMergedEvent} used to remove profile of deleted contributor.
+	 * 
+	 * @param event
+	 */
+	public void contributorMergedEventHandler(@Observes ContributorMergedEvent event) {
+		if (event != null && event.getContributorCodeFrom() != null) {
+			deleteByContributorCode(event.getContributorCodeFrom());
+		} else {
+			log.warning("Invalid event " + event);
+		}
+	}
+
+	/**
+	 * CDI event handler for {@link ContributorCodeChangedEvent} used to change code in profile document.
+	 * 
+	 * @param event
+	 */
+	public void contributorCodeChangedEventHandler(@Observes ContributorCodeChangedEvent event) {
+		if (event != null && event.getContributorCodeFrom() != null && event.getContributorCodeTo() != null) {
+			String codeTo = event.getContributorCodeTo();
+			String codeFrom = event.getContributorCodeFrom();
+			SearchResponse sr = findByContributorCode(codeFrom);
+			if (sr != null && sr.getHits().getTotalHits() > 0) {
+				if (sr.getHits().getTotalHits() > 1) {
+					log.warning("Found more contributor profiles for Contributor code=" + codeFrom
+							+ ". Going to update first one and delete others.");
+				}
+
+				if (deleteByContributorCode(codeTo)) {
+					log.warning("Found contributor profiles for Contributor code=" + codeTo
+							+ " which is target of code change. Going to delete it to replace it by profile from code=" + codeFrom);
+				}
+
+				boolean first = true;
+				for (SearchHit sh : sr.getHits().getHits()) {
+					if (first) {
+						first = false;
+						Map<String, Object> data = sh.getSource();
+						putContributorCodeIntoContent(codeTo, data);
+						updateSearchIndex(sh.getId(), data);
+					} else {
+						try {
+							searchClientService.performDelete(SEARCH_INDEX_NAME, SEARCH_INDEX_TYPE, sh.getId());
+						} catch (SearchIndexMissingException e) {
+							// this should never happend and is not problem at all
+						}
+					}
+				}
+			}
+		} else {
+			log.warning("Invalid event " + event);
+		}
+	}
+
 }

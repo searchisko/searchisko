@@ -18,12 +18,14 @@ import javax.ws.rs.core.StreamingOutput;
 
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.Client;
+import org.elasticsearch.search.SearchHit;
 import org.hamcrest.CustomMatcher;
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.searchisko.api.events.ContributorCreatedEvent;
 import org.searchisko.api.events.ContributorDeletedEvent;
+import org.searchisko.api.events.ContributorMergedEvent;
 import org.searchisko.api.events.ContributorUpdatedEvent;
 import org.searchisko.api.reindexer.ReindexingTaskTypes;
 import org.searchisko.api.rest.ESDataOnlyResponse;
@@ -34,7 +36,6 @@ import org.searchisko.api.testtools.ESRealClientTestBase;
 import org.searchisko.api.testtools.TestUtils;
 import org.searchisko.contribprofile.model.ContributorProfile;
 import org.searchisko.persistence.service.EntityService;
-import org.searchisko.persistence.service.RatingPersistenceService;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -143,16 +144,27 @@ public class ContributorServiceTest extends ESRealClientTestBase {
 		ret.taskService = Mockito.mock(TaskService.class);
 		TaskManager tm = Mockito.mock(TaskManager.class);
 		Mockito.when(ret.taskService.getTaskManager()).thenReturn(tm);
-		ret.contributorProfileService = Mockito.mock(ContributorProfileService.class);
 		ret.searchClientService = new SearchClientService();
 		ret.searchClientService.log = Logger.getLogger("testlogger");
 		ret.searchClientService.client = client;
-		ret.ratingPersistenceService = Mockito.mock(RatingPersistenceService.class);
+		ret.eventContributorMerged = Mockito.mock(Event.class);
 		ret.eventCreate = Mockito.mock(Event.class);
 		ret.eventUpdate = Mockito.mock(Event.class);
 		ret.eventDelete = Mockito.mock(Event.class);
 		ret.log = Logger.getLogger("testlogger");
 		return ret;
+	}
+
+	protected void resetAllMocks(ContributorService tested) {
+		Mockito.reset(tested.entityService, tested.taskService.getTaskManager(), tested.eventContributorMerged,
+				tested.eventCreate, tested.eventDelete, tested.eventUpdate);
+	}
+
+	protected void verifyNoMoreEventsFired(ContributorService tested) {
+		Mockito.verifyNoMoreInteractions(tested.eventContributorMerged);
+		Mockito.verifyNoMoreInteractions(tested.eventDelete);
+		Mockito.verifyNoMoreInteractions(tested.eventUpdate);
+		Mockito.verifyNoMoreInteractions(tested.eventCreate);
 	}
 
 	@Test
@@ -1157,17 +1169,22 @@ public class ContributorServiceTest extends ESRealClientTestBase {
 
 				Map<String, List<String>> typeSpecificCodes = new HashMap<>();
 				typeSpecificCodes.put(CODE_NAME_1, TestUtils.createListOfStrings("test"));
-				ContributorProfile profile = new ContributorProfile("10", "John Doe", "john@doe.com",
+				ContributorProfile profile = new ContributorProfile("cpid", "John Doe", "john@doe.com",
 						TestUtils.createListOfStrings("john@doe.com", "john@doe.org"), typeSpecificCodes);
 
 				String code = "John Doe <john@doe.com>";
 				Assert.assertEquals(code, tested.createOrUpdateFromProfile(profile, null, null));
 
 				indexFlushAndRefresh(ContributorService.SEARCH_INDEX_NAME);
+				SearchHit sh = tested.findOneByCode(code);
+				Assert.assertNotNull(sh);
 				TestUtils
 						.assertJsonContent(
 								"{\"type_specific_code\":{\"code_type1\":[\"test\"]},\"email\":[\"john@doe.com\",\"john@doe.org\"],\"code\":\"John Doe <john@doe.com>\"}",
-								tested.findOneByCode(code).getSource());
+								sh.getSource());
+				Mockito.verify(tested.eventCreate, Mockito.times(1)).fire(
+						prepareContributorCreatedEventMatcher(sh.getId(), "John Doe <john@doe.com>"));
+				verifyNoMoreEventsFired(tested);
 			}
 
 			// case - update with only small changes (emails and codes) - check duplicities in other records are patched as
@@ -1182,7 +1199,7 @@ public class ContributorServiceTest extends ESRealClientTestBase {
 			indexFlushAndRefresh(ContributorService.SEARCH_INDEX_NAME);
 
 			{
-				Mockito.reset(tested.contributorProfileService, tested.taskService.getTaskManager());
+				resetAllMocks(tested);
 				Map<String, List<String>> typeSpecificCodes = new HashMap<>();
 				typeSpecificCodes.put(CODE_NAME_1, TestUtils.createListOfStrings("test", "test2"));
 				typeSpecificCodes.put(CODE_NAME_2, TestUtils.createListOfStrings("test2"));
@@ -1192,22 +1209,29 @@ public class ContributorServiceTest extends ESRealClientTestBase {
 				String code = "John Doe <john@doe.com>";
 				Assert.assertEquals(code, tested.createOrUpdateFromProfile(profile, null, null));
 
+				SearchHit sh = tested.findOneByCode(code);
 				TestUtils
 						.assertJsonContent(
 								"{\"type_specific_code\":{\"code_type1\":[\"test\",\"test2\"],\"code_type2\":[\"test2\"]},\"email\":[\"john@doe.com\",\"john@doe.org\",\"john@doere.org\"],\"code\":\"John Doe <john@doe.com>\"}",
-								tested.findOneByCode(code).getSource());
+								sh.getSource());
 				// assert other record is patched and reindex started
 				TestUtils.assertJsonContent("{\"code\":\"test1\",\"email\":[\"me@test.org\"]"
 						+ ", \"type_specific_code\" : {\"code_type2\":[\"ct2_1_1\",\"ct2_1_2\",\"test_3_2\"]}" + "}",
 						indexGetDocument(ContributorService.SEARCH_INDEX_NAME, ContributorService.SEARCH_INDEX_TYPE, "10"));
 				Mockito.verify(tested.taskService.getTaskManager()).createTask(
 						Mockito.eq(ReindexingTaskTypes.RENORMALIZE_BY_CONTRIBUTOR_CODE.getTaskType()), Mockito.anyMap());
-				Mockito.verifyZeroInteractions(tested.contributorProfileService);
+
+				// update event for updated contributor
+				Mockito.verify(tested.eventUpdate).fire(
+						prepareContributorUpdatedEventMatcher(sh.getId(), "John Doe <john@doe.com>"));
+				// update event is fired for patched Contributor - patched two times (email and code_type1) so two events
+				Mockito.verify(tested.eventUpdate, Mockito.times(2)).fire(prepareContributorUpdatedEventMatcher("10", "test1"));
+				verifyNoMoreEventsFired(tested);
 			}
 
-			// case - found by both id and code
+			// case - found by both id and code, updated
 			{
-				Mockito.reset(tested.contributorProfileService, tested.taskService.getTaskManager());
+				resetAllMocks(tested);
 				Map<String, List<String>> typeSpecificCodes = new HashMap<>();
 				typeSpecificCodes.put(CODE_NAME_1, TestUtils.createListOfStrings("test", "test2"));
 				typeSpecificCodes.put(CODE_NAME_2, TestUtils.createListOfStrings("test2"));
@@ -1219,17 +1243,22 @@ public class ContributorServiceTest extends ESRealClientTestBase {
 
 				// note that update from profile is additive only, so new email address is added, but old one no more in profile
 				// is kept in Contributor record!
+				SearchHit sh = tested.findOneByCode(code);
 				TestUtils
 						.assertJsonContent(
 								"{\"type_specific_code\":{\"code_type1\":[\"test\",\"test2\"],\"code_type2\":[\"test2\"]},\"email\":[\"john@doe.com\",\"john@doe.org\",\"john@doere.org\",\"john@doerere.org\"],\"code\":\"John Doe <john@doe.com>\"}",
-								tested.findOneByCode(code).getSource());
-				Mockito.verifyZeroInteractions(tested.contributorProfileService);
+								sh.getSource());
+
+				// update event for updated contributor
+				Mockito.verify(tested.eventUpdate).fire(
+						prepareContributorUpdatedEventMatcher(sh.getId(), "John Doe <john@doe.com>"));
+				verifyNoMoreEventsFired(tested);
 				Mockito.verifyZeroInteractions(tested.taskService.getTaskManager());
 			}
 
-			// case - primary email changed, but we find it over code
+			// case - primary email changed, but we find it over code and update
 			{
-				Mockito.reset(tested.contributorProfileService, tested.taskService.getTaskManager());
+				resetAllMocks(tested);
 				Map<String, List<String>> typeSpecificCodes = new HashMap<>();
 				typeSpecificCodes.put(CODE_NAME_1, TestUtils.createListOfStrings("test", "test2"));
 				typeSpecificCodes.put(CODE_NAME_2, TestUtils.createListOfStrings("test2", "test3"));
@@ -1240,17 +1269,21 @@ public class ContributorServiceTest extends ESRealClientTestBase {
 				String code = "John Doe <john@doe.com>";
 				Assert.assertEquals(code, tested.createOrUpdateFromProfile(profile, CODE_NAME_1, "test"));
 
+				SearchHit sh = tested.findOneByCode(code);
 				TestUtils
 						.assertJsonContent(
 								"{\"type_specific_code\":{\"code_type1\":[\"test\",\"test2\"],\"code_type2\":[\"test2\",\"test3\"]},\"email\":[\"john@doe.com\",\"john@doe.org\",\"john@doere.org\",\"john@doerere.org\",\"jdoe@doe.com\"],\"code\":\"John Doe <john@doe.com>\"}",
-								tested.findOneByCode(code).getSource());
-				Mockito.verifyZeroInteractions(tested.contributorProfileService);
+								sh.getSource());
+				// update event for updated contributor
+				Mockito.verify(tested.eventUpdate).fire(
+						prepareContributorUpdatedEventMatcher(sh.getId(), "John Doe <john@doe.com>"));
+				verifyNoMoreEventsFired(tested);
 				Mockito.verifyZeroInteractions(tested.taskService.getTaskManager());
 			}
 
 			// case - find by email only (name and code changed)
 			{
-				Mockito.reset(tested.contributorProfileService, tested.taskService.getTaskManager());
+				resetAllMocks(tested);
 				Map<String, List<String>> typeSpecificCodes = new HashMap<>();
 				ContributorProfile profile = new ContributorProfile("10", "John Doere", "jdoe@doe.com",
 						TestUtils.createListOfStrings("jdoe@doe.com", "john@doererere.org"), typeSpecificCodes);
@@ -1259,12 +1292,15 @@ public class ContributorServiceTest extends ESRealClientTestBase {
 				String code = "John Doe <john@doe.com>";
 				Assert.assertEquals(code, tested.createOrUpdateFromProfile(profile, null, null));
 
+				SearchHit sh = tested.findOneByCode(code);
 				TestUtils
 						.assertJsonContent(
 								"{\"type_specific_code\":{\"code_type1\":[\"test\",\"test2\"],\"code_type2\":[\"test2\",\"test3\"]},\"email\":[\"john@doe.com\",\"john@doe.org\",\"john@doere.org\",\"john@doerere.org\",\"jdoe@doe.com\",\"john@doererere.org\"],\"code\":\"John Doe <john@doe.com>\"}",
-								tested.findOneByCode(code).getSource());
-				Mockito.verifyZeroInteractions(tested.contributorProfileService);
-				Mockito.verifyZeroInteractions(tested.ratingPersistenceService);
+								sh.getSource());
+				// update event for updated contributor
+				Mockito.verify(tested.eventUpdate).fire(
+						prepareContributorUpdatedEventMatcher(sh.getId(), "John Doe <john@doe.com>"));
+				verifyNoMoreEventsFired(tested);
 				Mockito.verifyZeroInteractions(tested.taskService.getTaskManager());
 			}
 
@@ -1316,10 +1352,8 @@ public class ContributorServiceTest extends ESRealClientTestBase {
 					"20"));
 			Mockito.verify(tested.taskService.getTaskManager()).createTask(
 					Mockito.eq(ReindexingTaskTypes.RENORMALIZE_BY_CONTRIBUTOR_CODE.getTaskType()), Mockito.anyMap());
-			Mockito.verify(tested.contributorProfileService).deleteByContributorCode("John Doe <john@doe.org>");
-			Mockito.verify(tested.ratingPersistenceService).mergeRatingsForContributors("John Doe <john@doe.org>",
-					"John Doe <john@doe.com>");
-
+			Mockito.verify(tested.eventContributorMerged).fire(
+					prepareContributorMergedEventMatcher("John Doe <john@doe.org>", "John Doe <john@doe.com>"));
 		} finally {
 			indexDelete(ContributorService.SEARCH_INDEX_NAME);
 			finalizeESClientForUnitTest();
@@ -1336,6 +1370,19 @@ public class ContributorServiceTest extends ESRealClientTestBase {
 				ContributorCreatedEvent e = (ContributorCreatedEvent) paramObject;
 				return e.getContributorId().equals(expectedId) && e.getContributorCode().equals(expectedCode)
 						&& e.getContributorData() != null;
+			}
+
+		});
+	}
+
+	private ContributorMergedEvent prepareContributorMergedEventMatcher(final String expectedFrom, final String expectedTo) {
+		return Mockito.argThat(new CustomMatcher<ContributorMergedEvent>("ContributorMergedEvent [contributorCodeFrom="
+				+ expectedFrom + " contributorCodeTo=" + expectedTo + "]") {
+
+			@Override
+			public boolean matches(Object paramObject) {
+				ContributorMergedEvent e = (ContributorMergedEvent) paramObject;
+				return e.getContributorCodeFrom().equals(expectedFrom) && e.getContributorCodeTo().equals(expectedTo);
 			}
 
 		});

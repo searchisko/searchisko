@@ -17,6 +17,9 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.searchisko.api.ContentObjectFields;
+import org.searchisko.api.events.ContributorCodeChangedEvent;
+import org.searchisko.api.events.ContributorDeletedEvent;
+import org.searchisko.api.events.ContributorMergedEvent;
 import org.searchisko.api.testtools.ESRealClientTestBase;
 import org.searchisko.api.testtools.TestUtils;
 import org.searchisko.api.util.Resources;
@@ -143,10 +146,10 @@ public class ContributorProfileServiceTest extends ESRealClientTestBase {
 			}
 
 			// case - create
-			String id1 = null;
+			String id1 = "profileid1";
 			{
-				id1 = tested.putToSearchIndex(TestUtils
-						.loadJSONFromClasspathFile("/org/searchisko/contribprofile/profile1.json"));
+				tested.updateSearchIndex(id1,
+						TestUtils.loadJSONFromClasspathFile("/org/searchisko/contribprofile/profile1.json"));
 				tested.updateSearchIndex("10",
 						TestUtils.loadJSONFromClasspathFile("/org/searchisko/contribprofile/profile2.json"));
 
@@ -246,6 +249,112 @@ public class ContributorProfileServiceTest extends ESRealClientTestBase {
 				Assert.assertEquals(1, sr.getHits().getTotalHits());
 				Assert.assertEquals("John Doe 3", sr.getHits().getHits()[0].getSource().get("displayName"));
 			}
+
+		} finally {
+			indexDelete(ContributorProfileService.SEARCH_INDEX_NAME);
+			finalizeESClientForUnitTest();
+		}
+	}
+
+	@Test
+	public void contributorDeletedEventHandler() throws Exception {
+		Client client = prepareESClientForUnitTest();
+		ContributorProfileService tested = getTested(client);
+		try {
+			initIndex(client);
+			Thread.sleep(100);
+
+			indexInsertDocument(ContributorProfileService.SEARCH_INDEX_NAME, ContributorProfileService.SEARCH_INDEX_TYPE,
+					"20", "{\"" + ContentObjectFields.SYS_CONTRIBUTORS + "\":[\"" + CODE_1 + "\"],\"displayName\":\"John Doe\"}");
+			indexInsertDocument(ContributorProfileService.SEARCH_INDEX_NAME, ContributorProfileService.SEARCH_INDEX_TYPE,
+					"30", "{\"" + ContentObjectFields.SYS_CONTRIBUTORS + "\":[\"" + CODE_2
+							+ "\"],\"displayName\":\"John Doe 2\"}");
+
+			// case - no Exception for invalid events
+			tested.contributorDeletedEventHandler(null);
+			tested.contributorDeletedEventHandler(new ContributorDeletedEvent(null, null));
+			indexFlushAndRefresh(ContributorProfileService.SEARCH_INDEX_NAME);
+			Assert.assertEquals(1, tested.findByContributorCode(CODE_1).getHits().getTotalHits());
+			Assert.assertEquals(1, tested.findByContributorCode(CODE_2).getHits().getTotalHits());
+
+			// case - delete profile if event is valid
+			tested.contributorDeletedEventHandler(new ContributorDeletedEvent("someid", CODE_1));
+			indexFlushAndRefresh(ContributorProfileService.SEARCH_INDEX_NAME);
+			Assert.assertEquals(0, tested.findByContributorCode(CODE_1).getHits().getTotalHits());
+			Assert.assertEquals(1, tested.findByContributorCode(CODE_2).getHits().getTotalHits());
+
+		} finally {
+			indexDelete(ContributorProfileService.SEARCH_INDEX_NAME);
+			finalizeESClientForUnitTest();
+		}
+	}
+
+	@Test
+	public void contributorMergedEventHandler() throws Exception {
+		Client client = prepareESClientForUnitTest();
+		ContributorProfileService tested = getTested(client);
+		try {
+			initIndex(client);
+			Thread.sleep(100);
+
+			indexInsertDocument(ContributorProfileService.SEARCH_INDEX_NAME, ContributorProfileService.SEARCH_INDEX_TYPE,
+					"20", "{\"" + ContentObjectFields.SYS_CONTRIBUTORS + "\":[\"" + CODE_1 + "\"],\"displayName\":\"John Doe\"}");
+			indexInsertDocument(ContributorProfileService.SEARCH_INDEX_NAME, ContributorProfileService.SEARCH_INDEX_TYPE,
+					"30", "{\"" + ContentObjectFields.SYS_CONTRIBUTORS + "\":[\"" + CODE_2
+							+ "\"],\"displayName\":\"John Doe 2\"}");
+
+			// case - no Exception for invalid events
+			tested.contributorMergedEventHandler(null);
+			tested.contributorMergedEventHandler(new ContributorMergedEvent(null, null));
+			indexFlushAndRefresh(ContributorProfileService.SEARCH_INDEX_NAME);
+			Assert.assertEquals(1, tested.findByContributorCode(CODE_1).getHits().getTotalHits());
+			Assert.assertEquals(1, tested.findByContributorCode(CODE_2).getHits().getTotalHits());
+
+			// case - delete profile if event is valid
+			tested.contributorMergedEventHandler(new ContributorMergedEvent(CODE_1, CODE_2));
+			indexFlushAndRefresh(ContributorProfileService.SEARCH_INDEX_NAME);
+			Assert.assertEquals(0, tested.findByContributorCode(CODE_1).getHits().getTotalHits());
+			Assert.assertEquals(1, tested.findByContributorCode(CODE_2).getHits().getTotalHits());
+
+		} finally {
+			indexDelete(ContributorProfileService.SEARCH_INDEX_NAME);
+			finalizeESClientForUnitTest();
+		}
+	}
+
+	@Test
+	public void contributorCodeChangedEventHandler() throws Exception {
+		Client client = prepareESClientForUnitTest();
+		ContributorProfileService tested = getTested(client);
+		try {
+			initIndex(client);
+			Thread.sleep(100);
+
+			indexInsertDocument(ContributorProfileService.SEARCH_INDEX_NAME, ContributorProfileService.SEARCH_INDEX_TYPE,
+					"20", "{\"" + ContentObjectFields.SYS_CONTRIBUTORS + "\":[\"" + CODE_1 + "\"],\"displayName\":\"John Doe\"}");
+			indexInsertDocument(ContributorProfileService.SEARCH_INDEX_NAME, ContributorProfileService.SEARCH_INDEX_TYPE,
+					"30", "{\"" + ContentObjectFields.SYS_CONTRIBUTORS + "\":[\"" + CODE_2
+							+ "\"],\"displayName\":\"John Doe 2\"}");
+			indexInsertDocument(ContributorProfileService.SEARCH_INDEX_NAME, ContributorProfileService.SEARCH_INDEX_TYPE,
+					"40", "{\"" + ContentObjectFields.SYS_CONTRIBUTORS + "\":[\"" + CODE_1
+							+ "\"],\"displayName\":\"John Doe 3\"}");
+
+			// case - no Exception for invalid events
+			tested.contributorCodeChangedEventHandler(null);
+			tested.contributorCodeChangedEventHandler(new ContributorCodeChangedEvent(null, null));
+			tested.contributorCodeChangedEventHandler(new ContributorCodeChangedEvent(CODE_1, null));
+			tested.contributorCodeChangedEventHandler(new ContributorCodeChangedEvent(null, CODE_2));
+			indexFlushAndRefresh(ContributorProfileService.SEARCH_INDEX_NAME);
+			Assert.assertEquals(2, tested.findByContributorCode(CODE_1).getHits().getTotalHits());
+			Assert.assertEquals(1, tested.findByContributorCode(CODE_2).getHits().getTotalHits());
+
+			// case - change code in profile if event is valid, remove all duplicit profiles (from old and new code)
+			tested.contributorCodeChangedEventHandler(new ContributorCodeChangedEvent(CODE_1, CODE_2));
+			indexFlushAndRefresh(ContributorProfileService.SEARCH_INDEX_NAME);
+			Assert.assertEquals(0, tested.findByContributorCode(CODE_1).getHits().getTotalHits());
+			SearchResponse sh = tested.findByContributorCode(CODE_2);
+			Assert.assertEquals(1, sh.getHits().getTotalHits());
+			Assert.assertEquals("20", sh.getHits().getHits()[0].getId());
 
 		} finally {
 			indexDelete(ContributorProfileService.SEARCH_INDEX_NAME);

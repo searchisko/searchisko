@@ -8,7 +8,9 @@ package org.searchisko.api.events;
 import org.searchisko.api.service.ContributorService;
 
 /**
- * CDI Event emitted by {@link ContributorService#delete(String)} when some Contributor is deleted.
+ * CDI Event emitted by {@link ContributorService#delete(String)} when some Contributor is deleted. This event is not
+ * fired if Contributor is deleted due merge with another contributor, {@link ContributorMergedEvent} is fired in this
+ * case!
  * 
  * @author Vlastimil Elias (velias at redhat dot com)
  */

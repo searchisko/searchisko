@@ -10,7 +10,9 @@ import java.util.Map;
 import org.searchisko.api.service.ContributorService;
 
 /**
- * CDI Event emitted by {@link ContributorService} when some Contributor is updated.
+ * CDI Event emitted by {@link ContributorService} when some Contributor is updated. It is not emitted for Contributor
+ * <code>code</code> change - {@link ContributorCodeChangedEvent} is emitted in this case. It is also not emitted for
+ * contributors merge - {@link ContributorMergedEvent} is used in this case.
  * 
  * @author Vlastimil Elias (velias at redhat dot com)
  */

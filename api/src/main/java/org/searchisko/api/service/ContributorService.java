@@ -25,8 +25,10 @@ import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.indices.IndexMissingException;
 import org.elasticsearch.search.SearchHit;
+import org.searchisko.api.events.ContributorCodeChangedEvent;
 import org.searchisko.api.events.ContributorCreatedEvent;
 import org.searchisko.api.events.ContributorDeletedEvent;
+import org.searchisko.api.events.ContributorMergedEvent;
 import org.searchisko.api.events.ContributorUpdatedEvent;
 import org.searchisko.api.reindexer.ReindexingTaskFactory;
 import org.searchisko.api.reindexer.ReindexingTaskTypes;
@@ -38,7 +40,6 @@ import org.searchisko.api.util.Resources;
 import org.searchisko.api.util.SearchUtils;
 import org.searchisko.contribprofile.model.ContributorProfile;
 import org.searchisko.persistence.service.EntityService;
-import org.searchisko.persistence.service.RatingPersistenceService;
 
 /**
  * Service containing Contributor related operations.
@@ -48,6 +49,8 @@ import org.searchisko.persistence.service.RatingPersistenceService;
  * <li> {@link ContributorCreatedEvent}
  * <li> {@link ContributorUpdatedEvent}
  * <li> {@link ContributorDeletedEvent}
+ * <li> {@link ContributorMergedEvent}
+ * <li> {@link ContributorCodeChangedEvent}
  * </ul>
  * TODO CONTRIBUTOR implements code change/merge operations
  * 
@@ -98,18 +101,15 @@ public class ContributorService implements EntityService {
 	protected TaskService taskService;
 
 	@Inject
-	protected ContributorProfileService contributorProfileService;
-
-	@Inject
-	protected RatingPersistenceService ratingPersistenceService;
-
-	@Inject
 	protected Event<ContributorCreatedEvent> eventCreate;
 	@Inject
 	protected Event<ContributorUpdatedEvent> eventUpdate;
 
 	@Inject
 	protected Event<ContributorDeletedEvent> eventDelete;
+
+	@Inject
+	protected Event<ContributorMergedEvent> eventContributorMerged;
 
 	@PostConstruct
 	public void init() {
@@ -442,6 +442,11 @@ public class ContributorService implements EntityService {
 	/**
 	 * Create or update Contributor record from {@link ContributorProfile} informations loaded from provider using type
 	 * specific code.
+	 * <p>
+	 * A {@link ContributorCreatedEvent} or {@link ContributorUpdatedEvent} is fired for affected Contributor.
+	 * {@link ContributorMergedEvent} may be fired also if this method detects that merge is necessary. Series of
+	 * {@link ContributorUpdatedEvent} events for other Contributors may be fired also if this method patches uniqueness
+	 * of <code>email</code>s and other <code>type_specific_code</code>s.
 	 * 
 	 * @param profile to create/update Contributor from
 	 * @param typeSpecificCodeField profile has been loaded for. Can be null not to use this code to search for
@@ -452,7 +457,7 @@ public class ContributorService implements EntityService {
 	public String createOrUpdateFromProfile(ContributorProfile profile, String typeSpecificCodeField,
 			String typeSpecificCodeValue) {
 
-		Set<String> toRenormalizeContributorIds = new HashSet<>();
+		Set<String> toRenormalizeContributorCodes = new HashSet<>();
 
 		String contributorCode = createContributorId(profile.getFullName(), profile.getPrimaryEmail());
 
@@ -470,12 +475,14 @@ public class ContributorService implements EntityService {
 			if (!contributorCode.equals(contributorCodeFromTsc)) {
 				log.info("Contributor duplicity detected. We are going to merge contributor '" + contributorCodeFromTsc
 						+ "' into contributor '" + contributorCode + "'");
-				toRenormalizeContributorIds.add(contributorCodeFromTsc);
+				toRenormalizeContributorCodes.add(contributorCodeFromTsc);
 				mergeContributorData(contributorEntityContent, contributorByTsc.getSource());
 				deleteImpl(contributorByTsc.getId());
-				contributorProfileService.deleteByContributorCode(contributorCodeFromTsc);
-				ratingPersistenceService.mergeRatingsForContributors(contributorCodeFromTsc,
+				ContributorMergedEvent event = new ContributorMergedEvent(contributorCodeFromTsc,
 						getContributorCode(contributorEntityContent));
+				log.log(Level.FINE, "Going to fire event {0}", event);
+				eventContributorMerged.fire(event);
+				log.fine("ContributorMergedEvent fire finished");
 			}
 		} else if (contributorById == null && contributorByTsc != null) {
 			contributorCode = getContributorCode(contributorByTsc.getSource());
@@ -501,21 +508,21 @@ public class ContributorService implements EntityService {
 		newDataFromProfile.put(FIELD_TYPE_SPECIFIC_CODE, profile.getTypeSpecificCodes());
 		mergeContributorData(contributorEntityContent, newDataFromProfile);
 
-		patchEmailUniqueness(toRenormalizeContributorIds, contributorEntityId, contributorEntityContent);
-		patchTypeSpecificCodeUniqueness(toRenormalizeContributorIds, contributorEntityId, contributorEntityContent);
+		patchEmailUniqueness(toRenormalizeContributorCodes, contributorEntityId, contributorEntityContent);
+		patchTypeSpecificCodeUniqueness(toRenormalizeContributorCodes, contributorEntityId, contributorEntityContent);
 
 		if (contributorEntityId != null)
-			create(contributorEntityId, contributorEntityContent, false);
+			create(contributorEntityId, contributorEntityContent, true);
 		else
-			create(contributorEntityContent, false);
+			create(contributorEntityContent, true);
 
 		searchClientService.performIndexFlushAndRefreshBlocking(SEARCH_INDEX_NAME);
 
-		if (!toRenormalizeContributorIds.isEmpty()) {
+		if (!toRenormalizeContributorCodes.isEmpty()) {
 			if (log.isLoggable(Level.FINE))
-				log.fine("We are going to renormalize content for contributor codes: " + toRenormalizeContributorIds);
+				log.fine("We are going to renormalize content for contributor codes: " + toRenormalizeContributorCodes);
 			Map<String, Object> taskConfig = new HashMap<String, Object>();
-			taskConfig.put(ReindexingTaskFactory.CFG_CONTRIBUTOR_CODE, toRenormalizeContributorIds);
+			taskConfig.put(ReindexingTaskFactory.CFG_CONTRIBUTOR_CODE, toRenormalizeContributorCodes);
 			taskConfig
 					.put("description", "contributor '"
 							+ contributorCode
