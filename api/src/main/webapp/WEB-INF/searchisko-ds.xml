@@ -23,6 +23,9 @@
                 pool-name="searchisko" enabled="true"
                 use-java-context="true">
         <connection-url>${datasource.connection.url}</connection-url>
+        <connection-property name="autoReconnect">true</connection-property>
+        <connection-property name="useUnicode">true</connection-property>
+        <connection-property name="characterEncoding">UTF-8</connection-property>
         <driver>${datasource.driver}</driver>
         <security>
             <user-name>${datasource.username}</user-name>
