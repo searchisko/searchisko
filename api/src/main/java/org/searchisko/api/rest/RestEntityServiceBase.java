@@ -19,14 +19,15 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.searchisko.api.rest.exception.RequiredFieldException;
+import org.searchisko.api.util.SearchUtils;
 import org.searchisko.persistence.service.EntityService;
 
 /**
  * Base class for REST API for entity manipulation, contains basic CRUD operations.
- *
+ * 
  * @author Libor Krzyzanek
  * @author Vlastimil Elias (velias at redhat dot com)
- *
+ * 
  */
 public class RestEntityServiceBase extends RestServiceBase {
 
@@ -34,7 +35,7 @@ public class RestEntityServiceBase extends RestServiceBase {
 
 	/**
 	 * Set entity service used by this REST service.
-	 *
+	 * 
 	 * @param entityService
 	 */
 	protected void setEntityService(EntityService entityService) {
@@ -53,8 +54,8 @@ public class RestEntityServiceBase extends RestServiceBase {
 	@Produces(MediaType.APPLICATION_JSON)
 	public Object get(@PathParam("id") String id) {
 
-		if (id == null || id.isEmpty()) {
-            throw new RequiredFieldException("id");
+		if ((id = SearchUtils.trimToNull(id)) == null) {
+			throw new RequiredFieldException("id");
 		}
 
 		Map<String, Object> ret = entityService.get(id);
@@ -88,8 +89,8 @@ public class RestEntityServiceBase extends RestServiceBase {
 	@Produces(MediaType.APPLICATION_JSON)
 	public Object create(@PathParam("id") String id, Map<String, Object> data) {
 
-		if (id == null || id.isEmpty()) {
-            throw new RequiredFieldException("id");
+		if ((id = SearchUtils.trimToNull(id)) == null) {
+			throw new RequiredFieldException("id");
 		}
 
 		entityService.create(id, data);
@@ -99,8 +100,8 @@ public class RestEntityServiceBase extends RestServiceBase {
 	@DELETE
 	@Path("/{id}")
 	public Object delete(@PathParam("id") String id) {
-		if (id == null || id.isEmpty()) {
-            throw new RequiredFieldException("id");
+		if ((id = SearchUtils.trimToNull(id)) == null) {
+			throw new RequiredFieldException("id");
 		}
 
 		entityService.delete(id);

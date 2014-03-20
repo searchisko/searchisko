@@ -6,10 +6,13 @@
 package org.searchisko.api.rest;
 
 import javax.annotation.PostConstruct;
+import javax.ejb.ObjectNotFoundException;
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
 import javax.ws.rs.GET;
+import javax.ws.rs.POST;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
@@ -18,6 +21,7 @@ import javax.ws.rs.core.UriInfo;
 
 import org.elasticsearch.action.search.SearchResponse;
 import org.searchisko.api.annotations.security.ProviderAllowed;
+import org.searchisko.api.rest.exception.RequiredFieldException;
 import org.searchisko.api.service.ContributorService;
 import org.searchisko.api.util.SearchUtils;
 
@@ -71,5 +75,33 @@ public class ContributorRestService extends RestEntityServiceBase {
 		}
 
 		return new ESDataOnlyResponse(response);
+	}
+
+	@POST
+	@Path("/{id}/code/{code}")
+	@Produces(MediaType.APPLICATION_JSON)
+	public Object codeChange(@PathParam("id") String id, @PathParam("code") String code) throws ObjectNotFoundException {
+		if ((id = SearchUtils.trimToNull(id)) == null) {
+			throw new RequiredFieldException("id");
+		}
+		if ((code = SearchUtils.trimToNull(code)) == null) {
+			throw new RequiredFieldException("code");
+		}
+
+		return contributorService.changeContributorCode(id, code);
+	}
+
+	@POST
+	@Path("/{idFrom}/mergeTo/{idTo}")
+	@Produces(MediaType.APPLICATION_JSON)
+	public Object mergeContributors(@PathParam("idFrom") String idFrom, @PathParam("idTo") String idTo)
+			throws ObjectNotFoundException {
+		if ((idFrom = SearchUtils.trimToNull(idFrom)) == null) {
+			throw new RequiredFieldException("idFrom");
+		}
+		if ((idTo = SearchUtils.trimToNull(idTo)) == null) {
+			throw new RequiredFieldException("id");
+		}
+		return contributorService.mergeContributors(idFrom, idTo);
 	}
 }

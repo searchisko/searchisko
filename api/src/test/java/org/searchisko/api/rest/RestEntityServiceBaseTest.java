@@ -36,7 +36,7 @@ public class RestEntityServiceBaseTest {
 		return tested;
 	}
 
-	public static void mockLogger(RestEntityServiceBase tested) {
+	protected static void mockLogger(RestEntityServiceBase tested) {
 		tested.log = Logger.getLogger("testlogger");
 	}
 

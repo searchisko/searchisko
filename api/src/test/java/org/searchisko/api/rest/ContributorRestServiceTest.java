@@ -5,16 +5,20 @@
  */
 package org.searchisko.api.rest;
 
+import java.util.HashMap;
 import java.util.Map;
 
+import javax.ejb.ObjectNotFoundException;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.StreamingOutput;
 import javax.ws.rs.core.UriInfo;
 
 import org.elasticsearch.action.search.SearchResponse;
+import org.jboss.resteasy.spi.BadRequestException;
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
+import org.searchisko.api.rest.exception.RequiredFieldException;
 import org.searchisko.api.service.ContributorService;
 import org.searchisko.api.testtools.TestUtils;
 
@@ -27,8 +31,7 @@ public class ContributorRestServiceTest {
 
 	@Test
 	public void search_inputParamValidation() throws Exception {
-		ContributorRestService tested = new ContributorRestService();
-		RestEntityServiceBaseTest.mockLogger(tested);
+		ContributorRestService tested = getTested();
 
 		// only one param with some value is accepted
 		TestUtils.assertResponseStatus(tested.search(null), Status.BAD_REQUEST);
@@ -40,9 +43,7 @@ public class ContributorRestServiceTest {
 
 	@Test
 	public void search_byOtherIdentifier() throws Exception {
-		ContributorRestService tested = new ContributorRestService();
-		tested.contributorService = Mockito.mock(ContributorService.class);
-		RestEntityServiceBaseTest.mockLogger(tested);
+		ContributorRestService tested = getTested();
 
 		// case - return from service OK, one result
 		{
@@ -77,9 +78,7 @@ public class ContributorRestServiceTest {
 
 	@Test
 	public void search_byEmail() throws Exception {
-		ContributorRestService tested = new ContributorRestService();
-		tested.contributorService = Mockito.mock(ContributorService.class);
-		RestEntityServiceBaseTest.mockLogger(tested);
+		ContributorRestService tested = getTested();
 
 		// case - return from service OK, one result
 		{
@@ -114,9 +113,7 @@ public class ContributorRestServiceTest {
 
 	@Test
 	public void search_byCode() throws Exception {
-		ContributorRestService tested = new ContributorRestService();
-		tested.contributorService = Mockito.mock(ContributorService.class);
-		RestEntityServiceBaseTest.mockLogger(tested);
+		ContributorRestService tested = getTested();
 
 		// case - return from service OK, one result
 		{
@@ -150,6 +147,90 @@ public class ContributorRestServiceTest {
 		}
 	}
 
+	@Test(expected = RequiredFieldException.class)
+	public void codeChange_validation_id() throws Exception {
+		getTested().codeChange(null, "code");
+	}
+
+	@Test(expected = RequiredFieldException.class)
+	public void codeChange_validation_id2() throws Exception {
+		getTested().codeChange(" ", "code");
+	}
+
+	@Test(expected = RequiredFieldException.class)
+	public void codeChange_validation_code() throws Exception {
+		getTested().codeChange("id", null);
+	}
+
+	@Test(expected = RequiredFieldException.class)
+	public void codeChange_validation_code2() throws Exception {
+		getTested().codeChange("id", " ");
+	}
+
+	@Test
+	public void codeChange() throws Exception {
+		ContributorRestService tested = getTested();
+
+		Map<String, Object> value = new HashMap<String, Object>();
+		Mockito.when(tested.contributorService.changeContributorCode("id", "code")).thenReturn(value);
+		Assert.assertEquals(value, tested.codeChange("id", "code"));
+	}
+
+	@Test(expected = BadRequestException.class)
+	public void codeChange_exception() throws Exception {
+		ContributorRestService tested = getTested();
+		Mockito.doThrow(new BadRequestException("a")).when(tested.contributorService)
+				.changeContributorCode(Mockito.anyString(), Mockito.anyString());
+		tested.codeChange("id", "code");
+	}
+
+	@Test(expected = RequiredFieldException.class)
+	public void mergeContributors_validation_idFrom() throws Exception {
+		getTested().mergeContributors(null, "idto");
+	}
+
+	@Test(expected = RequiredFieldException.class)
+	public void mergeContributors_validation_idFrom2() throws Exception {
+		getTested().mergeContributors(" ", "idto");
+	}
+
+	@Test(expected = RequiredFieldException.class)
+	public void mergeContributors_validation_idTo() throws Exception {
+		getTested().mergeContributors("idfrom", null);
+	}
+
+	@Test(expected = RequiredFieldException.class)
+	public void mergeContributors_validation_idTo2() throws Exception {
+		getTested().mergeContributors("idfrom", " ");
+	}
+
+	@Test
+	public void mergeContributors() throws Exception {
+		ContributorRestService tested = getTested();
+		Map<String, Object> value = new HashMap<String, Object>();
+		Mockito.when(tested.contributorService.mergeContributors("from", "to")).thenReturn(value);
+		Assert.assertEquals(value, tested.mergeContributors("idFrom", "idTo"));
+	}
+
+	@Test(expected = ObjectNotFoundException.class)
+	public void mergeContributors_exception() throws Exception {
+		ContributorRestService tested = getTested();
+		Mockito.when(tested.contributorService.mergeContributors(Mockito.anyString(), Mockito.anyString())).thenThrow(
+				new ObjectNotFoundException());
+		tested.mergeContributors("id", "id2");
+	}
+
+	@Test
+	public void codeChange_permissions() throws Exception {
+		TestUtils.assertPermissionSuperProvider(ContributorRestService.class, "codeChange", String.class, String.class);
+	}
+
+	@Test
+	public void mergeContributors_permissions() throws Exception {
+		TestUtils.assertPermissionSuperProvider(ContributorRestService.class, "mergeContributors", String.class,
+				String.class);
+	}
+
 	@Test
 	public void search_permissions() throws Exception {
 		TestUtils.assertPermissionSuperProvider(ContributorRestService.class, "search", UriInfo.class);
@@ -174,6 +255,13 @@ public class ContributorRestServiceTest {
 	@Test
 	public void delete_permissions() {
 		TestUtils.assertPermissionSuperProvider(ContributorRestService.class, "delete", String.class);
+	}
+
+	private ContributorRestService getTested() {
+		ContributorRestService tested = new ContributorRestService();
+		tested.contributorService = Mockito.mock(ContributorService.class);
+		RestEntityServiceBaseTest.mockLogger(tested);
+		return tested;
 	}
 
 }

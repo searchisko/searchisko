@@ -15,6 +15,7 @@ import java.util.logging.Logger;
 
 import javax.annotation.PostConstruct;
 import javax.ejb.LocalBean;
+import javax.ejb.ObjectNotFoundException;
 import javax.ejb.Stateless;
 import javax.enterprise.event.Event;
 import javax.inject.Inject;
@@ -52,7 +53,6 @@ import org.searchisko.persistence.service.EntityService;
  * <li> {@link ContributorMergedEvent}
  * <li> {@link ContributorCodeChangedEvent}
  * </ul>
- * TODO CONTRIBUTOR implements code change/merge operations
  * 
  * @author Libor Krzyzanek
  * @author Vlastimil Elias (velias at redhat dot com)
@@ -110,6 +110,9 @@ public class ContributorService implements EntityService {
 
 	@Inject
 	protected Event<ContributorMergedEvent> eventContributorMerged;
+
+	@Inject
+	protected Event<ContributorCodeChangedEvent> eventContributorCodeChanged;
 
 	@PostConstruct
 	public void init() {
@@ -250,8 +253,7 @@ public class ContributorService implements EntityService {
 	public void update(String id, Map<String, Object> entity, boolean fireEvent) {
 		String newCode = validateCodeRequired(entity);
 		boolean exists = validateCodeNotChanged(id, newCode);
-		entityService.update(id, entity);
-		updateSearchIndex(id, entity);
+		updateImplRaw(id, entity);
 
 		if (fireEvent) {
 			if (exists) {
@@ -266,7 +268,12 @@ public class ContributorService implements EntityService {
 		}
 	}
 
-	private void validateCodeUniqueness(String newCode, String id) {
+	private void updateImplRaw(String id, Map<String, Object> entity) {
+		entityService.update(id, entity);
+		updateSearchIndex(id, entity);
+	}
+
+	private void validateCodeUniqueness(String newCode, String id) throws BadFieldException {
 		if (newCode == null)
 			return;
 		SearchHit sh = findOneByCode(newCode);
@@ -280,8 +287,9 @@ public class ContributorService implements EntityService {
 	 * @param id of contributor
 	 * @param newCode to validate against old code
 	 * @return true if old entity exists for given id
+	 * @throws BadFieldException if code is not equal
 	 */
-	private boolean validateCodeNotChanged(String id, String newCode) {
+	private boolean validateCodeNotChanged(String id, String newCode) throws BadFieldException {
 		Map<String, Object> oldEntity = get(id);
 		if (oldEntity != null) {
 			String oldCode = SearchUtils.trimToNull(getContributorCode(oldEntity));
@@ -294,7 +302,7 @@ public class ContributorService implements EntityService {
 		return false;
 	}
 
-	private String validateCodeRequired(Map<String, Object> entity) {
+	private String validateCodeRequired(Map<String, Object> entity) throws RequiredFieldException {
 		String newCode = SearchUtils.trimToNull(getContributorCode(entity));
 		if (newCode == null) {
 			throw new RequiredFieldException(FIELD_CODE);
@@ -519,24 +527,28 @@ public class ContributorService implements EntityService {
 		searchClientService.performIndexFlushAndRefreshBlocking(SEARCH_INDEX_NAME);
 
 		if (!toRenormalizeContributorCodes.isEmpty()) {
+			String description = "contributor '" + contributorCode + "' update from profile"
+					+ (typeSpecificCodeField != null ? " loaded for " + typeSpecificCodeField + "=" + typeSpecificCodeValue : "");
+			createContentRenormalizationTask(toRenormalizeContributorCodes, description);
+		}
+		return contributorCode;
+	}
+
+	protected void createContentRenormalizationTask(Set<String> toRenormalizeContributorCodes, String description) {
+		if (!toRenormalizeContributorCodes.isEmpty()) {
 			if (log.isLoggable(Level.FINE))
-				log.fine("We are going to renormalize content for contributor codes: " + toRenormalizeContributorCodes);
+				log.fine("We are going to run content renormalization task for contributor codes: "
+						+ toRenormalizeContributorCodes);
 			Map<String, Object> taskConfig = new HashMap<String, Object>();
 			taskConfig.put(ReindexingTaskFactory.CFG_CONTRIBUTOR_CODE, toRenormalizeContributorCodes);
-			taskConfig
-					.put("description", "contributor '"
-							+ contributorCode
-							+ "' update from profile"
-							+ (typeSpecificCodeField != null ? " loaded for " + typeSpecificCodeField + "=" + typeSpecificCodeValue
-									: ""));
+			taskConfig.put("description", description);
 			try {
 				taskService.getTaskManager().createTask(ReindexingTaskTypes.RENORMALIZE_BY_CONTRIBUTOR_CODE.getTaskType(),
 						taskConfig);
 			} catch (UnsupportedTaskException | TaskConfigurationException e) {
-				log.severe("Problem to start contributor renormalization task: " + e.getMessage());
+				log.severe("Problem to start Contributor renormalization task: " + e.getMessage());
 			}
 		}
-		return contributorCode;
 	}
 
 	@SuppressWarnings("unchecked")
@@ -769,6 +781,89 @@ public class ContributorService implements EntityService {
 			// bad structure of contributor record, nothing to return
 		}
 		return null;
+	}
+
+	/**
+	 * Change code of contributor to new value. Content reindexation task is started to maintain data consistency.
+	 * 
+	 * @param id of contributor to change code for
+	 * @param code new code
+	 * @return contributor's data after change
+	 * @throws ObjectNotFoundException
+	 */
+	public Map<String, Object> changeContributorCode(String id, String code) throws ObjectNotFoundException {
+
+		code = SearchUtils.trimToNull(code);
+		if (code == null) {
+			throw new RequiredFieldException(FIELD_CODE);
+		}
+
+		Map<String, Object> entity = get(id);
+		if (entity == null)
+			throw new ObjectNotFoundException(id);
+
+		String codeFrom = getContributorCode(entity);
+
+		// no real change in code so stop processing early
+		if (code.equals(codeFrom)) {
+			return entity;
+		}
+
+		validateCodeUniqueness(code, id);
+		entity.put(FIELD_CODE, code);
+
+		updateImplRaw(id, entity);
+
+		Set<String> toRenormalizeContributorCodes = new HashSet<>();
+		toRenormalizeContributorCodes.add(codeFrom);
+		createContentRenormalizationTask(toRenormalizeContributorCodes, "Change of contributor's code from '" + codeFrom
+				+ "' to '" + code + "' for Contributor.id=" + id);
+
+		eventContributorCodeChanged.fire(new ContributorCodeChangedEvent(codeFrom, code));
+
+		return entity;
+	}
+
+	/**
+	 * Merge two contributors into one. Content reindexation task is started to maintain data consistency.
+	 * 
+	 * @param idFrom identifier of Contributor who is source of merge (so is deleted at the end)
+	 * @param idTo identifier of Contributor who is target of merge (so is kept at the end)
+	 * @return final Contributor definition which is result of merge
+	 * @throws ObjectNotFoundException
+	 */
+	public Map<String, Object> mergeContributors(String idFrom, String idTo) throws ObjectNotFoundException {
+		Map<String, Object> entityFrom = get(idFrom);
+		if (entityFrom == null)
+			throw new ObjectNotFoundException(idFrom);
+
+		Map<String, Object> entityTo = get(idTo);
+		if (entityTo == null)
+			throw new ObjectNotFoundException(idTo);
+
+		String codeFrom = getContributorCode(entityFrom);
+		String codeTo = getContributorCode(entityTo);
+		if (SearchUtils.trimToNull(codeTo) == null) {
+			throw new BadFieldException("idTo", "'code' is not defined for this Contributor");
+		}
+
+		mergeContributorData(entityTo, entityFrom);
+
+		updateImplRaw(idTo, entityTo);
+		deleteImpl(idFrom);
+
+		if (codeFrom != null) {
+			Set<String> toRenormalizeContributorCodes = new HashSet<>();
+			toRenormalizeContributorCodes.add(codeFrom);
+			createContentRenormalizationTask(toRenormalizeContributorCodes, "Merge of contributor's code from '" + codeFrom
+					+ "' to '" + codeTo + "' with final Contributor.id=" + idTo);
+			eventContributorMerged.fire(new ContributorMergedEvent(codeFrom, codeTo));
+		} else {
+			// only sanity check on data integrity, hope it will never happen
+			log.warning("No code found for merged Contributor.id=" + idFrom + " so reindex and event skipped");
+		}
+
+		return entityTo;
 	}
 
 }

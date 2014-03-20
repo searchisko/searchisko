@@ -1195,7 +1195,8 @@ POST /rest/contributor
 Create/update contributor configuration for requested `id`. 
 
 ##### Request content
-JSON with contributor configuration structure. `code` field is mandatory and must be unique!
+JSON with contributor configuration structure. `code` field is mandatory and must be unique! 
+`code` field can't be changed by this operation not to break data consystenci. See specialized operation later.  
 
 ##### Response content
 The response contains a JSON structure with `id`.
@@ -1210,6 +1211,39 @@ POST /rest/contributor/{id}
 < Content-Type: application/json
 {
   "id":"22"
+}
+
+Change contributor's `code` for contributor with requested `id`. Searchisko will maintain data consystenci as part of this 
+operation. It will start background reindexation task (se API for tasks later) to patch `sys_contributor` field for whole affected content. 
+
+##### Response content
+The response contains a JSON structure with Contributor data after `code` change.
+
+POST /rest/contributor/{id}/code/{code}
+< 200
+< Content-Type: application/json
+{
+  "code" : "John Doe <john@doe.org>",
+  "email" : ["john@doe.org","john.doe@gmail.com"]
+}
+
+
+Merge Contributor with identifier `idFrom` into Contributor with `idTo`. 
+`email` and `type_specific_code` fields are merged together from both records, so all values from both records are kept.
+Merge result is stored into Contributor with identifier `idTo`, `code` of this Contributor is preserved.  
+Contributor with identifier `idFrom` is deleted form Searchisko together with his `code`.
+Searchisko will maintain data consystenci as part of this operation. It will start background reindexation 
+task (se API for tasks later) to patch `sys_contributor` field for whole affected content.
+
+##### Response content
+The response contains a JSON structure with merged Contributor data.
+
+POST /rest/contributor/{idFrom}/mergeTo/{idTo}
+< 200
+< Content-Type: application/json
+{
+  "code" : "John Doe <john@doe.org>",
+  "email" : ["john@doe.org","john.doe@gmail.com"]
 }
 
 Delete contributor configuration with given `id`.
