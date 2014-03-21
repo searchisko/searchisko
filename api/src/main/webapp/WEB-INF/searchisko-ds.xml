@@ -15,24 +15,41 @@
   ~ limitations under the License.
   -->
 
+<!--
+Datasource Configuration - online docs:
+https://access.redhat.com/site/documentation/en-US/JBoss_Enterprise_Application_Platform/6.2/html/Administration_and_Configuration_Guide/sect-Datasource_Configuration.html
+
+Actual datasource configuration used in OpenShift:
+https://github.com/openshift/origin-server/tree/master/cartridges/openshift-origin-cartridge-jbosseap/versions/shared/standalone/configuration
+-->
+
 <datasources xmlns="http://www.jboss.org/ironjacamar/schema"
              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
              xsi:schemaLocation="http://www.jboss.org/ironjacamar/schema http://www.ironjacamar.org/doc/schema/datasources_1_1.xsd">
     <!-- The datasource is bound into JNDI at this location. We reference this in META-INF/persistence.xml -->
     <datasource jndi-name="java:jboss/datasources/SearchiskoDS"
-                pool-name="searchisko" enabled="true"
+                pool-name="SearchiskoDS" enabled="true"
                 use-java-context="true">
         <connection-url>${datasource.connection.url}</connection-url>
         <connection-property name="autoReconnect">true</connection-property>
         <connection-property name="useUnicode">true</connection-property>
         <connection-property name="characterEncoding">UTF-8</connection-property>
         <driver>${datasource.driver}</driver>
+        <pool>
+            <min-pool-size>10</min-pool-size>
+            <max-pool-size>100</max-pool-size>
+            <prefill>true</prefill>
+        </pool>
         <security>
             <user-name>${datasource.username}</user-name>
             <password>${datasource.password}</password>
         </security>
         <validation>
-            <check-valid-connection-sql>SELECT 1</check-valid-connection-sql>
+            <!--<check-valid-connection-sql>SELECT 1</check-valid-connection-sql>-->
+            <valid-connection-checker class-name="org.jboss.jca.adapters.jdbc.extensions.mysql.MySQLValidConnectionChecker"></valid-connection-checker>
+            <exception-sorter class-name="org.jboss.jca.adapters.jdbc.extensions.mysql.MySQLExceptionSorter"></exception-sorter>
+            <background-validation>true</background-validation>
+            <background-validation-millis>300000</background-validation-millis>
         </validation>
     </datasource>
 </datasources>
