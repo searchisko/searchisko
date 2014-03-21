@@ -1,0 +1,11 @@
+{
+  "code": "keycloak",
+  "name": "Keycloak",
+  "type_specific_code" : {
+    "jbossorg_blog": ["keycloak"],
+    "jbossorg_jira": ["KEYCLOAK"],
+    "jbossorg_sbs" : [""],
+    "jbossorg_mailing_list": ["keycloak"],
+    "jbossorg_project_info": "keycloak"
+  }
+}

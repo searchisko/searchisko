@@ -6,6 +6,6 @@
     "jbossorg_jira": ["WELD", "WELDRAD", "WELDX", "WELDINT", "WELDSERVLET", "WELDSE"],
     "jbossorg_sbs" : ["2287"],
     "jbossorg_mailing_list": ["weld"],
-    "jbossorg_project_info": "weld_projectnav"
+    "jbossorg_project_info": "weld"
   }
 }

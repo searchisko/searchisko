@@ -1,0 +1,11 @@
+{
+	"code": "optaplanner",
+	"name": "OptaPlanner",
+	"type_specific_code" : {
+		"jbossorg_blog": [""],
+		"jbossorg_jira": ["PLANNER"],
+		"jbossorg_sbs" : [""],
+		"jbossorg_mailing_list": [""],
+		"jbossorg_project_info": "optaplanner"
+	}
+}
