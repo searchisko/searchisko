@@ -49,7 +49,7 @@ https://github.com/openshift/origin-server/tree/master/cartridges/openshift-orig
             <valid-connection-checker class-name="org.jboss.jca.adapters.jdbc.extensions.mysql.MySQLValidConnectionChecker"></valid-connection-checker>
             <exception-sorter class-name="org.jboss.jca.adapters.jdbc.extensions.mysql.MySQLExceptionSorter"></exception-sorter>
             <background-validation>true</background-validation>
-            <background-validation-millis>300000</background-validation-millis>
+            <background-validation-millis>60000</background-validation-millis>
         </validation>
     </datasource>
 </datasources>
