@@ -2,7 +2,7 @@
 	"code": "optaplanner",
 	"name": "OptaPlanner",
 	"type_specific_code" : {
-		"jbossorg_blog": [""],
+		"jbossorg_blog": ["optaplanner"],
 		"jbossorg_jira": ["PLANNER"],
 		"jbossorg_sbs" : [""],
 		"jbossorg_mailing_list": [""],
