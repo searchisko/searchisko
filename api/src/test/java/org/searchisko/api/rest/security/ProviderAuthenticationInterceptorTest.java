@@ -111,6 +111,14 @@ public class ProviderAuthenticationInterceptorTest {
 				SubclassProviderAllowedMock.class.getMethod("methodNotAnnotated")));
 		Assert.assertTrue(tested.accept(ClassSuperProviderAllowedMock.class,
 				ClassSuperProviderAllowedMock.class.getMethod("methodNotAnnotated")));
+
+		// case - we run password check if method is GuestAllowed but is in ProviderAllowed class for optional provider
+		// check
+		Assert.assertTrue(tested.accept(ClassProviderAllowedMock.class,
+				MethodAnnotationsMock.class.getMethod("methodGuestAllowed")));
+		Assert.assertTrue(tested.accept(ClassSuperProviderAllowedMock.class,
+				MethodAnnotationsMock.class.getMethod("methodGuestAllowed")));
+
 	}
 
 }

@@ -63,16 +63,13 @@ public class ProviderAuthenticationInterceptor implements PreProcessInterceptor,
 	@SuppressWarnings("rawtypes")
 	@Override
 	public boolean accept(Class declaring, Method method) {
-		if (!ProviderSecurityPreProcessInterceptor.isGuestAllowed(method)) {
+		ProviderAllowed providerAllowedAnnotation = ProviderSecurityPreProcessInterceptor.getProviderAllowedAnnotation(
+				declaring, method);
 
-			ProviderAllowed providerAllowedAnnotation = ProviderSecurityPreProcessInterceptor.getProviderAllowedAnnotation(
-					declaring, method);
-
-			if (providerAllowedAnnotation != null) {
-				log.fine("REST Security, method restricted to Providers only, go to perform HTTP Basic authentication check: "
-						+ declaring.getCanonicalName() + "." + method.getName());
-				return true;
-			}
+		if (providerAllowedAnnotation != null) {
+			log.fine("REST Security, method or class restricted to Providers only, go to perform HTTP Basic authentication check: "
+					+ declaring.getCanonicalName() + "." + method.getName());
+			return true;
 		}
 
 		log.fine("REST Security, method not restricted to Providers only, skip HTTP Basic authentication check: "

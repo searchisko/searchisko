@@ -25,6 +25,7 @@ import javax.ws.rs.core.SecurityContext;
 
 import org.searchisko.api.annotations.security.ProviderAllowed;
 import org.searchisko.api.rest.exception.RequiredFieldException;
+import org.searchisko.api.rest.security.ProviderCustomSecurityContext;
 import org.searchisko.api.service.ProviderService;
 import org.searchisko.api.service.SecurityService;
 
@@ -82,10 +83,9 @@ public class ProviderRestService extends RestEntityServiceBase {
 		if (entity == null)
 			return Response.status(Status.NOT_FOUND).build();
 
-		if (!provider.equals(entity.get(ProviderService.NAME))) {
-			if (!providerService.isSuperProvider(provider)) {
-				return Response.status(Status.FORBIDDEN).build();
-			}
+		if (!(provider.equals(entity.get(ProviderService.NAME)) || securityContext
+				.isUserInRole(ProviderCustomSecurityContext.SUPER_ADMIN_ROLE))) {
+			return Response.status(Status.FORBIDDEN).build();
 		}
 		return ESDataOnlyResponse.removeFields(entity, FIELDS_TO_REMOVE);
 	}
@@ -155,10 +155,9 @@ public class ProviderRestService extends RestEntityServiceBase {
 			return Response.status(Status.NOT_FOUND).build();
 
 		String username = entity.get(ProviderService.NAME).toString();
-		if (!provider.equals(username)) {
-			if (!providerService.isSuperProvider(provider)) {
-				return Response.status(Status.FORBIDDEN).build();
-			}
+		if (!(provider.equals(entity.get(ProviderService.NAME)) || securityContext
+				.isUserInRole(ProviderCustomSecurityContext.SUPER_ADMIN_ROLE))) {
+			return Response.status(Status.FORBIDDEN).build();
 		}
 		entity.put(ProviderService.PASSWORD_HASH, securityService.createPwdHash(username, pwd.trim()));
 		entityService.update(id, entity);

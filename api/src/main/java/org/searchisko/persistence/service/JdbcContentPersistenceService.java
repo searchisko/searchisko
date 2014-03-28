@@ -281,4 +281,9 @@ public class JdbcContentPersistenceService implements ContentPersistenceService 
 		}
 		return new JpaListRequest(sysContentType, beginIndex, content);
 	}
+
+	public DataSource getDataSource() {
+		return searchiskoDs;
+	}
+
 }

@@ -34,23 +34,33 @@ import org.searchisko.api.model.AppConfiguration.ClientType;
 @Startup
 public class AppConfigurationService {
 
+	public static final String CONTRIBUTORPROFILE_PROVIDER_PASSWORD = "contributorprofile.provider.password";
+
+	public static final String FILENAME = "/app.properties";
+
 	@Inject
 	protected Logger log;
 
 	protected AppConfiguration appConfiguration;
+
+	protected Properties prop = new Properties();
 
 	@Produces
 	public AppConfiguration getAppConfiguration() {
 		return appConfiguration;
 	}
 
+	public Properties getAppConfigurationProperties() {
+		return prop;
+	}
+
 	@PostConstruct
 	public void loadConfig() throws IOException {
-		loadConfig("/app.properties");
+		loadConfig(FILENAME);
 	}
 
 	protected void loadConfig(String filename) throws IOException {
-		Properties prop = new Properties();
+
 		InputStream inStream = AppConfigurationService.class.getResourceAsStream(filename);
 		if (inStream == null) {
 			log.log(Level.WARNING, "Cannot load " + filename + " because not found");
@@ -93,7 +103,7 @@ public class AppConfigurationService {
 		AppConfiguration.ContributorProfileProviderConfig cppc = new AppConfiguration.ContributorProfileProviderConfig(
 				prop.getProperty("contributorprofile.provider.urlbase"),
 				prop.getProperty("contributorprofile.provider.username"),
-				prop.getProperty("contributorprofile.provider.password"));
+				prop.getProperty(CONTRIBUTORPROFILE_PROVIDER_PASSWORD));
 		appConfiguration.setContributorProfileProviderConfig(cppc);
 
 		log.log(Level.INFO, "App Configuration: {0}", appConfiguration);

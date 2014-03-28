@@ -132,6 +132,13 @@ public class ProviderSecurityPreProcessInterceptorTest {
 				ClassProviderAllowedMock.class, ClassProviderAllowedMock.class.getMethod("methodNotAnnotated")));
 		Assert.assertNotNull(ProviderSecurityPreProcessInterceptor.getProviderAllowedAnnotation(
 				SubclassProviderAllowedMock.class, SubclassProviderAllowedMock.class.getMethod("methodNotAnnotated")));
+
+		Assert.assertNotNull(ProviderSecurityPreProcessInterceptor.getProviderAllowedAnnotation(
+				ClassProviderAllowedMock.class, ClassProviderAllowedMock.class.getMethod("methodGuestAllowed")));
+		Assert.assertNotNull(ProviderSecurityPreProcessInterceptor.getProviderAllowedAnnotation(
+				SubclassProviderAllowedMock.class, SubclassProviderAllowedMock.class.getMethod("methodGuestAllowed")));
+		Assert.assertNotNull(ProviderSecurityPreProcessInterceptor.getProviderAllowedAnnotation(
+				ClassSuperProviderAllowedMock.class, ClassSuperProviderAllowedMock.class.getMethod("methodGuestAllowed")));
 	}
 
 	@Test
@@ -140,9 +147,19 @@ public class ProviderSecurityPreProcessInterceptorTest {
 
 		Assert.assertFalse(tested.accept(MethodAnnotationsMock.class,
 				MethodAnnotationsMock.class.getMethod("methodNotAnnotated")));
+
+		// case - never accept for GuestAllowed, even if they are in ProviderAllowed class. We need this for optional
+		// provider checks.
 		Assert.assertFalse(tested.accept(MethodAnnotationsMock.class,
 				MethodAnnotationsMock.class.getMethod("methodGuestAllowed")));
+		Assert.assertFalse(tested.accept(ClassProviderAllowedMock.class,
+				MethodAnnotationsMock.class.getMethod("methodGuestAllowed")));
+		Assert.assertFalse(tested.accept(ClassSuperProviderAllowedMock.class,
+				MethodAnnotationsMock.class.getMethod("methodGuestAllowed")));
+		Assert.assertFalse(tested.accept(SubclassProviderAllowedMock.class,
+				MethodAnnotationsMock.class.getMethod("methodGuestAllowed")));
 
+		// case - accept
 		Assert.assertTrue(tested.accept(MethodAnnotationsMock.class,
 				MethodAnnotationsMock.class.getMethod("methodProviderAllowed")));
 		Assert.assertTrue(tested.accept(ClassProviderAllowedMock.class,
@@ -160,6 +177,12 @@ public class ProviderSecurityPreProcessInterceptorTest {
 		Assert.assertFalse(ProviderSecurityPreProcessInterceptor.isGuestAllowed(MethodAnnotationsMock.class
 				.getMethod("methodProviderAllowed")));
 		Assert.assertTrue(ProviderSecurityPreProcessInterceptor.isGuestAllowed(MethodAnnotationsMock.class
+				.getMethod("methodGuestAllowed")));
+		Assert.assertTrue(ProviderSecurityPreProcessInterceptor.isGuestAllowed(ClassProviderAllowedMock.class
+				.getMethod("methodGuestAllowed")));
+		Assert.assertTrue(ProviderSecurityPreProcessInterceptor.isGuestAllowed(ClassSuperProviderAllowedMock.class
+				.getMethod("methodGuestAllowed")));
+		Assert.assertTrue(ProviderSecurityPreProcessInterceptor.isGuestAllowed(SubclassProviderAllowedMock.class
 				.getMethod("methodGuestAllowed")));
 	}
 
@@ -187,12 +210,22 @@ public class ProviderSecurityPreProcessInterceptorTest {
 		public void methodNotAnnotated() {
 
 		}
+
+		@GuestAllowed
+		public void methodGuestAllowed() {
+
+		}
 	}
 
 	@ProviderAllowed(superProviderOnly = true)
 	public static class ClassSuperProviderAllowedMock {
 
 		public void methodNotAnnotated() {
+
+		}
+
+		@GuestAllowed
+		public void methodGuestAllowed() {
 
 		}
 	}

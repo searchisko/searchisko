@@ -18,10 +18,10 @@ import org.searchisko.api.util.SearchUtils;
 
 /**
  * Configuration for statistics client
- *
+ * 
  * @author Libor Krzyzanek
  * @author Vlastimil Elias (velias at redhat dot com)
- *
+ * 
  */
 @Named
 @ApplicationScoped
@@ -29,9 +29,13 @@ import org.searchisko.api.util.SearchUtils;
 @Startup
 public class StatsConfiguration {
 
+	public static final String FILE = "/stats_client_configuration.properties";
+
 	protected boolean enabled;
 
 	protected boolean useSearchCluster;
+
+	protected Properties settingsProps = null;
 
 	/**
 	 * Default constructor.
@@ -42,7 +46,7 @@ public class StatsConfiguration {
 
 	/**
 	 * Constructor.
-	 *
+	 * 
 	 * @param enabled to set
 	 */
 	public StatsConfiguration(boolean enabled) {
@@ -52,7 +56,7 @@ public class StatsConfiguration {
 
 	/**
 	 * Constructor.
-	 *
+	 * 
 	 * @param enabled to set
 	 */
 	public StatsConfiguration(boolean enabled, boolean useSearchCluster) {
@@ -69,11 +73,15 @@ public class StatsConfiguration {
 		return useSearchCluster;
 	}
 
+	public Properties getSettingsProps() {
+		return settingsProps;
+	}
+
 	@PostConstruct
 	public void init() throws IOException {
-		Properties prop = SearchUtils.loadProperties("/stats_client_configuration.properties");
-		enabled = Boolean.parseBoolean(prop.getProperty("stats.enabled", "true"));
-		useSearchCluster = Boolean.parseBoolean(prop.getProperty("stats.useSearchCluster", "true"));
+		settingsProps = SearchUtils.loadProperties(FILE);
+		enabled = Boolean.parseBoolean(settingsProps.getProperty("stats.enabled", "true"));
+		useSearchCluster = Boolean.parseBoolean(settingsProps.getProperty("stats.useSearchCluster", "true"));
 	}
 
 }

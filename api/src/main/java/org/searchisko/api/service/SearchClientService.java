@@ -42,18 +42,24 @@ import org.searchisko.api.util.SearchUtils;
 @Startup
 public class SearchClientService extends ElasticsearchClientService {
 
+	public static final String CONFIG_FILE_TRANSPORT = "/search_client_connections.properties";
+	public static final String CONFIG_FILE = "/search_client_settings.properties";
+
+	private Properties settings = null;
+	private Properties transportSettings = null;
+
 	@PostConstruct
 	public void init() throws Exception {
 		log = Logger.getLogger(getClass().getName());
-		Properties settings = SearchUtils.loadProperties("/search_client_settings.properties");
+		settings = SearchUtils.loadProperties(CONFIG_FILE);
 
 		if (ClientType.EMBEDDED.equals(appConfigurationService.getAppConfiguration().getClientType())) {
 			node = createEmbeddedNode("search", settings);
 			client = node.client();
 			return;
 		} else {
-			Properties transportAddresses = SearchUtils.loadProperties("/search_client_connections.properties");
-			client = createTransportClient(transportAddresses, settings);
+			transportSettings = SearchUtils.loadProperties(CONFIG_FILE_TRANSPORT);
+			client = createTransportClient(transportSettings, settings);
 		}
 
 		checkHealthOfCluster(client);
@@ -210,6 +216,14 @@ public class SearchClientService extends ElasticsearchClientService {
 		} catch (IndexMissingException e) {
 			// OK
 		}
+	}
+
+	public Properties getSettings() {
+		return settings;
+	}
+
+	public Properties getTransportSettings() {
+		return transportSettings;
 	}
 
 }

@@ -106,6 +106,7 @@ public class ProviderRestServiceTest {
 		// case - entity found, authenticated provider has different name but is superprovider
 		{
 			Mockito.reset(tested.entityService, tested.providerService, tested.securityService);
+			tested.securityContext = new ProviderCustomSecurityContext(new SimplePrincipal("aa"), true, true, "Basic");
 			Map<String, Object> m = new HashMap<String, Object>();
 			m.put(ProviderService.NAME, "ahoj");
 			m.put(ProviderService.PASSWORD_HASH, "sdasdasda");
@@ -119,6 +120,7 @@ public class ProviderRestServiceTest {
 		// case - entity found, authenticated provider has same name and is not superprovider
 		{
 			Mockito.reset(tested.entityService, tested.providerService, tested.securityService);
+			tested.securityContext = new ProviderCustomSecurityContext(new SimplePrincipal("aa"), false, true, "Basic");
 			Map<String, Object> m = new HashMap<String, Object>();
 			m.put(ProviderService.NAME, "aa");
 			m.put(ProviderService.PASSWORD_HASH, "sdasdasda");
@@ -217,6 +219,7 @@ public class ProviderRestServiceTest {
 		// case - provider entity found but is different from caller, caller is superprovider
 		{
 			Mockito.reset(tested.entityService, tested.providerService, tested.securityService);
+			tested.securityContext = new ProviderCustomSecurityContext(new SimplePrincipal("aa"), true, true, "Basic");
 			Map<String, Object> m = new HashMap<String, Object>();
 			m.put(ProviderService.NAME, "ahoj");
 			Mockito.when(tested.entityService.get("ahoj")).thenReturn(m);

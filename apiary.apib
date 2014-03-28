@@ -33,6 +33,7 @@ Concrete implementation/deployment of **Searchisko** for JBoss Community (jboss.
 # Authentication
 ## Provider authentication
 Some operation calls on REST API have to be authenticated by the Provider. The caller provides credentials (`provider` and `pwd`) via standard HTTP Basic authentication.
+Providers can be configured to have 'Searchisko administrator' role on the Searchisko REST API.
 
 ## User authentication
 Some operation calls on REST API have to be authenticated by the User (eg. Personalized content rating API).
@@ -1487,3 +1488,24 @@ POST /rest/tasks/task/{taskType}
 Cancel execution of task with given `id`.
 DELETE /rest/tasks/task/{id}
 < 200
+
+--
+Management API - System
+
+This part of the API is used by 'Searchisko administrators' for some system operations.
+--
+
+Get system info about current instance of Searchisko. Common user get basic info only, authenticated 'Searchisko administrator' gets full info. 
+
+GET /sys/info
+< 200
+< Content-Type: application/json
+{
+  "build": {
+    "version": "0.9.0",
+    "build-java-vendor": "Oracle Corporation",
+    "build-java-version": "1.7.0",
+    "build-commit": "dfgjw456w03tjesp684w9t",
+    "build-timestamp": "2014-03-27T15:55:45.454+0100"
+  }
+}

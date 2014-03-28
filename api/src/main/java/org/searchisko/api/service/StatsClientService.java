@@ -45,9 +45,9 @@ import org.searchisko.api.util.SearchUtils;
 
 /**
  * Service for Elasticsearch StatsClient
- *
+ * 
  * @author Libor Krzyzanek
- *
+ * 
  */
 @Named
 @ApplicationScoped
@@ -71,6 +71,12 @@ public class StatsClientService extends ElasticsearchClientService {
 	protected SearchClientService searchClientService;
 
 	protected ActionListener<IndexResponse> statsLogListener;
+
+	public static final String CONFIG_FILE_TRANSPORT = "/stats_client_connections.properties";
+	public static final String CONFIG_FILE = "/stats_client_settings.properties";
+
+	private Properties settings = null;
+	private Properties transportSettings = null;
 
 	@PostConstruct
 	public void init() throws Exception {
@@ -96,15 +102,15 @@ public class StatsClientService extends ElasticsearchClientService {
 				log.info("Statistics are enabled, search ES cluster is used");
 				client = searchClientService.getClient();
 			} else {
-				Properties settings = SearchUtils.loadProperties("/stats_client_settings.properties");
+				settings = SearchUtils.loadProperties(CONFIG_FILE);
 				if (ClientType.EMBEDDED.equals(appConfigurationService.getAppConfiguration().getClientType())) {
 					log.info("Statistics are enabled, embedded ES cluster is used");
 					node = createEmbeddedNode("stats", settings);
 					client = node.client();
 				} else {
 					log.info("Statistics are enabled, remote ES cluster is used");
-					Properties transportAddresses = SearchUtils.loadProperties("/stats_client_connections.properties");
-					client = createTransportClient(transportAddresses, settings);
+					transportSettings = SearchUtils.loadProperties(CONFIG_FILE_TRANSPORT);
+					client = createTransportClient(transportSettings, settings);
 				}
 				checkHealthOfCluster(client);
 			}
@@ -125,7 +131,7 @@ public class StatsClientService extends ElasticsearchClientService {
 
 	/**
 	 * Write ES search statistics record about unsuccessful search.
-	 *
+	 * 
 	 * @param type of search performed - mandatory
 	 * @param ex exception from search attempt - mandatory
 	 * @param dateInMillis timestamp when search was performed
@@ -152,7 +158,7 @@ public class StatsClientService extends ElasticsearchClientService {
 
 	/**
 	 * Write ES search statistics record about successful search.
-	 *
+	 * 
 	 * @param type of search performed
 	 * @param responseUuid UUID of response (also returned over search REST API)
 	 * @param resp response from search attempt
@@ -203,7 +209,7 @@ public class StatsClientService extends ElasticsearchClientService {
 
 	/**
 	 * Write ES statistics record - general code.
-	 *
+	 * 
 	 * @param type of record
 	 * @param dateInMillis timestamp when operation was performed
 	 * @param source fields to be written into statistics record.
@@ -231,7 +237,7 @@ public class StatsClientService extends ElasticsearchClientService {
 
 	/**
 	 * Check if some statistics record exists for specified conditions.
-	 *
+	 * 
 	 * @param type of record we are looking for
 	 * @param conditions for lookup. Key is a name of field to filter over, Value is a value to filter for using term
 	 *          condition.
@@ -326,6 +332,14 @@ public class StatsClientService extends ElasticsearchClientService {
 				source.put("filters_size", filters.getSize());
 			}
 		}
+	}
+
+	public Properties getSettings() {
+		return settings;
+	}
+
+	public Properties getTransportSettings() {
+		return transportSettings;
 	}
 
 }
