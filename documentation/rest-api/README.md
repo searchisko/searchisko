@@ -30,6 +30,7 @@ as an inspiration. You will have your own content.
 + [forumthread](content/forumthread.md) the data from project's discussion forum
 + [article](content/article.md) articles from project's wiki
 + [mailing_list_message](content/mailing_list_message.md) mbox message from project's mailing list
++ [solution](content/solution.md) description of some problem solution from knowledgebase
 
 Other data types considered in the future:
 

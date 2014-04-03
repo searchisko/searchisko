@@ -3,12 +3,12 @@ Discussion forum threads related to projects
 
 **sys\_type = "forumthread"**
 
-This data type stored in DCP contains information from project's discussion forums.
-Contains data from [JBoss Community Forum](http://community.jboss.org/threads) and other systems used by distinct projects. 
+This data type stored in Searchisko contains information from project's discussion forums.
+DCP contains data from [JBoss Community Forum](http://community.jboss.org/threads) and other systems used by distinct projects. 
 
 ## Data structure
 
-### Standard DCP fields
+### Standard system fields
 <table border="1">
 <thead>
   <th>Field</th>
@@ -21,10 +21,10 @@ Contains data from [JBoss Community Forum](http://community.jboss.org/threads) a
 <tr><td>sys_description</td><td></td><td>Shorted description created from forum question, containing only clear text</td></tr>
 <tr><td>sys_content</td><td></td><td>Full rendered forum question. May contain HTML tags or some wiki syntax as defined by `sys_content_content-type`.</td></tr>
 <tr><td>sys_created</td><td>2013-01-02T06:18:52.000-0500</td><td>Timestamp when thread was started</td></tr>
-<tr><td>sys_comments</td><td></td><td>All replies to the forum question are stored as DCP comments using 'Comment data structure'</td></tr>
+<tr><td>sys_comments</td><td></td><td>All replies to the forum question are stored as comments using 'Comment data structure'</td></tr>
 </tbody>
 </table>
-**Note:** some standard DCP [system fields](dcp_content_object.md) prefixed by `sys_` are not described here. Description may be found in general documentation for "DCP Content object".
+**Note:** some standard Searchisko system fields prefixed by `sys_` are not described here. Description may be found in general documentation for ["Searchisko Content object"](dcp_content_object.md).
 
 ### Custom fields
 <table border="1">

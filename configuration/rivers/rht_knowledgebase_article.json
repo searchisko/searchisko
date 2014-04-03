@@ -1,0 +1,100 @@
+{
+    "type" : "remote",
+    "remote" : {
+        "urlGetDocuments"       : "https://github.com/searchisko/elasticsearch-river-remote/raw/master/src/test/resources/test_documents_json/rht_knowledgebase_article_list.json",
+        "simpleGetDocuments"    : "true",
+        "urlGetDocumentDetailsField":"url",
+        "spacesIndexed"					: "MAIN",
+        "timeout"               : "20s",
+        "indexUpdatePeriod"     : "1h",
+        "maxIndexingThreads"    : 1
+    },
+    "index" : {
+        "index"             : "data_rht_knowledgebase_article",
+        "type"              : "rht_knowledgebase_article",
+        "remote_field_document_id" : "url",
+        "remote_field_updated"     : "detail.last_modified_date",
+        "field_space_key"   : "space_key",
+        "field_document_id" : "sys_id",
+        "fields" : {
+            "sys_content_id"        : {"remote_field" : "prep_id_remote"},
+            "sys_type"              : {"remote_field" : "prep_type"},
+            "sys_updated"           : {"remote_field" : "prep_updated"},
+            "sys_content_provider"  : {"remote_field" : "prep_content_provider"},
+            "sys_content_type"      : {"remote_field" : "prep_content_type"},
+            "sys_activity_dates"    : {"remote_field" : "prep_activity_dates"},
+            "sys_last_activity_date": {"remote_field" : "prep_last_activity_date"},
+            "sys_url_view"			    : {"remote_field" : "detail.view_uri"},
+            "sys_title"             : {"remote_field" : "detail.title"},
+            "sys_created"           : {"remote_field" : "updated"},
+            "sys_description"       : {"remote_field" : "prep_description"},
+            "sys_content"           : {"remote_field" : "detail.body"},
+            "sys_content_content-type" : {"remote_field" : "prep_content_content-type"},
+            "sys_content_plaintext" : {"remote_field" : "prep_content_plaintext"},
+            "tags"                  : {"remote_field" : "detail.categories.category"},
+            "sys_tags"              : {"remote_field" : "detail.categories.category"}
+        },
+        "preprocessors" : [
+            {
+                "name"     : "Remote id copy",
+                "class"    : "org.jboss.elasticsearch.tools.content.AddMultipleValuesPreprocessor",
+                "settings" : {
+                    "prep_id_remote" : "{detail.id}"
+                 } 
+            },{
+                "name"     : "Values filler",
+                "class"    : "org.jboss.elasticsearch.tools.content.AddMultipleValuesPreprocessor",
+                "settings" : {
+                    "url"                    : "rht_knowledgebase_article-{detail.id}",
+                    "prep_type"              : "article",
+                    "prep_content_provider"  : "rht",
+                    "prep_content_type"      : "rht_knowledgebase_article",
+                    "prep_content_content-type" : "text/html"
+                 } 
+            },{ 
+                "name"     : "Updated filler",
+                "class"    : "org.jboss.elasticsearch.tools.content.AddCurrentTimestampPreprocessor",
+                "settings" : { "field" : "prep_updated" }
+            },{
+                "name"     : "updated timestamp converter",
+                "class"    : "org.jboss.elasticsearch.river.remote.content.LongToTimestampValuePreprocessor",
+                "settings" : {
+                    "source_field" : "detail.last_modified_date",
+                    "target_field" : "updated"
+                } 
+            },{ 
+                "name"     : "Description HTML stripper",
+                "class"    : "org.jboss.elasticsearch.tools.content.StripHtmlPreprocessor",
+                "settings" : {
+                    "source_field" : "detail.body",
+                    "target_field" : "prep_content_plaintext"
+                } 
+            },{ 
+                "name"     : "Description trimmer",
+                "class"    : "org.jboss.elasticsearch.tools.content.TrimStringValuePreprocessor",
+                "settings" : {
+                    "source_field" : "prep_content_plaintext",
+                    "target_field" : "prep_description",
+                    "max_size" : 400
+                } 
+            },{ 
+                "name"     : "Activity dates collector",
+                "class"    : "org.jboss.elasticsearch.tools.content.ValuesCollectingPreprocessor",
+                "settings" : {
+                    "target_field"  : "prep_activity_dates",
+                    "source_fields" : ["updated"]
+                } 
+            },{ 
+                "name"     : "Max activity date extractor",
+                "class"    : "org.jboss.elasticsearch.tools.content.MaxTimestampPreprocessor",
+                "settings" : {
+                    "source_field" : "prep_activity_dates",
+                    "target_field" : "prep_last_activity_date"
+                } 
+            }
+        ]
+    },
+    "activity_log" : {
+        "index":"stats_rht_knowledgebase_article_river"
+    }
+}

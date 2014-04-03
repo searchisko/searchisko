@@ -10,7 +10,7 @@ other wiki systems used by distinct projects.
 
 ## Data structure
 
-### Standard DCP fields
+### Standard system fields
 <table border="1">
 <thead>
   <th>Field</th>
@@ -26,7 +26,7 @@ other wiki systems used by distinct projects.
 <tr><td>sys_comments</td><td></td><td>Article related comments using 'Comment data structure'</td></tr>
 </tbody>
 </table>
-**Note:** some standard DCP [system fields](dcp_content_object.md) prefixed by `sys_` are not described here. Description may be found in general documentation for "DCP Content object".
+**Note:** some standard Searchisko system fields prefixed by `sys_` are not described here. Description may be found in general documentation for ["DCP Content object"](dcp_content_object.md).
 
 ### Custom fields
 <table border="1">

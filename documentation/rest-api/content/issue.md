@@ -8,7 +8,46 @@ Contains data from [JBoss Community JIRA](http://issues.jboss.org) and other tra
 
 ## Data structure
 
-Example of issue data structure:
+### Standard system fields
+<table border="1">
+<thead>
+  <th>Field</th>
+  <th width="63%">Description</th>
+</thead>
+<tbody>
+<tr><td>sys_type</td><td>Always `issue`</td></tr>
+<tr><td>sys_title</td><td>Title of the issue.</td></tr>
+<tr><td>sys_description</td><td>Long description text for the issue.</td></tr>
+<tr><td>sys_created</td><td>Date when the issue was created in the source issue tracking system.</td></tr>
+<tr><td>sys_comments</td><td>Array of comment for issue using 'Comment data structure'.</td></tr>
+</tbody>
+</table>
+**Note:** some standard Searchisko system fields prefixed by `sys_` are not described here. Description may be found in general documentation for ["DCP Content object"](dcp_content_object.md).
+
+### Custom fields
+<table border="1">
+<thead>
+  <th>Field</th>
+  <th width="63%">Description</th>
+</thead>
+<tbody>
+<tr><td>project_key</td><td>Project key inside of the source issue tracking system, optional. Commonly used for `sys_project` value lookup during data push.</td></tr>
+<tr><td>project_name</td><td>Name of the project from the source issue tracking system</td></tr>
+<tr><td>issue_type</td><td>Type of the issue (eg. bug, feature request, etc) value from the source issue tracking system. Used as input for normalization necessary for `sys_issue_type`.</td></tr>
+<tr><td>sys_issue_type</td><td>Normalized value of the issue type. Possible values: `Bug`, `Enhancement`, `Other`</td></tr>
+<tr><td>status</td><td>Status of the issue lifecycle/worflow (eg. new, assigned, resolved, closed) from the source issue tracking system. Used as input for normalization necessary for `sys_issue_status`.</td></tr>
+<tr><td>sys_issue_status</td><td>Normalized value of the issue lifecycle/worflow status. Possible values: `Open`, `In Progress`, `Closed`</td></tr>
+<tr><td>updated</td><td>Date when the issue was last time updated in the source issue tracking system.</td></tr>
+<tr><td>resolutiondate</td><td>Date when the issue was resolved in the source issue tracking system</td></tr>
+<tr><td>tags</td><td>Tags from the source issue tracking system. (`Labels` field in case of JIRA)</td></tr>
+<tr><td>reporter</td><td>Info about contributor who created issue. 'Contributor data structure' used here.</td></tr>
+<tr><td>assignee</td><td>Info about contributor responsible for issue solution. 'Contributor data structure' used here.</td></tr>
+<tr><td>fix_versions</td><td>Array of object describing version where the issue is fixed. Object contains `name` field only for now, with version name.</td></tr>
+<tr><td>components</td><td>Array of object describing component of project the issue is for. Object contains `name` field only for now, with component name.</td></tr>
+</tbody>
+</table>
+
+### Example of issue data structure
 
 	{
 		"sys_id"                : "jbossorg_jira_issue-ORG-125",
@@ -49,48 +88,3 @@ Example of issue data structure:
 		                            }
 		                          ]
 	}
-
-Description of data fields for the issue record:
-<table border="1">
-<thead>
-  <th>Field</th>
-  <th width="63%">Description</th>
-</thead>
-<tbody>
-<tr><td>sys_type</td><td>Always `issue`</td></tr>
-<tr><td>project_key</td><td>Project key inside of the source issue tracking system, optional. Commonly used for `sys_project` value lookup during data push.</td></tr>
-<tr><td>project_name</td><td>Name of the project from the source issue tracking system</td></tr>
-<tr><td>issue_type</td><td>Type of the issue (eg. bug, feature request, etc) value from the source issue tracking system. Used as input for normalization necessary for `sys_issue_type`.</td></tr>
-<tr><td>sys_issue_type</td><td>Normalized value of the issue type. Possible values: `Bug`, `Enhancement`, `Other`</td></tr>
-<tr><td>sys_title</td><td>Title of the issue.</td></tr>
-<tr><td>sys_description</td><td>Long description text for the issue.</td></tr>
-<tr><td>status</td><td>Status of the issue lifecycle/worflow (eg. new, assigned, resolved, closed) from the source issue tracking system. Used as input for normalization necessary for `sys_issue_status`.</td></tr>
-<tr><td>sys_issue_status</td><td>Normalized value of the issue lifecycle/worflow status. Possible values: `Open`, `In Progress`, `Closed`</td></tr>
-<tr><td>sys_created</td><td>Date when the issue was created in the source issue tracking system.</td></tr>
-<tr><td>updated</td><td>Date when the issue was last time updated in the source issue tracking system.</td></tr>
-<tr><td>resolutiondate</td><td>Date when the issue was resolved in the source issue tracking system</td></tr>
-<tr><td>tags</td><td>Tags from the source issue tracking system. (`Labels` field in case of JIRA)</td></tr>
-<tr><td>reporter</td><td>Info about contributor who created issue. 'Contributor data structure' used here.</td></tr>
-<tr><td>assignee</td><td>Info about contributor responsible for issue solution. 'Contributor data structure' used here.</td></tr>
-<tr><td>fix_versions</td><td>Array of object describing version where the issue is fixed. Object contains `name` field only for now, with version name.</td></tr>
-<tr><td>components</td><td>Array of object describing component of project the issue is for. Object contains `name` field only for now, with component name.</td></tr>
-<tr><td>sys_comments</td><td>Array of comment for issue. 'Comment data structure' is described below.</td></tr>
-</tbody>
-</table>
-**Note:** some standard DCP [system fields](dcp_content_object.md) prefixed by `sys_` are not described here. Description may be found in general documentation for "DCP Content object".
-
-'Comment data structure' description:
-<table border="1">
-<thead>
-  <th>Field</th>
-  <th width="63%">Description</th>
-</thead>
-<tbody>
-<tr><td>comment_id</td><td>Identifier of the comment from source system. Optional.</td></tr>
-<tr><td>comment_body</td><td>Text of the comment</td></tr>
-<tr><td>comment_author</td><td>Info about contributor who created comment. 'Contributor data structure' used here.</td></tr>
-<tr><td>comment_updater</td><td>Info about contributor who updated comment. 'Contributor data structure' used here.</td></tr>
-<tr><td>comment_created</td><td>Date when the comment was created in the source issue tracking system.</td></tr>
-<tr><td>comment_updated</td><td>Date when the comment was updated in the source issue tracking system.</td></tr>
-</tbody>
-</table>

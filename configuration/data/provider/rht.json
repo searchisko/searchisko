@@ -1,0 +1,29 @@
+{
+  "name": "rht",
+  "description" : "Provider used by jboss.org Development Team to push content from Red Hat systems",
+  "contact_email" : "help@jboss.org",
+  "type": {
+    "rht_knowledgebase_article" : {
+      "description": "Articles from Red Hat knowledgebase - https://access.redhat.com/search/browse/articles",
+      "sys_type": "article",
+      "sys_content_content-type" : "text/plain",
+      "input_preprocessors": [
+      ],
+      "index": {
+        "name": "data_rht_knowledgebase_article",
+        "type": "rht_knowledgebase_article"
+      }
+    },
+    "rht_knowledgebase_solution" : {
+      "description": "Solutions from Red Hat knowledgebase - https://access.redhat.com/search/browse/solutions",
+      "sys_type": "solution",
+      "sys_content_content-type" : "text/plain",
+      "input_preprocessors": [
+      ],
+      "index": {
+        "name": "data_rht_knowledgebase_solution",
+        "type": "rht_knowledgebase_solution"
+      }
+    }
+  }
+}

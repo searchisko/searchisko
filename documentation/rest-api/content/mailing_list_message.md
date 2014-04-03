@@ -8,7 +8,7 @@ and we parse and index the data from internal Mailman archives (see [mbox_integr
 
 ## Data structure
 
-### Standard DCP fields
+### Standard system fields
 <table border="1">
 <thead>
   <th>Field</th>
@@ -31,8 +31,8 @@ and we parse and index the data from internal Mailman archives (see [mbox_integr
 <tr><td>sys_tags</td><td></td><td>Provided by client. Typically this is populated by the category of mail list. E.g.: <code>dev</code>, <code>users</code>, <code>announce</code></td></tr>
 </tbody>
 </table>
-**Note:** some standard DCP [system fields](dcp_content_object.md) prefixed by `sys_` are not described here.
-Description may be found in general documentation for "DCP Content object".
+**Note:** some standard Searchisko system fields prefixed by `sys_` are not described here.
+Description may be found in general documentation for ["Searchisko Content object"](dcp_content_object.md).
 
 ### Custom fields
 <table border="1">
@@ -82,7 +82,7 @@ Description may be found in general documentation for "DCP Content object".
 </tbody>
 </table>
 
-### Example of mailing list message data structure:
+### Example of mailing list message data structure
 
 	{
 		"sys_id" : "Provided by Searchisko",

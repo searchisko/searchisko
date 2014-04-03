@@ -1,5 +1,5 @@
 Searchisko Content object
-==================
+=========================
 
 This document describes main content object, which can be pushed to and retrieved or searched from Searchisko.
  

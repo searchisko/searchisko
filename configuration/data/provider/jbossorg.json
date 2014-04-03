@@ -1,6 +1,6 @@
 {
   "name": "jbossorg",
-  "description" : "Provider used by JBoss Community Team to manage Searchisko and push content from core jboss.org systems",
+  "description" : "Provider used by jboss.org Development Team to manage Searchisko and push content from core jboss.org systems",
   "contact_email" : "help@jboss.org",
   "super_provider": true,
   "type": {

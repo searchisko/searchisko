@@ -1,0 +1,14 @@
+{
+    "rht_knowledgebase_solution" : {
+        "_all" : {"enabled" : true},
+        "properties" : {
+            "space_key"   : {"type" : "string", "analyzer" : "keyword"},
+            "source"      : {"type" : "string", "analyzer" : "keyword"},
+            "tags"        : {"type" : "string", "index" : "no"},
+            "issue"       : {"type" : "string", "index" : "no", "include_in_all" : true},
+            "environment" : {"type" : "string", "index" : "no", "include_in_all" : true},
+            "resolution"  : {"type" : "string", "index" : "no", "include_in_all" : true},
+            "root_cause"  : {"type" : "string", "index" : "no", "include_in_all" : true}
+        }
+    }
+}

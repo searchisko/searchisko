@@ -118,4 +118,4 @@ Important fields returned by the query
 </tbody>
 </table>
 
-*Note: DCP will add more fields to the result, however they are not yet specified and they should not contain any important information unless you try to debug the query.*
+*Note: Searchisko will add more fields to the result, however they are not yet specified and they should not contain any important information unless you try to debug the query.*

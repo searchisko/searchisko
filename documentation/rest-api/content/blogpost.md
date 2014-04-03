@@ -8,7 +8,7 @@ It's mainly related to the [JBoss Community Planet](http://planet.jboss.org) blo
 
 ## Data structure
 
-### Standard DCP fields
+### Standard system fields
 <table border="1">
 <thead>
   <th>Field</th>
@@ -23,7 +23,7 @@ It's mainly related to the [JBoss Community Planet](http://planet.jboss.org) blo
 <tr><td>sys_created</td><td>2013-01-02T06:18:52.000-0500</td><td>Timestamp when blog post was published</td></tr>
 </tbody>
 </table>
-**Note:** some standard DCP [system fields](dcp_content_object.md) prefixed by `sys_` are not described here. Description may be found in general documentation for "DCP Content object".
+**Note:** some standard Searchisko system fields prefixed by `sys_` are not described here. Description may be found in general documentation for ["Searchisko Content object"](dcp_content_object.md).
 
 ### Custom fields
 <table border="1">
