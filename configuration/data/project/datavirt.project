@@ -1,0 +1,11 @@
+{
+  "code": "datavirt",
+  "name": "JBoss Data Virtualization",
+  "type_specific_code" : {
+    "jbossorg_blog": [""],
+    "jbossorg_jira": [""],
+    "jbossorg_sbs" : ["2316"],
+    "jbossorg_mailing_list": "",
+    "jbossorg_project_info": ""
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "code": "datagrid",
+  "name": "JBoss Data Grid",
+  "type_specific_code" : {
+    "jbossorg_blog": [""],
+    "jbossorg_jira": [""],
+    "jbossorg_sbs" : ["2317"],
+    "jbossorg_mailing_list": "",
+    "jbossorg_project_info": ""
+  }
+}
