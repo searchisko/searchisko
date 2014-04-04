@@ -2,7 +2,7 @@
   "code": "immutant",
   "name": "Immutant",
   "type_specific_code" : {
-    "jbossorg_blog": [""],
+    "jbossorg_blog": ["immutant"],
     "jbossorg_jira": ["IMMUTANT"],
     "jbossorg_sbs" : [],
     "jbossorg_mailing_list": "",
