@@ -197,26 +197,36 @@ public class Jive6ContributorProfileProvider implements ContributorProfileProvid
 				profileData.put("sys_description", p.get(JIVE_PROFILE_VALUE_KEY));
 				break;
 			case "Twitter Username":
-				accounts.add(getAccountObject("twitter.com", p.get(JIVE_PROFILE_VALUE_KEY)));
+				getAccountObject(accounts, "twitter.com", p.get(JIVE_PROFILE_VALUE_KEY));
 				break;
 			case "github Username":
-				accounts.add(getAccountObject("github.com", p.get(JIVE_PROFILE_VALUE_KEY)));
+				getAccountObject(accounts, "github.com", p.get(JIVE_PROFILE_VALUE_KEY));
 				break;
 			case "Facebook Username":
-				accounts.add(getAccountObject("facebook.com", p.get(JIVE_PROFILE_VALUE_KEY)));
+				getAccountObject(accounts, "facebook.com", p.get(JIVE_PROFILE_VALUE_KEY));
 				break;
 			}
 		}
+		getAccountObject(accounts, "jboss.org", username);
 		profileData.put("accounts", accounts);
 
 		return profileData;
 	}
 
-	protected Map<String, Object> getAccountObject(String domainName, Object value) {
+	protected void getAccountObject(List<Map<String, Object>> accounts, String domainName, Object value) {
+
+		if (value == null)
+			return;
+
+		String valueString = value.toString();
+
+		if (SearchUtils.isBlank(valueString))
+			return;
+
 		Map<String, Object> a = new HashMap<>(2);
 		a.put("domain", domainName);
-		a.put("username", value);
-		return a;
+		a.put("username", valueString);
+		accounts.add(a);
 	}
 
 	/**

@@ -17,7 +17,6 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.searchisko.api.ContentObjectFields;
 import org.searchisko.api.service.ContributorProfileService;
-import org.searchisko.api.service.ContributorService;
 import org.searchisko.api.testtools.TestUtils;
 import org.searchisko.contribprofile.model.ContributorProfile;
 
@@ -73,22 +72,44 @@ public class Jive6ContributorProfileProviderTest {
 		Assert.assertTrue(profile.getEmails().contains("fake@fake.com"));
 		Assert.assertTrue(profile.getEmails().contains("fake2@fake.com"));
 
-		// TEST Contributor Profile
 		Map<String, Object> contributorProfile = profile.getProfileData();
 
-		// It's needed to manually add contributor ID because it's added in ContributorProfileService
-		Map<String, Object> profileData = profile.getProfileData();
-		List<String> contributors = new ArrayList<>(1);
-		contributors.add(ContributorService.createContributorId(profile.getFullName(), profile.getPrimaryEmail()));
-
-		profileData.put(ContentObjectFields.SYS_CONTRIBUTORS, contributors);
-
-		// sys_updated is not tested because it contains current time
-		contributorProfile.remove(ContentObjectFields.SYS_UPDATED);
+		// sys_updated is not exactly tested because it contains current time. We test only presence in data.
+		Assert.assertNotNull(contributorProfile.remove(ContentObjectFields.SYS_UPDATED));
 
 		TestUtils.assertJsonContent(
 				TestUtils.loadJSONFromClasspathFile("/org/searchisko/contribprofile/provider/Jive6ProfileDataConverted.json"),
 				contributorProfile);
+	}
+
+	@Test
+	public void mapRawJsonData_emptyUsernames() throws Exception {
+		Jive6ContributorProfileProvider provider = getTested();
+
+		InputStream is = Jive6ContributorProfileProviderTest.class
+				.getResourceAsStream("Jive6ProfileData_emptyUsernames.json");
+		ContributorProfile profile = provider.mapRawJsonData(IOUtils.toByteArray(is));
+		Assert.assertEquals("lkrzyzanek",
+				profile.getTypeSpecificCodes().get(ContributorProfileService.FIELD_TSC_JBOSSORG_USERNAME).get(0));
+		Assert.assertNull(profile.getTypeSpecificCodes().get(ContributorProfileService.FIELD_TSC_GITHUB_USERNAME));
+
+		Assert.assertEquals("Libor Krzyzanek", profile.getFullName());
+		Assert.assertEquals("fake@fake.com", profile.getPrimaryEmail());
+
+		Assert.assertEquals(2, profile.getEmails().size());
+		Assert.assertTrue(profile.getEmails().contains("fake@fake.com"));
+		Assert.assertTrue(profile.getEmails().contains("fake2@fake.com"));
+
+		Map<String, Object> contributorProfile = profile.getProfileData();
+
+		// sys_updated is not exactly tested because it contains current time. We test only presence in data.
+		Assert.assertNotNull(contributorProfile.remove(ContentObjectFields.SYS_UPDATED));
+
+		TestUtils
+				.assertJsonContent(
+						TestUtils
+								.loadJSONFromClasspathFile("/org/searchisko/contribprofile/provider/Jive6ProfileDataConverted_emptyUsernames.json"),
+						contributorProfile);
 	}
 
 	@Test

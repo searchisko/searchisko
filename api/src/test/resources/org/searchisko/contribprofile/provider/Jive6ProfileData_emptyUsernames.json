@@ -1,0 +1,140 @@
+throw 'allowIllegalResourceCall is false.';
+{
+  "name" : {
+    "givenName" : "Libor",
+    "familyName" : "Krzyzanek",
+    "formatted" : "Libor Krzyzanek"
+  },
+  "type" : "person",
+  "displayName" : "Libor Krzyzanek",
+  "tags" : [ "jboss.org", "sbs" ],
+  "published" : "2009-01-13T05:00:00.000+0000",
+  "followingCount" : 8,
+  "thumbnailUrl" : "https://community.jboss.org/api/core/v3/people/6100/avatar",
+  "jive" : {
+    "timeZone" : "Europe/Berlin",
+    "level" : {
+      "name" : "Novice",
+      "description" : "",
+      "points" : 194
+    },
+    "locale" : "en",
+    "username" : "lkrzyzanek",
+    "profile" : [ {
+      "value" : "(GMT +1:00 hours) CET(Central Europe Time), Brussels, Copenhagen, Madrid, Paris",
+      "jive_label" : "Time Zone"
+    }, {
+      "value" : "http://www.krzyzanek.com",
+      "jive_label" : "URL"
+    }, {
+      "value" : "BIO",
+      "jive_label" : "Biography"
+    }, {
+      "value" : "community.jboss.org Administrator and Developer",
+      "jive_label" : "Occupation"
+    }, {
+      "value" : "",
+      "jive_label" : "Expertise"
+    }, {
+      "value" : "",
+      "jive_label" : "Twitter URL"
+    }, {
+      "value" : "",
+      "jive_label" : "Jabber ID"
+    }, {
+      "value" : "",
+      "jive_label" : "ICQ Number"
+    }, {
+      "value" : "",
+      "jive_label" : "AIM Address"
+    }, {
+      "value" : "",
+      "jive_label" : "YIM Number"
+    }, {
+      "value" : "",
+      "jive_label" : "MSN Messenger"
+    }, {
+      "value" : "",
+      "jive_label" : "github Username"
+    }, {
+      "value" : "",
+      "jive_label" : "Twitter Username"
+    }, {
+      "value" : "",
+      "jive_label" : "Facebook Username"
+    } ],
+    "external" : false,
+    "visible" : true,
+    "enabled" : true,
+    "externalContributor" : false,
+    "federated" : false
+  },
+  "updated" : "2013-12-03T13:06:37.972+0000",
+  "addresses" : [ {
+    "value" : {
+      "country" : "Czech Republic",
+      "formatted" : "Czech Republic"
+    },
+    "type" : "home",
+    "jive_label" : "Home Address"
+  } ],
+  "emails" : [ {
+    "value" : "fake@fake.com",
+    "type" : "work",
+    "jive_label" : "Email",
+    "primary" : true
+  },{
+    "value" : "fake2@fake.com",
+    "type" : "work",
+    "jive_label" : "Email",
+    "primary" : false
+  } ],
+  "photos" : [ {
+    "value" : "https://community.jboss.org/api/core/v3/people/6100/images/1/data"
+  } ],
+  "thumbnailId" : "5214",
+  "followerCount" : 8,
+  "resources" : {
+    "following" : {
+      "ref" : "https://community.jboss.org/api/core/v3/people/6100/@following",
+      "allowed" : [ "GET" ]
+    },
+    "followers" : {
+      "ref" : "https://community.jboss.org/api/core/v3/people/6100/@followers",
+      "allowed" : [ "GET" ]
+    },
+    "images" : {
+      "ref" : "https://community.jboss.org/api/core/v3/people/6100/images",
+      "allowed" : [ "GET" ]
+    },
+    "self" : {
+      "ref" : "https://community.jboss.org/api/core/v3/people/6100",
+      "allowed" : [ "GET" ]
+    },
+    "html" : {
+      "ref" : "https://community.jboss.org/people/lkrzyzanek",
+      "allowed" : [ "GET" ]
+    },
+    "followingIn" : {
+      "ref" : "https://community.jboss.org/api/core/v3/people/6100/followingIn",
+      "allowed" : [ "GET" ]
+    },
+    "blog" : {
+      "ref" : "https://community.jboss.org/api/core/v3/places/249568",
+      "allowed" : [ "GET" ]
+    },
+    "avatar" : {
+      "ref" : "https://community.jboss.org/api/core/v3/people/6100/avatar",
+      "allowed" : [ "GET" ]
+    },
+    "members" : {
+      "ref" : "https://community.jboss.org/api/core/v3/members/people/6100",
+      "allowed" : [ "GET" ]
+    },
+    "activity" : {
+      "ref" : "https://community.jboss.org/api/core/v3/people/6100/activities",
+      "allowed" : [ "GET" ]
+    }
+  },
+  "id" : "6100"
+}

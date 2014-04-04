@@ -36,18 +36,6 @@
 
 	"accounts": [
 		{
-			"domain": "github.com",
-			"username": "lkrzyzanek-ght"
-		},
-		{
-			"domain": "twitter.com",
-			"username": "lkrzyzanek-twitter"
-		},
-		{
-			"domain": "facebook.com",
-			"username": "lkrzyzanek-facebook"
-		},
-		{
 		  "domain": "jboss.org",
 		  "username" : "lkrzyzanek"
 		}
