@@ -844,16 +844,31 @@ public class ContributorServiceTest extends ESRealClientTestBase {
 			indexFlushAndRefresh(ContributorService.SEARCH_INDEX_NAME);
 			// case - search existing
 			{
+
 				SearchResponse sr = tested.findByTypeSpecificCodeExistence(CODE_NAME_1);
 				Assert.assertEquals(2, sr.getHits().getTotalHits());
+
+				// we use scroll indexer there
+				sr = tested.searchClientService.executeESScrollSearchNextRequest(sr);
+				Assert.assertEquals(2, sr.getHits().hits().length);
 				Assert.assertEquals(ID_10, sr.getHits().getHits()[0].getId());
 				Assert.assertEquals("30", sr.getHits().getHits()[1].getId());
 
+				sr = tested.searchClientService.executeESScrollSearchNextRequest(sr);
+				Assert.assertEquals(0, sr.getHits().hits().length);
+
+				// second ID
 				sr = tested.findByTypeSpecificCodeExistence(CODE_NAME_2);
 				Assert.assertEquals(2, sr.getHits().getTotalHits());
+
+				sr = tested.searchClientService.executeESScrollSearchNextRequest(sr);
+				Assert.assertEquals(2, sr.getHits().hits().length);
 				Assert.assertEquals(ID_10, sr.getHits().getHits()[0].getId());
 				Assert.assertEquals(ID_20, sr.getHits().getHits()[1].getId());
+				sr = tested.searchClientService.executeESScrollSearchNextRequest(sr);
+				Assert.assertEquals(0, sr.getHits().hits().length);
 
+				// unknown ID
 				sr = tested.findByTypeSpecificCodeExistence("unknown");
 				Assert.assertEquals(0, sr.getHits().getTotalHits());
 
