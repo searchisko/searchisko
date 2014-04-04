@@ -24,6 +24,8 @@ import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
+import org.elasticsearch.action.search.SearchType;
+import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.index.query.FilterBuilders;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.indices.IndexMissingException;
@@ -66,18 +68,18 @@ public class SearchClientService extends ElasticsearchClientService {
 	}
 
 	/**
-	 * Perform filter query into one ES index and type with one field and value.
+	 * Perform filter query into one ES index and type with one field and value. Be careful, this returns max 10 records!
 	 * 
 	 * @param indexName to search in
 	 * @param indexType to search
 	 * @param fieldName name of field to search
 	 * @param fieldValue value to search for
-	 * @return
+	 * @return SearchResponse.
 	 */
 	public SearchResponse performFilterByOneField(String indexName, String indexType, String fieldName, String fieldValue)
 			throws SearchIndexMissingException {
 		try {
-			SearchRequestBuilder searchBuilder = getClient().prepareSearch(indexName).setTypes(indexType);
+			SearchRequestBuilder searchBuilder = getClient().prepareSearch(indexName).setTypes(indexType).setSize(10);
 
 			searchBuilder.setFilter(FilterBuilders.queryFilter(QueryBuilders.matchQuery(fieldName, fieldValue)));
 			searchBuilder.setQuery(QueryBuilders.matchAllQuery());
@@ -90,18 +92,23 @@ public class SearchClientService extends ElasticsearchClientService {
 		}
 	}
 
+	private static final long ES_SCROLL_KEEPALIVE = 180000;
+
 	/**
-	 * Perform filter query into one ES index and type to get records with any value stored in one field.
+	 * Perform filter query into one ES index and type to get records with any value stored in one field. Be careful, this
+	 * method returns SCROLL response, so you have to use {@link #executeESScrollSearchNextRequest(SearchResponse)} to get
+	 * real data and go over them as is common ES scroll mechanism.
 	 * 
 	 * @param indexName to search in
 	 * @param indexType to search
 	 * @param fieldName name of field to search for any value in it
-	 * @return
+	 * @return Scroll SearchResponse
 	 */
 	public SearchResponse performQueryByOneFieldAnyValue(String indexName, String indexType, String fieldName)
 			throws SearchIndexMissingException {
 		try {
-			SearchRequestBuilder searchBuilder = getClient().prepareSearch(indexName).setTypes(indexType);
+			SearchRequestBuilder searchBuilder = getClient().prepareSearch(indexName).setTypes(indexType)
+					.setScroll(new TimeValue(ES_SCROLL_KEEPALIVE)).setSearchType(SearchType.SCAN).setSize(10);
 
 			searchBuilder.setFilter(FilterBuilders.notFilter(FilterBuilders.missingFilter(fieldName)));
 			searchBuilder.setQuery(QueryBuilders.matchAllQuery());
@@ -112,6 +119,11 @@ public class SearchClientService extends ElasticsearchClientService {
 			log.log(Level.WARNING, e.getMessage());
 			throw new SearchIndexMissingException(e);
 		}
+	}
+
+	public SearchResponse executeESScrollSearchNextRequest(SearchResponse scrollResp) {
+		return client.prepareSearchScroll(scrollResp.getScrollId()).setScroll(new TimeValue(ES_SCROLL_KEEPALIVE)).execute()
+				.actionGet();
 	}
 
 	/**

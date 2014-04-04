@@ -305,35 +305,39 @@ public class ContributorProfileService {
 			if (allContributors != null && allContributors.getHits().getTotalHits() > 0) {
 				log.log(Level.INFO, "Going to update {0} contributor profiles for Type Specific Code: " + contributorCodeType,
 						allContributors.getHits().getTotalHits());
-				for (SearchHit p : allContributors.getHits().getHits()) {
-					ret++;
-					String contributorEntityId = p.getId();
-					Map<String, Object> contributorEntityContent = p.getSource();
-					String contributorCode = ContributorService.getContributorCode(contributorEntityContent);
-					try {
-						if (contributorCode == null) {
-							log.log(Level.WARNING, "Data inconsistency: Contributor with id '{0}' has no 'code'.",
-									contributorEntityId);
-						} else {
-							String contributorCodeValue = ContributorService.getContributorTypeSpecificCodeFirst(
-									contributorEntityContent, contributorCodeType);
-							ContributorProfile profile = takeProfileFromProvider(contributorCodeType, contributorCodeValue);
-							if (profile != null) {
-								// update Contributor record to add latest codes used for mappings
-								contributorService.createOrUpdateFromProfile(profile, contributorCodeType, contributorCodeValue);
-								// update Contributor profile
-								updateContributorProfileInSearchIndex(contributorCode, profile);
+				allContributors = searchClientService.executeESScrollSearchNextRequest(allContributors);
+				while (allContributors.getHits().getHits().length > 0) {
+					for (SearchHit p : allContributors.getHits()) {
+						ret++;
+						String contributorEntityId = p.getId();
+						Map<String, Object> contributorEntityContent = p.getSource();
+						String contributorCode = ContributorService.getContributorCode(contributorEntityContent);
+						try {
+							if (contributorCode == null) {
+								log.log(Level.WARNING, "Data inconsistency: Contributor with id '{0}' has no 'code'.",
+										contributorEntityId);
 							} else {
-								log.log(
-										Level.WARNING,
-										"We are unable to obtain profile data for Contributor with code '{0}' for type specific code {1}={2}.",
-										new Object[] { contributorCode, contributorCodeType, contributorCodeValue });
+								String contributorCodeValue = ContributorService.getContributorTypeSpecificCodeFirst(
+										contributorEntityContent, contributorCodeType);
+								ContributorProfile profile = takeProfileFromProvider(contributorCodeType, contributorCodeValue);
+								if (profile != null) {
+									// update Contributor record to add latest codes used for mappings
+									contributorService.createOrUpdateFromProfile(profile, contributorCodeType, contributorCodeValue);
+									// update Contributor profile
+									updateContributorProfileInSearchIndex(contributorCode, profile);
+								} else {
+									log.log(
+											Level.WARNING,
+											"We are unable to obtain profile data for Contributor with code '{0}' for type specific code {1}={2}.",
+											new Object[] { contributorCode, contributorCodeType, contributorCodeValue });
+								}
 							}
+						} catch (Exception e) {
+							log.log(Level.WARNING, "ContributorProfile update failed for Contributor with code=" + contributorCode
+									+ " due " + e.getMessage(), e);
 						}
-					} catch (Exception e) {
-						log.log(Level.WARNING, "ContributorProfile update failed for Contributor with code=" + contributorCode
-								+ " due " + e.getMessage(), e);
 					}
+					allContributors = searchClientService.executeESScrollSearchNextRequest(allContributors);
 				}
 			}
 			return ret;

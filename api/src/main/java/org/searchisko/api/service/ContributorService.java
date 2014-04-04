@@ -399,9 +399,13 @@ public class ContributorService implements EntityService {
 	/**
 	 * Find contributor which has any value available for given 'type specific code'. These codes are used to map from
 	 * third party unique identifiers to searchisko unique contributor id.
+	 * <p>
+	 * Be careful, this method returns SCROLL response, so you have to use
+	 * {@link SearchClientService#executeESScrollSearchNextRequest(SearchResponse)} to get real data and go over them as
+	 * is common ES scroll mechanism.
 	 * 
 	 * @param codeName name of 'type specific code', eg. <code>jbossorg_username</code>, <code>github_username</code>
-	 * @return search result - should contain zero or more contributors.
+	 * @return search result - should contain zero or more contributors - scrollable!!.
 	 */
 	public SearchResponse findByTypeSpecificCodeExistence(String codeName) {
 		try {
