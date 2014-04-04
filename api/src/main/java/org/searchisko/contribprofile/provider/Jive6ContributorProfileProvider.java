@@ -80,7 +80,7 @@ public class Jive6ContributorProfileProvider implements ContributorProfileProvid
 			HttpEntity entity = response.getEntity();
 			if (response.getStatusLine().getStatusCode() >= 300) {
 				EntityUtils.consume(entity);
-				log.log(Level.WARNING, "Cannot get profile data form Jive, reason: {0}", response);
+				log.log(Level.WARNING, "Cannot get profile data from Jive, reason: {0}", response);
 				return null;
 			}
 			byte[] data = EntityUtils.toByteArray(entity);
