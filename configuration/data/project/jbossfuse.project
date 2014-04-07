@@ -3,7 +3,7 @@
   "name": "JBoss Fuse",
   "type_specific_code" : {
     "jbossorg_blog": [""],
-    "jbossorg_jira": [""],
+    "jbossorg_jira": ["ENTESB"],
     "jbossorg_sbs" : ["2301"],
     "jbossorg_mailing_list": "",
     "jbossorg_project_info": ""
