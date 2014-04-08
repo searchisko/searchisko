@@ -2,7 +2,7 @@
   "code": "rhq",
   "name": "RHQ",
   "type_specific_code" : {
-    "jbossorg_blog": [""],
+    "jbossorg_blog": ["rhqblog"],
     "jbossorg_jira": [""],
     "jbossorg_sbs" : ["2152","2121"],
     "jbossorg_mailing_list": "",
