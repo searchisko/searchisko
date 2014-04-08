@@ -7,15 +7,16 @@ DCP instance. You can use it as example for your instance.
 
 DCP initialization steps:
 
-1. Create ElasticSearch index templates - `index_templates/init_templates.sh`
-2. Create ElasticSearch indexes  - `indexes/init_indexes.sh`
-3. Create ElasticSearch mappings - `mappings/init_mappings.sh`
-4. Push all DCP init data in given order:
+1. Get JBoss Developer artifacts from https://github.com/jboss-developer/www.jboss.org/tree/master/_dcp and copy them into data structure of configurations
+2. Create ElasticSearch index templates - `index_templates/init_templates.sh`
+3. Create ElasticSearch indexes  - `indexes/init_indexes.sh`
+4. Create ElasticSearch mappings - `mappings/init_mappings.sh`
+5. Push all DCP init data in given order:
    - `data/provider/init_providers.sh` 
    - `data/config/init_config.sh`
    - `data/project/init_projects.sh`
    - `data/contributor/init-contributors.sh`
-5. Initialize ElasticSearch rivers - `rivers/init_rivers.sh` 
+6. Initialize ElasticSearch rivers - `rivers/init_rivers.sh` 
 
 Note: each .sh script accepts commandline parameters which allows to configure 
 location of DCP REST API or ElasticSearch search node http connector used by 
