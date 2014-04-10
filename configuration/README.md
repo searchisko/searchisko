@@ -44,7 +44,7 @@ given script.
 		ctl_app start or do git push to openshift repo
 
 		mysql dcp;
-		delete from Config; delete from Contributor; delete from Project; delete from Provider; delete from TaskStatusInfo;
+		delete from Config; delete from Contributor; delete from Project; delete from Provider; delete from Rating; delete from TaskStatusInfo;
 		exit;
 
 5. Push all init data
