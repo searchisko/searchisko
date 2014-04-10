@@ -14,6 +14,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.ejb.Singleton;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.event.Observes;
 import javax.inject.Inject;
@@ -298,6 +300,7 @@ public class ContributorProfileService {
 	 *          see <code>FIELD_TSC_xx</code> constants) to update profiles for.
 	 * @return number of created/updated profiles. -1 if 'contributorCodeType' is not supported.
 	 */
+	@TransactionAttribute(TransactionAttributeType.NEVER)
 	public int createOrUpdateAllProfiles(String contributorCodeType) {
 		if (isContributorCodeTypesSupported(contributorCodeType)) {
 			int ret = 0;

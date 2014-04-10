@@ -29,6 +29,7 @@ import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.index.query.FilterBuilders;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.indices.IndexMissingException;
+import org.elasticsearch.search.sort.SortOrder;
 import org.searchisko.api.model.AppConfiguration.ClientType;
 import org.searchisko.api.util.SearchUtils;
 
@@ -102,17 +103,18 @@ public class SearchClientService extends ElasticsearchClientService {
 	 * @param indexName to search in
 	 * @param indexType to search
 	 * @param fieldName name of field to search for any value in it
+	 * @param sortByField name of field to sort results by
 	 * @return Scroll SearchResponse
 	 */
-	public SearchResponse performQueryByOneFieldAnyValue(String indexName, String indexType, String fieldName)
-			throws SearchIndexMissingException {
+	public SearchResponse performQueryByOneFieldAnyValue(String indexName, String indexType, String fieldName,
+			String sortByField) throws SearchIndexMissingException {
 		try {
 			SearchRequestBuilder searchBuilder = getClient().prepareSearch(indexName).setTypes(indexType)
 					.setScroll(new TimeValue(ES_SCROLL_KEEPALIVE)).setSearchType(SearchType.SCAN).setSize(10);
 
 			searchBuilder.setFilter(FilterBuilders.notFilter(FilterBuilders.missingFilter(fieldName)));
 			searchBuilder.setQuery(QueryBuilders.matchAllQuery());
-
+			searchBuilder.addSort(sortByField, SortOrder.ASC);
 			final SearchResponse response = searchBuilder.execute().actionGet();
 			return response;
 		} catch (IndexMissingException e) {

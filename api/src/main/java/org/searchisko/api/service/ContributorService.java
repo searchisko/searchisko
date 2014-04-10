@@ -17,6 +17,8 @@ import javax.annotation.PostConstruct;
 import javax.ejb.LocalBean;
 import javax.ejb.ObjectNotFoundException;
 import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
 import javax.enterprise.event.Event;
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -410,7 +412,7 @@ public class ContributorService implements EntityService {
 	public SearchResponse findByTypeSpecificCodeExistence(String codeName) {
 		try {
 			return searchClientService.performQueryByOneFieldAnyValue(SEARCH_INDEX_NAME, SEARCH_INDEX_TYPE,
-					FIELD_TYPE_SPECIFIC_CODE + "." + codeName);
+					FIELD_TYPE_SPECIFIC_CODE + "." + codeName, "_id");
 		} catch (SearchIndexMissingException e) {
 			return null;
 		}
@@ -466,6 +468,7 @@ public class ContributorService implements EntityService {
 	 * @param typeSpecificCodeValue profile has been loaded for.
 	 * @return contributor code (unique contributor id within Searchisko used in other documents) for Contributor record
 	 */
+	@TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
 	public String createOrUpdateFromProfile(ContributorProfile profile, String typeSpecificCodeField,
 			String typeSpecificCodeValue) {
 
