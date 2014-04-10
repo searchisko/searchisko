@@ -4,106 +4,130 @@ Searchisko Content object
 This document describes main content object, which can be pushed to and retrieved or searched from Searchisko.
  
 Searchisko Content object is a JSON document with a free structure. There is no 
-restriction how many key value pairs must be defined or in what structure.
-Some system data fields are defined by Searchisko, some are added into the content
-inside Searchisko during push. Those data fields are prefixed by `sys_`:
+restriction about how many key value pairs must be defined or in what structure.
+There are however some system data fields defined by Searchisko (prefixed by `sys_`) and they play specific role in the system,
+some of them are set during content push before pre-processing, thus they will be overridden if provided by client (see column <b>SET</b>):
 
 <table border="1">
 <thead>
   <th>Field</th>
+  <th>SET</th>
   <th width="70%">Description</th>
 </thead>
 <tbody>
 <tr>
   <td>sys_type</td>
+  <td>yes</td>
   <td>Searchisko wide normalized content type - eg. mailing list email, issue, blogpost, IRC post, commit, discussion thread - system field, always necessary.</td>
 </tr>
 <tr>
   <td>sys_id</td>
+  <td>yes</td>
   <td>Content id unique in the whole Searchisko platform - system field, always necessary. It is constructed during the 'Content Push API' operation from <code>sys_content_type</code> and <code>sys_content_id</code>.</td>
 </tr>
 <tr>
   <td>sys_content_provider</td>
+  <td>yes</td>
   <td>Identification of the provider that stored the given data into the platform - system field, always necessary - eg. 'jbossorg', 'seam_project' etc.</td>
 </tr>
 <tr>
   <td>sys_content_type</td>
+  <td>yes</td>
   <td>Identifier of the provider defined content type for 'Content Push API'. It is unique in the whole Searchisko so it starts with <code>sys_content_provider</code>, eg. 'jbossorg_jira_issue', 'jbossorg_blog' etc.</td>
 </tr>
 <tr>
   <td>sys_content_id</td>
+  <td>yes</td>
   <td>Content identifier passed in by the provider, it must be unique for the given <code>sys_content_type</code>.</td>
 </tr>
 <tr>
   <td>sys_updated</td>
+  <td>yes</td>
   <td>Date of last content update in Searchisko - system field, always necessary, assigned in 'Content Push API'.</td>
 </tr>
 <tr>
   <td>sys_project</td>
+  <td/>
   <td>Normalized Searchisko wide identifier of the project - system field - it is used for the project facet and filter in the Search API.</td>
 </tr>
 <tr>
   <td>sys_project_name</td>
+  <td/>
   <td>Human readable name of project based on <code>sys_project</code> identifier - system field.</td>
 </tr>
 <tr>
   <td>sys_contributors</td>
+  <td/>
   <td>Array of contributing persons, no duplicities in array, persons identifiers normalized during push into Searchisko - each person represented as string <code>Name Surname <primaryemail@email.com></code> - in Search API used for persons facet and filter.</td>
 </tr>
 <tr>
   <td>sys_activity_dates</td>
+  <td/>
   <td>Array of timestamps (ISO string) representing some activity on the content (when the content was created or changed etc. in source system) - in the Search API used for the time facet and filter.</td>
 </tr>
 <tr>
   <td>sys_created</td>
+  <td/>
   <td>Timestamp (ISO string) representing creation of the content in source system (it's min value from <code>sys_activity_dates</code>), used for sorting on search API.</td>
 </tr>
 <tr>
   <td>sys_last_activity_date</td>
+  <td/>
   <td>Timestamp (ISO string) representing last activity on the content (it's max value from <code>sys_activity_dates</code>), used for sorting on search API.</td>
 </tr>
 <tr>
   <td>sys_title</td>
+  <td/>
   <td>Content title - used to present the document in the basic search GUI results - it can be directly set by the content provider during the push operation.</td>
 </tr>
 <tr>
   <td>sys_url_view</td>
+  <td/>
   <td>URL where the document can be viewed in its original system in human readable form - used to open the document from the basic search GUI - can be directly set by the content provider during the push.</td>
 </tr>
 <tr>
   <td>sys_description</td>
+  <td/>
   <td>Short text representing the content (up to 400 characters) - used to show the content in the basic search GUI results for queries that do not produce highlights - it can be directly set by the content provider during the push, no html formatting.</td>
 </tr>
 <tr>
   <td>sys_content</td>
+  <td/>
   <td>Complete text representing whole content - it can be directly set by the content provider during the push, may contain html formatting. Basic search GUI may use it in search result detail view.</td>
 </tr>
 <tr>
   <td>sys_content_content-type</td>
-  <td>MIME identifier of content type stored in the <code>sys_content</code> field eg. <code>text/plain</code>, <code>text/html</code>, <code>text/x-markdown</code>. Must be negotiated with Searchisko Admins so fulltext search analyzer for <code>sys_content</code> is set correctly.</td>
+  <td>yes (if <code>sys_content</code> is present)</td>
+  <td>MIME identifier of content type stored in the <code>sys_content</code> field eg. <code>text/plain</code>, <code>text/html</code>, <code>text/x-markdown</code>. Must be negotiated with Searchisko Admins so fulltext search analyzer for <code>sys_content</code> is set correctly. Both <code>sys_content</code> and <code>sys_content_content-type</code> are used in <b>Feed API</b> thus they have to be more strictly controlled.</td>
 </tr>
 <tr>
   <td>sys_content_plaintext</td>
+  <td></td>
   <td>This field is expected to contain markup-free content of `sys_content` field. It makes it easy to run fulltext search API against it and use it for highlighted snippets. Note that it can be populated by pre-processors and <a href="https://github.com/jbossorg/structured-content-tools">structured-content-tools</a> can be used to strip HTML entities.</td>
 </tr>
 <tr>
   <td>sys_tags</td>
+  <td>yes</td>
   <td>Array of tags (Strings) - in the Search API used for facet (tag cloud) and filter - it is not directly pushed by the content provider because we plan a mechanism for additional user defined tags, so we need to rewrite this field internally. The content provider should use <code>tags</code> field instead.</td>
 </tr>
 <tr>
   <td>tags</td>
+  <td/>
   <td>Tags provided by content provider.</td>
 </tr>
 <tr>
   <td>sys_comments</td>
+  <td/>
   <td>Array of comment for issue. <a href="#comment-data-structure-description">'Comment data structure'</a> is described below.</td>
 </tr>
 <tr>
   <td>sys_rating_avg</td>
+  <td/>
   <td>Average rating of Document - system field. It is updated automatically when "Personalized Content Rating API" is used. Contains float number value (with decimal positions) between 1 (worst) and 5 (best). Field is not present if nobody rated document yet.</td>
 </tr>
 <tr>
   <td>sys_rating_num</td>
+  <td/>
   <td>Number of users who rated this Document - system field. It is updated automatically when "Personalized Content Rating API" is used. Contains positive integer number. Field is not present if nobody rated document yet.</td>
 </tr>
 </tbody>
