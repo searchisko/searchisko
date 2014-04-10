@@ -180,7 +180,7 @@ public class Jive6ContributorProfileProvider implements ContributorProfileProvid
 			profileData.put("profileUrl", profileUrl);
 			profileData.put("sys_url_view", profileUrl);
 		} catch (Exception e) {
-			log.log(Level.WARNING, "Cannot get profile URL for usrname: {0}", username);
+			log.log(Level.WARNING, "Cannot get profile URL for username: {0}", username);
 		}
 
 		profileData.put("timeZone", jiveObject.get("timeZone"));
@@ -190,22 +190,26 @@ public class Jive6ContributorProfileProvider implements ContributorProfileProvid
 		List<Map<String, Object>> accounts = new ArrayList<>();
 
 		List<Map<String, Object>> jiveProfile = (List<Map<String, Object>>) jiveObject.get("profile");
-		for (Map<String, Object> p : jiveProfile) {
-			switch ((String) p.get(JIVE_PROFILE_NAME_KEY)) {
-			case "Biography":
-				profileData.put("aboutMe", p.get(JIVE_PROFILE_VALUE_KEY));
-				profileData.put("sys_description", p.get(JIVE_PROFILE_VALUE_KEY));
-				break;
-			case "Twitter Username":
-				getAccountObject(accounts, "twitter.com", p.get(JIVE_PROFILE_VALUE_KEY));
-				break;
-			case "github Username":
-				getAccountObject(accounts, "github.com", p.get(JIVE_PROFILE_VALUE_KEY));
-				break;
-			case "Facebook Username":
-				getAccountObject(accounts, "facebook.com", p.get(JIVE_PROFILE_VALUE_KEY));
-				break;
+		if (jiveProfile != null) {
+			for (Map<String, Object> p : jiveProfile) {
+				switch ((String) p.get(JIVE_PROFILE_NAME_KEY)) {
+				case "Biography":
+					profileData.put("aboutMe", p.get(JIVE_PROFILE_VALUE_KEY));
+					profileData.put("sys_description", p.get(JIVE_PROFILE_VALUE_KEY));
+					break;
+				case "Twitter Username":
+					getAccountObject(accounts, "twitter.com", p.get(JIVE_PROFILE_VALUE_KEY));
+					break;
+				case "github Username":
+					getAccountObject(accounts, "github.com", p.get(JIVE_PROFILE_VALUE_KEY));
+					break;
+				case "Facebook Username":
+					getAccountObject(accounts, "facebook.com", p.get(JIVE_PROFILE_VALUE_KEY));
+					break;
+				}
 			}
+		} else {
+			log.log(Level.WARNING, "Missing 'profile' part of data for username: {0}", username);
 		}
 		getAccountObject(accounts, "jboss.org", username);
 		profileData.put("accounts", accounts);
