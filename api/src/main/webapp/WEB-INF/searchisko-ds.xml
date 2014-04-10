@@ -29,7 +29,7 @@ https://github.com/openshift/origin-server/tree/master/cartridges/openshift-orig
     <!-- The datasource is bound into JNDI at this location. We reference this in META-INF/persistence.xml -->
     <datasource jndi-name="java:jboss/datasources/SearchiskoDS"
                 pool-name="SearchiskoDS" enabled="true"
-                use-java-context="true">
+                use-java-context="true" use-ccm="true">
         <connection-url>${datasource.connection.url}</connection-url>
         <connection-property name="autoReconnect">true</connection-property>
         <connection-property name="useUnicode">true</connection-property>
