@@ -16,6 +16,10 @@ Searchisko is Java EE 6 application intended to run in the JBoss EAP 6 applicati
 
 - Developers: subscribe to [searchisko-dev](https://lists.jboss.org/mailman/listinfo/searchisko-dev) mail list and visit [archive](http://lists.jboss.org/pipermail/searchisko-dev/).
 
+#### Release Notes
+
+See [Release Notes](RELEASE_NOTES.md) for high level info about releases.
+
 ## DCP
 
 Particular [configuration](configuration) and specific running instance of Searchisko tailored for JBoss.org needs
