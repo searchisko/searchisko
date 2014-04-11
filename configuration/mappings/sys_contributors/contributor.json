@@ -6,13 +6,14 @@
             "code" : {"type" : "string", "analyzer" : "keyword"},
             "email" : {"type" : "string", "analyzer" : "keyword"},
             "type_specific_code" : {
-				"type" : "object",            
+                "type" : "object",            
                 "properties" : {
-		            "jbossorg_username" : {"type" : "string", "analyzer" : "keyword"},
-		            "github_username" : {"type" : "string", "analyzer" : "keyword"},
-		            "jbossorg_blog" : {"type" : "string", "analyzer" : "keyword"}
-	            }
-            }
-        }
+		              "jbossorg_username" : {"type" : "string", "analyzer" : "keyword"},
+		              "github_username" : {"type" : "string", "analyzer" : "keyword"},
+		              "jbossorg_blog" : {"type" : "string", "analyzer" : "keyword"},
+		              "vimeo_username" : {"type" : "string", "analyzer" : "keyword"}
+	               }
+             }
+         }
     }
 }
