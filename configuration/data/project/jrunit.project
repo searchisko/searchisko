@@ -1,6 +1,6 @@
 {
   "code": "jrunit",
-  "name": "",
+  "name": "JRunit",
   "type_specific_code" : {
     "jbossorg_blog": [""],
     "jbossorg_jira": [""],
