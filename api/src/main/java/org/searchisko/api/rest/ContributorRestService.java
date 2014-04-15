@@ -38,6 +38,7 @@ public class ContributorRestService extends RestEntityServiceBase {
 
 	public static final String PARAM_EMAIL = "email";
 	public static final String PARAM_CODE = "code";
+	public static final String PARAM_NAME = "name";
 
 	@Inject
 	protected ContributorService contributorService;
@@ -70,6 +71,8 @@ public class ContributorRestService extends RestEntityServiceBase {
 			response = contributorService.findByCode(codeValue);
 		} else if (PARAM_EMAIL.equals(codeName)) {
 			response = contributorService.findByEmail(codeValue);
+		} else if (PARAM_NAME.equals(codeName)) {
+			response = contributorService.findByName(codeValue, false);
 		} else {
 			response = contributorService.findByTypeSpecificCode(codeName, codeValue);
 		}

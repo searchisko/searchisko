@@ -18,6 +18,9 @@ Contributor configuration fields:
   project identifier for Search API filters.
 * `email` - array of all email addresses used by this person for community 
   content creation (used for code search during normalization on Content Push API). 
+* `name` - full name of the contributor (used for code search during normalization 
+  on Content Push API). There is multifield used in search index, where `name` is 
+  analyzed as keyword for full match, while `name.fulltext` is tokenized for fulltext search.  
 * `type_specific_code` - Map structure with other identifiers used to map pushed 
   data to this contributor. Key in the structure marks type of identifier (eg. 
   jboss.org username, github username), value in structure is identifier itself 
@@ -26,8 +29,9 @@ Contributor configuration fields:
 Example of contributor configuration:
 
 	{
-	  "code" : "John Doe <john@doe.org>",
+	  "code"  : "John Doe <john@doe.org>",
 	  "email" : ["john@doe.org", "john.doe@gmail.com"],
+	  "name"  : "John Doe",
 	  "type_specific_code" : {
 	    "jbossorg_username" : "jdoe",
 	    "github_username" : "john.doe",

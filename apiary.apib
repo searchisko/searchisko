@@ -1099,6 +1099,7 @@ GET /rest/contributor/{id}
 {
   "code" : "John Doe <john@doe.org>",
   "email" : ["john@doe.org", "john.doe@gmail.com"],
+  "name" : "John Doe",
   "type_specific_code" : {
     "jbossorg_username" : "jdoe",
     "github_username" : "john.doe",
@@ -1111,7 +1112,7 @@ Search contributor configuration by some of available identifiers.
 ##### Request parameters
 
 Method expects one request parameter. Name of parameter is name of identifier you can search in. 
-It may be `code`, `email` or any other identifier type used inside of `type_specific_code` map of contributor definition (eg. `jbossorg_username`, `github_username` etc.).
+It may be `code`, `email`, `name` or any other identifier type used inside of `type_specific_code` map of contributor definition (eg. `jbossorg_username`, `github_username` etc.).
 Value of parameter is identifier value you can search for then.   
 
 
@@ -1125,7 +1126,8 @@ GET /rest/contributor/search?{idName}={idValue}
       "id": "21",
       "data": {
 				  "code" : "John Doe <john@doe.org>",
-				  "email" : ["john@doe.org", "john.doe@gmail.com"]
+				  "email" : ["john@doe.org", "john.doe@gmail.com"],
+				  "name" : "John Doe"
 				}
 			}
     }
@@ -1168,7 +1170,8 @@ GET /rest/contributor{?from,size}
       "id": "21",
       "data": {
 				  "code" : "John Doe <john@doe.org>",
-				  "email" : ["john@doe.org", "john.doe@gmail.com"]
+				  "email" : ["john@doe.org", "john.doe@gmail.com"],
+				  "name" : "John Doe"
 				}
 			}
     }
@@ -1187,7 +1190,8 @@ POST /rest/contributor
 > Accept: application/json
 {
   "code" : "John Doe <john@doe.org>",
-  "email" : ["john@doe.org","john.doe@gmail.com"]
+  "email" : ["john@doe.org","john.doe@gmail.com"],
+  "name" : "John Doe"
 }
 < 200
 < Content-Type: application/json
@@ -1208,7 +1212,8 @@ POST /rest/contributor/{id}
 > Accept: application/json
 {
   "code" : "John Doe <john@doe.org>",
-  "email" : ["john@doe.org", "john.doe@gmail.com"]
+  "email" : ["john@doe.org", "john.doe@gmail.com"],
+  "name" : "John Doe"
 }
 < 200
 < Content-Type: application/json
@@ -1227,7 +1232,8 @@ POST /rest/contributor/{id}/code/{code}
 < Content-Type: application/json
 {
   "code" : "John Doe <john@doe.org>",
-  "email" : ["john@doe.org","john.doe@gmail.com"]
+  "email" : ["john@doe.org","john.doe@gmail.com"],
+  "name" : "John Doe"
 }
 
 
@@ -1246,7 +1252,8 @@ POST /rest/contributor/{idFrom}/mergeTo/{idTo}
 < Content-Type: application/json
 {
   "code" : "John Doe <john@doe.org>",
-  "email" : ["john@doe.org","john.doe@gmail.com"]
+  "email" : ["john@doe.org","john.doe@gmail.com"],
+  "name" : "John Doe"
 }
 
 Delete contributor configuration with given `id`.

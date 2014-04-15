@@ -4,7 +4,14 @@
         "_all" : {"enabled" : false},
         "properties" : {
             "code" : {"type" : "string", "analyzer" : "keyword"},
-            "email" : {"type" : "string", "analyzer" : "keyword"}
+            "email" : {"type" : "string", "analyzer" : "keyword"},
+            "name"	: {
+							  "type"   : "multi_field",
+							  "fields" : {
+							      "name"     : { "type": "string", "analyzer": "keyword" },
+								    "fulltext" : { "type": "string", "index": "analyzed"}
+							  }
+						}
         }
     }
 }

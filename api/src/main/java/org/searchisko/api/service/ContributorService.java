@@ -84,6 +84,11 @@ public class ContributorService implements EntityService {
 	public static final String FIELD_EMAIL = "email";
 
 	/**
+	 * Contributor document field containing full name of contributor.
+	 */
+	public static final String FIELD_NAME = "name";
+
+	/**
 	 * Contributor document field containing Map structure with other unique identifiers used to map pushed data to the
 	 * contributor. Key in the Map structure marks type of identifier (eg. jbossorg_username, github_username), value in
 	 * structure is identifier or array of identifiers itself used during mapping.
@@ -352,7 +357,6 @@ public class ContributorService implements EntityService {
 	 * Find contributor by <code>code</code> (unique id used in content).
 	 * 
 	 * @param code to search contributor for.
-	 * 
 	 * @return search result - should contain zero or one contributor only! Multiple contributors for one code is
 	 *         configuration problem!
 	 */
@@ -368,13 +372,31 @@ public class ContributorService implements EntityService {
 	 * Find contributor by email.
 	 * 
 	 * @param email address to search contributor for.
-	 * 
 	 * @return search result - should contain zero or one contributor only! Multiple contributors for one email address is
 	 *         configuration problem!
 	 */
 	public SearchResponse findByEmail(String email) {
 		try {
 			return searchClientService.performFilterByOneField(SEARCH_INDEX_NAME, SEARCH_INDEX_TYPE, FIELD_EMAIL, email);
+		} catch (SearchIndexMissingException e) {
+			return null;
+		}
+	}
+
+	/**
+	 * Find contributor by name.
+	 * 
+	 * @param name to search contributor for.
+	 * @param exactMatch if <code>true</code> then exact match over name is performed, if <code>false</code> then fulltext
+	 *          search is performed.
+	 * @return search result - should contain zero, one or more contributors.
+	 */
+	public SearchResponse findByName(String name, boolean exactMatch) {
+		try {
+			String fn = FIELD_NAME;
+			if (!exactMatch)
+				fn += ".fulltext";
+			return searchClientService.performFilterByOneField(SEARCH_INDEX_NAME, SEARCH_INDEX_TYPE, fn, name);
 		} catch (SearchIndexMissingException e) {
 			return null;
 		}
@@ -518,6 +540,8 @@ public class ContributorService implements EntityService {
 			}
 		}
 
+		contributorEntityContent.put(FIELD_NAME, profile.getFullName());
+
 		Map<String, Object> newDataFromProfile = new HashMap<>();
 		newDataFromProfile.put(FIELD_EMAIL, profile.getEmails());
 		newDataFromProfile.put(FIELD_TYPE_SPECIFIC_CODE, profile.getTypeSpecificCodes());
@@ -653,11 +677,21 @@ public class ContributorService implements EntityService {
 		if (mergeFromContributor == null || mergeFromContributor.isEmpty())
 			return;
 
-		// temporarily remove code from mergeFromContributor to preserve only one from mergeToContributor
-		Object o = mergeFromContributor.remove(FIELD_CODE);
+		// temporarily remove code and name from mergeFromContributor to preserve only one from mergeToContributor
+		Object oCode = mergeFromContributor.remove(FIELD_CODE);
+		Object oName = null;
+		if (mergeToContributor.get(FIELD_NAME) != null) {
+			oName = mergeFromContributor.remove(FIELD_NAME);
+		}
+
 		SearchUtils.mergeJsonMaps(mergeFromContributor, mergeToContributor);
-		if (o != null)
-			mergeFromContributor.put(FIELD_CODE, o);
+
+		// return back
+		if (oCode != null)
+			mergeFromContributor.put(FIELD_CODE, oCode);
+		if (mergeToContributor.get(FIELD_NAME) != null && oName != null) {
+			mergeFromContributor.put(FIELD_NAME, oName);
+		}
 	}
 
 	protected SearchHit findOneByCode(String contributorCode) {
