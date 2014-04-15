@@ -159,7 +159,7 @@ public class RenormalizeByEsLookedUpValuesTask extends Task {
 				if (preprocessor instanceof ESLookupValuePreprocessor) {
 					ESLookupValuePreprocessor pp = (ESLookupValuePreprocessor) preprocessor;
 					if (pp.getSourceField() != null && lookupIndex.equals(pp.getIndexName())
-							&& lookupType.equals(pp.getIndexType()) && lookupField.equals(pp.getIdxSearchField())) {
+							&& lookupType.equals(pp.getIndexType()) && pp.getIdxSearchField().contains(lookupField)) {
 						List<String> sb = pp.getSourceBases();
 						if (sb == null || sb.isEmpty()) {
 							ret.add(pp.getSourceField());
