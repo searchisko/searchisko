@@ -10,15 +10,20 @@ import java.util.Map;
 
 /**
  * Converter for {@link Config}
- *
+ * 
  * @author Libor Krzyzanek
- *
+ * 
  */
 public class ConfigConverter extends StringValueConverter<Config> {
 
 	@Override
 	public String getId(Config jpaEntity) {
 		return jpaEntity.getName();
+	}
+
+	@Override
+	public String getEntityIdFieldName() {
+		return "name";
 	}
 
 	@Override

@@ -63,7 +63,7 @@ import org.searchisko.persistence.service.EntityService;
 @Named
 @Stateless
 @LocalBean
-public class ContributorService implements EntityService {
+public class ContributorService implements SearchableEntityService {
 
 	@Inject
 	protected Logger log;
@@ -154,13 +154,8 @@ public class ContributorService implements EntityService {
 		return entityService.get(id);
 	}
 
-	/**
-	 * Updates search index by current entity identified by id
-	 * 
-	 * @param id
-	 * @param entity
-	 */
-	private void updateSearchIndex(String id, Map<String, Object> entity) {
+	@Override
+	public void updateSearchIndex(String id, Map<String, Object> entity) {
 		searchClientService.performPut(SEARCH_INDEX_NAME, SEARCH_INDEX_TYPE, id, entity);
 		searchClientService.performIndexFlushAndRefresh(SEARCH_INDEX_NAME);
 	}
@@ -905,6 +900,16 @@ public class ContributorService implements EntityService {
 		}
 
 		return entityTo;
+	}
+
+	@Override
+	public ListRequest listRequestInit() {
+		return entityService.listRequestInit();
+	}
+
+	@Override
+	public ListRequest listRequestNext(ListRequest previous) {
+		return entityService.listRequestNext(previous);
 	}
 
 }

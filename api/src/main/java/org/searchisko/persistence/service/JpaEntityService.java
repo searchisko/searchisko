@@ -10,6 +10,7 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityNotFoundException;
@@ -24,6 +25,7 @@ import org.elasticsearch.common.Strings;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentFactory;
 import org.searchisko.api.rest.ESDataOnlyResponse;
+import org.searchisko.persistence.jpa.model.ContentTuple;
 import org.searchisko.persistence.jpa.model.ModelToJSONMapConverter;
 
 /**
@@ -36,6 +38,8 @@ import org.searchisko.persistence.jpa.model.ModelToJSONMapConverter;
  */
 public class JpaEntityService<T> implements EntityService {
 
+	protected Logger log;
+
 	private EntityManager em;
 
 	protected ModelToJSONMapConverter<T> converter;
@@ -43,6 +47,7 @@ public class JpaEntityService<T> implements EntityService {
 	protected Class<T> entityType;
 
 	public JpaEntityService(EntityManager em, ModelToJSONMapConverter<T> converter, Class<T> entityType) {
+		log = Logger.getLogger(this.getClass().getName());
 		this.em = em;
 		this.converter = converter;
 		this.entityType = entityType;
@@ -51,14 +56,7 @@ public class JpaEntityService<T> implements EntityService {
 	@Override
 	public StreamingOutput getAll(Integer from, Integer size, final String[] fieldsToRemove) {
 		CriteriaBuilder cb = em.getCriteriaBuilder();
-		CriteriaQuery<T> queryList = cb.createQuery(entityType);
-		queryList.select(queryList.from(entityType));
-		TypedQuery<T> q = em.createQuery(queryList);
-		if (from != null && from >= 0)
-			q.setFirstResult(from);
-		if (size != null && size > 0)
-			q.setMaxResults(size);
-		final List<T> result = q.getResultList();
+		final List<T> result = listEntities(cb, from, size);
 
 		CriteriaQuery<Long> queryCount = cb.createQuery(Long.class);
 		queryCount.select(cb.count(queryCount.from(entityType)));
@@ -90,6 +88,19 @@ public class JpaEntityService<T> implements EntityService {
 			}
 		};
 
+	}
+
+	protected List<T> listEntities(CriteriaBuilder cb, Integer from, Integer size) {
+		CriteriaQuery<T> queryList = cb.createQuery(entityType);
+		Root<T> root = queryList.from(entityType);
+		queryList.select(root);
+		queryList.orderBy(cb.asc(root.get(converter.getEntityIdFieldName())));
+		TypedQuery<T> q = em.createQuery(queryList);
+		if (from != null && from >= 0)
+			q.setFirstResult(from);
+		if (size != null && size > 0)
+			q.setMaxResults(size);
+		return q.getResultList();
 	}
 
 	@Override
@@ -160,6 +171,61 @@ public class JpaEntityService<T> implements EntityService {
 		} catch (EntityNotFoundException e) {
 			// OK
 		}
+	}
+
+	protected int LIST_PAGE_SIZE = 200;
+
+	protected static class ListRequestImpl implements ListRequest {
+
+		List<ContentTuple<String, Map<String, Object>>> content;
+		int beginIndex = 0;
+
+		protected ListRequestImpl(int beginIndex, List<ContentTuple<String, Map<String, Object>>> content) {
+			super();
+			this.beginIndex = beginIndex;
+			this.content = content;
+		}
+
+		@Override
+		public boolean hasContent() {
+			return content != null && !content.isEmpty();
+		}
+
+		@Override
+		public List<ContentTuple<String, Map<String, Object>>> content() {
+			return content;
+		}
+
+	}
+
+	@Override
+	public ListRequest listRequestInit() {
+		return listRequestImpl(0);
+	}
+
+	@Override
+	public ListRequest listRequestNext(ListRequest previous) {
+		ListRequestImpl lr = (ListRequestImpl) previous;
+		return listRequestImpl(lr.beginIndex + LIST_PAGE_SIZE);
+	}
+
+	protected ListRequest listRequestImpl(int beginIndex) {
+
+		CriteriaBuilder cb = em.getCriteriaBuilder();
+		final List<T> result = listEntities(cb, beginIndex, LIST_PAGE_SIZE);
+
+		List<ContentTuple<String, Map<String, Object>>> content = new ArrayList<>(10);
+
+		for (T data : result) {
+			try {
+				content.add(converter.convertToContentTuple(data));
+			} catch (IOException e) {
+				log.severe("Could not convert Entity.id=" + converter.getId(data)
+						+ " JSON content to valid object so skip it: " + e.getMessage());
+			}
+		}
+
+		return new ListRequestImpl(beginIndex, content);
 	}
 
 }

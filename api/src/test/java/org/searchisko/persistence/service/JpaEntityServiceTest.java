@@ -11,15 +11,16 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.junit.Assert;
+import org.junit.Test;
 import org.searchisko.api.testtools.TestUtils;
 import org.searchisko.persistence.jpa.model.Contributor;
 import org.searchisko.persistence.jpa.model.ContributorConverter;
-import org.junit.Assert;
-import org.junit.Test;
+import org.searchisko.persistence.service.EntityService.ListRequest;
 
 /**
  * Unit test for {@link JpaEntityService}
- *
+ * 
  * @author Vlastimil Elias (velias at redhat dot com)
  */
 public class JpaEntityServiceTest extends JpaTestBase {
@@ -281,8 +282,9 @@ public class JpaEntityServiceTest extends JpaTestBase {
 							"{\"total\":2,\"hits\":[{\"id\":\"aaa\",\"data\":{\"val\":\"DDDDFGHDFHD\"}},{\"id\":\"bbbbbb\",\"data\":{\"val\":\"fgdsafgdsafgsdf\"}}]}",
 							tested.getAll(null, null, null));
 
-			em.persist(createEntity("cc", "ccc"));
+			// persist in changed order to see ordering of query in effect
 			em.persist(createEntity("dd", "ddd"));
+			em.persist(createEntity("cc", "ccc"));
 			em.getTransaction().commit();
 
 			em.getTransaction().begin();
@@ -310,6 +312,70 @@ public class JpaEntityServiceTest extends JpaTestBase {
 			ex.printStackTrace();
 			Assert.fail("Exception during testPersistence");
 		}
+	}
+
+	@Test
+	public void listRequest() {
+		JpaEntityService<Contributor> tested = new JpaEntityService<Contributor>(em, new ContributorConverter(),
+				Contributor.class);
+		tested.LIST_PAGE_SIZE = 3;
+		try {
+
+			// case - no table exists for type
+			{
+				ListRequest req = tested.listRequestInit();
+				Assert.assertFalse(req.hasContent());
+			}
+
+			// case - data handling test
+			{
+				em.getTransaction().begin();
+				// persist in changed order to see ordering of query in effect
+				for (int i = 7; i >= 1; i--) {
+					em.persist(createEntity("aaa-" + i, "value-" + i));
+				}
+				em.getTransaction().commit();
+
+				em.getTransaction().begin();
+				ListRequest req = tested.listRequestInit();
+				em.getTransaction().commit();
+				Assert.assertTrue(req.hasContent());
+				Assert.assertNotNull(req.content());
+				Assert.assertEquals(3, req.content().size());
+				Assert.assertEquals("aaa-1", req.content().get(0).getId());
+				Assert.assertEquals("aaa-2", req.content().get(1).getId());
+				Assert.assertEquals("aaa-3", req.content().get(2).getId());
+
+				em.getTransaction().begin();
+				req = tested.listRequestNext(req);
+				em.getTransaction().commit();
+				Assert.assertTrue(req.hasContent());
+				Assert.assertNotNull(req.content());
+				Assert.assertEquals(3, req.content().size());
+				Assert.assertEquals("aaa-4", req.content().get(0).getId());
+				Assert.assertEquals("aaa-5", req.content().get(1).getId());
+				Assert.assertEquals("aaa-6", req.content().get(2).getId());
+
+				em.getTransaction().begin();
+				req = tested.listRequestNext(req);
+				em.getTransaction().commit();
+				Assert.assertTrue(req.hasContent());
+				Assert.assertNotNull(req.content());
+				Assert.assertEquals(1, req.content().size());
+				Assert.assertEquals("aaa-7", req.content().get(0).getId());
+
+				em.getTransaction().begin();
+				req = tested.listRequestNext(req);
+				em.getTransaction().commit();
+				Assert.assertFalse(req.hasContent());
+
+			}
+
+		} catch (Exception ex) {
+			ex.printStackTrace();
+			Assert.fail("Exception during testPersistence");
+		}
+
 	}
 
 	private Contributor createEntity(String id, String value) {

@@ -5,23 +5,25 @@
  */
 package org.searchisko.persistence.jpa.model;
 
-import static org.junit.Assert.assertEquals;
-
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.searchisko.api.service.ProviderService;
 import org.junit.Test;
+import org.searchisko.api.service.ProviderService;
+
+import static org.junit.Assert.assertEquals;
 
 /**
+ * Unit test for {@link ProviderConverter}.
+ * 
  * @author Libor Krzyzanek
- *
+ * 
  */
 public class ProviderConverterTest {
 
 	@Test
-	public void testConvertToModel() throws IOException {
+	public void convertToModel() throws IOException {
 		ProviderConverter converter = new ProviderConverter();
 		Map<String, Object> data = new HashMap<String, Object>();
 		data.put(ProviderService.NAME, "jbossorg");

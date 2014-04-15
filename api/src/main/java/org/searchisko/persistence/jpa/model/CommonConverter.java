@@ -40,6 +40,8 @@ public abstract class CommonConverter<T> implements ModelToJSONMapConverter<T> {
 	 * @throws IOException
 	 */
 	public Map<String, Object> convertToJsonMap(String jsonData) throws IOException {
+		if (jsonData == null || jsonData.trim().isEmpty())
+			return null;
 		return SearchUtils.convertToJsonMap(jsonData);
 	}
 }

@@ -10,15 +10,20 @@ import java.util.Map;
 
 /**
  * Converter for {@link Project}
- *
+ * 
  * @author Libor Krzyzanek
- *
+ * 
  */
 public class ProjectConverter extends StringValueConverter<Project> {
 
 	@Override
 	public String getId(Project jpaEntity) {
 		return jpaEntity.getCode();
+	}
+
+	@Override
+	public String getEntityIdFieldName() {
+		return "code";
 	}
 
 	@Override

@@ -37,6 +37,15 @@ public interface ModelToJSONMapConverter<T> {
 	public Map<String, Object> convertToJsonMap(T jpaEntity) throws IOException;
 
 	/**
+	 * Convert value from jpaEntity into ContentTuple which contains identifier and data in for m of JSON Map structure.
+	 * 
+	 * @param jpaEntity to get value from
+	 * @return ContentTuple with entity id and data
+	 * @throws IOException
+	 */
+	public ContentTuple<String, Map<String, Object>> convertToContentTuple(T jpaEntity) throws IOException;
+
+	/**
 	 * Update value in JPA entity from jsonMapValue
 	 * 
 	 * @param jpaEntity to update data into
@@ -52,5 +61,12 @@ public interface ModelToJSONMapConverter<T> {
 	 * @return ID
 	 */
 	public String getId(T jpaEntity);
+
+	/**
+	 * Get name if ID field for JPA queries.
+	 * 
+	 * @return name of ID field
+	 */
+	public String getEntityIdFieldName();
 
 }

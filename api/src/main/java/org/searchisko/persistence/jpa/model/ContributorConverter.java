@@ -10,15 +10,20 @@ import java.util.Map;
 
 /**
  * Converter for {@link Contributor}
- *
+ * 
  * @author Libor Krzyzanek
- *
+ * 
  */
 public class ContributorConverter extends StringValueConverter<Contributor> {
 
 	@Override
 	public String getId(Contributor jpaEntity) {
 		return jpaEntity.getId();
+	}
+
+	@Override
+	public String getEntityIdFieldName() {
+		return "id";
 	}
 
 	@Override

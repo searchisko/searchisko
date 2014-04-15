@@ -551,4 +551,14 @@ public class ProviderService implements EntityService {
 		}
 	}
 
+	@Override
+	public ListRequest listRequestInit() {
+		return entityService.listRequestInit();
+	}
+
+	@Override
+	public ListRequest listRequestNext(ListRequest previous) {
+		return entityService.listRequestNext(previous);
+	}
+
 }

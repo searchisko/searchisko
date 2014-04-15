@@ -19,10 +19,10 @@ import org.searchisko.persistence.service.EntityService;
 
 /**
  * Service related to config documents store handling
- *
+ * 
  * @author Vlastimil Elias (velias at redhat dot com)
  * @author Libor Krzyzanek
- *
+ * 
  */
 @Named
 @Stateless
@@ -75,5 +75,15 @@ public class ConfigService implements EntityService {
 	@Override
 	public void delete(String id) {
 		entityService.delete(id);
+	}
+
+	@Override
+	public ListRequest listRequestInit() {
+		return entityService.listRequestInit();
+	}
+
+	@Override
+	public ListRequest listRequestNext(ListRequest previous) {
+		return entityService.listRequestNext(previous);
 	}
 }

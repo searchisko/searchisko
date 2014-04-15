@@ -21,6 +21,7 @@ import org.mockito.Mockito;
 import org.searchisko.api.rest.ESDataOnlyResponse;
 import org.searchisko.api.testtools.ESRealClientTestBase;
 import org.searchisko.persistence.service.EntityService;
+import org.searchisko.persistence.service.EntityService.ListRequest;
 
 /**
  * Unit test for {@link ProjectService}
@@ -438,4 +439,26 @@ public class ProjectServiceTest extends ESRealClientTestBase {
 			finalizeESClientForUnitTest();
 		}
 	}
+
+	@Test
+	public void listRequestInit() {
+		ProjectService tested = getTested(null);
+		ListRequest expected = Mockito.mock(ListRequest.class);
+		Mockito.when(tested.entityService.listRequestInit()).thenReturn(expected);
+		Assert.assertEquals(expected, tested.listRequestInit());
+		Mockito.verify(tested.entityService).listRequestInit();
+		Mockito.verifyNoMoreInteractions(tested.entityService);
+	}
+
+	@Test
+	public void listRequestNext() {
+		ProjectService tested = getTested(null);
+		ListRequest expected = Mockito.mock(ListRequest.class);
+		ListRequest prev = Mockito.mock(ListRequest.class);
+		Mockito.when(tested.entityService.listRequestNext(prev)).thenReturn(expected);
+		Assert.assertEquals(expected, tested.listRequestNext(prev));
+		Mockito.verify(tested.entityService).listRequestNext(prev);
+		Mockito.verifyNoMoreInteractions(tested.entityService);
+	}
+
 }

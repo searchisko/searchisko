@@ -11,15 +11,16 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.searchisko.api.testtools.TestUtils;
+import org.junit.Assert;
 import org.junit.Test;
+import org.searchisko.api.testtools.TestUtils;
 
 /**
  * Unit test for {@link ContributorConverter}
- *
+ * 
  * @author Libor Krzyzanek
  * @author Vlastimil Elias (velias at redhat dot com)
- *
+ * 
  */
 public class ContributorConverterTest {
 
@@ -39,5 +40,18 @@ public class ContributorConverterTest {
 		TestUtils.assertJsonContent(
 				"{\"code\": \"John Doe<john@doe.com>\", \"email\":[\"john@doe.com\"], \"name\": \"John Doé\"}", c.getValue());
 
+	}
+
+	@Test
+	public void convertToContentTuple() throws IOException {
+		ContributorConverter tested = new ContributorConverter();
+
+		Contributor jpaEntity = new Contributor();
+		jpaEntity.setId("myid");
+		jpaEntity.setValue("{\"code\": \"John Doe<john@doe.com>\"}");
+		ContentTuple<String, Map<String, Object>> result = tested.convertToContentTuple(jpaEntity);
+		Assert.assertEquals("myid", result.getId());
+		Assert.assertNotNull(result.getContent());
+		Assert.assertEquals("John Doe<john@doe.com>", result.getContent().get("code"));
 	}
 }

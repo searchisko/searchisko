@@ -25,6 +25,7 @@ import org.searchisko.api.service.ProviderService.PreprocessChainContextImpl;
 import org.searchisko.api.testtools.ESRealClientTestBase;
 import org.searchisko.api.testtools.TestUtils;
 import org.searchisko.persistence.service.EntityService;
+import org.searchisko.persistence.service.EntityService.ListRequest;
 
 /**
  * Unit test for {@link ProviderService}
@@ -815,6 +816,27 @@ public class ProviderServiceTest extends ESRealClientTestBase {
 		// test cache was flushed!
 		Assert.assertEquals(0, tested.cacheAllProvidersValidTo);
 		Mockito.verify(tested.entityService).delete("aaa");
+		Mockito.verifyNoMoreInteractions(tested.entityService);
+	}
+
+	@Test
+	public void listRequestInit() {
+		ProviderService tested = getTested();
+		ListRequest expected = Mockito.mock(ListRequest.class);
+		Mockito.when(tested.entityService.listRequestInit()).thenReturn(expected);
+		Assert.assertEquals(expected, tested.listRequestInit());
+		Mockito.verify(tested.entityService).listRequestInit();
+		Mockito.verifyNoMoreInteractions(tested.entityService);
+	}
+
+	@Test
+	public void listRequestNext() {
+		ProviderService tested = getTested();
+		ListRequest expected = Mockito.mock(ListRequest.class);
+		ListRequest prev = Mockito.mock(ListRequest.class);
+		Mockito.when(tested.entityService.listRequestNext(prev)).thenReturn(expected);
+		Assert.assertEquals(expected, tested.listRequestNext(prev));
+		Mockito.verify(tested.entityService).listRequestNext(prev);
 		Mockito.verifyNoMoreInteractions(tested.entityService);
 	}
 

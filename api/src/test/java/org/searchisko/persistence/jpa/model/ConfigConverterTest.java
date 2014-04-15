@@ -9,17 +9,19 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.searchisko.api.testtools.TestUtils;
 import org.junit.Test;
+import org.searchisko.api.testtools.TestUtils;
 
 /**
+ * Unit test for {@link ConfigConverter}
+ * 
  * @author Libor Krzyzanek
  * @author Lukas Vlcek
  */
 public class ConfigConverterTest {
 
 	@Test
-	public void testConvertToModel() throws IOException {
+	public void convertToModel() throws IOException {
 		ConfigConverter converter = new ConfigConverter();
 		Map<String, Object> data = new HashMap<>();
 		Map<String, Object> sysTitleConfig = new HashMap<>();
@@ -49,6 +51,7 @@ public class ConfigConverterTest {
 
 		Config c = converter.convertToModel("search_fulltext_facets_fields", configObject);
 
-		TestUtils.assertJsonContent("{\"top_contributors\":{\"terms\":{\"field\":\"sys_contributors\",\"size\":20}}}", c.getValue());
+		TestUtils.assertJsonContent("{\"top_contributors\":{\"terms\":{\"field\":\"sys_contributors\",\"size\":20}}}",
+				c.getValue());
 	}
 }

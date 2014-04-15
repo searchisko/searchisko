@@ -9,7 +9,7 @@ import java.io.IOException;
 import java.util.Map;
 
 /**
- * Common converter for entity with value as a plain string
+ * Common converter for entity with value stored as a plain string.
  * 
  * @param <T> type of JPA entity
  * 
@@ -33,6 +33,11 @@ public abstract class StringValueConverter<T> extends CommonConverter<T> {
 	 * @param value to set
 	 */
 	public abstract void setValue(T jpaEntity, String value);
+
+	@Override
+	public ContentTuple<String, Map<String, Object>> convertToContentTuple(T jpaEntity) throws IOException {
+		return new ContentTuple<String, Map<String, Object>>(getId(jpaEntity), convertToJsonMap(jpaEntity));
+	}
 
 	@Override
 	public Map<String, Object> convertToJsonMap(T jpaEntity) throws IOException {

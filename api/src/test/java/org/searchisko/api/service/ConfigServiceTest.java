@@ -19,6 +19,7 @@ import org.mockito.Mockito;
 import org.searchisko.api.rest.ESDataOnlyResponse;
 import org.searchisko.api.testtools.ESRealClientTestBase;
 import org.searchisko.persistence.service.EntityService;
+import org.searchisko.persistence.service.EntityService.ListRequest;
 
 /**
  * Unit test for {@link ConfigService}
@@ -173,6 +174,27 @@ public class ConfigServiceTest extends ESRealClientTestBase {
 		Mockito.reset(tested.entityService);
 		tested.delete("1");
 		Mockito.verify(tested.entityService).delete("1");
+	}
+
+	@Test
+	public void listRequestInit() {
+		ConfigService tested = getTested();
+		ListRequest expected = Mockito.mock(ListRequest.class);
+		Mockito.when(tested.entityService.listRequestInit()).thenReturn(expected);
+		Assert.assertEquals(expected, tested.listRequestInit());
+		Mockito.verify(tested.entityService).listRequestInit();
+		Mockito.verifyNoMoreInteractions(tested.entityService);
+	}
+
+	@Test
+	public void listRequestNext() {
+		ConfigService tested = getTested();
+		ListRequest expected = Mockito.mock(ListRequest.class);
+		ListRequest prev = Mockito.mock(ListRequest.class);
+		Mockito.when(tested.entityService.listRequestNext(prev)).thenReturn(expected);
+		Assert.assertEquals(expected, tested.listRequestNext(prev));
+		Mockito.verify(tested.entityService).listRequestNext(prev);
+		Mockito.verifyNoMoreInteractions(tested.entityService);
 	}
 
 }

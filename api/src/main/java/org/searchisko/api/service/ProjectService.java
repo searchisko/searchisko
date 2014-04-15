@@ -28,7 +28,7 @@ import org.searchisko.persistence.service.EntityService;
 @Named
 @Stateless
 @LocalBean
-public class ProjectService implements EntityService {
+public class ProjectService implements SearchableEntityService {
 
 	/**
 	 * Field in project definition with project code, used as unique ID
@@ -73,13 +73,8 @@ public class ProjectService implements EntityService {
 		return entityService.get(id);
 	}
 
-	/**
-	 * Updates search index by current entity identified by id
-	 * 
-	 * @param id
-	 * @param entity
-	 */
-	private void updateSearchIndex(String id, Map<String, Object> entity) {
+	@Override
+	public void updateSearchIndex(String id, Map<String, Object> entity) {
 		searchClientService.performPut(SEARCH_INDEX_NAME, SEARCH_INDEX_TYPE, id, entity);
 	}
 
@@ -146,5 +141,15 @@ public class ProjectService implements EntityService {
 		} catch (SearchIndexMissingException e) {
 			return null;
 		}
+	}
+
+	@Override
+	public ListRequest listRequestInit() {
+		return entityService.listRequestInit();
+	}
+
+	@Override
+	public ListRequest listRequestNext(ListRequest previous) {
+		return entityService.listRequestNext(previous);
 	}
 }

@@ -226,13 +226,13 @@ public class JdbcContentPersistenceService implements ContentPersistenceService 
 
 	protected int LIST_PAGE_SIZE = 1000;
 
-	protected static class JpaListRequest implements ListRequest {
+	protected static class ListRequestImpl implements ListRequest {
 
 		List<Map<String, Object>> content;
 		String sysContentType;
 		int beginIndex = 0;
 
-		protected JpaListRequest(String sysContentType, int beginIndex, List<Map<String, Object>> content) {
+		protected ListRequestImpl(String sysContentType, int beginIndex, List<Map<String, Object>> content) {
 			super();
 			this.sysContentType = sysContentType;
 			this.beginIndex = beginIndex;
@@ -258,12 +258,11 @@ public class JdbcContentPersistenceService implements ContentPersistenceService 
 
 	@Override
 	public ListRequest listRequestNext(ListRequest previous) {
-		JpaListRequest lr = (JpaListRequest) previous;
+		ListRequestImpl lr = (ListRequestImpl) previous;
 		return listRequestImpl(lr.sysContentType, lr.beginIndex + LIST_PAGE_SIZE);
 	}
 
 	protected ListRequest listRequestImpl(String sysContentType, int beginIndex) {
-		new ArrayList<Map<String, Object>>();
 		List<Map<String, Object>> content = new ArrayList<>(10);
 		String tableName = getTableName(sysContentType);
 		ensureTableExists(tableName);
@@ -279,7 +278,7 @@ public class JdbcContentPersistenceService implements ContentPersistenceService 
 				}
 			}
 		}
-		return new JpaListRequest(sysContentType, beginIndex, content);
+		return new ListRequestImpl(sysContentType, beginIndex, content);
 	}
 
 	public DataSource getDataSource() {

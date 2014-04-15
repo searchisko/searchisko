@@ -10,15 +10,20 @@ import java.util.Map;
 
 /**
  * Converter for {@link Provider}
- *
+ * 
  * @author Libor Krzyzanek
- *
+ * 
  */
 public class ProviderConverter extends StringValueConverter<Provider> {
 
 	@Override
 	public String getId(Provider jpaEntity) {
 		return jpaEntity.getName();
+	}
+
+	@Override
+	public String getEntityIdFieldName() {
+		return "name";
 	}
 
 	@Override
