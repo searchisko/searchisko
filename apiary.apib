@@ -151,15 +151,17 @@ The data normalizations are performed during this request processing and the con
 *Provider authentication required.*
 
 ##### Request content
-JSON with content object.
+JSON with content object to store in Searchisko.
 
 ##### Response content
 The response contains a JSON structure with a `status` field containing 'insert' or 'update' string and `message` field with a human readable description of the status.
+There is also optional `warnings` array, where you can see warnings from data preprocessing (mainly from data normalization), which may point you to some problems in your data or normalization mappings stored in Searchisko. 
 
 ```
 {
   "status":"insert",
-  "message":"Content was inserted successfully."
+  "message":"Content was inserted successfully.",
+  "warnings" : [ {"preprocessor":"Contributor normalization" , "warning":"Contributor not found for 'author'='jdoe'"} ]
 }
 ```
 

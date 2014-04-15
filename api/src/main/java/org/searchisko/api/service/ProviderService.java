@@ -5,6 +5,8 @@
  */
 package org.searchisko.api.service;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
@@ -17,6 +19,7 @@ import javax.inject.Named;
 import javax.ws.rs.core.StreamingOutput;
 
 import org.elasticsearch.common.settings.SettingsException;
+import org.jboss.elasticsearch.tools.content.PreprocessChainContext;
 import org.jboss.elasticsearch.tools.content.StructuredContentPreprocessor;
 import org.jboss.elasticsearch.tools.content.StructuredContentPreprocessorFactory;
 import org.searchisko.api.cache.IndexNamesCache;
@@ -256,14 +259,18 @@ public class ProviderService implements EntityService {
 	 * @param typeName <code>sys_content_type</code> name we run preprocessors for to be used for error messages
 	 * @param preprocessorsDef definition of preprocessors - see {@link #extractPreprocessors(Map, String)}
 	 * @param content to run preprocessors on
+	 * @return list of warnings from preprocessors, may be null
 	 */
-	public void runPreprocessors(String typeName, List<Map<String, Object>> preprocessorsDef, Map<String, Object> content) {
+	public List<Map<String, String>> runPreprocessors(String typeName, List<Map<String, Object>> preprocessorsDef,
+			Map<String, Object> content) {
 		try {
 			List<StructuredContentPreprocessor> preprocessors = StructuredContentPreprocessorFactory.createPreprocessors(
 					preprocessorsDef, searchClientService.getClient());
+			PreprocessChainContextImpl context = new PreprocessChainContextImpl();
 			for (StructuredContentPreprocessor preprocessor : preprocessors) {
-				content = preprocessor.preprocessData(content);
+				content = preprocessor.preprocessData(content, context);
 			}
+			return context.warnings;
 		} catch (IllegalArgumentException e) {
 			throw new SettingsException("Bad configuration of some 'input_preprocessors' for sys_content_type=" + typeName
 					+ ". Contact administrators please. Cause: " + e.getMessage(), e);
@@ -271,6 +278,26 @@ public class ProviderService implements EntityService {
 			throw new SettingsException("Bad configuration structure of some 'input_preprocessors' for sys_content_type="
 					+ typeName + ". Contact administrators please. Cause: " + e.getMessage(), e);
 		}
+	}
+
+	protected static final class PreprocessChainContextImpl implements PreprocessChainContext {
+
+		public static final String WD_PREPROC_NAME = "preprocessor";
+		public static final String WD_WARNING = "warning";
+
+		protected List<Map<String, String>> warnings = null;
+
+		@Override
+		public void addDataWarning(String preprocessorName, String warningMessage) throws IllegalArgumentException {
+			if (warnings == null) {
+				warnings = new ArrayList<>();
+			}
+			Map<String, String> wd = new HashMap<String, String>();
+			wd.put(WD_PREPROC_NAME, preprocessorName);
+			wd.put(WD_WARNING, warningMessage);
+			warnings.add(wd);
+		}
+
 	}
 
 	/**

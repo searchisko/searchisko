@@ -21,6 +21,7 @@ import org.junit.Test;
 import org.mockito.Mockito;
 import org.searchisko.api.cache.IndexNamesCache;
 import org.searchisko.api.cache.ProviderCache;
+import org.searchisko.api.service.ProviderService.PreprocessChainContextImpl;
 import org.searchisko.api.testtools.ESRealClientTestBase;
 import org.searchisko.api.testtools.TestUtils;
 import org.searchisko.persistence.service.EntityService;
@@ -549,18 +550,27 @@ public class ProviderServiceTest extends ESRealClientTestBase {
 					(Map<String, Object>) ((Map<String, Object>) TestUtils.loadJSONFromClasspathFile("/provider/provider_1.json")
 							.get("type")).get("provider1_mailing"), "provider1_mailing");
 			Map<String, Object> data = new HashMap<String, Object>();
-			tested.runPreprocessors("mytype", preprocessorsDef, data);
+			List<Map<String, String>> warnings = tested.runPreprocessors("mytype", preprocessorsDef, data);
+			Assert.assertNull(warnings);
 			Assert.assertEquals("value1", data.get("name1"));
 			Assert.assertEquals("value2", data.get("name2"));
 		}
 
-		// case - preprocessors run OK when data is null
+		// case - preprocessors run OK when data is null, warnings returned
 		{
 			List<Map<String, Object>> preprocessorsDef = ProviderService.extractPreprocessors(
 					(Map<String, Object>) ((Map<String, Object>) TestUtils.loadJSONFromClasspathFile("/provider/provider_1.json")
 							.get("type")).get("provider1_mailing"), "provider1_mailing");
 			Map<String, Object> data = null;
-			tested.runPreprocessors("mytype", preprocessorsDef, data);
+			List<Map<String, String>> warnings = tested.runPreprocessors("mytype", preprocessorsDef, data);
+			Assert.assertNotNull(warnings);
+			Assert.assertEquals(2, warnings.size());
+			Assert.assertEquals("warning preprocessor", warnings.get(0).get(PreprocessChainContextImpl.WD_PREPROC_NAME));
+			Assert.assertEquals("warning message because null data",
+					warnings.get(0).get(PreprocessChainContextImpl.WD_WARNING));
+			Assert.assertEquals("warning preprocessor 2", warnings.get(1).get(PreprocessChainContextImpl.WD_PREPROC_NAME));
+			Assert.assertEquals("warning message because null data",
+					warnings.get(1).get(PreprocessChainContextImpl.WD_WARNING));
 		}
 
 	}

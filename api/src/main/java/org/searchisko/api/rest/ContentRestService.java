@@ -7,6 +7,7 @@ package org.searchisko.api.rest;
 
 import java.util.Date;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 
@@ -224,7 +225,8 @@ public class ContentRestService extends RestServiceBase {
 		}
 
 		// Run preprocessors to manipulate other fields
-		providerService.runPreprocessors(type, ProviderService.extractPreprocessors(typeDef, type), content);
+		List<Map<String, String>> contentWarnings = providerService.runPreprocessors(type,
+				ProviderService.extractPreprocessors(typeDef, type), content);
 
 		// Refill type of content from configuration if content was added in preprocessors
 		if (content.containsKey(ContentObjectFields.SYS_CONTENT)
@@ -249,13 +251,17 @@ public class ContentRestService extends RestServiceBase {
 		log.log(Level.FINE, "Going to fire event {0}", event);
 		eventContentStored.fire(event);
 
-		Map<String, String> retJson = new LinkedHashMap<String, String>();
+		Map<String, Object> retJson = new LinkedHashMap<String, Object>();
 		if (ir.getVersion() > 1) {
 			retJson.put("status", "update");
 			retJson.put("message", "Content was updated successfully.");
+			if (contentWarnings != null && !contentWarnings.isEmpty())
+				retJson.put("warnings", contentWarnings);
 		} else {
 			retJson.put("status", "insert");
 			retJson.put("message", "Content was inserted successfully.");
+			if (contentWarnings != null && !contentWarnings.isEmpty())
+				retJson.put("warnings", contentWarnings);
 		}
 		return Response.ok(retJson).build();
 	}
