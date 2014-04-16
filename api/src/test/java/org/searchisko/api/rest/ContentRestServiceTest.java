@@ -553,36 +553,36 @@ public class ContentRestServiceTest extends ESRealClientTestBase {
 			indexInsertDocument(INDEX_NAME, INDEX_TYPE, "known-1",
 					"{\"name\":\"test1\", \"sys_updated\" : 0,\"sys_content_id\":\"1\"}");
 			indexInsertDocument(INDEX_NAME, INDEX_TYPE, "known-2",
-					"{\"name\":\"test2\",\"sys_updated\":0,\"sys_content_id\":\"2\"}");
+					"{\"name\":\"test2\",\"sys_updated\":1,\"sys_content_id\":\"2\"}");
 			indexInsertDocument(INDEX_NAME, INDEX_TYPE, "known-3",
-					"{\"name\":\"test3\",\"sys_updated\":0,\"sys_content_id\":\"3\"}");
+					"{\"name\":\"test3\",\"sys_updated\":2,\"sys_content_id\":\"3\"}");
 			indexInsertDocument(INDEX_NAME, INDEX_TYPE, "known-4",
-					"{\"name\":\"test4\",\"sys_updated\":0,\"sys_content_id\":\"4\"}");
+					"{\"name\":\"test4\",\"sys_updated\":3,\"sys_content_id\":\"4\"}");
 			indexFlushAndRefresh(INDEX_NAME);
 			assetStreamingOutputContent("{\"total\":4,\"hits\":["
 					+ "{\"id\":\"1\",\"data\":{\"sys_updated\":0,\"sys_content_id\":\"1\",\"name\":\"test1\"}},"
-					+ "{\"id\":\"2\",\"data\":{\"sys_updated\":0,\"sys_content_id\":\"2\",\"name\":\"test2\"}},"
-					+ "{\"id\":\"3\",\"data\":{\"sys_updated\":0,\"sys_content_id\":\"3\",\"name\":\"test3\"}},"
-					+ "{\"id\":\"4\",\"data\":{\"sys_updated\":0,\"sys_content_id\":\"4\",\"name\":\"test4\"}}" + "]}",
+					+ "{\"id\":\"2\",\"data\":{\"sys_updated\":1,\"sys_content_id\":\"2\",\"name\":\"test2\"}},"
+					+ "{\"id\":\"3\",\"data\":{\"sys_updated\":2,\"sys_content_id\":\"3\",\"name\":\"test3\"}},"
+					+ "{\"id\":\"4\",\"data\":{\"sys_updated\":3,\"sys_content_id\":\"4\",\"name\":\"test4\"}}" + "]}",
 					tested.getAllContent("known", null, null, null));
 
 			// case - something found, from and size param used
 			assetStreamingOutputContent("{\"total\":4,\"hits\":["
-					+ "{\"id\":\"2\",\"data\":{\"sys_updated\":0,\"sys_content_id\":\"2\",\"name\":\"test2\"}},"
-					+ "{\"id\":\"3\",\"data\":{\"sys_updated\":0,\"sys_content_id\":\"3\",\"name\":\"test3\"}}" + "]}",
+					+ "{\"id\":\"2\",\"data\":{\"sys_updated\":1,\"sys_content_id\":\"2\",\"name\":\"test2\"}},"
+					+ "{\"id\":\"3\",\"data\":{\"sys_updated\":2,\"sys_content_id\":\"3\",\"name\":\"test3\"}}" + "]}",
 					tested.getAllContent("known", 1, 2, null));
 
 			// case - sort param used
 			indexInsertDocument(INDEX_NAME, INDEX_TYPE, "known-5",
-					"{\"name\":\"test5\", \"sys_updated\" : 1,\"sys_content_id\":\"5\"}");
+					"{\"name\":\"test5\", \"sys_updated\" : 4,\"sys_content_id\":\"5\"}");
 			indexFlushAndRefresh(INDEX_NAME);
 			// on ASC our record with id 5 is last, so we set from=4
 			assetStreamingOutputContent(
-					"{\"total\":5,\"hits\":[{\"id\":\"5\",\"data\":{\"sys_updated\":1,\"sys_content_id\":\"5\",\"name\":\"test5\"}}]}",
+					"{\"total\":5,\"hits\":[{\"id\":\"5\",\"data\":{\"sys_updated\":4,\"sys_content_id\":\"5\",\"name\":\"test5\"}}]}",
 					tested.getAllContent("known", 4, 1, "asc"));
 			// on DESC our record with id 5 is first, so we set from=0
 			assetStreamingOutputContent(
-					"{\"total\":5,\"hits\":[{\"id\":\"5\",\"data\":{\"sys_updated\":1,\"sys_content_id\":\"5\",\"name\":\"test5\"}}]}",
+					"{\"total\":5,\"hits\":[{\"id\":\"5\",\"data\":{\"sys_updated\":4,\"sys_content_id\":\"5\",\"name\":\"test5\"}}]}",
 					tested.getAllContent("known", 0, 1, "DESC"));
 
 		} finally {

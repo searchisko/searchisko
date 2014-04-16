@@ -5,6 +5,7 @@
  */
 package org.searchisko.api.service;
 
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -24,6 +25,7 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.ws.rs.core.StreamingOutput;
 
+import org.elasticsearch.action.bulk.BulkRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.indices.IndexMissingException;
@@ -43,6 +45,7 @@ import org.searchisko.api.util.Resources;
 import org.searchisko.api.util.SearchUtils;
 import org.searchisko.contribprofile.model.ContributorProfile;
 import org.searchisko.persistence.service.EntityService;
+import org.searchisko.persistence.service.ListRequest;
 
 /**
  * Service containing Contributor related operations.
@@ -154,8 +157,7 @@ public class ContributorService implements SearchableEntityService {
 		return entityService.get(id);
 	}
 
-	@Override
-	public void updateSearchIndex(String id, Map<String, Object> entity) {
+	protected void updateSearchIndex(String id, Map<String, Object> entity) {
 		searchClientService.performPut(SEARCH_INDEX_NAME, SEARCH_INDEX_TYPE, id, entity);
 		searchClientService.performIndexFlushAndRefresh(SEARCH_INDEX_NAME);
 	}
@@ -910,6 +912,21 @@ public class ContributorService implements SearchableEntityService {
 	@Override
 	public ListRequest listRequestNext(ListRequest previous) {
 		return entityService.listRequestNext(previous);
+	}
+
+	@Override
+	public BulkRequestBuilder prepareBulkRequest() {
+		return searchClientService.getClient().prepareBulk();
+	}
+
+	@Override
+	public void updateSearchIndex(BulkRequestBuilder brb, String id, Map<String, Object> entity) {
+		brb.add(searchClientService.getClient().prepareIndex(SEARCH_INDEX_NAME, SEARCH_INDEX_TYPE, id).setSource(entity));
+	}
+
+	@Override
+	public void deleteOldFromSearchIndex(Date timestamp) {
+		searchClientService.performDeleteOldRecords(SEARCH_INDEX_NAME, SEARCH_INDEX_TYPE, timestamp);
 	}
 
 }

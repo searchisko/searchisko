@@ -16,7 +16,6 @@ import org.junit.Test;
 import org.searchisko.api.testtools.TestUtils;
 import org.searchisko.persistence.jpa.model.Contributor;
 import org.searchisko.persistence.jpa.model.ContributorConverter;
-import org.searchisko.persistence.service.EntityService.ListRequest;
 
 /**
  * Unit test for {@link JpaEntityService}

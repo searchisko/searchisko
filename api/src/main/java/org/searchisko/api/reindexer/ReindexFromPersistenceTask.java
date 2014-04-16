@@ -13,17 +13,14 @@ import javax.enterprise.event.Event;
 import org.elasticsearch.action.bulk.BulkRequestBuilder;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.common.settings.SettingsException;
-import org.elasticsearch.index.query.FilterBuilder;
-import org.elasticsearch.index.query.FilterBuilders;
-import org.elasticsearch.index.query.QueryBuilders;
 import org.jboss.elasticsearch.tools.content.InvalidDataException;
-import org.searchisko.api.ContentObjectFields;
 import org.searchisko.api.events.ContentBeforeIndexedEvent;
 import org.searchisko.api.service.ProviderService;
 import org.searchisko.api.service.SearchClientService;
 import org.searchisko.api.tasker.Task;
 import org.searchisko.persistence.service.ContentPersistenceService;
-import org.searchisko.persistence.service.ContentPersistenceService.ListRequest;
+import org.searchisko.persistence.service.ContentTuple;
+import org.searchisko.persistence.service.ListRequest;
 
 /**
  * Task used to reindex data from persistent store into ElasticSearch search indices.
@@ -67,20 +64,21 @@ public class ReindexFromPersistenceTask extends Task {
 			throw new Exception("Configuration not found for sys_content_type " + sysContentType);
 		}
 
+		int count = 0;
 		try {
 			String indexName = ProviderService.extractIndexName(typeDef, sysContentType);
 			String indexType = ProviderService.extractIndexType(typeDef, sysContentType);
-
 			ListRequest lr = contentPersistenceService.listRequestInit(sysContentType);
 			if (lr.hasContent()) {
 				long startTimestamp = System.currentTimeMillis();
 				Client client = searchClientService.getClient();
 				while (lr.hasContent()) {
 					BulkRequestBuilder brb = client.prepareBulk();
-					for (Map<String, Object> content : lr.content()) {
+					for (ContentTuple<String, Map<String, Object>> contentTuple : lr.content()) {
 						if (isCanceledOrInterrupted())
 							return;
-						String id = (String) content.get(ContentObjectFields.SYS_ID);
+						String id = contentTuple.getId();
+						Map<String, Object> content = contentTuple.getContent();
 						try {
 							// Run preprocessors to normalize mapped fields
 							providerService.runPreprocessors(sysContentType,
@@ -95,6 +93,7 @@ public class ReindexFromPersistenceTask extends Task {
 
 						// Push to search subsystem
 						brb.add(client.prepareIndex(indexName, indexType, id).setSource(content));
+						count++;
 					}
 					brb.execute().actionGet();
 					if (isCanceledOrInterrupted())
@@ -103,14 +102,12 @@ public class ReindexFromPersistenceTask extends Task {
 				}
 				// delete old entries from index which are not in persistence store anymore (so they was not updated during this
 				// reindexing run)
-				client.admin().indices().prepareFlush(indexName).execute().actionGet();
-				client.admin().indices().prepareRefresh(indexName).execute().actionGet();
-				FilterBuilder filterTime = FilterBuilders.rangeFilter("_timestamp").lt(new Date(startTimestamp));
-				client.prepareDeleteByQuery(indexName).setTypes(indexType)
-						.setQuery(QueryBuilders.filteredQuery(QueryBuilders.matchAllQuery(), filterTime)).execute().actionGet();
+				searchClientService.performDeleteOldRecords(indexName, indexType, new Date(startTimestamp));
 			}
 		} catch (SettingsException e) {
 			throw new Exception(e.getMessage());
+		} finally {
+			writeTaskLog(count + " records reindexed");
 		}
 	}
 }

@@ -3,10 +3,11 @@
  * Copyright 2014 Red Hat Inc. and/or its affiliates and other contributors
  * as indicated by the @authors tag. All rights reserved.
  */
-package org.searchisko.persistence.jpa.model;
+package org.searchisko.persistence.service;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.searchisko.persistence.service.ContentTuple;
 
 /**
  * Unit test for {@link ContentTuple}.

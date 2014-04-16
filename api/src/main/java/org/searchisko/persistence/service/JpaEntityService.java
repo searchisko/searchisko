@@ -25,7 +25,6 @@ import org.elasticsearch.common.Strings;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentFactory;
 import org.searchisko.api.rest.ESDataOnlyResponse;
-import org.searchisko.persistence.jpa.model.ContentTuple;
 import org.searchisko.persistence.jpa.model.ModelToJSONMapConverter;
 
 /**

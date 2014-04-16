@@ -65,6 +65,12 @@ public class ReindexingTaskFactory implements TaskFactory {
 	@Inject
 	protected ContributorProfileService contributorProfileService;
 
+	@Inject
+	protected ProjectService projectService;
+
+	@Inject
+	protected ContributorService contributorService;
+
 	@Override
 	public List<String> listSupportedTaskTypes() {
 		List<String> ret = new ArrayList<String>();
@@ -94,6 +100,10 @@ public class ReindexingTaskFactory implements TaskFactory {
 					ProjectService.SEARCH_INDEX_TYPE, CFG_PROJECT_ID_TYPE, CFG_PROJECT_ID_VALUE);
 		case UPDATE_CONTRIBUTOR_PROFILE:
 			return new UpdateContributorProfileTask(contributorProfileService, taskConfig);
+		case REINDEX_CONTRIBUTOR:
+			return new ReindexSearchableEntityTask(contributorService);
+		case REINDEX_PROJECT:
+			return new ReindexSearchableEntityTask(projectService);
 		}
 		throw new UnsupportedTaskException(taskType);
 	}

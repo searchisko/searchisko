@@ -10,8 +10,6 @@ import java.util.Map;
 
 import javax.ws.rs.core.StreamingOutput;
 
-import org.searchisko.persistence.jpa.model.ContentTuple;
-
 /**
  * Base interface for entity service used to persistently store Searchisko entities.
  * 
@@ -91,24 +89,5 @@ public interface EntityService {
 	 * @return current list request status
 	 */
 	public ListRequest listRequestNext(ListRequest previous);
-
-	public static interface ListRequest {
-
-		/**
-		 * Return true if request has some content to process, false otherwise.
-		 * 
-		 * @return true if there is some content to process. False if there is not any other content so next call to
-		 *         {@link EntityService#listRequestNext(ListRequest)} has no meaning.
-		 */
-		public boolean hasContent();
-
-		/**
-		 * Get content to be processed in this iteration.
-		 * 
-		 * @return content to process.
-		 */
-		public List<ContentTuple<String, Map<String, Object>>> content();
-
-	}
 
 }

@@ -14,6 +14,7 @@ import java.util.Map;
 import org.junit.Assert;
 import org.junit.Test;
 import org.searchisko.api.testtools.TestUtils;
+import org.searchisko.persistence.service.ContentTuple;
 
 /**
  * Unit test for {@link ContributorConverter}

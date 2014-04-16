@@ -5,6 +5,7 @@
  */
 package org.searchisko.api.service;
 
+import java.util.Date;
 import java.util.Map;
 import java.util.Properties;
 import java.util.logging.Level;
@@ -26,6 +27,7 @@ import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.search.SearchType;
 import org.elasticsearch.common.unit.TimeValue;
+import org.elasticsearch.index.query.FilterBuilder;
 import org.elasticsearch.index.query.FilterBuilders;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.indices.IndexMissingException;
@@ -230,6 +232,21 @@ public class SearchClientService extends ElasticsearchClientService {
 		} catch (IndexMissingException e) {
 			// OK
 		}
+	}
+
+	/**
+	 * Delete all records from search index older than passed in timestamp. Elasticsearch <code>_timestamp</code> field
+	 * <strong>MUST</strong> be enabled for given indexType in Elasticsearch mapping!!!
+	 * 
+	 * @param indexName to delete from
+	 * @param indexType to delete for
+	 * @param timestamp to delete older records
+	 */
+	public void performDeleteOldRecords(String indexName, String indexType, Date timestamp) {
+		performIndexFlushAndRefreshBlocking(indexName);
+		FilterBuilder filterTime = FilterBuilders.rangeFilter("_timestamp").lt(timestamp);
+		getClient().prepareDeleteByQuery(indexName).setTypes(indexType)
+				.setQuery(QueryBuilders.filteredQuery(QueryBuilders.matchAllQuery(), filterTime)).execute().actionGet();
 	}
 
 	public Properties getSettings() {

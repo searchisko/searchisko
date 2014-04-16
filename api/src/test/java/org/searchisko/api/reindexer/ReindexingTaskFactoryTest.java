@@ -725,6 +725,24 @@ public class ReindexingTaskFactoryTest {
 		}
 	}
 
+	@Test
+	public void createTask_REINDEX_CONTRIBUTOR() throws TaskConfigurationException, UnsupportedTaskException {
+		ReindexingTaskFactory tested = getTested();
+		Task task = tested.createTask(ReindexingTaskTypes.REINDEX_CONTRIBUTOR.getTaskType(), null);
+		Assert.assertEquals(ReindexSearchableEntityTask.class, task.getClass());
+		ReindexSearchableEntityTask ctask = (ReindexSearchableEntityTask) task;
+		Assert.assertEquals(tested.contributorService, ctask.searchableEntityService);
+	}
+
+	@Test
+	public void createTask_REINDEX_PROJECT() throws TaskConfigurationException, UnsupportedTaskException {
+		ReindexingTaskFactory tested = getTested();
+		Task task = tested.createTask(ReindexingTaskTypes.REINDEX_PROJECT.getTaskType(), null);
+		Assert.assertEquals(ReindexSearchableEntityTask.class, task.getClass());
+		ReindexSearchableEntityTask ctask = (ReindexSearchableEntityTask) task;
+		Assert.assertEquals(tested.projectService, ctask.searchableEntityService);
+	}
+
 	@SuppressWarnings("unchecked")
 	private ReindexingTaskFactory getTested() {
 		ReindexingTaskFactory tested = new ReindexingTaskFactory();
@@ -733,6 +751,8 @@ public class ReindexingTaskFactoryTest {
 		tested.searchClientService = Mockito.mock(SearchClientService.class);
 		tested.eventBeforeIndexed = Mockito.mock(Event.class);
 		tested.contributorProfileService = Mockito.mock(ContributorProfileService.class);
+		tested.contributorService = Mockito.mock(ContributorService.class);
+		tested.projectService = Mockito.mock(ProjectService.class);
 		return tested;
 	}
 }

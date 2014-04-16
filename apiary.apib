@@ -1407,7 +1407,7 @@ GET /rest/tasks/task/{taskId}
 Create new task of given task type to be executed. 
 
 ##### Request content
-JSON with task configuration document. Available task types and related configuration structures:
+JSON with task configuration document. Available task types and related configuration structures are:
 
 * `reindex_from_persistence`
 Get all content of 'provider type' passed in task configuration from Searchisko persistent store (so given provider type must be defined as persistent) and store/update it into Searchisko search index.  
@@ -1479,6 +1479,14 @@ Optional `contributor_type_specific_code_value` config field allow s you to list
   "contributor_type_specific_code_value" : ["jdoyle","quimby","homers"]
 }
 ```
+
+* `reindex_contributor` and `reindex_project`
+May be used to rebuild internal search indices for Contributor or Project configurations.
+```
+{
+}
+``` 
+ 
 
 ##### Response content
 The response contains a JSON structure with `id` of created task.

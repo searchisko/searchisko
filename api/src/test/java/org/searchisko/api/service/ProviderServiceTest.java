@@ -25,7 +25,7 @@ import org.searchisko.api.service.ProviderService.PreprocessChainContextImpl;
 import org.searchisko.api.testtools.ESRealClientTestBase;
 import org.searchisko.api.testtools.TestUtils;
 import org.searchisko.persistence.service.EntityService;
-import org.searchisko.persistence.service.EntityService.ListRequest;
+import org.searchisko.persistence.service.ListRequest;
 
 /**
  * Unit test for {@link ProviderService}

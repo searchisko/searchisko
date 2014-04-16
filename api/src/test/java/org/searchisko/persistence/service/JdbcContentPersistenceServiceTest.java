@@ -23,7 +23,6 @@ import org.junit.Test;
 import org.searchisko.api.ContentObjectFields;
 import org.searchisko.api.testtools.TestUtils;
 import org.searchisko.api.util.SearchUtils;
-import org.searchisko.persistence.service.ContentPersistenceService.ListRequest;
 
 /**
  * Unit test for {@link JdbcContentPersistenceService}
@@ -147,6 +146,8 @@ public class JdbcContentPersistenceServiceTest extends JpaTestBase {
 
 			// case - data handling test
 			{
+
+				// store in reverse order to see if listing uses correct ordering
 				for (int i = 7; i >= 1; i--)
 					addContent(tested, sysContentType, "aaa-" + i);
 
@@ -154,23 +155,27 @@ public class JdbcContentPersistenceServiceTest extends JpaTestBase {
 				Assert.assertTrue(req.hasContent());
 				Assert.assertNotNull(req.content());
 				Assert.assertEquals(3, req.content().size());
-				Assert.assertEquals("aaa-1", req.content().get(0).get(ContentObjectFields.SYS_ID));
-				Assert.assertEquals("aaa-2", req.content().get(1).get(ContentObjectFields.SYS_ID));
-				Assert.assertEquals("aaa-3", req.content().get(2).get(ContentObjectFields.SYS_ID));
+				Assert.assertEquals("aaa-1", req.content().get(0).getId());
+				// assert content is correctly loaded
+				Assert.assertEquals("aaa-1", req.content().get(0).getContent().get(ContentObjectFields.SYS_ID));
+				Assert.assertEquals("value aaa-1", req.content().get(0).getContent().get(ContentObjectFields.SYS_DESCRIPTION));
+				// assert id only for others
+				Assert.assertEquals("aaa-2", req.content().get(1).getId());
+				Assert.assertEquals("aaa-3", req.content().get(2).getId());
 
 				req = tested.listRequestNext(req);
 				Assert.assertTrue(req.hasContent());
 				Assert.assertNotNull(req.content());
 				Assert.assertEquals(3, req.content().size());
-				Assert.assertEquals("aaa-4", req.content().get(0).get(ContentObjectFields.SYS_ID));
-				Assert.assertEquals("aaa-5", req.content().get(1).get(ContentObjectFields.SYS_ID));
-				Assert.assertEquals("aaa-6", req.content().get(2).get(ContentObjectFields.SYS_ID));
+				Assert.assertEquals("aaa-4", req.content().get(0).getId());
+				Assert.assertEquals("aaa-5", req.content().get(1).getId());
+				Assert.assertEquals("aaa-6", req.content().get(2).getId());
 
 				req = tested.listRequestNext(req);
 				Assert.assertTrue(req.hasContent());
 				Assert.assertNotNull(req.content());
 				Assert.assertEquals(1, req.content().size());
-				Assert.assertEquals("aaa-7", req.content().get(0).get(ContentObjectFields.SYS_ID));
+				Assert.assertEquals("aaa-7", req.content().get(0).getId());
 
 				req = tested.listRequestNext(req);
 				Assert.assertFalse(req.hasContent());

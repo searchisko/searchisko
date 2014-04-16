@@ -16,6 +16,7 @@ import javax.inject.Named;
 import javax.ws.rs.core.StreamingOutput;
 
 import org.searchisko.persistence.service.EntityService;
+import org.searchisko.persistence.service.ListRequest;
 
 /**
  * Service related to config documents store handling

@@ -5,8 +5,10 @@
  */
 package org.searchisko.api.service;
 
+import java.util.Date;
 import java.util.Map;
 
+import org.elasticsearch.action.bulk.BulkRequestBuilder;
 import org.searchisko.persistence.service.EntityService;
 
 /**
@@ -17,11 +19,27 @@ import org.searchisko.persistence.service.EntityService;
 public interface SearchableEntityService extends EntityService {
 
 	/**
+	 * Prepare {@link BulkRequestBuilder} to be used in {@link #updateSearchIndex(BulkRequestBuilder, String, Map)}.
+	 * 
+	 * @return bulk request builder
+	 */
+	BulkRequestBuilder prepareBulkRequest();
+
+	/**
 	 * Updates search index for entity identified by id.
 	 * 
+	 * @param brb to be used for update
 	 * @param id of entity
 	 * @param entity data to store into search index
+	 * @see #prepareBulkRequest()
 	 */
-	void updateSearchIndex(String id, Map<String, Object> entity);
+	void updateSearchIndex(BulkRequestBuilder brb, String id, Map<String, Object> entity);
+
+	/**
+	 * Delete all records not updated after given timestamp from search index.
+	 * 
+	 * @param timestamp to delete records not updated after
+	 */
+	void deleteOldFromSearchIndex(Date timestamp);
 
 }

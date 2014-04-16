@@ -6,6 +6,7 @@
 package org.searchisko.api.reindexer;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -20,9 +21,11 @@ import org.searchisko.api.ContentObjectFields;
 import org.searchisko.api.events.ContentBeforeIndexedEvent;
 import org.searchisko.api.service.ProviderService;
 import org.searchisko.api.service.SearchClientService;
+import org.searchisko.api.tasker.TaskExecutionContext;
 import org.searchisko.api.testtools.ESRealClientTestBase;
 import org.searchisko.persistence.service.ContentPersistenceService;
-import org.searchisko.persistence.service.ContentPersistenceService.ListRequest;
+import org.searchisko.persistence.service.ContentTuple;
+import org.searchisko.persistence.service.ListRequest;
 
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -44,8 +47,11 @@ public class ReindexFromPersistenceTaskTest extends ESRealClientTestBase {
 
 		try {
 			ReindexFromPersistenceTask tested = new ReindexFromPersistenceTask();
+			tested.setExecutionContext("tid", Mockito.mock(TaskExecutionContext.class));
 			tested.searchClientService = Mockito.mock(SearchClientService.class);
 			Mockito.when(tested.searchClientService.getClient()).thenReturn(prepareESClientForUnitTest());
+			Mockito.doCallRealMethod().when(tested.searchClientService)
+					.performDeleteOldRecords(Mockito.anyString(), Mockito.anyString(), Mockito.any(Date.class));
 			tested.sysContentType = sysContentType;
 			tested.providerService = Mockito.mock(ProviderService.class);
 			tested.eventBeforeIndexed = Mockito.mock(Event.class);
@@ -171,12 +177,12 @@ public class ReindexFromPersistenceTaskTest extends ESRealClientTestBase {
 		content.put(ContentObjectFields.SYS_ID, id);
 		content.put(ContentObjectFields.SYS_CONTENT_TYPE, sysContentType);
 		content.put(ContentObjectFields.SYS_DESCRIPTION, "value " + id);
-		listRequest1.content.add(content);
+		listRequest1.content.add(new ContentTuple<String, Map<String, Object>>(id, content));
 	}
 
 	protected static class TestListRequest implements ListRequest {
 
-		List<Map<String, Object>> content = new ArrayList<Map<String, Object>>();
+		List<ContentTuple<String, Map<String, Object>>> content = new ArrayList<>();
 
 		@Override
 		public boolean hasContent() {
@@ -184,7 +190,7 @@ public class ReindexFromPersistenceTaskTest extends ESRealClientTestBase {
 		}
 
 		@Override
-		public List<Map<String, Object>> content() {
+		public List<ContentTuple<String, Map<String, Object>>> content() {
 			return content;
 		}
 

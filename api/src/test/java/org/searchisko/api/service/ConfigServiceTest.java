@@ -19,7 +19,7 @@ import org.mockito.Mockito;
 import org.searchisko.api.rest.ESDataOnlyResponse;
 import org.searchisko.api.testtools.ESRealClientTestBase;
 import org.searchisko.persistence.service.EntityService;
-import org.searchisko.persistence.service.EntityService.ListRequest;
+import org.searchisko.persistence.service.ListRequest;
 
 /**
  * Unit test for {@link ConfigService}

@@ -13,6 +13,7 @@ import org.codehaus.jackson.JsonParseException;
 import org.junit.Assert;
 import org.junit.Test;
 import org.searchisko.api.service.ProjectService;
+import org.searchisko.persistence.service.ContentTuple;
 
 import static org.junit.Assert.assertEquals;
 

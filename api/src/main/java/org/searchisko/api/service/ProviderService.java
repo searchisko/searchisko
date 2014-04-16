@@ -25,6 +25,7 @@ import org.jboss.elasticsearch.tools.content.StructuredContentPreprocessorFactor
 import org.searchisko.api.cache.IndexNamesCache;
 import org.searchisko.api.cache.ProviderCache;
 import org.searchisko.persistence.service.EntityService;
+import org.searchisko.persistence.service.ListRequest;
 
 /**
  * Service related to Content Provider, mainly reading provider configuration files.

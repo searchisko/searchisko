@@ -8,6 +8,8 @@ package org.searchisko.persistence.jpa.model;
 import java.io.IOException;
 import java.util.Map;
 
+import org.searchisko.persistence.service.ContentTuple;
+
 /**
  * Converter interface for converting between JPA entity and JSON value.
  * 

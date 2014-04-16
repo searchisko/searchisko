@@ -6,6 +6,7 @@
 package org.searchisko.api.service;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -17,6 +18,7 @@ import javax.ejb.ObjectNotFoundException;
 import javax.enterprise.event.Event;
 import javax.ws.rs.core.StreamingOutput;
 
+import org.elasticsearch.action.bulk.BulkRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.search.SearchHit;
@@ -39,7 +41,7 @@ import org.searchisko.api.testtools.TestUtils;
 import org.searchisko.api.util.SearchUtils;
 import org.searchisko.contribprofile.model.ContributorProfile;
 import org.searchisko.persistence.service.EntityService;
-import org.searchisko.persistence.service.EntityService.ListRequest;
+import org.searchisko.persistence.service.ListRequest;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -1871,6 +1873,79 @@ public class ContributorServiceTest extends ESRealClientTestBase {
 		Assert.assertEquals(expected, tested.listRequestNext(prev));
 		Mockito.verify(tested.entityService).listRequestNext(prev);
 		Mockito.verifyNoMoreInteractions(tested.entityService);
+	}
+
+	@Test
+	public void prepareBulkRequest_updateSearchIndexBrb() {
+		Client client = prepareESClientForUnitTest();
+		ContributorService tested = getTested(client);
+		try {
+
+			tested.init();
+
+			BulkRequestBuilder brb = tested.prepareBulkRequest();
+
+			tested.updateSearchIndex(brb, "10", prepareEntity("10"));
+			tested.updateSearchIndex(brb, "20", prepareEntity("20"));
+			tested.updateSearchIndex(brb, "30", prepareEntity("30"));
+
+			brb.execute().actionGet();
+
+			indexFlushAndRefresh(ContributorService.SEARCH_INDEX_NAME);
+
+			Assert.assertNotNull(indexGetDocument(ContributorService.SEARCH_INDEX_NAME, ContributorService.SEARCH_INDEX_TYPE,
+					"10"));
+			Assert.assertNotNull(indexGetDocument(ContributorService.SEARCH_INDEX_NAME, ContributorService.SEARCH_INDEX_TYPE,
+					"20"));
+			Assert.assertNotNull(indexGetDocument(ContributorService.SEARCH_INDEX_NAME, ContributorService.SEARCH_INDEX_TYPE,
+					"30"));
+
+		} finally {
+			indexDelete(ContributorService.SEARCH_INDEX_NAME);
+			finalizeESClientForUnitTest();
+		}
+
+	}
+
+	private Map<String, Object> prepareEntity(String code) {
+		Map<String, Object> entity = new HashMap<String, Object>();
+		entity.put("code", code);
+		return entity;
+	}
+
+	@Test
+	public void deleteOldFromSearchIndex() throws InterruptedException {
+		Client client = prepareESClientForUnitTest();
+		ContributorService tested = getTested(client);
+		try {
+
+			tested.init();
+
+			tested.create("10", prepareEntity("10"));
+
+			tested.create("20", prepareEntity("20"));
+			indexFlushAndRefresh(ContributorService.SEARCH_INDEX_NAME);
+			Date timestamp = new Date();
+			tested.create("30", prepareEntity("30"));
+			tested.create("40", prepareEntity("40"));
+
+			tested.deleteOldFromSearchIndex(timestamp);
+			indexFlushAndRefresh(ContributorService.SEARCH_INDEX_NAME);
+
+			Assert.assertNull(indexGetDocument(ContributorService.SEARCH_INDEX_NAME, ContributorService.SEARCH_INDEX_TYPE,
+					"10"));
+			Assert.assertNull(indexGetDocument(ContributorService.SEARCH_INDEX_NAME, ContributorService.SEARCH_INDEX_TYPE,
+					"20"));
+
+			Assert.assertNotNull(indexGetDocument(ContributorService.SEARCH_INDEX_NAME, ContributorService.SEARCH_INDEX_TYPE,
+					"30"));
+			Assert.assertNotNull(indexGetDocument(ContributorService.SEARCH_INDEX_NAME, ContributorService.SEARCH_INDEX_TYPE,
+					"40"));
+
+		} finally {
+			indexDelete(ContributorService.SEARCH_INDEX_NAME);
+			finalizeESClientForUnitTest();
+		}
 	}
 
 }
