@@ -1481,7 +1481,8 @@ Optional `contributor_type_specific_code_value` config field allow s you to list
 ```
 
 * `reindex_contributor` and `reindex_project`
-May be used to rebuild internal search indices for Contributor or Project configurations.
+May be used to rebuild internal search indices for Contributor or Project configurations from perisstent store. Usefull after search indices lost (due ES or mapping upgrade or some fatal failure of ES).
+
 ```
 {
 }
