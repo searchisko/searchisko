@@ -8,6 +8,7 @@
       "description": "Blog posts pushed into system by Borg system - planet.jboss.org",
       "sys_type": "blogpost",
       "sys_content_content-type" : "text/html",
+      "persist" : true,
       "input_preprocessors": [
         {
           "name": "Project mapper - feed to sys_project mapping",
