@@ -18,7 +18,8 @@
 		              "jbossorg_username" : {"type" : "string", "analyzer" : "keyword"},
 		              "github_username"   : {"type" : "string", "analyzer" : "keyword"},
 		              "jbossorg_blog"     : {"type" : "string", "analyzer" : "keyword"},
-		              "vimeo_username"    : {"type" : "string", "analyzer" : "keyword"}
+		              "vimeo_username"    : {"type" : "string", "analyzer" : "keyword"},
+		              "jbossdeveloper_quickstart_author" : {"type" : "string", "analyzer" : "keyword"}
 	               }
              }
          }
