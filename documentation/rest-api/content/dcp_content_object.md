@@ -93,7 +93,7 @@ some of them are set during content push before pre-processing, thus they will b
 <tr>
   <td>sys_content</td>
   <td/>
-  <td>Complete text representing whole content - it can be directly set by the content provider during the push, may contain html formatting. Basic search GUI may use it in search result detail view.</td>
+  <td>Complete text representing whole content - it can be directly set by the content provider during the push, may contain html formatting. Basic search GUI may use it in search result detail view. Tis field is optional and is used only if this content is useful for some client app.</td>
 </tr>
 <tr>
   <td>sys_content_content-type</td>
@@ -103,7 +103,7 @@ some of them are set during content push before pre-processing, thus they will b
 <tr>
   <td>sys_content_plaintext</td>
   <td></td>
-  <td>This field is expected to contain markup-free content of `sys_content` field. It makes it easy to run fulltext search API against it and use it for highlighted snippets. Note that it can be populated by pre-processors and <a href="https://github.com/jbossorg/structured-content-tools">structured-content-tools</a> can be used to strip HTML entities.</td>
+  <td>This field is expected to contain markup-free full content (same as of `sys_content` field). It makes it easy to run fulltext search API against it and use it for highlighted snippets. Note that it can be populated by pre-processors and <a href="https://github.com/jbossorg/structured-content-tools">structured-content-tools</a> can be used to strip HTML entities.</td>
 </tr>
 <tr>
   <td>sys_tags</td>
