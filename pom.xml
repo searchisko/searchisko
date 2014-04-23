@@ -87,14 +87,14 @@
         <!-- Alternatively, comment out the above line, and un-comment the line below to use version 1.0.0.Final-redhat-1 which
             is a release certified to work with JBoss EAP 6. It requires you have access to the JBoss EAP 6 maven repository. -->
         <jboss.bom.version>6.2.0.GA</jboss.bom.version>
-        <structured-content-tools.version>1.2.9</structured-content-tools.version>
-        <elasticsearch-river-jira.version>1.4.2</elasticsearch-river-jira.version>
-        <elasticsearch-river-remote.version>1.2.5</elasticsearch-river-remote.version>
+        <structured-content-tools.version>1.2.10</structured-content-tools.version>
+        <elasticsearch-river-jira.version>1.4.3</elasticsearch-river-jira.version>
+        <elasticsearch-river-remote.version>1.2.6</elasticsearch-river-remote.version>
         <cas-jboss-org-client.version>1.2.6</cas-jboss-org-client.version>
         <version.shrinkwrap_resolver>2.0.0</version.shrinkwrap_resolver>
         <rest-assured.version>1.8.1</rest-assured.version>
         <hamcrest.version>1.2.1</hamcrest.version>
-		<httpclient.version>4.2.3</httpclient.version>
+		    <httpclient.version>4.2.6</httpclient.version>
     </properties>
 
     <dependencyManagement>
