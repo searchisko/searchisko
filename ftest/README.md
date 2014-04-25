@@ -25,3 +25,39 @@ Maven (unit test in API module and integration tests)
 
 	mvn test -Pintegration-tests
 
+
+Log levels tuning
+-----------------
+
+It's good idea to show only relevant information in the log.
+Navigate to `${JBOSS_HOME}/standalone/configuration/standalone.xml` and change console-handler level to FINEST:
+
+    <subsystem xmlns="urn:jboss:domain:logging:1.3">
+		<console-handler name="CONSOLE">
+			<level name="FINEST"/>
+			<formatter>
+				<pattern-formatter pattern="%d{HH:mm:ss,SSS} %-5p [%c] (%t) %s%E%n"/>
+			</formatter>
+		</console-handler>
+		...
+
+		but change root level to WARN and keep searchisko at INFO resp. FINEST for integration tests
+
+		...
+
+		<logger category="org.searchisko.ftest">
+			<level name="FINEST"/>
+		</logger>
+		<logger category="org.searchisko">
+			<level name="INFO"/>
+		</logger>
+		<root-logger>
+			<level name="WARN"/>
+			<handlers>
+				<handler name="CONSOLE"/>
+				<handler name="FILE"/>
+			</handlers>
+		</root-logger>
+	</subsystem>
+
+
