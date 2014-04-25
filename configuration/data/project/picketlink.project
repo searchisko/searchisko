@@ -6,6 +6,7 @@
     "jbossorg_jira": ["PLINK", "PLFED", "PLIDM"],
     "jbossorg_sbs" : ["2058","2059"],
     "jbossorg_mailing_list": ["picketlink"],
-    "jbossorg_project_info": "picketlink"
+    "jbossorg_project_info": "picketlink",
+    "jbossdeveloper_website_code" : "picketlink"
   }
 }

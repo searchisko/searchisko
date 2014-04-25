@@ -1,13 +1,13 @@
 {
-  "code": "datavirt",
-  "name": "Red Hat JBoss Data Virtualization",
+  "code": "jbosswebserver",
+  "name": "Red Hat JBoss Web Server",
   "type_specific_code" : {
     "jbossorg_blog": [""],
     "jbossorg_jira": [""],
-    "jbossorg_sbs" : ["2316"],
+    "jbossorg_sbs" : [""],
     "jbossorg_mailing_list": "",
     "jbossorg_project_info": "",
-    "jbossdeveloper_website_code": "datavirt",
+    "jbossdeveloper_website_code": "webserver",
     "product" : true
   }
 }

@@ -1,11 +1,13 @@
 {
   "code": "jbosseap",
-  "name": "JBoss EAP",
+  "name": "Red Hat JBoss Enterprise Application Platform",
   "type_specific_code" : {
     "jbossorg_blog": [""],
     "jbossorg_jira": [""],
     "jbossorg_sbs" : ["2298"],
     "jbossorg_mailing_list": "",
-    "jbossorg_project_info": ""
+    "jbossorg_project_info": "",
+    "jbossdeveloper_website_code": "eap",
+    "product" : true
   }
 }

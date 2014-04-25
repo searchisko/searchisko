@@ -1,13 +1,13 @@
 {
-  "code": "datavirt",
-  "name": "Red Hat JBoss Data Virtualization",
+  "code": "amq",
+  "name": "Red Hat JBoss A-MQ",
   "type_specific_code" : {
     "jbossorg_blog": [""],
     "jbossorg_jira": [""],
-    "jbossorg_sbs" : ["2316"],
+    "jbossorg_sbs" : [""],
     "jbossorg_mailing_list": "",
     "jbossorg_project_info": "",
-    "jbossdeveloper_website_code": "datavirt",
+    "jbossdeveloper_website_code" : "amq",
     "product" : true
   }
 }

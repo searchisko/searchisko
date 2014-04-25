@@ -1,11 +1,13 @@
 {
   "code": "jbossjpp",
-  "name": "JBoss Portal",
+  "name": "Red Hat JBoss Portal",
   "type_specific_code" : {
     "jbossorg_blog": [""],
     "jbossorg_jira": [""],
     "jbossorg_sbs" : ["2308"],
     "jbossorg_mailing_list": "",
-    "jbossorg_project_info": ""
+    "jbossorg_project_info": "",
+    "jbossdeveloper_website_code": "portal",
+    "product" : true
   }
 }

@@ -1,11 +1,13 @@
 {
   "code": "jbossfuse",
-  "name": "JBoss Fuse",
+  "name": "Red Hat JBoss Fuse",
   "type_specific_code" : {
     "jbossorg_blog": [""],
     "jbossorg_jira": ["ENTESB"],
     "jbossorg_sbs" : ["2301"],
     "jbossorg_mailing_list": "",
-    "jbossorg_project_info": ""
+    "jbossorg_project_info": "",
+    "jbossdeveloper_website_code" : "fuse",
+    "product" : true
   }
 }

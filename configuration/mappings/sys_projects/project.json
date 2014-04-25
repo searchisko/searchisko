@@ -13,7 +13,9 @@
 		            "jbossorg_jira" : {"type" : "string", "analyzer" : "keyword"},
 		            "jbossorg_sbs" : {"type" : "string", "analyzer" : "keyword"},
 		            "jbossorg_mailing_list" : {"type" : "string", "analyzer" : "keyword"},
-		            "jbossorg_project_info" : {"type" : "string", "analyzer" : "keyword"}
+		            "jbossorg_project_info" : {"type" : "string", "analyzer" : "keyword"},
+		            "jbossdeveloper_website_code" : {"type" : "string", "analyzer" : "keyword"},
+		            "product" : {"type" : "boolean"}
 	            }
             }
         }

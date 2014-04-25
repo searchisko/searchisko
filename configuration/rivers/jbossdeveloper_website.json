@@ -25,11 +25,14 @@
             "sys_type"              : {"remote_field" : "prep_type"},
             "sys_updated"           : {"remote_field" : "prep_updated"},
             "sys_content_provider"  : {"remote_field" : "prep_content_provider"},
-            "sys_content_type"      : {"remote_field" : "prep_content_type"},        
+            "sys_content_type"      : {"remote_field" : "prep_content_type"}, 
+            "sys_project"           : {"remote_field" : "prep_project"},
+            "sys_project_name"      : {"remote_field" : "prep_project_name"},
             "sys_url_view"          : {"remote_field" : "url"},
             "sys_title"             : {"remote_field" : "detail.title"},
             "sys_description"       : {"remote_field" : "detail.description"},
-            "sys_content_plaintext" : {"remote_field" : "detail.content"}
+            "sys_content_plaintext" : {"remote_field" : "detail.content"},
+            "website_project_code"  : {"remote_field" : "website_project_code"}
         },
         "preprocessors" : [
             {
@@ -51,6 +54,33 @@
                 "name"     : "Updated filler",
                 "class"    : "org.jboss.elasticsearch.tools.content.AddCurrentTimestampPreprocessor",
                 "settings" : { "field" : "prep_updated" }
+            },{ 
+ 					      "name"     : "Project code extractor",
+      					"class"    : "org.jboss.elasticsearch.tools.content.RegExpCapturingGroupPreprocessor",
+      					"settings" : {
+          					"source_field"  : "url",
+          					"pattern"       : "http://www(?:-stg)?\\.jboss\\.org/(?:products|quickstarts|boms|archetypes)/([^/]*)/.*",
+          					"result_mapping" : {
+						            "1" : "website_project_code"
+          					}
+      					} 
+					  },{ 
+                "name"     : "Projects mapper",
+                "class"    : "org.jboss.elasticsearch.tools.content.ESLookupValuePreprocessor",
+                "settings" : {
+                    "index_name"       : "sys_projects",
+                    "index_type"       : "project",
+                    "source_field"     : "website_project_code",
+                    "idx_search_field" : "type_specific_code.jbossdeveloper_website_code",
+                    "result_mapping"   : [{
+		                    "idx_result_field" : "code",
+		                    "target_field"     : "prep_project"
+	                    },{
+						            "idx_result_field" : "name",
+						            "target_field"     : "prep_project_name"
+					            }
+                    ]
+                } 
             }
         ]
     },

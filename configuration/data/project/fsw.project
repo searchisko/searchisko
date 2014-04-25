@@ -1,11 +1,13 @@
 {
   "code": "fsw",
-  "name": "JBoss Fuse Service Works",
+  "name": "Red Hat JBoss Fuse Service Works",
   "type_specific_code" : {
     "jbossorg_blog": [""],
     "jbossorg_jira": [""],
     "jbossorg_sbs" : ["2306"],
     "jbossorg_mailing_list": "",
-    "jbossorg_project_info": ""
+    "jbossorg_project_info": "",
+    "jbossdeveloper_website_code" : "fsw",
+    "product" : true
   }
 }
