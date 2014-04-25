@@ -24,32 +24,57 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.jboss.shrinkwrap.resolver.api.maven.Maven;
 
 import java.io.File;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class DeploymentHelpers {
-    @Deployment(testable = false)
-    public static WebArchive createDeployment() {
-        final File[] runtimeDeps = Maven.resolver().loadPomFromFile("../api/pom.xml").importRuntimeDependencies().resolve()
-                .withTransitivity().asFile();
 
-        final WebArchive war = ShrinkWrap.create(WebArchive.class, "searchisko-contributorrestservice.war")
-                .addPackages(true, "org.searchisko.api")
+	protected static Logger log = Logger.getLogger(DeploymentHelpers.class.getName());
+
+	@Deployment(testable = false)
+	public static WebArchive createDeployment() {
+		log.log(Level.INFO, "Creating Deployment");
+
+		// /api/pom.xml determined dynamically allowing running single test in IDE
+		String rootPath = DeploymentHelpers.class.getResource("/").getFile();
+		log.log(Level.FINEST, "Root Path for test classes: {0}", rootPath);
+
+		final File[] runtimeDeps;
+		try {
+			// Root Path is /searchisko/ftest/target/test-classes/
+			File projectRoot = new File(rootPath).getParentFile().getParentFile().getParentFile();
+			log.log(Level.FINE, "Project Root: {0}", rootPath);
+
+			File apiPom = new File(projectRoot.getAbsolutePath() + "/api/pom.xml");
+
+			runtimeDeps = Maven.resolver().loadPomFromFile(apiPom).importRuntimeDependencies().resolve()
+					.withTransitivity().asFile();
+
+		} catch (Exception e) {
+			log.log(Level.SEVERE, "Cannot create deployment for integration tests");
+			throw e;
+		}
+
+
+		final WebArchive war = ShrinkWrap.create(WebArchive.class, "searchisko-contributorrestservice.war")
+				.addPackages(true, "org.searchisko.api")
 				.addPackages(true, "org.searchisko.contribprofile")
-                .addPackages(true, "org.searchisko.persistence")
-                .addAsLibraries(runtimeDeps)
-                .addAsResource("META-INF/test-persistence.xml", "META-INF/persistence.xml")
-                .addAsWebInfResource("webapp/WEB-INF/web.xml", "web.xml")
-                .addAsResource("systeminfo.properties")
-                .addAsResource("app.properties")
-                .addAsResource("search_timeouts.properties")
-                .addAsResource("search_client_connections.properties")
-                .addAsResource("search_client_settings.properties")
-                .addAsResource("stats_client_connections.properties")
-                .addAsResource("stats_client_settings.properties")
-                .addAsResource("stats_client_configuration.properties")
-                .addAsResource("mappings/contributor.json", "mappings/contributor.json")
-                .addAsWebInfResource("webapp/WEB-INF/searchisko-ds.xml", "searchisko-ds.xml")
-                .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml");
+				.addPackages(true, "org.searchisko.persistence")
+				.addAsLibraries(runtimeDeps)
+				.addAsResource("META-INF/test-persistence.xml", "META-INF/persistence.xml")
+				.addAsWebInfResource("webapp/WEB-INF/web.xml", "web.xml")
+				.addAsResource("systeminfo.properties")
+				.addAsResource("app.properties")
+				.addAsResource("search_timeouts.properties")
+				.addAsResource("search_client_connections.properties")
+				.addAsResource("search_client_settings.properties")
+				.addAsResource("stats_client_connections.properties")
+				.addAsResource("stats_client_settings.properties")
+				.addAsResource("stats_client_configuration.properties")
+				.addAsResource("mappings/contributor.json", "mappings/contributor.json")
+				.addAsWebInfResource("webapp/WEB-INF/searchisko-ds.xml", "searchisko-ds.xml")
+				.addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml");
 
-        return war;
-    }
+		return war;
+	}
 }
