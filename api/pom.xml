@@ -211,6 +211,12 @@
 						<artifactId>elasticsearch-river-remote</artifactId>
 						<version>${elasticsearch-river-remote.version}</version>
 				</dependency>
+				
+				<dependency>
+						<groupId>commons-io</groupId>
+						<artifactId>commons-io</artifactId>
+						<version>2.4</version>
+				</dependency>
 
 				<!-- Unit test dependencies -->
 				<dependency>
@@ -222,12 +228,6 @@
 						<groupId>org.mockito</groupId>
 						<artifactId>mockito-all</artifactId>
 						<version>1.9.5</version>
-						<scope>test</scope>
-				</dependency>
-				<dependency>
-						<groupId>commons-io</groupId>
-						<artifactId>commons-io</artifactId>
-						<version>2.1</version>
 						<scope>test</scope>
 				</dependency>
 
