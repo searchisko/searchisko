@@ -16,6 +16,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.searchisko.api.rest.ContributorRestService;
 
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashMap;
@@ -33,7 +34,7 @@ import static org.hamcrest.Matchers.*;
 public class ContributorRestServiceTest {
 
     @Deployment(testable = false)
-    public static WebArchive createDeployment() {
+    public static WebArchive createDeployment() throws IOException {
         return DeploymentHelpers.createDeployment();
     }
 

@@ -9,6 +9,7 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 
@@ -22,7 +23,7 @@ import static org.hamcrest.Matchers.is;
 public class AuthStatusRestServiceTest {
 
 	@Deployment(testable = false)
-	public static WebArchive createDeployment() {
+	public static WebArchive createDeployment() throws IOException {
 		return DeploymentHelpers.createDeployment();
 	}
 

@@ -17,6 +17,7 @@
 
 package org.searchisko.ftest;
 
+import org.apache.commons.io.FileUtils;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
@@ -24,6 +25,9 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.jboss.shrinkwrap.resolver.api.maven.Maven;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -31,9 +35,30 @@ public class DeploymentHelpers {
 
 	protected static Logger log = Logger.getLogger(DeploymentHelpers.class.getName());
 
+	public static Properties appProperties;
+
+	static {
+		appProperties = new Properties();
+		InputStream is = DeploymentHelpers.class.getResourceAsStream("/app.properties");
+		try {
+			appProperties.load(is);
+		} catch (IOException e) {
+			log.log(Level.SEVERE, "Cannot load app.properties", e);
+			throw new RuntimeException(e);
+		}
+	}
+
+	protected static void removeSearchiskoDataDir() throws IOException {
+		String d = appProperties.getProperty("es.client.embedded.data.path");
+		log.log(Level.INFO, "Deleting searchisko data dir: {0}", d);
+		FileUtils.deleteDirectory(new File(d));
+	}
+
 	@Deployment(testable = false)
-	public static WebArchive createDeployment() {
+	public static WebArchive createDeployment() throws IOException {
 		log.log(Level.INFO, "Creating Deployment");
+
+		removeSearchiskoDataDir();
 
 		// /api/pom.xml determined dynamically allowing running single test in IDE
 		String rootPath = DeploymentHelpers.class.getResource("/").getFile();
