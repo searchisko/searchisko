@@ -187,6 +187,7 @@ DELETE /rest/content/{sys_content_type}/{sys_content_id}{?ignore_missing}
 < Content-Type: plain/text
 Content deleted successfully.
 
+
 --
 Content Indexers API
 This part of API is primarily used by *content providers* in case when Searchisko hosted indexer is used for some of provider's content type.
@@ -230,6 +231,7 @@ GET /rest/indexer/{sys_content_type}/_status
       }
   ]      
 }
+
 
 Force indexer for given 'provider type' to start indexing work just now. 
 Indexers typically perform content reindex in defined time period, but you 
