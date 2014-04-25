@@ -24,6 +24,7 @@ import org.jboss.elasticsearch.tools.content.StructuredContentPreprocessor;
 import org.jboss.elasticsearch.tools.content.StructuredContentPreprocessorFactory;
 import org.searchisko.api.cache.IndexNamesCache;
 import org.searchisko.api.cache.ProviderCache;
+import org.searchisko.api.util.SearchUtils;
 import org.searchisko.persistence.service.EntityService;
 import org.searchisko.persistence.service.ListRequest;
 
@@ -55,14 +56,16 @@ public class ProviderService implements EntityService {
 	public static final String TYPE = "type";
 	/** Configuration Key for index settings **/
 	public static final String INDEX = "index";
+	/** Configuration Key for indexer settings **/
+	public static final String INDEXER = "indexer";
+
 	/** Configuration Key for sys_type setting **/
 	public static final String SYS_TYPE = "sys_type";
+	/** Configuration Key for preprocessors setting **/
 	public static final String INPUT_PREPROCESSORS = "input_preprocessors";
 	/** Configuration Key for Elasticsearch indices **/
 	public static final String SEARCH_INDICES = "search_indices";
-
 	public static final String SEARCH_ALL_EXCLUDED = "search_all_excluded";
-
 	public static final String PERSIST = "persist";
 
 	public static final String SYS_CONTENT_CONTENT_TYPE = "sys_content_content-type";
@@ -159,7 +162,7 @@ public class ProviderService implements EntityService {
 	 * @return provider configuration
 	 */
 	public Map<String, Object> findProvider(String providerName) {
-		if (providerName == null)
+		if (SearchUtils.trimToNull(providerName) == null)
 			return null;
 		Map<String, Object> ret = providerCache.get(providerName);
 		if (ret == null) {
@@ -496,6 +499,24 @@ public class ProviderService implements EntityService {
 					+ ". Contact administrators please.");
 
 		return ret;
+	}
+
+	/**
+	 * Get <code>indexer</code> configuration from one <code>sys_content_type</code> configuration structure.
+	 * 
+	 * @param typeDef <code>sys_content_type</code> configuration structure
+	 * @param typeName <code>sys_content_type</code> name to be used for error messages
+	 * @return indexer configuration structure or null if not defined
+	 * @throws SettingsException if configuration is invalid
+	 */
+	@SuppressWarnings("unchecked")
+	public static Map<String, Object> extractIndexerConfiguration(Map<String, Object> typeDef, String typeName) {
+		try {
+			return (Map<String, Object>) typeDef.get(INDEXER);
+		} catch (ClassCastException e) {
+			throw new SettingsException("Incorrect configuration of 'indexer' for sys_provider_type=" + typeName
+					+ ". Contact administrators please.");
+		}
 	}
 
 	/**

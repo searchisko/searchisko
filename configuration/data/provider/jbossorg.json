@@ -146,6 +146,10 @@
       "index": {
         "name": "data_jbossorg_jira",
         "type": "jbossorg_jira_issue"
+      },
+      "indexer" : {
+        "type" : "elasticsearch-river-jira",
+        "name" : "jbossorg_jira"
       }
     },
     "jbossorg_sbs_forum": {
@@ -204,6 +208,10 @@
     	"index": {
         "name": "data_jbossorg_sbs_forum",
         "type": "jbossorg_sbs_forum"
+      },
+      "indexer" : {
+        "type" : "elasticsearch-river-remote",
+        "name" : "jbossorg_sbs_forum"
       }
     },
     "jbossorg_sbs_article": {
@@ -262,6 +270,10 @@
     	"index": {
         "name": "data_jbossorg_sbs_article",
         "type": "jbossorg_sbs_article"
+      },
+      "indexer" : {
+        "type" : "elasticsearch-river-remote",
+        "name" : "jbossorg_sbs_article"
       }
     },
     "jbossorg_mailing_list": {

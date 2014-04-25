@@ -21,10 +21,13 @@ Content provider configuration fields:
  * `search_all_excluded` - optional, if `true` then documents with this type are excluded from searchings targeted to all documents (so can be searched only by explicit requests for this type)
  * `persist` - optional, if `true` then documents with this type are stored into Searchisko persistent store during push. Search index can be rebuilt from this persistent store. Used for content which is hard or expensive to obtain again in the future.
  * `input_preprocessors` - array of preprocessors applied on content of this type while pushed over 'Content Push API'. Typically used to normalize values into other `sys_` fields as `sys_project`, `sys_contributors`, `sys_activity_dates` etc. [structured-content-tools](https://github.com/jbossorg/structured-content-tools) framework is used here.
- * `index/name` - name of search index in Searchisko internal ElasticSearch cluster content of this type is stored into during push.  
- * `index/type` - type for mapping in Searchisko internal ElasticSearch cluster content of this type is stored into.
- * `index/search_indices` - array with names of search indices in Searchisko internal ElasticSearch cluster used during searching for this content type. Optional, name from `index/name` field is used for search if this field is not defined.
-
+ * `index/name` - name of search index in Searchisko internal Elasticsearch cluster content of this type is stored into during push.  
+ * `index/type` - type for mapping in Searchisko internal Elasticsearch cluster content of this type is stored into.
+ * `index/search_indices` - array with names of search indices in Searchisko internal Elasticsearch cluster used during searching for this content type. Optional, name from `index/name` field is used for search if this field is not defined.
+ * `indexer` - use this configuration section if Searchisko internal indexer is used for this content. Defines which indexer belongs to this content type, and is necessary for Searchisko 'Content Indexers REST API' to work correctly.
+ * `indexer/type` - type of indexer used for content. [elasticsearch-river-remote](https://github.com/searchisko/elasticsearch-river-remote) and [elasticsearch-river-jira](https://github.com/searchisko/elasticsearch-river-jira) Elasticsearch rivers are supported now. 
+ * `indexer/name` - name of indexer. In case of Elasticsearch rivers it is simply name of the river.  
+ 
 ### Note:
 
 The idea behind having both `index/name` and `index/search_indices` defined is to allow for use of Elasticsearch

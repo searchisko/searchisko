@@ -12,6 +12,10 @@
       "index": {
         "name": "data_rht_knowledgebase_article",
         "type": "rht_knowledgebase_article"
+      },
+      "indexer" : {
+        "type" : "elasticsearch-river-remote",
+        "name" : "rht_knowledgebase_article"
       }
     },
     "rht_knowledgebase_solution" : {
@@ -23,6 +27,10 @@
       "index": {
         "name": "data_rht_knowledgebase_solution",
         "type": "rht_knowledgebase_solution"
+      },
+      "indexer" : {
+        "type" : "elasticsearch-river-remote",
+        "name" : "rht_knowledgebase_solution"
       }
     }
   }

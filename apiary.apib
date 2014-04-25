@@ -187,6 +187,57 @@ DELETE /rest/content/{sys_content_type}/{sys_content_id}{?ignore_missing}
 < Content-Type: plain/text
 Content deleted successfully.
 
+--
+Content Indexers API
+This part of API is primarily used by *content providers* in case when Searchisko hosted indexer is used for some of provider's content type.
+
+Each provider has set of 'provider types' defined in Searchisko, some of them may use Searchisko internal indexers to pull content into Searchisko. 
+This 'provider type' is used as `{sys_content_type}` URL path part for this API.
+--
+
+Get status information of indexer used for specified content 'provider type'. Response contains JSON document with structure depending on indexer type used for given content.
+Example of status information structure for currently supported indexer types:
+
+* [elasticsearch-river-remote](https://github.com/searchisko/elasticsearch-river-remote/blob/master/src/main/resources/examples/mgm/rest_river_info.json) 
+* [elasticsearch-river-jira](https://github.com/searchisko/elasticsearch-river-jira/blob/master/src/main/resources/examples/mgm/rest_river_info.json).
+
+GET /rest/indexer/{sys_content_type}/_status
+< 200
+< Content-Type: application/json
+{
+  "river_name" : "my_remote_river",
+  "info_date" : "2012-09-26T12:00:00.000Z",
+  "indexing": {
+    "state" : "running",
+    "last_restart" : "2012-09-26T11:45:12.000Z"
+  },
+  "node" : {
+      "id" : "rwoeirjwfjawfkq",
+      "name" : "Mr. wung"
+  },
+  "current_indexing" : [
+      { "space_key" : "ORG", "update_type" : "FULL", "start_date" : "2012-09-26T11:56:03.000Z", "documents_updated" : 10, "documents_deleted" : 5 },
+      { "space_key" : "AAA", "update_type" : "INCREMENTAL", "start_date" : "2012-09-26T11:56:03.000Z", "documents_updated" : 10, "documents_deleted" : 0 }
+  ],
+  "indexed_spaces" : [
+      {
+        "space_key" : "ORG",
+        "last_indexing" : { "update_type" : "FULL", "start_date" : "2012-09-26T11:56:03.000Z", "result" : "OK", "time_elapsed" : "50ms", "documents_updated" : 10, "documents_deleted" : 5 }
+      },
+      {
+        "space_key" : "AAA",
+        "last_indexing" : { "update_type" : "FULL", "start_date" : "2012-09-26T11:56:03.000Z", "result" : "ERROR", "time_elapsed" : "50ms", "documents_updated" : 10, "documents_deleted" : 5, "error_message" : "Http Timeout" }
+      }
+  ]      
+}
+
+Force indexer for given 'provider type' to start indexing work just now. 
+Indexers typically perform content reindex in defined time period, but you 
+can use this operation to start reindexing work ASAP (it typically takes few 
+seconds after this call before reindexing is started, depends on indexer implementation).
+POST /rest/indexer/{sys_content_type}/_force_reindex
+< 200
+
 
 --
 Search API
