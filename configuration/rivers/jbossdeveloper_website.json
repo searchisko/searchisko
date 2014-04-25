@@ -1,0 +1,60 @@
+{
+    "type" : "remote",
+    "remote" : {
+        "remoteClientClass"     : "org.jboss.elasticsearch.river.remote.GetSitemapHtmlClient",
+        "urlGetSitemap"         : "http://www-stg.jboss.org/sitemap.xml",
+        "timeout"               : "10s",
+        "spacesIndexed"         : "MAIN",
+        "simpleGetDocuments"    : true,
+        "indexUpdatePeriod"     : "1d",
+        "maxIndexingThreads"    : 1,
+        "htmlMapping"           : {
+            "title"       : {"cssSelector" : "head title"},
+            "description" : {"cssSelector" : "head meta[name=description]", "valueAttribute" : "content"},
+            "content"     : {"cssSelector" : "body .content-wrapper", "stripHtml" : true}
+        } 
+    },
+    "index" : {
+        "index"             : "data_jbossdeveloper_website",
+        "type"              : "jbossdeveloper_website",
+        "remote_field_document_id" : "id",
+        "field_space_key"   : "space_key",
+        "field_document_id" : "sys_id",
+        "fields" : {
+            "sys_content_id"        : {"remote_field" : "prep_id_remote"},
+            "sys_type"              : {"remote_field" : "prep_type"},
+            "sys_updated"           : {"remote_field" : "prep_updated"},
+            "sys_content_provider"  : {"remote_field" : "prep_content_provider"},
+            "sys_content_type"      : {"remote_field" : "prep_content_type"},        
+            "sys_url_view"          : {"remote_field" : "url"},
+            "sys_title"             : {"remote_field" : "detail.title"},
+            "sys_description"       : {"remote_field" : "detail.description"},
+            "sys_content_plaintext" : {"remote_field" : "detail.content"}
+        },
+        "preprocessors" : [
+            {
+                "name"     : "Remote id copy",
+                "class"    : "org.jboss.elasticsearch.tools.content.AddMultipleValuesPreprocessor",
+                "settings" : {
+                    "prep_id_remote" : "{id}"
+                 } 
+            },{
+                "name"     : "Searchisko sys_ values filler",
+                "class"    : "org.jboss.elasticsearch.tools.content.AddMultipleValuesPreprocessor",
+                "settings" : {
+                    "id"                    : "jbossdeveloper_website-{id}",
+                    "prep_type"             : "webpage",
+                    "prep_content_provider" : "jbossdeveloper",
+                    "prep_content_type"     : "jbossdeveloper_website"
+                 } 
+            },{ 
+                "name"     : "Updated filler",
+                "class"    : "org.jboss.elasticsearch.tools.content.AddCurrentTimestampPreprocessor",
+                "settings" : { "field" : "prep_updated" }
+            }
+        ]
+    },
+    "activity_log" : {
+        "index":"stats_jbossdeveloper_website_river"
+    }
+}

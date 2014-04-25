@@ -1,0 +1,9 @@
+{
+    "remote_river_indexupdate" : {
+        "properties" : {
+            "space_key"   : {"type" : "string", "analyzer" : "keyword"},
+            "update_type" : {"type" : "string", "analyzer" : "keyword"},
+            "result"      : {"type" : "string", "analyzer" : "keyword"}
+        }
+    }
+}

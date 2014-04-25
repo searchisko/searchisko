@@ -28,7 +28,7 @@
             "sys_last_activity_date": {"remote_field" : "prep_last_activity_date"},
             "sys_project"           : {"remote_field" : "prep_project"},
             "sys_project_name"      : {"remote_field" : "prep_project_name"},
-            "sys_url_view"			: {"remote_field" : "url"},
+            "sys_url_view"			    : {"remote_field" : "url"},
             "sys_contributors"      : {"remote_field" : "prep_contributors"},
             "sys_title"             : {"remote_field" : "title"},
             "sys_created"           : {"remote_field" : "published"},
@@ -63,10 +63,10 @@
                     "prep_id_remote" : "{id}"
                  } 
             },{
-                "name"     : "Values filler",
+                "name"     : "Searchisko sys_ values filler",
                 "class"    : "org.jboss.elasticsearch.tools.content.AddMultipleValuesPreprocessor",
                 "settings" : {
-                    "id"                    : "jbossorg_sbs_article-{id}",
+                    "id"                     : "jbossorg_sbs_article-{id}",
                     "prep_type"              : "article",
                     "prep_content_provider"  : "jbossorg",
                     "prep_content_type"      : "jbossorg_sbs_article",
