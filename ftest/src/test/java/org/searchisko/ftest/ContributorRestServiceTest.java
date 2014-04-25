@@ -5,11 +5,6 @@
  */
 package org.searchisko.ftest;
 
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.HashMap;
-import java.util.Map;
-
 import com.jayway.restassured.http.ContentType;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
@@ -20,6 +15,11 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.searchisko.api.rest.ContributorRestService;
+
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
 
 import static com.jayway.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.*;
@@ -41,9 +41,13 @@ public class ContributorRestServiceTest {
 
     private static String contributorId;
 
+	private static String contributorCode;
+
     @Test @InSequence(0)
     public void assertServiceRespondingNoHits(@ArquillianResource URL context) throws MalformedURLException {
         given().
+				contentType(ContentType.JSON).
+				auth().basic("jbossorg", "jbossorgjbossorg").
                 param("email", "no-email@redhat.com").
         expect().
                 log().ifError().
@@ -61,8 +65,10 @@ public class ContributorRestServiceTest {
         typeSpecificCode.put("jbossorg_blog", "");
         typeSpecificCode.put("github_username", "LightGuard");
 
+		contributorCode = "Jason Porter <jporter@redhat.com>";
+
         final Map<String, Object> params = new HashMap<>();
-        params.put("code", "Jason Porter <jporter@redhat.com>");
+        params.put("code", contributorCode);
         params.put("email", "jporter@redhat.com");
         params.put("type_specific_code", typeSpecificCode);
 
@@ -105,7 +111,7 @@ public class ContributorRestServiceTest {
                 statusCode(200).
                 contentType(ContentType.JSON).
                 body("email", is("jporter@redhat.com")).
-                body("code", is("Jason Porter <jporter@redhat.com>")).
+                body("code", is(contributorCode)).
                 body("type_specific_code.github_username", is("LightGuard")).
         when().
                 get(new URL(context, restVersion + "contributor/{id}").toExternalForm());
@@ -136,6 +142,7 @@ public class ContributorRestServiceTest {
         typeSpecificCode.put("jbossorg_blog", "seam.Jason Porter");
 
         final Map<String, Object> params = new HashMap<>();
+		params.put("code", contributorCode);
         params.put("type_specific_code", typeSpecificCode);
 
         given().
