@@ -16,6 +16,7 @@ import javax.ws.rs.core.SecurityContext;
 import org.searchisko.api.annotations.security.ContributorAllowed;
 import org.searchisko.api.annotations.security.ProviderAllowed;
 import org.searchisko.api.rest.exception.NotAuthenticatedException;
+import org.searchisko.api.rest.exception.NotAuthorizedException;
 import org.searchisko.api.service.ContributorProfileService;
 import org.searchisko.api.util.SearchUtils;
 
@@ -54,6 +55,24 @@ public class AuthenticationUtilService {
 			throw new NotAuthenticatedException(AuthenticatedUserType.PROVIDER);
 		}
 		return securityContext.getUserPrincipal().getName();
+	}
+
+	/**
+	 * Check if logged in user has management permission for passed in provider.
+	 * 
+	 * @param securityContext to look for currently logged in user in
+	 * @param providerName to check permission for
+	 * @throws NotAuthorizedException if user has not the permission
+	 */
+	// TODO #77 UNIT TEST
+	public void checkProviderManagementPermission(SecurityContext securityContext, String providerName)
+			throws NotAuthorizedException {
+		if (securityContext != null
+				&& (securityContext.isUserInRole(ProviderCustomSecurityContext.SUPER_ADMIN_ROLE) || providerName
+						.equalsIgnoreCase(getAuthenticatedProvider(securityContext)))) {
+			return;
+		}
+		throw new NotAuthorizedException("management permission for content provider " + providerName);
 	}
 
 	/**

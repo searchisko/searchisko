@@ -5,8 +5,15 @@
  */
 package org.searchisko.api.service;
 
-import java.lang.reflect.Method;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -18,7 +25,6 @@ import javax.inject.Named;
 import org.elasticsearch.ElasticSearchException;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
-import org.elasticsearch.common.joda.time.DateTime;
 import org.elasticsearch.common.joda.time.format.DateTimeFormatter;
 import org.elasticsearch.common.joda.time.format.ISODateTimeFormat;
 import org.elasticsearch.common.settings.SettingsException;
@@ -30,16 +36,16 @@ import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.index.query.QueryFilterBuilder;
 import org.elasticsearch.index.query.QueryStringQueryBuilder;
-import org.elasticsearch.index.query.RangeFilterBuilder;
-import org.elasticsearch.index.query.TermsFilterBuilder;
 import org.elasticsearch.search.facet.datehistogram.DateHistogramFacetBuilder;
 import org.elasticsearch.search.facet.terms.TermsFacetBuilder;
 import org.elasticsearch.search.sort.SortOrder;
 import org.searchisko.api.ContentObjectFields;
 import org.searchisko.api.cache.IndexNamesCache;
-import org.searchisko.api.model.*;
-import org.searchisko.api.model.QuerySettings.Filters;
-import org.searchisko.api.rest.search.*;
+import org.searchisko.api.model.QuerySettings;
+import org.searchisko.api.model.SortByValue;
+import org.searchisko.api.model.TimeoutConfiguration;
+import org.searchisko.api.rest.search.SemiParsedFacetConfig;
+import org.searchisko.api.service.ProviderService.ProviderContentTypeInfo;
 
 import static org.searchisko.api.rest.search.ConfigParseUtil.parseFacetType;
 
@@ -92,7 +98,7 @@ public class SearchService {
 				try {
 					parsedFilterConfigService.prepareFiltersForRequest(querySettings.getFilters());
 				} catch (ReflectiveOperationException e) {
-					throw new ElasticSearchException("Can not prepare filters",e);
+					throw new ElasticSearchException("Can not prepare filters", e);
 				}
 			}
 			SearchRequestBuilder srb = new SearchRequestBuilder(searchClientService.getClient());
@@ -127,7 +133,7 @@ public class SearchService {
 
 	/**
 	 * Setup indices and types for the search request builder according to query settings.
-	 *
+	 * 
 	 * @param querySettings
 	 * @param srb
 	 */
@@ -143,14 +149,15 @@ public class SearchService {
 			List<String> allQueryIndices = new ArrayList<>();
 			List<String> allQueryTypes = new ArrayList<>();
 			for (String type : contentTypes) {
-				Map<String, Object> typeDef = providerService.findContentType(type);
+				ProviderContentTypeInfo typeDef = providerService.findContentType(type);
 				if (typeDef == null) {
 					throw new IllegalArgumentException("type");
 				}
 				String[] queryIndices = ProviderService.extractSearchIndices(typeDef, type);
 				String queryType = ProviderService.extractIndexType(typeDef, type);
 				if (log.isLoggable(Level.FINE)) {
-					log.log(Level.FINE, "Query indices and types relevant to {0}: {1}", new Object[]{ContentObjectFields.SYS_CONTENT_TYPE, type});
+					log.log(Level.FINE, "Query indices and types relevant to {0}: {1}", new Object[] {
+							ContentObjectFields.SYS_CONTENT_TYPE, type });
 					log.log(Level.FINE, "Query indices: {0}", Arrays.asList(queryIndices).toString());
 					log.log(Level.FINE, "Query indices type: {0}", queryType);
 				}
@@ -169,7 +176,8 @@ public class SearchService {
 			boolean isSysTypeFacet = (querySettings.getFacets() != null && querySettings.getFacets().contains(
 					getFacetNameUsingSysTypeField()));
 
-			// TODO: optimization - prepareIndexNamesCacheKey has no side-effects, consider using Memoize pattern (for example Guava's CacheBuilder)
+			// TODO: optimization - prepareIndexNamesCacheKey has no side-effects, consider using Memoize pattern (for example
+			// Guava's CacheBuilder)
 			String indexNameCacheKey = prepareIndexNamesCacheKey(sysTypesRequested, isSysTypeFacet);
 			Set<String> indexNames = indexNamesCache.get(indexNameCacheKey);
 			if (indexNames == null) {
@@ -221,9 +229,8 @@ public class SearchService {
 					for (String typeName : types.keySet()) {
 						Map<String, Object> typeDef = types.get(typeName);
 						if ((sysTypesRequested == null && !ProviderService.extractSearchAllExcluded(typeDef))
-								|| (sysTypesRequested != null && ((isSysTypeFacet && !ProviderService
-								.extractSearchAllExcluded(typeDef)) || sysTypesRequested.contains(ProviderService
-								.extractSysType(typeDef, typeName))))) {
+								|| (sysTypesRequested != null && ((isSysTypeFacet && !ProviderService.extractSearchAllExcluded(typeDef)) || sysTypesRequested
+										.contains(ProviderService.extractSysType(typeDef, typeName))))) {
 							indexNames.addAll(Arrays.asList(ProviderService.extractSearchIndices(typeDef, typeName)));
 						}
 					}
@@ -238,11 +245,11 @@ public class SearchService {
 
 	/**
 	 * Prepare query builder based on query settings.
-	 *
-	 * Under the hood it creates either {@link org.elasticsearch.index.query.QueryStringQueryBuilder} using
-	 * fields configured in {@link ConfigService#CFGNAME_SEARCH_FULLTEXT_QUERY_FIELDS} config file
-	 * or {@link org.elasticsearch.index.query.MatchAllQueryBuilder} if query string is <code>null</code>.
-	 *
+	 * 
+	 * Under the hood it creates either {@link org.elasticsearch.index.query.QueryStringQueryBuilder} using fields
+	 * configured in {@link ConfigService#CFGNAME_SEARCH_FULLTEXT_QUERY_FIELDS} config file or
+	 * {@link org.elasticsearch.index.query.MatchAllQueryBuilder} if query string is <code>null</code>.
+	 * 
 	 * @param querySettings
 	 * @return builder for query, never null
 	 */
@@ -275,7 +282,9 @@ public class SearchService {
 	/**
 	 * @param querySettings
 	 * @param srb
-	 * @see <a href="http://www.elasticsearch.org/guide/en/elasticsearch/reference/0.90/search-request-highlighting.html">Elasticsearch 0.90 - Highlighting</a>
+	 * @see <a
+	 *      href="http://www.elasticsearch.org/guide/en/elasticsearch/reference/0.90/search-request-highlighting.html">Elasticsearch
+	 *      0.90 - Highlighting</a>
 	 */
 	protected void setSearchRequestHighlight(QuerySettings querySettings, SearchRequestBuilder srb) {
 		if (querySettings.getQuery() != null && querySettings.isQueryHighlight()) {
@@ -343,8 +352,9 @@ public class SearchService {
 			SearchRequestBuilder srb) {
 		Map<String, Object> configuredFacets = configService.get(ConfigService.CFGNAME_SEARCH_FULLTEXT_FACETS_FIELDS);
 		Set<String> requestedFacets = querySettings.getFacets();
-		if (configuredFacets != null && !configuredFacets.isEmpty() && requestedFacets != null && !requestedFacets.isEmpty()) {
-			for (String requestedFacet: requestedFacets) {
+		if (configuredFacets != null && !configuredFacets.isEmpty() && requestedFacets != null
+				&& !requestedFacets.isEmpty()) {
+			for (String requestedFacet : requestedFacets) {
 				Object facetConfig = configuredFacets.get(requestedFacet);
 				if (facetConfig != null) {
 					SemiParsedFacetConfig parsedFacetConfig = parseFacetType(facetConfig, requestedFacet);
@@ -363,16 +373,16 @@ public class SearchService {
 							if (parsedFacetConfig.isFiltered()) {
 								// we filter over contributors so we have to add second facet which provide numbers for these
 								// contributors because they can be out of normal facet due count limitation
-								TermsFacetBuilder tb = new TermsFacetBuilder(requestedFacet + "_filter").field(parsedFacetConfig.getFieldName())
-										.size(parsedFacetConfig.getFilteredSize()).global(true)
+								TermsFacetBuilder tb = new TermsFacetBuilder(requestedFacet + "_filter")
+										.field(parsedFacetConfig.getFieldName()).size(parsedFacetConfig.getFilteredSize()).global(true)
 										.facetFilter(new AndFilterBuilder(filtersMapToArray(searchFilters)));
 								srb.addFacet(tb);
 							}
 						}
-					// date histogram facet
+						// date histogram facet
 					} else if (SemiParsedFacetConfig.FacetType.DATE_HISTOGRAM.toString().equals(parsedFacetConfig.getFacetType())) {
-						srb.addFacet(new DateHistogramFacetBuilder(requestedFacet).field(parsedFacetConfig.getFieldName()).interval(
-								getDateHistogramFacetInterval(parsedFacetConfig.getFieldName())));
+						srb.addFacet(new DateHistogramFacetBuilder(requestedFacet).field(parsedFacetConfig.getFieldName())
+								.interval(getDateHistogramFacetInterval(parsedFacetConfig.getFieldName())));
 					}
 				}
 			}
@@ -401,9 +411,9 @@ public class SearchService {
 	}
 
 	/**
-	 * For given set of facet names it returns only those using "date_histogram" facet type.
-	 * It also returns name of their document filed.
-	 *
+	 * For given set of facet names it returns only those using "date_histogram" facet type. It also returns name of their
+	 * document filed.
+	 * 
 	 * @param facetNames set of facet names to filter
 	 * @return only those facets names using "date_histogram" facet type
 	 */
@@ -460,7 +470,7 @@ public class SearchService {
 	}
 
 	/**
-	 *
+	 * 
 	 * @param fieldName
 	 * @return interval value or null
 	 */
@@ -468,7 +478,7 @@ public class SearchService {
 		String defaultValue = "month";
 		if (parsedFilterConfigService.isCacheInitialized()) {
 			ParsedFilterConfigService.IntervalRange ir = parsedFilterConfigService.getRangeFiltersIntervals().get(fieldName);
-			if (ir != null){
+			if (ir != null) {
 				long from = 0;
 				long to = System.currentTimeMillis();
 				if (ir.getGte() != null)
@@ -509,7 +519,9 @@ public class SearchService {
 	/**
 	 * @param querySettings
 	 * @param srb request builder to set sorting for
-	 * @see <a href="http://www.elasticsearch.org/guide/en/elasticsearch/reference/0.90/search-request-sort.html">Elasticsearch 0.90 - Sort</a>
+	 * @see <a
+	 *      href="http://www.elasticsearch.org/guide/en/elasticsearch/reference/0.90/search-request-sort.html">Elasticsearch
+	 *      0.90 - Sort</a>
 	 */
 	protected void setSearchRequestSort(QuerySettings querySettings, SearchRequestBuilder srb) {
 		if (querySettings.getSortBy() != null) {
@@ -526,7 +538,9 @@ public class SearchService {
 	/**
 	 * @param querySettings
 	 * @param srb request builder to set response content for
-	 * @see <a href="http://www.elasticsearch.org/guide/en/elasticsearch/reference/0.90/search-request-fields.html">Elasticsearch 0.90 - Fields</a>
+	 * @see <a
+	 *      href="http://www.elasticsearch.org/guide/en/elasticsearch/reference/0.90/search-request-fields.html">Elasticsearch
+	 *      0.90 - Fields</a>
 	 */
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	protected void setSearchRequestFields(QuerySettings querySettings, SearchRequestBuilder srb) {
@@ -553,7 +567,8 @@ public class SearchService {
 	/**
 	 * @param querySettings
 	 * @param srb
-	 * @link <a href="http://www.elasticsearch.org/guide/en/elasticsearch/reference/0.90/search-request-from-size.html">Elasticsearch 0.90 - From/Size</a>
+	 * @link <a href="http://www.elasticsearch.org/guide/en/elasticsearch/reference/0.90/search-request-from-size.html">
+	 *       Elasticsearch 0.90 - From/Size</a>
 	 */
 	protected void setSearchRequestFromSize(QuerySettings querySettings, SearchRequestBuilder srb) {
 		if (querySettings.getFrom() != null && querySettings.getFrom() >= 0) {

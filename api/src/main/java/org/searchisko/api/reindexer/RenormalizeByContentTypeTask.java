@@ -13,6 +13,7 @@ import org.elasticsearch.client.Client;
 import org.elasticsearch.search.SearchHit;
 import org.jboss.elasticsearch.tools.content.InvalidDataException;
 import org.searchisko.api.service.ProviderService;
+import org.searchisko.api.service.ProviderService.ProviderContentTypeInfo;
 import org.searchisko.api.service.SearchClientService;
 
 /**
@@ -27,7 +28,7 @@ public class RenormalizeByContentTypeTask extends ReindexingTaskBase {
 
 	private String indexName;
 	private String indexType;
-	private Map<String, Object> typeDef;
+	private ProviderContentTypeInfo typeDef;
 
 	public RenormalizeByContentTypeTask(ProviderService providerService, SearchClientService searchClientService,
 			String sysContentType) {

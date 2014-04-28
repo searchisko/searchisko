@@ -27,6 +27,7 @@ import org.jboss.elasticsearch.tools.content.StructuredContentPreprocessor;
 import org.jboss.elasticsearch.tools.content.StructuredContentPreprocessorFactory;
 import org.searchisko.api.ContentObjectFields;
 import org.searchisko.api.service.ProviderService;
+import org.searchisko.api.service.ProviderService.ProviderContentTypeInfo;
 import org.searchisko.api.service.SearchClientService;
 import org.searchisko.api.tasker.Task;
 
@@ -92,7 +93,7 @@ public class RenormalizeByEsLookedUpValuesTask extends Task {
 						if (isCanceledOrInterrupted()) {
 							return;
 						}
-						Map<String, Object> typeDef = providerService.findContentType(sysContentType);
+						ProviderContentTypeInfo typeDef = providerService.findContentType(sysContentType);
 						try {
 							Set<String> esFields = takeLookedUpEsFields(typeDef, sysContentType);
 							if (esFields != null && !esFields.isEmpty()) {
@@ -149,7 +150,7 @@ public class RenormalizeByEsLookedUpValuesTask extends Task {
 		}
 	}
 
-	protected Set<String> takeLookedUpEsFields(Map<String, Object> typeDef, String sysContentType) {
+	protected Set<String> takeLookedUpEsFields(ProviderContentTypeInfo typeDef, String sysContentType) {
 		List<Map<String, Object>> preprocessorsDef = ProviderService.extractPreprocessors(typeDef, sysContentType);
 		Set<String> ret = new HashSet<String>();
 		if (preprocessorsDef != null) {
@@ -179,7 +180,7 @@ public class RenormalizeByEsLookedUpValuesTask extends Task {
 		Map<String, Object> content = hit.getSource();
 		String id = hit.getId();
 		String sysContentType = (String) content.get(ContentObjectFields.SYS_CONTENT_TYPE);
-		Map<String, Object> typeDef = providerService.findContentType(sysContentType);
+		ProviderContentTypeInfo typeDef = providerService.findContentType(sysContentType);
 		if (typeDef == null) {
 			writeTaskLog("No type definition found for document id=" + id + " so is skipped");
 		} else {

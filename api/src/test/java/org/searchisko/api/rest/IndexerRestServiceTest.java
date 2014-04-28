@@ -70,7 +70,7 @@ public class IndexerRestServiceTest {
 		IndexerRestService tested = getTested();
 
 		try {
-			tested.getIndexerConfiguration(null);
+			tested.getIndexerConfigurationWithManagePermissionCheck(null);
 			Assert.fail("RequiredFieldException expected");
 		} catch (RequiredFieldException e) {
 			// OK
@@ -79,7 +79,7 @@ public class IndexerRestServiceTest {
 		// case - unknown provider
 		try {
 			when(tested.providerService.findProvider("jbossorg")).thenReturn(null);
-			tested.getIndexerConfiguration("unknown_type");
+			tested.getIndexerConfigurationWithManagePermissionCheck("unknown_type");
 			Assert.fail("BadFieldException expected");
 		} catch (BadFieldException e) {
 			// OK
@@ -102,7 +102,7 @@ public class IndexerRestServiceTest {
 
 		// case - known provider but unknown type
 		try {
-			tested.getIndexerConfiguration("unknown_type");
+			tested.getIndexerConfigurationWithManagePermissionCheck("unknown_type");
 			Assert.fail("BadFieldException expected");
 		} catch (BadFieldException e) {
 			// OK
@@ -110,14 +110,14 @@ public class IndexerRestServiceTest {
 
 		// case - known type without indexer
 		try {
-			tested.getIndexerConfiguration("type_no_indexer");
+			tested.getIndexerConfigurationWithManagePermissionCheck("type_no_indexer");
 			Assert.fail("ObjectNotFoundException expected");
 		} catch (ObjectNotFoundException e) {
 			// OK
 		}
 
 		// case - indexer configured
-		Assert.assertEquals(indexerInfo, tested.getIndexerConfiguration("type_with_indexer"));
+		Assert.assertEquals(indexerInfo, tested.getIndexerConfigurationWithManagePermissionCheck("type_with_indexer"));
 	}
 
 	@Test
@@ -152,7 +152,7 @@ public class IndexerRestServiceTest {
 			Map<String, Object> ic = new HashMap<>();
 			ic.put(ProviderService.TYPE, "indexer_type");
 			ic.put(ProviderService.NAME, "indexer_name");
-			Mockito.when(tested.getIndexerConfiguration("my_type")).thenReturn(ic);
+			Mockito.when(tested.getIndexerConfigurationWithManagePermissionCheck("my_type")).thenReturn(ic);
 
 			IndexerHandler ihMock = Mockito.mock(IndexerHandler.class);
 			Mockito.when(ihMock.getStatus("indexer_name")).thenThrow(new ObjectNotFoundException());
@@ -171,7 +171,7 @@ public class IndexerRestServiceTest {
 		Map<String, Object> ic = new HashMap<>();
 		ic.put(ProviderService.TYPE, "indexer_type");
 		ic.put(ProviderService.NAME, "indexer_name");
-		Mockito.when(tested.getIndexerConfiguration("my_type")).thenReturn(ic);
+		Mockito.when(tested.getIndexerConfigurationWithManagePermissionCheck("my_type")).thenReturn(ic);
 		IndexerHandler ihMock = Mockito.mock(IndexerHandler.class);
 		Mockito.when(ihMock.getStatus("indexer_name")).thenReturn("sys info");
 		Mockito.when(tested.getIndexerHandler("indexer_type", "my_type")).thenReturn(ihMock);
@@ -193,7 +193,7 @@ public class IndexerRestServiceTest {
 			Map<String, Object> ic = new HashMap<>();
 			ic.put(ProviderService.TYPE, "indexer_type");
 			ic.put(ProviderService.NAME, "indexer_name");
-			Mockito.when(tested.getIndexerConfiguration("my_type")).thenReturn(ic);
+			Mockito.when(tested.getIndexerConfigurationWithManagePermissionCheck("my_type")).thenReturn(ic);
 
 			IndexerHandler ihMock = Mockito.mock(IndexerHandler.class);
 			Mockito.doThrow(new ObjectNotFoundException()).when(ihMock).forceReindex("indexer_name");
@@ -212,7 +212,7 @@ public class IndexerRestServiceTest {
 		Map<String, Object> ic = new HashMap<>();
 		ic.put(ProviderService.TYPE, "indexer_type");
 		ic.put(ProviderService.NAME, "indexer_name");
-		Mockito.when(tested.getIndexerConfiguration("my_type")).thenReturn(ic);
+		Mockito.when(tested.getIndexerConfigurationWithManagePermissionCheck("my_type")).thenReturn(ic);
 		IndexerHandler ihMock = Mockito.mock(IndexerHandler.class);
 		Mockito.when(tested.getIndexerHandler("indexer_type", "my_type")).thenReturn(ihMock);
 

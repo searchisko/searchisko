@@ -25,9 +25,12 @@ import org.searchisko.api.indexer.EsRiverJiraIndexerHandler;
 import org.searchisko.api.indexer.EsRiverRemoteIndexerHandler;
 import org.searchisko.api.indexer.IndexerHandler;
 import org.searchisko.api.rest.exception.BadFieldException;
+import org.searchisko.api.rest.exception.NotAuthenticatedException;
+import org.searchisko.api.rest.exception.NotAuthorizedException;
 import org.searchisko.api.rest.exception.RequiredFieldException;
 import org.searchisko.api.rest.security.AuthenticationUtilService;
 import org.searchisko.api.service.ProviderService;
+import org.searchisko.api.service.ProviderService.ProviderContentTypeInfo;
 import org.searchisko.api.util.SearchUtils;
 
 /**
@@ -69,7 +72,7 @@ public class IndexerRestService extends RestServiceBase {
 	@ProviderAllowed
 	public Response forceReindex(@PathParam("type") String type) throws ObjectNotFoundException {
 
-		Map<String, Object> ic = getIndexerConfiguration(type);
+		Map<String, Object> ic = getIndexerConfigurationWithManagePermissionCheck(type);
 
 		IndexerHandler ih = getIndexerHandler((String) ic.get(ProviderService.TYPE), type);
 
@@ -93,7 +96,7 @@ public class IndexerRestService extends RestServiceBase {
 	@ProviderAllowed
 	public Object getStatus(@PathParam("type") String type) throws ObjectNotFoundException {
 
-		Map<String, Object> ic = getIndexerConfiguration(type);
+		Map<String, Object> ic = getIndexerConfigurationWithManagePermissionCheck(type);
 
 		IndexerHandler ih = getIndexerHandler((String) ic.get(ProviderService.TYPE), type);
 
@@ -121,29 +124,28 @@ public class IndexerRestService extends RestServiceBase {
 	}
 
 	/**
-	 * Get indexer configuration for given content type with validations.
+	 * Get indexer configuration for given content type with validations and permission check.
 	 * 
 	 * @param contentType to get indexer configuration for.
 	 * @return indexer configuration structure, never null.
 	 * @throws ObjectNotFoundException if indexer configuration is not found for given content type
+	 * @throws NotAuthorizedException if user is not authorized
+	 * @throws NotAuthenticatedException if user is not authenticated
 	 */
-	protected Map<String, Object> getIndexerConfiguration(String contentType) throws ObjectNotFoundException {
-		if (contentType == null || contentType.isEmpty()) {
+	// TODO #77 UNIT TEST
+	protected Map<String, Object> getIndexerConfigurationWithManagePermissionCheck(String contentType)
+			throws ObjectNotFoundException {
+		if (contentType == null || SearchUtils.isBlank(contentType)) {
 			throw new RequiredFieldException("type");
 		}
 
-		Map<String, Object> provider = providerService.findProvider(authenticationUtilService
-				.getAuthenticatedProvider(securityContext));
-		if (provider == null) {
-			log.fine("Provider not found for currently authenticated user");
-			throw new BadFieldException("type");
+		ProviderContentTypeInfo typeInfo = providerService.findContentType(contentType);
+		if (typeInfo == null) {
+			throw new BadFieldException("type", "content type not found");
 		}
-		Map<String, Object> typeDef = ProviderService.extractContentType(provider, contentType);
-		if (typeDef == null) {
-			throw new BadFieldException("type");
-		}
+		authenticationUtilService.checkProviderManagementPermission(securityContext, typeInfo.getProviderName());
 
-		Map<String, Object> ic = ProviderService.extractIndexerConfiguration(typeDef, contentType);
+		Map<String, Object> ic = ProviderService.extractIndexerConfiguration(typeInfo.getTypeDef(), contentType);
 		if (ic == null) {
 			throw new ObjectNotFoundException("Indexer is not configured for content type " + contentType);
 		}

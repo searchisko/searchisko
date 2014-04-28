@@ -18,6 +18,7 @@ import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.searchisko.api.ContentObjectFields;
 import org.searchisko.api.service.ProviderService;
+import org.searchisko.api.service.ProviderServiceTest;
 import org.searchisko.api.service.SearchClientService;
 import org.searchisko.api.tasker.TaskExecutionContext;
 import org.searchisko.api.testtools.ESRealClientTestBase;
@@ -179,7 +180,8 @@ public class RenormalizeByEsValueTaskTest extends ESRealClientTestBase {
 		typeDef.put(ProviderService.INDEX, index);
 		index.put(ProviderService.NAME, indexName);
 		index.put(ProviderService.TYPE, typeName);
-		Mockito.when(tested.providerService.findContentType(sysContentType)).thenReturn(typeDef);
+		Mockito.when(tested.providerService.findContentType(sysContentType)).thenReturn(
+				ProviderServiceTest.createProviderContentTypeInfo(typeDef));
 		Mockito.when(tested.providerService.findContentType("tt2")).thenReturn(null);
 
 		Map<String, Object> providerDef = new HashMap<String, Object>();

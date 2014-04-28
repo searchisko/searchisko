@@ -19,6 +19,7 @@ import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.searchisko.api.service.ProviderService;
+import org.searchisko.api.service.ProviderServiceTest;
 import org.searchisko.api.service.SearchClientService;
 import org.searchisko.api.tasker.TaskExecutionContext;
 import org.searchisko.api.testtools.ESRealClientTestBase;
@@ -192,7 +193,8 @@ public class RenormalizeByEsLookedUpValuesTaskTest extends ESRealClientTestBase 
 
 		{
 			Map<String, Object> typeDef = new HashMap<String, Object>();
-			Set<String> ret = tested.takeLookedUpEsFields(typeDef, "mytype");
+			Set<String> ret = tested.takeLookedUpEsFields(ProviderServiceTest.createProviderContentTypeInfo(typeDef),
+					"mytype");
 			Assert.assertNotNull(ret);
 			Assert.assertTrue(ret.isEmpty());
 		}
@@ -203,7 +205,8 @@ public class RenormalizeByEsLookedUpValuesTaskTest extends ESRealClientTestBase 
 			tested.lookupIndex = "sys_projects";
 			tested.lookupType = "project";
 			tested.lookupField = "unknown";
-			Set<String> ret = tested.takeLookedUpEsFields(typeDef, "mytype");
+			Set<String> ret = tested.takeLookedUpEsFields(ProviderServiceTest.createProviderContentTypeInfo(typeDef),
+					"mytype");
 			Assert.assertNotNull(ret);
 			Assert.assertTrue(ret.isEmpty());
 		}
@@ -213,7 +216,8 @@ public class RenormalizeByEsLookedUpValuesTaskTest extends ESRealClientTestBase 
 			tested.lookupIndex = "sys_projects";
 			tested.lookupType = "project2";
 			tested.lookupField = "type_specific_code.jbossorg_jira";
-			Set<String> ret = tested.takeLookedUpEsFields(typeDef, "mytype");
+			Set<String> ret = tested.takeLookedUpEsFields(ProviderServiceTest.createProviderContentTypeInfo(typeDef),
+					"mytype");
 			Assert.assertNotNull(ret);
 			Assert.assertTrue(ret.isEmpty());
 		}
@@ -223,7 +227,8 @@ public class RenormalizeByEsLookedUpValuesTaskTest extends ESRealClientTestBase 
 			tested.lookupIndex = "sys_projects";
 			tested.lookupType = "project";
 			tested.lookupField = "type_specific_code.jbossorg_jira";
-			Set<String> ret = tested.takeLookedUpEsFields(typeDef, "mytype");
+			Set<String> ret = tested.takeLookedUpEsFields(ProviderServiceTest.createProviderContentTypeInfo(typeDef),
+					"mytype");
 			Assert.assertNotNull(ret);
 			Assert.assertEquals(1, ret.size());
 			Assert.assertTrue(ret.contains("project_key"));
@@ -234,7 +239,8 @@ public class RenormalizeByEsLookedUpValuesTaskTest extends ESRealClientTestBase 
 			tested.lookupIndex = "sys_contributors";
 			tested.lookupType = "contributor";
 			tested.lookupField = "email";
-			Set<String> ret = tested.takeLookedUpEsFields(typeDef, "mytype");
+			Set<String> ret = tested.takeLookedUpEsFields(ProviderServiceTest.createProviderContentTypeInfo(typeDef),
+					"mytype");
 			Assert.assertNotNull(ret);
 			Assert.assertEquals(4, ret.size());
 			Assert.assertTrue(ret.contains("reporter.email_address"));
@@ -248,7 +254,8 @@ public class RenormalizeByEsLookedUpValuesTaskTest extends ESRealClientTestBase 
 			tested.lookupIndex = "sys_roles";
 			tested.lookupType = "role";
 			tested.lookupField = "type_specific_code.jbossorg_blog";
-			Set<String> ret = tested.takeLookedUpEsFields(typeDef, "mytype");
+			Set<String> ret = tested.takeLookedUpEsFields(ProviderServiceTest.createProviderContentTypeInfo(typeDef),
+					"mytype");
 			Assert.assertNotNull(ret);
 			Assert.assertTrue(ret.isEmpty());
 		}
@@ -259,7 +266,8 @@ public class RenormalizeByEsLookedUpValuesTaskTest extends ESRealClientTestBase 
 			tested.lookupIndex = "sys_projects";
 			tested.lookupType = "project";
 			tested.lookupField = "type_specific_code.jbossorg_jira";
-			Set<String> ret = tested.takeLookedUpEsFields(typeDef, "mytype");
+			Set<String> ret = tested.takeLookedUpEsFields(ProviderServiceTest.createProviderContentTypeInfo(typeDef),
+					"mytype");
 			Assert.assertNotNull(ret);
 			Assert.assertEquals(5, ret.size());
 			Assert.assertTrue(ret.contains("project_key"));
@@ -273,7 +281,8 @@ public class RenormalizeByEsLookedUpValuesTaskTest extends ESRealClientTestBase 
 	private void configProviderServiceMock(RenormalizeByEsLookedUpValuesTask tested,
 			List<Map<String, Object>> preprocessorsDef) {
 		Map<String, Object> typeDef = TestUtils.loadJSONFromClasspathFile("/reindexer/typeDef_performTaskTest.json");
-		Mockito.when(tested.providerService.findContentType(sysContentType)).thenReturn(typeDef);
+		Mockito.when(tested.providerService.findContentType(sysContentType)).thenReturn(
+				ProviderServiceTest.createProviderContentTypeInfo(typeDef));
 		Mockito.when(tested.providerService.findContentType("tt2")).thenReturn(null);
 
 		Map<String, Object> providerDef = new HashMap<String, Object>();

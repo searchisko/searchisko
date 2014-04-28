@@ -136,22 +136,94 @@ public class ProviderService implements EntityService {
 	 * 'provider content type' identifier has to be system wide unique (so must be defined only for one provider)!
 	 * 
 	 * @param typeName <code>sys_content_type</code> to look for
-	 * @return content type configuration structure or <code>null</code> if not found
+	 * @return content type configuration info or <code>null</code> if not found
 	 * 
 	 * @see #parseTypeNameFromSysId(String)
 	 */
-	public Map<String, Object> findContentType(String typeName) {
-		// we do not cache here because listAllProviders() caches.
+	public ProviderContentTypeInfo findContentType(String typeName) {
+		if (SearchUtils.isBlank(typeName))
+			return null;
+		// we do not cache here because getAll() caches.
 		List<Map<String, Object>> allProviders = getAll();
 		if (allProviders != null) {
 			for (Map<String, Object> providerDef : allProviders) {
 				Map<String, Object> ct = extractContentType(providerDef, typeName);
 				if (ct != null) {
-					return ct;
+					return new ProviderContentTypeInfo(providerDef, typeName);
 				}
 			}
 		}
 		return null;
+	}
+
+	/**
+	 * Info about found provider content type.
+	 * 
+	 * @see ProviderService#findContentType(String)
+	 */
+	public static final class ProviderContentTypeInfo {
+		private Map<String, Object> providerDef;
+		private Map<String, Object> typeDef;
+		private String typeName;
+
+		public ProviderContentTypeInfo(Map<String, Object> providerDef, String typeName) {
+			if (providerDef == null)
+				throw new IllegalArgumentException("providerDef can't be null");
+
+			if (SearchUtils.isBlank(typeName)) {
+				throw new IllegalArgumentException("typeName can't be null nor empty");
+			}
+
+			typeDef = extractContentType(providerDef, typeName);
+			if (typeDef == null)
+				throw new IllegalArgumentException(typeName + " type must be in provider info passed in");
+
+			this.providerDef = providerDef;
+			this.typeName = typeName;
+		}
+
+		/**
+		 * Get complete provider configuration for provider the type is for.
+		 * 
+		 * @return provider info structure, never null
+		 */
+		public Map<String, Object> getProviderDef() {
+			return providerDef;
+		}
+
+		/**
+		 * Get name of provider the type is for.
+		 * 
+		 * @return provider name
+		 */
+		public String getProviderName() {
+			return (String) providerDef.get(NAME);
+		}
+
+		/**
+		 * Get name of type
+		 * 
+		 * @return name of type, never null or empty
+		 */
+		public String getTypeName() {
+			return typeName;
+		}
+
+		/**
+		 * Get type configuration structure
+		 * 
+		 * @return type info, never null
+		 */
+		public Map<String, Object> getTypeDef() {
+			return typeDef;
+		}
+
+		@Override
+		public String toString() {
+			return "ProviderContentTypeInfo [typeName=" + typeName + ", providerDef=" + providerDef + ", typeDef=" + typeDef
+					+ "]";
+		}
+
 	}
 
 	/**
@@ -395,6 +467,17 @@ public class ProviderService implements EntityService {
 	}
 
 	/**
+	 * Get preprocessors configuration from one <code>sys_content_type</code> configuration.
+	 * 
+	 * @param typeDef <code>sys_content_type</code> configuration
+	 * @param typeName <code>sys_content_type</code> name to be used for error messages
+	 * @return list of preprocessor configurations
+	 */
+	public static List<Map<String, Object>> extractPreprocessors(ProviderContentTypeInfo typeInfo, String typeName) {
+		return extractPreprocessors(typeInfo.getTypeDef(), typeName);
+	}
+
+	/**
 	 * Get search subsystem index name from one <code>sys_content_type</code> configuration structure.
 	 * 
 	 * @param typeDef <code>sys_content_type</code> configuration structure
@@ -417,6 +500,17 @@ public class ProviderService implements EntityService {
 			throw new SettingsException("Incorrect structure of 'index' configuration for sys_provider_type='" + typeName
 					+ "'. Contact administrators please.");
 		}
+	}
+
+	/**
+	 * Get search subsystem index name from one <code>sys_content_type</code> configuration.
+	 * 
+	 * @param typeInfo <code>sys_content_type</code> configuration info
+	 * @param typeName <code>sys_content_type</code> name to be used for error messages
+	 * @return search index name
+	 */
+	public static String extractIndexName(ProviderContentTypeInfo typeInfo, String typeName) {
+		return extractIndexName(typeInfo.getTypeDef(), typeName);
 	}
 
 	/**
@@ -457,6 +551,20 @@ public class ProviderService implements EntityService {
 	}
 
 	/**
+	 * Get array of names of search indices in search subsystem used for searching values for given
+	 * <code>sys_content_type</code>. Array or string with indices name is get from
+	 * {@value ProviderService#SEARCH_INDICES} config value if exists, if not then main index name is used, see
+	 * {@link #extractIndexName(Map, String)}.
+	 * 
+	 * @param typeInfo <code>sys_content_type</code> configuration
+	 * @param typeName <code>sys_content_type</code> name to be used for error messages
+	 * @return search index name
+	 */
+	public static String[] extractSearchIndices(ProviderContentTypeInfo typeInfo, String typeName) {
+		return extractSearchIndices(typeInfo.getTypeDef(), typeName);
+	}
+
+	/**
 	 * Get search subsystem type name from one <code>sys_content_type</code> configuration structure.
 	 * 
 	 * @param typeDef <code>sys_content_type</code> configuration structure
@@ -479,6 +587,17 @@ public class ProviderService implements EntityService {
 			throw new SettingsException("Incorrect structure of 'index' configuration for sys_provider_type='" + typeName
 					+ "'. Contact administrators please.");
 		}
+	}
+
+	/**
+	 * Get search subsystem type name from one <code>sys_content_type</code> configuration.
+	 * 
+	 * @param typeInfo <code>sys_content_type</code> configuration
+	 * @param typeName <code>sys_content_type</code> name to be used for error messages
+	 * @return search type name
+	 */
+	public static String extractIndexType(ProviderContentTypeInfo typeInfo, String typeName) {
+		return extractIndexType(typeInfo.getTypeDef(), typeName);
 	}
 
 	/**

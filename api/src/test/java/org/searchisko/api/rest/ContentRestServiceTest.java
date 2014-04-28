@@ -15,7 +15,6 @@ import java.util.logging.Logger;
 import javax.enterprise.event.Event;
 import javax.ws.rs.core.Response;
 
-import org.elasticsearch.common.settings.SettingsException;
 import org.hamcrest.CustomMatcher;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -27,6 +26,7 @@ import org.searchisko.api.rest.exception.BadFieldException;
 import org.searchisko.api.rest.exception.RequiredFieldException;
 import org.searchisko.api.rest.security.AuthenticationUtilService;
 import org.searchisko.api.service.ProviderService;
+import org.searchisko.api.service.ProviderServiceTest;
 import org.searchisko.api.testtools.ESRealClientTestBase;
 import org.searchisko.api.testtools.TestUtils;
 import org.searchisko.persistence.service.ContentPersistenceService;
@@ -515,7 +515,7 @@ public class ContentRestServiceTest extends ESRealClientTestBase {
 				Integer.class, String.class);
 	}
 
-	@Test(expected = SettingsException.class)
+	@Test(expected = RequiredFieldException.class)
 	public void getAllContent_ParamValidation_1() throws IOException, InterruptedException {
 		getTested(false).getAllContent(null, null, null, null);
 	}
@@ -693,7 +693,8 @@ public class ContentRestServiceTest extends ESRealClientTestBase {
 	 * @param tested
 	 */
 	protected void setupProviderServiceMock(ContentRestService tested) {
-		Mockito.when(tested.providerService.findContentType("invalid")).thenReturn(new HashMap<String, Object>());
+		Mockito.when(tested.providerService.findContentType("invalid")).thenReturn(
+				ProviderServiceTest.createProviderContentTypeInfo(new HashMap<String, Object>()));
 		Mockito.when(tested.providerService.findContentType("unknown")).thenReturn(null);
 		Mockito.when(tested.providerService.generateSysId(Mockito.anyString(), Mockito.anyString())).thenCallRealMethod();
 
@@ -705,7 +706,8 @@ public class ContentRestServiceTest extends ESRealClientTestBase {
 		typeDefKnown.put("input_preprocessors", PREPROCESSORS);
 		typeDefKnown.put(ProviderService.SYS_TYPE, "my_sys_type");
 		typeDefKnown.put(ProviderService.SYS_CONTENT_CONTENT_TYPE, "text/plain");
-		Mockito.when(tested.providerService.findContentType("known")).thenReturn(typeDefKnown);
+		Mockito.when(tested.providerService.findContentType("known")).thenReturn(
+				ProviderServiceTest.createProviderContentTypeInfo(typeDefKnown));
 
 		Map<String, Object> typeDefPersist = new HashMap<String, Object>();
 		Map<String, Object> typeDefPersistIndex = new HashMap<String, Object>();
@@ -715,7 +717,8 @@ public class ContentRestServiceTest extends ESRealClientTestBase {
 		typeDefPersist.put(ProviderService.SYS_TYPE, "my_sys_type");
 		typeDefPersist.put(ProviderService.PERSIST, "true");
 		typeDefPersist.put(ProviderService.SYS_CONTENT_CONTENT_TYPE, "text/plain");
-		when(tested.providerService.findContentType("persist")).thenReturn(typeDefPersist);
+		when(tested.providerService.findContentType("persist")).thenReturn(
+				ProviderServiceTest.createProviderContentTypeInfo(typeDefPersist));
 
 		Map<String, Object> typeDefSysContent = new HashMap<String, Object>();
 		Map<String, Object> typeDefSysContentIndex = new HashMap<String, Object>();
@@ -723,7 +726,8 @@ public class ContentRestServiceTest extends ESRealClientTestBase {
 		typeDefSysContentIndex.put("name", INDEX_NAME);
 		typeDefSysContentIndex.put("type", INDEX_TYPE);
 		typeDefSysContent.put(ProviderService.SYS_TYPE, "my_sys_type");
-		when(tested.providerService.findContentType("invalid-content-type")).thenReturn(typeDefSysContent);
+		when(tested.providerService.findContentType("invalid-content-type")).thenReturn(
+				ProviderServiceTest.createProviderContentTypeInfo(typeDefSysContent));
 
 		Map<String, Object> providerDef = new HashMap<String, Object>();
 		when(tested.providerService.findProvider("jbossorg")).thenReturn(providerDef);
