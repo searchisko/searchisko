@@ -265,7 +265,7 @@ Search contributions based on input parameters
 
 ###### Facets
 
-* using `facet` URL parameter you can specify name of [facet](http://www.elasticsearch.org/guide/en/elasticsearch/reference/0.90/search-facets.html) you want to include in response. This param can be used multiple times to get more facet data in the response. List of available facets is configurable (see [Management API](#managementapiconfiguration)). [Current configuration](https://github.com/searchisko/searchisko/blob/master/configuration/data/config/search_fulltext_facets_fields.json) enables the following facets:
+* `facet` URL parameter can be used to specify name of [facet](http://www.elasticsearch.org/guide/en/elasticsearch/reference/0.90/search-facets.html) you want to include in response. This param can be used multiple times to get more facet data in the response. List of available facets is configurable (see [Management API](#managementapiconfiguration)). [Current configuration](https://github.com/searchisko/searchisko/blob/master/configuration/data/config/search_fulltext_facets_fields.json) enables the following facets:
   * `top_contributors` - add [term facet][] for `sys_contributors` field.
   * `activity_dates_histogram` - add [date histogram facet][] for `sys_activity_dates` field.
   * `per_project_counts` - add [term facet][] for `sys_project` field.
