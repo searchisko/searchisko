@@ -46,7 +46,7 @@ public class ProviderRestServiceTest {
 	@InSequence(0)
 	public void assertNotAuthenticated(@ArquillianResource URL context) throws MalformedURLException {
 		// TEST: GET /provider
-		given().contentType(ContentType.JSON)
+		given().pathParam("id", "").contentType(ContentType.JSON)
 				.expect().statusCode(401)
 				.when().get(new URL(context, PROVIDER_REST_API).toExternalForm());
 
