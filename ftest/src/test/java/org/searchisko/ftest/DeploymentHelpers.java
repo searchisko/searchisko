@@ -35,6 +35,12 @@ public class DeploymentHelpers {
 
 	protected static Logger log = Logger.getLogger(DeploymentHelpers.class.getName());
 
+	public static final String DEFAULT_REST_VERSION = "v1/rest/";
+
+	public static final String DEFAULT_PROVIDER_NAME = "jbossorg";
+
+	public static final String DEFAULT_PROVIDER_PASSWORD= "jbossorgjbossorg";
+
 	public static Properties appProperties;
 
 	static {
@@ -81,7 +87,7 @@ public class DeploymentHelpers {
 		}
 
 
-		final WebArchive war = ShrinkWrap.create(WebArchive.class, "searchisko-contributorrestservice.war")
+		final WebArchive war = ShrinkWrap.create(WebArchive.class, "searchisko-ftest.war")
 				.addPackages(true, "org.searchisko.api")
 				.addPackages(true, "org.searchisko.contribprofile")
 				.addPackages(true, "org.searchisko.persistence")

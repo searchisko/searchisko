@@ -5,411 +5,221 @@
  */
 package org.searchisko.ftest;
 
+import com.jayway.restassured.http.ContentType;
+import org.apache.commons.codec.digest.DigestUtils;
+import org.jboss.arquillian.container.test.api.Deployment;
+import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit.InSequence;
+import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.searchisko.api.service.ProviderService;
+
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
+
+import static com.jayway.restassured.RestAssured.given;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.nullValue;
+
 /**
- * Unit test for {@link ProviderRestService}.
+ * Integration test for /provider REST API.
  *
- * @author Vlastimil Elias (velias at redhat dot com)
+ * @author Libor Krzyzanek
+ * @see org.searchisko.api.rest.ProviderRestService
  */
+@RunWith(Arquillian.class)
 public class ProviderRestServiceTest {
 
-//	@Test
-//	public void init() {
-//		ProviderRestService tested = new ProviderRestService();
-//		tested.log = Logger.getLogger("testlogger");
-//		Assert.assertNull(tested.entityService);
-//		tested.providerService = Mockito.mock(ProviderService.class);
-//		// EntityService es = Mockito.mock(ProviderService.class);
-//		Assert.assertNull(tested.entityService);
-//		tested.init();
-//		// Assert.assertEquals(es, tested.entityService);
-//	}
-//
-//	@Test
-//	public void getAll() {
-//		ProviderRestService tested = getTested();
-//
-//		// case - OK
-//		ESDataOnlyResponse res = new ESDataOnlyResponse(null);
-//		Mockito.when(tested.entityService.getAll(10, 12, ProviderRestService.FIELDS_TO_REMOVE)).thenReturn(res);
-//		Assert.assertEquals(res, tested.getAll(10, 12));
-//		Mockito.verify(tested.entityService).getAll(10, 12, ProviderRestService.FIELDS_TO_REMOVE);
-//		Mockito.verifyNoMoreInteractions(tested.entityService);
-//
-//		// case - OK, null returned
-//		Mockito.reset(tested.entityService);
-//		Mockito.when(tested.entityService.getAll(10, 12, ProviderRestService.FIELDS_TO_REMOVE)).thenReturn(null);
-//		Assert.assertEquals(null, tested.getAll(10, 12));
-//		Mockito.verify(tested.entityService).getAll(10, 12, ProviderRestService.FIELDS_TO_REMOVE);
-//		Mockito.verifyNoMoreInteractions(tested.entityService);
-//
-//		// case - error
-//		Mockito.reset(tested.entityService);
-//		Mockito.when(tested.entityService.getAll(10, 12, ProviderRestService.FIELDS_TO_REMOVE)).thenThrow(
-//				new RuntimeException("my exception"));
-//		TestUtils.assertResponseStatus(tested.getAll(10, 12), Status.INTERNAL_SERVER_ERROR);
-//		Mockito.verify(tested.entityService).getAll(10, 12, ProviderRestService.FIELDS_TO_REMOVE);
-//		Mockito.verifyNoMoreInteractions(tested.entityService);
-//	}
-//
-//	@SuppressWarnings("unchecked")
-//	@Test
-//	public void get() {
-//		ProviderRestService tested = getTested();
-//
-//		// input parameter is bad
-//		{
-//			TestUtils.assertResponseStatus(tested.get(""), Status.BAD_REQUEST);
-//		}
-//
-//		// case entity not found
-//		{
-//			Mockito.when(tested.entityService.get("ahoj")).thenReturn(null);
-//			TestUtils.assertResponseStatus(tested.get("ahoj"), Status.NOT_FOUND);
-//		}
-//
-//		// case - entity found but authenticated provider has different name and is not superprovider
-//		{
-//			Mockito.reset(tested.entityService, tested.providerService, tested.securityService);
-//			Map<String, Object> m = new HashMap<String, Object>();
-//			m.put(ProviderService.NAME, "ahoj");
-//			Mockito.when(tested.entityService.get("ahoj")).thenReturn(m);
-//			Mockito.when(tested.providerService.isSuperProvider("aa")).thenReturn(false);
-//			TestUtils.assertResponseStatus(tested.get("ahoj"), Status.FORBIDDEN);
-//		}
-//
-//		// case - entity found, authenticated provider has different name but is superprovider
-//		{
-//			Mockito.reset(tested.entityService, tested.providerService, tested.securityService);
-//			Map<String, Object> m = new HashMap<String, Object>();
-//			m.put(ProviderService.NAME, "ahoj");
-//			m.put(ProviderService.PASSWORD_HASH, "sdasdasda");
-//			Mockito.when(tested.entityService.get("ahoj")).thenReturn(m);
-//			Mockito.when(tested.providerService.isSuperProvider("aa")).thenReturn(true);
-//			Map<String, Object> r = (Map<String, Object>) tested.get("ahoj");
-//			Assert.assertEquals(m, r);
-//			Assert.assertNull("Password hash must be removed!", r.get(ProviderService.PASSWORD_HASH));
-//		}
-//
-//		// case - entity found, authenticated provider has same name and is not superprovider
-//		{
-//			Mockito.reset(tested.entityService, tested.providerService, tested.securityService);
-//			Map<String, Object> m = new HashMap<String, Object>();
-//			m.put(ProviderService.NAME, "aa");
-//			m.put(ProviderService.PASSWORD_HASH, "sdasdasda");
-//			Mockito.when(tested.entityService.get("aa")).thenReturn(m);
-//			Mockito.when(tested.providerService.isSuperProvider("aa")).thenReturn(false);
-//			Map<String, Object> r = (Map<String, Object>) tested.get("aa");
-//			Assert.assertEquals(m, r);
-//			Assert.assertNull("Password hash must be removed!", r.get(ProviderService.PASSWORD_HASH));
-//		}
-//	}
-//
-//	@Test
-//	public void changePassword() {
-//		ProviderRestService tested = getTested();
-//
-//		// input parameter is bad
-//		{
-//			TestUtils.assertResponseStatus(tested.changePassword(null, "pwd"), Status.BAD_REQUEST);
-//			TestUtils.assertResponseStatus(tested.changePassword("", "pwd"), Status.BAD_REQUEST);
-//			TestUtils.assertResponseStatus(tested.changePassword("aa", null), Status.BAD_REQUEST);
-//			TestUtils.assertResponseStatus(tested.changePassword("aa", ""), Status.BAD_REQUEST);
-//			TestUtils.assertResponseStatus(tested.changePassword("aa", "   "), Status.BAD_REQUEST);
-//			TestUtils.assertResponseStatus(tested.changePassword("aa", "\n   \n"), Status.BAD_REQUEST);
-//			TestUtils.assertResponseStatus(tested.changePassword(null, null), Status.BAD_REQUEST);
-//			TestUtils.assertResponseStatus(tested.changePassword("", ""), Status.BAD_REQUEST);
-//		}
-//
-//		// case entity not found
-//		{
-//			Mockito.when(tested.entityService.get("ahoj")).thenReturn(null);
-//			TestUtils.assertResponseStatus(tested.changePassword("ahoj", "pwd"), Status.NOT_FOUND);
-//		}
-//
-//		// case - provider entity found and is same as caller, caller is not superprovider
-//		{
-//			Mockito.reset(tested.entityService, tested.providerService, tested.securityService);
-//			Map<String, Object> m = new HashMap<String, Object>();
-//			m.put(ProviderService.NAME, "aa");
-//			Mockito.when(tested.entityService.get("aa")).thenReturn(m);
-//			Mockito.when(tested.providerService.isSuperProvider("aa")).thenReturn(false);
-//			Mockito.when(tested.securityService.createPwdHash("aa", "pwd")).thenReturn("pwdhash");
-//			// we also check input password is trimmed!
-//			TestUtils.assertResponseStatus(tested.changePassword("aa", "\n pwd \n"), Status.OK);
-//			Mockito.verify(tested.entityService).update("aa", m);
-//			Assert.assertEquals("pwdhash", m.get(ProviderService.PASSWORD_HASH));
-//		}
-//
-//		// case - provider entity found but is different from caller, caller is not superprovider
-//		{
-//			Mockito.reset(tested.entityService, tested.providerService, tested.securityService);
-//			Map<String, Object> m = new HashMap<String, Object>();
-//			m.put(ProviderService.NAME, "ahoj");
-//			Mockito.when(tested.entityService.get("ahoj")).thenReturn(m);
-//			Mockito.when(tested.providerService.isSuperProvider("aa")).thenReturn(false);
-//			TestUtils.assertResponseStatus(tested.changePassword("ahoj", "pwd"), Status.FORBIDDEN);
-//			Mockito.verify(tested.entityService).get("ahoj");
-//			Mockito.verifyNoMoreInteractions(tested.entityService);
-//		}
-//
-//		// case - provider entity found but is different from caller, caller is superprovider
-//		{
-//			Mockito.reset(tested.entityService, tested.providerService, tested.securityService);
-//			Map<String, Object> m = new HashMap<String, Object>();
-//			m.put(ProviderService.NAME, "ahoj");
-//			Mockito.when(tested.entityService.get("ahoj")).thenReturn(m);
-//			Mockito.when(tested.providerService.isSuperProvider("aa")).thenReturn(true);
-//			Mockito.when(tested.securityService.createPwdHash("ahoj", "pwd")).thenReturn("pwdhash");
-//			TestUtils.assertResponseStatus(tested.changePassword("ahoj", "pwd"), Status.OK);
-//			Mockito.verify(tested.entityService).update("ahoj", m);
-//			Assert.assertEquals("pwdhash", m.get(ProviderService.PASSWORD_HASH));
-//		}
-//	}
-//
-//	@SuppressWarnings("unchecked")
-//	@Test
-//	public void create_id() {
-//		ProviderRestService tested = getTested();
-//
-//		// case - invalid id parameter
-//		{
-//			Map<String, Object> m = new HashMap<String, Object>();
-//			m.put(ProviderService.NAME, "myname");
-//			TestUtils.assertResponseStatus(tested.create(null, m), Status.BAD_REQUEST);
-//			TestUtils.assertResponseStatus(tested.create("", m), Status.BAD_REQUEST);
-//		}
-//
-//		// case - invalid name field in input data
-//		{
-//			Map<String, Object> m = new HashMap<String, Object>();
-//			TestUtils.assertResponseStatus(tested.create("myname", m), Status.BAD_REQUEST);
-//			m.put(ProviderService.NAME, "");
-//			TestUtils.assertResponseStatus(tested.create("myname", m), Status.BAD_REQUEST);
-//		}
-//
-//		// case - name field in data is not same as id parameter
-//		{
-//			Map<String, Object> m = new HashMap<String, Object>();
-//			m.put(ProviderService.NAME, "myanothername");
-//			TestUtils.assertResponseStatus(tested.create("myname", m), Status.BAD_REQUEST);
-//		}
-//
-//		// case - OK, no previously existing entity so new pwd hash used
-//		{
-//			Map<String, Object> m = new HashMap<String, Object>();
-//			m.put(ProviderService.NAME, "myname");
-//			m.put(ProviderService.PASSWORD_HASH, "pwhs");
-//			Mockito.when(tested.entityService.get("myname")).thenReturn(null);
-//			Map<String, Object> ret = (Map<String, Object>) tested.create("myname", m);
-//			Assert.assertEquals("myname", ret.get("id"));
-//			Assert.assertEquals("pwhs", m.get(ProviderService.PASSWORD_HASH));
-//			Assert.assertEquals("myname", m.get(ProviderService.NAME));
-//			Mockito.verify(tested.providerService).create("myname", m);
-//			Mockito.verify(tested.providerService).get("myname");
-//			Mockito.verifyNoMoreInteractions(tested.entityService);
-//		}
-//
-//		// case - OK, previously existing entity without pwd hash, so new pwd hash used
-//		{
-//			Mockito.reset(tested.providerService);
-//			Map<String, Object> m = new HashMap<String, Object>();
-//			m.put(ProviderService.NAME, "myname");
-//			m.put(ProviderService.PASSWORD_HASH, "pwhs");
-//			Mockito.when(tested.entityService.get("12")).thenReturn(new HashMap<String, Object>());
-//			Map<String, Object> ret = (Map<String, Object>) tested.create("myname", m);
-//			Assert.assertEquals("myname", ret.get("id"));
-//			Assert.assertEquals("pwhs", m.get(ProviderService.PASSWORD_HASH));
-//			Assert.assertEquals("myname", m.get(ProviderService.NAME));
-//			Mockito.verify(tested.providerService).create("myname", m);
-//			Mockito.verify(tested.providerService).get("myname");
-//			Mockito.verifyNoMoreInteractions(tested.entityService);
-//		}
-//
-//		// case - OK, previously existing entity with pwd hash, so old pwd hash preserved
-//		{
-//			Mockito.reset(tested.providerService);
-//			Map<String, Object> m = new HashMap<String, Object>();
-//			m.put(ProviderService.NAME, "myname");
-//			m.put(ProviderService.PASSWORD_HASH, "pwhs");
-//			Map<String, Object> entityOld = new HashMap<String, Object>();
-//			entityOld.put(ProviderService.PASSWORD_HASH, "pwhsold");
-//			entityOld.put(ProviderService.NAME, "myname");
-//			Mockito.when(tested.providerService.get("myname")).thenReturn(entityOld);
-//			Map<String, Object> ret = (Map<String, Object>) tested.create("myname", m);
-//			Assert.assertEquals("myname", ret.get("id"));
-//			Assert.assertEquals("pwhsold", m.get(ProviderService.PASSWORD_HASH));
-//			Assert.assertEquals("myname", m.get(ProviderService.NAME));
-//			Mockito.verify(tested.providerService).create("myname", m);
-//			Mockito.verify(tested.providerService).get("myname");
-//			Mockito.verifyNoMoreInteractions(tested.entityService);
-//		}
-//
-//		// case - OK, previously existing entity with pwd hash, so old pwd hash preserved. new entity without pwd hash
-//		{
-//			Mockito.reset(tested.providerService);
-//			Map<String, Object> m = new HashMap<String, Object>();
-//			m.put(ProviderService.NAME, "myname");
-//			Map<String, Object> entityOld = new HashMap<String, Object>();
-//			entityOld.put(ProviderService.PASSWORD_HASH, "pwhsold");
-//			entityOld.put(ProviderService.NAME, "myname");
-//			Mockito.when(tested.providerService.get("myname")).thenReturn(entityOld);
-//			Map<String, Object> ret = (Map<String, Object>) tested.create("myname", m);
-//			Assert.assertEquals("myname", ret.get("id"));
-//			Assert.assertEquals("pwhsold", m.get(ProviderService.PASSWORD_HASH));
-//			Assert.assertEquals("myname", m.get(ProviderService.NAME));
-//			Mockito.verify(tested.providerService).create("myname", m);
-//			Mockito.verify(tested.providerService).get("myname");
-//			Mockito.verifyNoMoreInteractions(tested.entityService);
-//		}
-//
-//		// case - error
-//		{
-//			Mockito.reset(tested.providerService);
-//			Map<String, Object> m = new HashMap<String, Object>();
-//			m.put(ProviderService.NAME, "myname");
-//			Mockito.doThrow(new RuntimeException("my exception")).when(tested.providerService).create("myname", m);
-//			TestUtils.assertResponseStatus(tested.create("myname", m), Status.INTERNAL_SERVER_ERROR);
-//			Mockito.verify(tested.providerService).get("myname");
-//			Mockito.verify(tested.providerService).create("myname", m);
-//			Mockito.verifyNoMoreInteractions(tested.entityService);
-//		}
-//	}
-//
-//	@SuppressWarnings("unchecked")
-//	@Test
-//	public void create_noid() {
-//		ProviderRestService tested = getTested();
-//
-//		// case - invalid name field in input data
-//		{
-//			Map<String, Object> m = new HashMap<String, Object>();
-//			TestUtils.assertResponseStatus(tested.create(m), Status.BAD_REQUEST);
-//			m.put(ProviderService.NAME, "");
-//			TestUtils.assertResponseStatus(tested.create(m), Status.BAD_REQUEST);
-//		}
-//
-//		// case - OK, no previously existing entity so new pwd hash used
-//		{
-//			Map<String, Object> m = new HashMap<String, Object>();
-//			m.put(ProviderService.NAME, "myname");
-//			m.put(ProviderService.PASSWORD_HASH, "pwhs");
-//			Mockito.when(tested.entityService.get("myname")).thenReturn(null);
-//			Map<String, Object> ret = (Map<String, Object>) tested.create(m);
-//			Assert.assertEquals("myname", ret.get("id"));
-//			Assert.assertEquals("pwhs", m.get(ProviderService.PASSWORD_HASH));
-//			Assert.assertEquals("myname", m.get(ProviderService.NAME));
-//			Mockito.verify(tested.providerService).create("myname", m);
-//			Mockito.verify(tested.providerService).get("myname");
-//			Mockito.verifyNoMoreInteractions(tested.entityService);
-//		}
-//
-//		// case - OK, previously existing entity without pwd hash, so new pwd hash used
-//		{
-//			Mockito.reset(tested.providerService);
-//			Map<String, Object> m = new HashMap<String, Object>();
-//			m.put(ProviderService.NAME, "myname");
-//			m.put(ProviderService.PASSWORD_HASH, "pwhs");
-//			Mockito.when(tested.entityService.get("12")).thenReturn(new HashMap<String, Object>());
-//			Map<String, Object> ret = (Map<String, Object>) tested.create(m);
-//			Assert.assertEquals("myname", ret.get("id"));
-//			Assert.assertEquals("pwhs", m.get(ProviderService.PASSWORD_HASH));
-//			Assert.assertEquals("myname", m.get(ProviderService.NAME));
-//			Mockito.verify(tested.providerService).create("myname", m);
-//			Mockito.verify(tested.providerService).get("myname");
-//			Mockito.verifyNoMoreInteractions(tested.entityService);
-//		}
-//
-//		// case - OK, previously existing entity with pwd hash, so old pwd hash preserved
-//		{
-//			Mockito.reset(tested.providerService);
-//			Map<String, Object> m = new HashMap<String, Object>();
-//			m.put(ProviderService.NAME, "myname");
-//			m.put(ProviderService.PASSWORD_HASH, "pwhs");
-//			Map<String, Object> entityOld = new HashMap<String, Object>();
-//			entityOld.put(ProviderService.PASSWORD_HASH, "pwhsold");
-//			entityOld.put(ProviderService.NAME, "myname");
-//			Mockito.when(tested.providerService.get("myname")).thenReturn(entityOld);
-//			Map<String, Object> ret = (Map<String, Object>) tested.create(m);
-//			Assert.assertEquals("myname", ret.get("id"));
-//			Assert.assertEquals("pwhsold", m.get(ProviderService.PASSWORD_HASH));
-//			Assert.assertEquals("myname", m.get(ProviderService.NAME));
-//			Mockito.verify(tested.providerService).create("myname", m);
-//			Mockito.verify(tested.providerService).get("myname");
-//			Mockito.verifyNoMoreInteractions(tested.entityService);
-//		}
-//
-//		// case - OK, previously existing entity with pwd hash, so old pwd hash preserved. new entity without pwd hash
-//		{
-//			Mockito.reset(tested.providerService);
-//			Map<String, Object> m = new HashMap<String, Object>();
-//			m.put(ProviderService.NAME, "myname");
-//			Map<String, Object> entityOld = new HashMap<String, Object>();
-//			entityOld.put(ProviderService.PASSWORD_HASH, "pwhsold");
-//			entityOld.put(ProviderService.NAME, "myname");
-//			Mockito.when(tested.providerService.get("myname")).thenReturn(entityOld);
-//			Map<String, Object> ret = (Map<String, Object>) tested.create(m);
-//			Assert.assertEquals("myname", ret.get("id"));
-//			Assert.assertEquals("pwhsold", m.get(ProviderService.PASSWORD_HASH));
-//			Assert.assertEquals("myname", m.get(ProviderService.NAME));
-//			Mockito.verify(tested.providerService).create("myname", m);
-//			Mockito.verify(tested.providerService).get("myname");
-//			Mockito.verifyNoMoreInteractions(tested.providerService);
-//		}
-//
-//		// case - error
-//		{
-//			Mockito.reset(tested.providerService);
-//			Map<String, Object> m = new HashMap<String, Object>();
-//			m.put(ProviderService.NAME, "myname");
-//			Mockito.doThrow(new RuntimeException("my exception")).when(tested.providerService).create("myname", m);
-//			TestUtils.assertResponseStatus(tested.create(m), Status.INTERNAL_SERVER_ERROR);
-//			Mockito.verify(tested.providerService).get("myname");
-//			Mockito.verify(tested.providerService).create("myname", m);
-//			Mockito.verifyNoMoreInteractions(tested.providerService);
-//		}
-//	}
-//
-//	@Test
-//	public void getAll_permissions() {
-//		TestUtils.assertPermissionSuperProvider(ProviderRestService.class, "getAll", Integer.class, Integer.class);
-//	}
-//
-//	@Test
-//	public void get_permissions() {
-//		TestUtils.assertPermissionProvider(ProviderRestService.class, "get", String.class);
-//	}
-//
-//	@Test
-//	public void create_permissions() {
-//		TestUtils.assertPermissionSuperProvider(ProviderRestService.class, "create", String.class, Map.class);
-//		TestUtils.assertPermissionSuperProvider(ProviderRestService.class, "create", Map.class);
-//	}
-//
-//	@Test
-//	public void delete_permissions() {
-//		TestUtils.assertPermissionSuperProvider(ProviderRestService.class, "delete", String.class);
-//	}
-//
-//	@Test
-//	public void changePassword_permissions() {
-//		TestUtils.assertPermissionProvider(ProviderRestService.class, "changePassword", String.class, String.class);
-//	}
-//
-//	protected ProviderRestService getTested() {
-//		ProviderRestService tested = new ProviderRestService();
-//		RestEntityServiceBaseTest.mockLogger(tested);
-//		tested.providerService = Mockito.mock(ProviderService.class);
-//		tested.setEntityService(Mockito.mock(ProviderService.class));
-//		tested.securityService = Mockito.mock(SecurityService.class);
-//		tested.securityContext = Mockito.mock(SecurityContext.class);
-//		Mockito.when(tested.securityContext.getUserPrincipal()).thenReturn(new Principal() {
-//
-//			@Override
-//			public String getName() {
-//				return "aa";
-//			}
-//		});
-//		return tested;
-//	}
+	public static final String PROVIDER_REST_API = DeploymentHelpers.DEFAULT_REST_VERSION + "provider/{id}";
 
+	@Deployment(testable = false)
+	public static WebArchive createDeployment() throws IOException {
+		return DeploymentHelpers.createDeployment();
+	}
+
+	@Test
+	@InSequence(0)
+	public void assertNotAuthenticated(@ArquillianResource URL context) throws MalformedURLException {
+		// TEST: GET /provider
+		given().contentType(ContentType.JSON)
+				.expect().statusCode(401)
+				.when().get(new URL(context, PROVIDER_REST_API).toExternalForm());
+
+		// TEST: GET /provider/jbossorg
+		given().pathParam("id", DeploymentHelpers.DEFAULT_PROVIDER_NAME).contentType(ContentType.JSON)
+				.expect().statusCode(401)
+				.when().get(new URL(context, PROVIDER_REST_API).toExternalForm());
+
+		// TEST: POST /provider
+		given().contentType(ContentType.JSON)
+				.body("")
+				.expect().statusCode(401)
+				.when().post(new URL(context, PROVIDER_REST_API).toExternalForm());
+
+		// TEST: POST /provider/test
+		given().pathParam("id", "test").contentType(ContentType.JSON)
+				.body("")
+				.expect().statusCode(401)
+				.when().post(new URL(context, PROVIDER_REST_API).toExternalForm());
+
+		// TEST: DELETE /provider/test
+		given().pathParam("id", DeploymentHelpers.DEFAULT_PROVIDER_NAME).contentType(ContentType.JSON)
+				.body("")
+				.expect().statusCode(401)
+				.when().delete(new URL(context, PROVIDER_REST_API).toExternalForm());
+	}
+
+	@Test
+	@InSequence(10)
+	public void assertGetAllProviders(@ArquillianResource URL context) throws MalformedURLException {
+		given().pathParam("id", "").contentType(ContentType.JSON)
+				.auth().basic(DeploymentHelpers.DEFAULT_PROVIDER_NAME, DeploymentHelpers.DEFAULT_PROVIDER_PASSWORD)
+				.expect()
+				.log().ifError()
+				.statusCode(200)
+				.body("hits[0].id", is("jbossorg"))
+				.body("hits[0].data.name", is("jbossorg"))
+				.body("hits[0].data.super_provider", is(true))
+				.body("hits[0].data." + ProviderService.PASSWORD_HASH, nullValue())
+				.when().get(new URL(context, PROVIDER_REST_API).toExternalForm());
+	}
+
+	@Test
+	@InSequence(11)
+	public void assertGetDefaultProvider(@ArquillianResource URL context) throws MalformedURLException {
+		// TEST: Correct ID
+		given().pathParam("id", DeploymentHelpers.DEFAULT_PROVIDER_NAME).contentType(ContentType.JSON)
+				.auth().basic(DeploymentHelpers.DEFAULT_PROVIDER_NAME, DeploymentHelpers.DEFAULT_PROVIDER_PASSWORD)
+				.expect()
+				.log().ifError()
+				.statusCode(200)
+				.body("name", is("jbossorg"))
+				.body("super_provider", is(true))
+				.body(ProviderService.PASSWORD_HASH, nullValue())
+				.when().get(new URL(context, PROVIDER_REST_API).toExternalForm());
+
+		// TEST: Invalid ID
+		given().pathParam("id", "invalid-id").contentType(ContentType.JSON).auth().basic(DeploymentHelpers.DEFAULT_PROVIDER_NAME, DeploymentHelpers.DEFAULT_PROVIDER_PASSWORD)
+				.expect()
+				.statusCode(404)
+				.when().get(new URL(context, PROVIDER_REST_API).toExternalForm());
+	}
+
+
+	final String name = "provider-test";
+	final String pwd = "pwd1";
+
+	@Test
+	@InSequence(20)
+	public void assertValidateNewProvider(@ArquillianResource URL context) throws MalformedURLException {
+		// TEST: Missing params in body
+		given().pathParam("id", "").contentType(ContentType.JSON)
+				.body("")
+				.auth().basic(DeploymentHelpers.DEFAULT_PROVIDER_NAME, DeploymentHelpers.DEFAULT_PROVIDER_PASSWORD)
+				.expect()
+				.statusCode(400)
+				.when().post(new URL(context, PROVIDER_REST_API).toExternalForm());
+
+	}
+
+	@Test
+	@InSequence(21)
+	public void assertNewProvider(@ArquillianResource URL context) throws MalformedURLException {
+		final Map<String, Object> params = new HashMap<>();
+		params.put(ProviderService.NAME, name);
+		// See SecurityService#createPwdHash
+		params.put(ProviderService.PASSWORD_HASH, DigestUtils.shaHex(pwd + name));
+
+		// TEST: Ensure that provider doesn't exist
+		given().pathParam("id", name).contentType(ContentType.JSON)
+				.auth().basic(DeploymentHelpers.DEFAULT_PROVIDER_NAME, DeploymentHelpers.DEFAULT_PROVIDER_PASSWORD)
+				.expect()
+				.statusCode(404)
+				.when().get(new URL(context, PROVIDER_REST_API).toExternalForm());
+
+
+		// TEST: New Provider
+		given().pathParam("id", name).contentType(ContentType.JSON)
+				.auth().basic(DeploymentHelpers.DEFAULT_PROVIDER_NAME, DeploymentHelpers.DEFAULT_PROVIDER_PASSWORD)
+				.body(params)
+				.expect()
+				.log().ifError()
+				.statusCode(200)
+				.body("id", is(name))
+				.when().post(new URL(context, PROVIDER_REST_API).toExternalForm());
+
+		// TEST: Get provider back
+		given().pathParam("id", name).contentType(ContentType.JSON)
+				.auth().basic(name, pwd)
+				.expect()
+				.log().ifError()
+				.statusCode(200)
+				.body("name", is(name))
+				.body("super_provider", nullValue())
+				.body(ProviderService.PASSWORD_HASH, nullValue())
+				.when().get(new URL(context, PROVIDER_REST_API).toExternalForm());
+
+		// TEST: Get different provider
+		given().pathParam("id", DeploymentHelpers.DEFAULT_PROVIDER_NAME).contentType(ContentType.JSON)
+				.auth().basic(name, pwd)
+				.expect()
+				.statusCode(403)
+				.when().get(new URL(context, PROVIDER_REST_API).toExternalForm());
+	}
+
+	final String newPwd = "password-new1";
+
+	@Test
+	@InSequence(22)
+	public void assertChangePassword(@ArquillianResource URL context) throws MalformedURLException {
+		// TEST: New Provider
+		given().pathParam("id", name).contentType(ContentType.JSON)
+				.auth().basic(name, pwd)
+				.body(newPwd)
+				.expect()
+				.log().ifError()
+				.statusCode(200)
+				.when().post(new URL(context, PROVIDER_REST_API + "/password").toExternalForm());
+
+		// TEST: New Password
+		given().pathParam("id", name).contentType(ContentType.JSON)
+				.auth().basic(name, newPwd)
+				.expect()
+				.log().ifError()
+				.statusCode(200)
+				.body("name", is(name))
+				.body("super_provider", nullValue())
+				.body(ProviderService.PASSWORD_HASH, nullValue())
+				.when().get(new URL(context, PROVIDER_REST_API).toExternalForm());
+
+		// TEST: old Password
+		given().pathParam("id", name).contentType(ContentType.JSON)
+				.auth().basic(name, pwd)
+				.expect()
+				.statusCode(401)
+				.when().get(new URL(context, PROVIDER_REST_API).toExternalForm());
+
+	}
+
+	@Test
+	@InSequence(30)
+	public void assertDelete(@ArquillianResource URL context) throws MalformedURLException {
+		given().pathParam("id", name).contentType(ContentType.JSON)
+				.auth().basic(DeploymentHelpers.DEFAULT_PROVIDER_NAME, DeploymentHelpers.DEFAULT_PROVIDER_PASSWORD)
+				.expect()
+				.log().ifError()
+				.statusCode(200)
+				.when().delete(new URL(context, PROVIDER_REST_API).toExternalForm());
+
+		given().pathParam("id", name).contentType(ContentType.JSON)
+				.auth().basic(DeploymentHelpers.DEFAULT_PROVIDER_NAME, DeploymentHelpers.DEFAULT_PROVIDER_PASSWORD)
+				.expect()
+				.statusCode(404)
+				.when().get(new URL(context, PROVIDER_REST_API).toExternalForm());
+	}
 }
