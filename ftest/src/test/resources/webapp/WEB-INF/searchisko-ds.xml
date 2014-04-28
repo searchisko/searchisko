@@ -22,7 +22,7 @@
     <datasource jndi-name="java:jboss/datasources/SearchiskoDS"
                 pool-name="searchisko" enabled="true"
                 use-java-context="true">
-        <connection-url>jdbc:h2:mem:searchisko;DB_CLOSE_DELAY=-1</connection-url>
+        <connection-url>jdbc:h2:mem:searchisko-ftest</connection-url>
         <driver>h2</driver>
         <security>
             <user-name>sa</user-name>
