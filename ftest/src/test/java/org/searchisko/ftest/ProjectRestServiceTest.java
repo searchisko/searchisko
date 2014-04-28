@@ -5,169 +5,160 @@
  */
 package org.searchisko.ftest;
 
+import com.jayway.restassured.http.ContentType;
+import org.jboss.arquillian.container.test.api.Deployment;
+import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit.InSequence;
+import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.junit.Ignore;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
+
+import static com.jayway.restassured.RestAssured.given;
+import static org.hamcrest.Matchers.*;
+
 /**
- * Unit test for {@link ProjectRestService}
+ * Integration tests for {@link org.searchisko.api.rest.ProjectRestService} REST API
+ * <p/>
+ * see http://docs.jbossorg.apiary.io/#managementapiprojects
  *
- * @author Vlastimil Elias (velias at redhat dot com)
+ * @author Libor Krzyzanek
+ * @see org.searchisko.api.rest.ProjectRestService
  */
+@RunWith(Arquillian.class)
 public class ProjectRestServiceTest {
 
-//    @Test
-//    public void init() {
-//        ProjectRestService tested = new ProjectRestService();
-//        Assert.assertNull(tested.entityService);
-//        tested.projectService = Mockito.mock(EntityService.class);
-//        Assert.assertNull(tested.entityService);
-//        tested.init();
-//        Assert.assertEquals(tested.projectService, tested.entityService);
-//    }
-//
-//    @Test
-//    public void getAll() {
-//        ProjectRestService tested = getTested();
-//
-//        // case - OK
-//        ESDataOnlyResponse res = new ESDataOnlyResponse(null);
-//        Mockito.when(tested.entityService.getAll(10, 12, tested.fieldsToRemove)).thenReturn(res);
-//        Assert.assertEquals(res, tested.getAll(10, 12));
-//
-//        // case - error
-//        Mockito.reset(tested.entityService);
-//        Mockito.when(tested.entityService.getAll(10, 12, tested.fieldsToRemove)).thenThrow(
-//                new RuntimeException("my exception"));
-//        TestUtils.assertResponseStatus(tested.getAll(10, 12), Status.INTERNAL_SERVER_ERROR);
-//    }
-//
-//    @Test
-//    public void get() {
-//        ProjectRestService tested = getTested();
-//
-//        // case - OK
-//        Map<String, Object> m = new HashMap<String, Object>();
-//        Mockito.when(tested.entityService.get("10")).thenReturn(m);
-//        Assert.assertEquals(m, tested.get("10"));
-//
-//        // case - error
-//        Mockito.reset(tested.entityService);
-//        Mockito.when(tested.entityService.get("10")).thenThrow(new RuntimeException("my exception"));
-//        TestUtils.assertResponseStatus(tested.get("10"), Status.INTERNAL_SERVER_ERROR);
-//    }
-//
-//    @SuppressWarnings("unchecked")
-//    @Test
-//    public void create_id() {
-//        ProjectRestService tested = getTested();
-//
-//        // case - invalid id parameter
-//        {
-//            Map<String, Object> m = new HashMap<String, Object>();
-//            m.put(ProjectService.CODE, "myname");
-//            TestUtils.assertResponseStatus(tested.create(null, m), Status.BAD_REQUEST);
-//            TestUtils.assertResponseStatus(tested.create("", m), Status.BAD_REQUEST);
-//        }
-//
-//        // case - invalid name field in input data
-//        {
-//            Map<String, Object> m = new HashMap<String, Object>();
-//            TestUtils.assertResponseStatus(tested.create("myname", m), Status.BAD_REQUEST);
-//            m.put(ProjectService.CODE, "");
-//            TestUtils.assertResponseStatus(tested.create("myname", m), Status.BAD_REQUEST);
-//        }
-//
-//        // case - name field in data is not same as id parameter
-//        {
-//            Map<String, Object> m = new HashMap<String, Object>();
-//            m.put(ProjectService.CODE, "myanothername");
-//            TestUtils.assertResponseStatus(tested.create("myname", m), Status.BAD_REQUEST);
-//        }
-//
-//        // case - OK
-//        {
-//            Map<String, Object> m = new HashMap<String, Object>();
-//            m.put(ProjectService.CODE, "myname");
-//            Map<String, Object> ret = (Map<String, Object>) tested.create("myname", m);
-//            Assert.assertEquals("myname", ret.get("id"));
-//            Assert.assertEquals("myname", m.get(ProjectService.CODE));
-//            Mockito.verify(tested.entityService).create("myname", m);
-//            Mockito.verifyNoMoreInteractions(tested.entityService);
-//        }
-//
-//        // case - error
-//        {
-//            Mockito.reset(tested.entityService);
-//            Map<String, Object> m = new HashMap<String, Object>();
-//            m.put(ProjectService.CODE, "myname");
-//            Mockito.doThrow(new RuntimeException("my exception")).when(tested.entityService).create("myname", m);
-//            TestUtils.assertResponseStatus(tested.create("myname", m), Status.INTERNAL_SERVER_ERROR);
-//            Mockito.verify(tested.entityService).create("myname", m);
-//            Mockito.verifyNoMoreInteractions(tested.entityService);
-//        }
-//    }
-//
-//    @SuppressWarnings("unchecked")
-//    @Test
-//    public void create_noid() {
-//        ProjectRestService tested = getTested();
-//
-//        // case - invalid name field in input data
-//        {
-//            Map<String, Object> m = new HashMap<String, Object>();
-//            TestUtils.assertResponseStatus(tested.create(m), Status.BAD_REQUEST);
-//            m.put(ProjectService.CODE, "");
-//            TestUtils.assertResponseStatus(tested.create(m), Status.BAD_REQUEST);
-//        }
-//
-//        // case - OK
-//        {
-//            Map<String, Object> m = new HashMap<String, Object>();
-//            m.put(ProjectService.CODE, "myname");
-//            Mockito.when(tested.entityService.get("myname")).thenReturn(null);
-//            Map<String, Object> ret = (Map<String, Object>) tested.create(m);
-//            Assert.assertEquals("myname", ret.get("id"));
-//            Assert.assertEquals("myname", m.get(ProjectService.CODE));
-//            Mockito.verify(tested.entityService).create("myname", m);
-//            Mockito.verifyNoMoreInteractions(tested.entityService);
-//        }
-//
-//        // case - error
-//        {
-//            Mockito.reset(tested.entityService);
-//            Map<String, Object> m = new HashMap<String, Object>();
-//            m.put(ProjectService.CODE, "myname");
-//            Mockito.doThrow(new RuntimeException("my exception")).when(tested.entityService).create("myname", m);
-//            TestUtils.assertResponseStatus(tested.create(m), Status.INTERNAL_SERVER_ERROR);
-//            Mockito.verify(tested.entityService).create("myname", m);
-//            Mockito.verifyNoMoreInteractions(tested.entityService);
-//        }
-//    }
-//
-//    @Test
-//    public void getAll_permissions() {
-//        TestUtils.assertPermissionGuest(ProjectRestService.class, "getAll", Integer.class, Integer.class);
-//    }
-//
-//    @Test
-//    public void get_permissions() {
-//        TestUtils.assertPermissionGuest(ProjectRestService.class, "get", String.class);
-//    }
-//
-//    @Test
-//    public void create_permissions() {
-//        TestUtils.assertPermissionSuperProvider(ProjectRestService.class, "create", String.class, Map.class);
-//        TestUtils.assertPermissionSuperProvider(ProjectRestService.class, "create", Map.class);
-//    }
-//
-//    @Test
-//    public void delete_permissions() {
-//        TestUtils.assertPermissionSuperProvider(ProjectRestService.class, "delete", String.class);
-//    }
-//
-//    protected ProjectRestService getTested() {
-//        ProjectRestService tested = new ProjectRestService();
-//        RestEntityServiceBaseTest.mockLogger(tested);
-//        tested.setEntityService(Mockito.mock(EntityService.class));
-//        tested.securityContext = Mockito.mock(SecurityContext.class);
-//        return tested;
-//    }
+	public static final String PROJECT_REST_API = DeploymentHelpers.DEFAULT_REST_VERSION + "project";
 
+	@ArquillianResource
+	protected URL context;
+
+	@Deployment(testable = false)
+	public static WebArchive createDeployment() throws IOException {
+		return DeploymentHelpers.createDeployment();
+	}
+
+	@Test
+	@InSequence(0)
+	public void assertNotAuthenticated() throws MalformedURLException {
+		int expStatus = 401;
+		// GET /project
+		given().contentType(ContentType.JSON)
+				.expect().statusCode(expStatus)
+				.log().ifStatusCodeMatches(is(not(expStatus)))
+				.when().get(new URL(context, PROJECT_REST_API + "/search").toExternalForm());
+
+		// POST /project
+		given().contentType(ContentType.JSON)
+				.body("{}")
+				.expect().statusCode(expStatus)
+				.log().ifStatusCodeMatches(is(not(expStatus)))
+				.when().post(new URL(context, PROJECT_REST_API).toExternalForm());
+
+		// DELETE /project/projectcode
+		given().contentType(ContentType.JSON)
+				.expect().statusCode(expStatus)
+				.log().ifStatusCodeMatches(is(not(expStatus)))
+				.when().delete(new URL(context, PROJECT_REST_API + "/projectcode").toExternalForm());
+	}
+
+	@Test
+	@InSequence(10)
+	public void assertGetAllDefault() throws MalformedURLException {
+		// GET /project
+		given().contentType(ContentType.JSON)
+				.expect().statusCode(200)
+				.log().ifError()
+				.body("total", is(0))
+				.when().get(new URL(context, PROJECT_REST_API).toExternalForm());
+	}
+
+	@Test
+	@InSequence(20)
+	public void assertCreate() throws MalformedURLException {
+		String data = "{\n" +
+				"  \"code\": \"jbosstools\",\n" +
+				"  \"name\": \"JBoss Tools\",\n" +
+				"  \"description\" : \"\",\n" +
+				"  \"type_specific_code\" : {\n" +
+				"    \"jbossorg_blog\": [\"jbosstools\"],\n" +
+				"    \"jbossorg_jira\": [\"JBIDE\"],\n" +
+				"    \"jbossorg_mailing_list\": \"\",\n" +
+				"    \"jbossorg_project_info\": \"/jbosstools\"\n" +
+				"  }\n" +
+				"}";
+
+		given().contentType(ContentType.JSON)
+				.auth().basic(DeploymentHelpers.DEFAULT_PROVIDER_NAME, DeploymentHelpers.DEFAULT_PROVIDER_PASSWORD)
+				.body(data)
+				.expect().statusCode(200)
+				.log().ifError()
+				.body("id", is("jbosstools"))
+				.when().post(new URL(context, PROJECT_REST_API).toExternalForm());
+
+	}
+
+	@Test
+	@InSequence(21)
+	public void assertGetCreatedProject() throws MalformedURLException {
+		given().contentType(ContentType.JSON)
+				.expect().statusCode(200)
+				.log().ifError()
+				.body("code", is("jbosstools"))
+				.body("name", is("JBoss Tools"))
+				.body("type_specific_code", nullValue())
+				.when().get(new URL(context, PROJECT_REST_API + "/jbosstools").toExternalForm());
+	}
+
+	@Test
+	@InSequence(22) @Ignore("DCP returns same data as unauthenticated request")
+	public void assertGetCreatedProjectAuthenticated() throws MalformedURLException {
+		given().contentType(ContentType.JSON)
+				.auth().basic(DeploymentHelpers.DEFAULT_PROVIDER_NAME, DeploymentHelpers.DEFAULT_PROVIDER_PASSWORD)
+				.expect().statusCode(200)
+				.log().ifError()
+				.body("code", is("jbosstools"))
+				.body("name", is("JBoss Tools"))
+				.body("type_specific_code.jbossorg_blog[0]", is("jbosstools"))
+				.when().get(new URL(context, PROJECT_REST_API + "/jbosstools").toExternalForm());
+	}
+
+
+	@Test
+	@InSequence(30) @Ignore("Returns 0 hits. Probably because of ES caching")
+	public void assertSearchCreatedProject() throws MalformedURLException {
+		given().contentType(ContentType.JSON)
+				.auth().basic(DeploymentHelpers.DEFAULT_PROVIDER_NAME, DeploymentHelpers.DEFAULT_PROVIDER_PASSWORD)
+				.param("jbossorg_jira", "JBIDE")
+				.expect().statusCode(200)
+				.log().all()
+				.body("total", is(1))
+				.body("hits[0].id", is("jbosstools"))
+				.when().get(new URL(context, PROJECT_REST_API + "/search").toExternalForm());
+
+		given().contentType(ContentType.JSON)
+				.auth().basic(DeploymentHelpers.DEFAULT_PROVIDER_NAME, DeploymentHelpers.DEFAULT_PROVIDER_PASSWORD)
+				.param("code", "jbosstools")
+				.expect().statusCode(200)
+				.log().all()
+				.body("total", is(1))
+				.body("hits[0].id", is("jbosstools"))
+				.when().get(new URL(context, PROJECT_REST_API + "/search").toExternalForm());
+	}
+
+
+	@Test
+	@InSequence(40)
+	public void assertDeleteProject() throws MalformedURLException {
+		given().contentType(ContentType.JSON)
+				.auth().basic(DeploymentHelpers.DEFAULT_PROVIDER_NAME, DeploymentHelpers.DEFAULT_PROVIDER_PASSWORD)
+				.expect().statusCode(200)
+				.log().ifError()
+				.when().delete(new URL(context, PROJECT_REST_API + "/jbosstools").toExternalForm());
+	}
 }
