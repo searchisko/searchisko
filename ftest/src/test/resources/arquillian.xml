@@ -6,6 +6,11 @@
         <property name="deploymentExportPath">target/</property>
     </engine>
 
-    <defaultProtocol type="Servlet 3.0"/>
+	<container qualifier="jbossas-managed-7" default="true">
+		<configuration>
+			<property name="javaVmArguments">-Xms1024m -Xmx1024m -XX:MaxPermSize=512m</property>
+			<property name="outputToConsole">true</property>
+		</configuration>
+	</container>
 
 </arquillian>
