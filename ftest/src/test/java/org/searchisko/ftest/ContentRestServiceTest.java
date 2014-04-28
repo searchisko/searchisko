@@ -50,6 +50,18 @@ public class ContentRestServiceTest {
 
 	@Test
 	@InSequence(0)
+	public void assertBasicAuthHeader() throws MalformedURLException {
+		int expStatus = 401;
+		given().pathParam("type", TYPE).pathParam("contentId", "test").contentType(ContentType.JSON)
+				.body("{}")
+				.expect().statusCode(expStatus)
+				.header("WWW-Authenticate", "Basic realm=\"Insert Provider's username and password\"")
+				.log().ifStatusCodeMatches(is(not(expStatus)))
+				.when().post(new URL(context, CONTENT_REST_API).toExternalForm());
+	}
+
+	@Test
+	@InSequence(1)
 	public void assertNotAuthenticated() throws MalformedURLException {
 		// TEST: POST
 		int expStatus = 401;
