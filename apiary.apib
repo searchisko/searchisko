@@ -256,14 +256,14 @@ Search contributions based on input parameters
 * `size` maximal number of returned entries. Default is 10, maximal value is 500.
 * `field` you can use this param multiple times to specify which [fields](http://www.elasticsearch.org/guide/en/elasticsearch/reference/0.90/search-request-fields.html) from search index will be returned in results. If not used then predefined set of basic `sys_xx` fields is returned. If you want complete documents use `_source` value for this param. Be careful about performance impact of this param, consult DCP administrators if necessary!
 
-####### Sorting
+###### Sorting
 
 * `sortBy` sort result. Results are by default sorted by fulltext score if parameter is not present. Available values are:
   * `old` - to sort content from oldest to newest activity
   * `new` - to sort from newest to oldest activity
   * `new-create` - to sort from newest to oldest by creation
 
-####### Facets
+###### Facets
 
 * using `facet` URL parameter you can specify name of [facet](http://www.elasticsearch.org/guide/en/elasticsearch/reference/0.90/search-facets.html) you want to include in response. This param can be used multiple times to get more facet data in the response. List of available facets is configurable (see [Management API](#managementapiconfiguration)). [Current configuration](https://github.com/searchisko/searchisko/blob/master/configuration/data/config/search_fulltext_facets_fields.json) enables the following facets:
   * `top_contributors` - add [term facet][] for `sys_contributors` field.
@@ -272,9 +272,10 @@ Search contributions based on input parameters
   * `per_sys_type_counts` - add [term facet][] for `sys_type` field.
   * `tag_cloud` - add [term facet][] for `sys_tags` field.
 
-####### Filtering
+###### Filtering
 
 You can specify name of [filter](http://www.elasticsearch.org/guide/en/elasticsearch/reference/0.90/query-dsl-filters.html)s you want to filter by. List of available filters is configurable (see [Management API](#managementapiconfiguration)). [Current configuration](https://github.com/searchisko/searchisko/blob/master/configuration/data/config/search_fulltext_filter_fields.json) enables the following filters:
+
  * `content_provider` - filters result only to data provided by specified provider `sys_content_provider` field
  * `type` - filters result only to specific `sys_content_type`
  * `sys_type` - filters result only to specific `sys_type`, This param can be used multiple times to get results for more types.
