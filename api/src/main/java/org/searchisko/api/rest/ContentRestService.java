@@ -193,10 +193,6 @@ public class ContentRestService extends RestServiceBase {
 			return Response.status(Status.BAD_REQUEST).entity("Some content for pushing must be defined").build();
 		}
 
-		if (type == null || SearchUtils.isBlank(type)) {
-			throw new RequiredFieldException("type");
-		}
-
 		ProviderContentTypeInfo typeInfo = getTypeInfoWithManagePermissionCheck(type);
 
 		String sysContentId = providerService.generateSysId(type, contentId);
@@ -273,9 +269,13 @@ public class ContentRestService extends RestServiceBase {
 	 * @throws BadFieldException if type is unknown
 	 * @throws NotAuthorizedException if user has no permission to manage this type
 	 */
-	// TODO #77 UNIT TEST
 	protected ProviderContentTypeInfo getTypeInfoWithManagePermissionCheck(String type) throws NotAuthorizedException,
 			BadFieldException {
+
+		if (type == null || SearchUtils.isBlank(type)) {
+			throw new RequiredFieldException("type");
+		}
+
 		ProviderContentTypeInfo typeInfo = providerService.findContentType(type);
 		if (typeInfo == null) {
 			throw new BadFieldException("type", "content type not found");
@@ -296,9 +296,6 @@ public class ContentRestService extends RestServiceBase {
 		// validation
 		if (contentId == null || contentId.isEmpty()) {
 			throw new RequiredFieldException("contentId");
-		}
-		if (type == null || SearchUtils.isBlank(type)) {
-			throw new RequiredFieldException("type");
 		}
 
 		ProviderContentTypeInfo typeInfo = getTypeInfoWithManagePermissionCheck(type);

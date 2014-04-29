@@ -21,7 +21,8 @@ import org.searchisko.api.service.ContributorProfileService;
 import org.searchisko.api.util.SearchUtils;
 
 /**
- * Authentication utility service. Use it in your RestServices if you need info about currently logged in user!
+ * Authentication utility service. Use it in your RestServices if you need info about currently logged in user! Also
+ * contains methods for fine grained permission checks.
  * 
  * @author Libor Krzyzanek
  * @author Vlastimil Elias (velias at redhat dot com)
@@ -64,10 +65,13 @@ public class AuthenticationUtilService {
 	 * @param providerName to check permission for
 	 * @throws NotAuthorizedException if user has not the permission
 	 */
-	// TODO #77 UNIT TEST
 	public void checkProviderManagementPermission(SecurityContext securityContext, String providerName)
 			throws NotAuthorizedException {
+		if (log.isLoggable(Level.FINE))
+			log.fine("Going to check ProviderManage permission for provider " + providerName + " and securityContext "
+					+ securityContext);
 		if (securityContext != null
+				&& providerName != null
 				&& (securityContext.isUserInRole(ProviderCustomSecurityContext.SUPER_ADMIN_ROLE) || providerName
 						.equalsIgnoreCase(getAuthenticatedProvider(securityContext)))) {
 			return;

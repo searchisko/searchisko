@@ -39,15 +39,18 @@ public class ProviderServiceTest extends ESRealClientTestBase {
 	public static final String TEST_PROVIDER_NAME = "jbossorg";
 
 	public static ProviderContentTypeInfo createProviderContentTypeInfo(Map<String, Object> typeDef) {
+		return createProviderContentTypeInfo(typeDef, TEST_TYPE_NAME);
+	}
+
+	public static ProviderContentTypeInfo createProviderContentTypeInfo(Map<String, Object> typeDef, String typeName) {
 		Map<String, Object> providerDef = new HashMap<String, Object>();
 		providerDef.put(ProviderService.NAME, TEST_PROVIDER_NAME);
 		Map<String, Object> typesDef = new HashMap<String, Object>();
-		typesDef.put(TEST_TYPE_NAME, typeDef);
+		typesDef.put(typeName, typeDef);
 
 		providerDef.put(ProviderService.TYPE, typesDef);
 
-		return new ProviderContentTypeInfo(providerDef, TEST_TYPE_NAME);
-
+		return new ProviderContentTypeInfo(providerDef, typeName);
 	}
 
 	@Test

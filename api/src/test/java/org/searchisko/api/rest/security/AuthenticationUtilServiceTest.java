@@ -15,6 +15,7 @@ import org.junit.Test;
 import org.mockito.Mockito;
 import org.searchisko.api.rest.RestServiceBase;
 import org.searchisko.api.rest.exception.NotAuthenticatedException;
+import org.searchisko.api.rest.exception.NotAuthorizedException;
 import org.searchisko.api.service.ContributorProfileService;
 
 /**
@@ -31,6 +32,55 @@ public class AuthenticationUtilServiceTest {
 		AuthenticationUtilService tested = new AuthenticationUtilService();
 		tested.log = Logger.getLogger(RestServiceBase.class.getName());
 		return tested;
+	}
+
+	@Test
+	public void checkProviderManagementPermission() {
+		AuthenticationUtilService tested = getTested();
+
+		SecurityContext securityContextSuperadmin = new ProviderCustomSecurityContext(new SimplePrincipal("aa"), true,
+				true, "cas");
+		SecurityContext securityContextProvider = new ProviderCustomSecurityContext(new SimplePrincipal("myProvider"),
+				false, true, "cas");
+
+		// case - context for super admin provider
+		tested.checkProviderManagementPermission(securityContextSuperadmin, "myProvider");
+		// case - context for same provider
+		tested.checkProviderManagementPermission(securityContextProvider, "myProvider");
+
+		// case - context for another provider than checked
+		try {
+			tested.checkProviderManagementPermission(securityContextProvider, "myProviderAnother");
+			Assert.fail("NotAuthorizedException expected");
+		} catch (NotAuthorizedException e) {
+			// OK
+		}
+
+		// case - security context of wrong type
+		try {
+			tested.checkProviderManagementPermission(new ContributorCustomSecurityContext(new SimplePrincipal("aa"), true,
+					"cas"), "myProvider");
+			Assert.fail("NotAuthenticatedException expected");
+		} catch (NotAuthenticatedException e) {
+			// OK
+		}
+
+		// case - no security context
+		try {
+			tested.checkProviderManagementPermission(null, "myProvider");
+			Assert.fail("NotAuthorizedException expected");
+		} catch (NotAuthorizedException e) {
+			// OK
+		}
+
+		// case - no provider
+		try {
+			tested.checkProviderManagementPermission(securityContextProvider, null);
+			Assert.fail("NotAuthorizedException expected");
+		} catch (NotAuthorizedException e) {
+			// OK
+		}
+
 	}
 
 	@Test

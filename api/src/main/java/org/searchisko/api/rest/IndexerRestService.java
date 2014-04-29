@@ -132,7 +132,6 @@ public class IndexerRestService extends RestServiceBase {
 	 * @throws NotAuthorizedException if user is not authorized
 	 * @throws NotAuthenticatedException if user is not authenticated
 	 */
-	// TODO #77 UNIT TEST
 	protected Map<String, Object> getIndexerConfigurationWithManagePermissionCheck(String contentType)
 			throws ObjectNotFoundException {
 		if (contentType == null || SearchUtils.isBlank(contentType)) {
