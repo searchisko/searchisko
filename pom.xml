@@ -200,6 +200,12 @@
                 <module>ftest</module>
             </modules>
         </profile>
+		<profile>
+			<id>openshift</id>
+			<modules>
+				<module>ftest</module>
+			</modules>
+		</profile>
     </profiles>
 
     <repositories>

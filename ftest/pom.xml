@@ -29,10 +29,34 @@
 	</parent>
 
 	<artifactId>ftest</artifactId>
+	<name>Searchisko Integration Tests</name>
 
 	<properties>
 		<es.client.embedded.data.path>${user.home}/.dcp_data</es.client.embedded.data.path>
+		<jboss.home>${env.JBOSS_HOME}</jboss.home>
 	</properties>
+
+	<profiles>
+		<profile>
+			<id>openshift</id>
+			<properties>
+				<es.client.embedded.data.path>${env.OPENSHIFT_DATA_DIR}/ftest_dcp_data</es.client.embedded.data.path>
+			</properties>
+		</profile>
+
+		<profile>
+			<!-- Dynamically override jboss.home if OPENSHIFT_JBOSSEAP_DIR system env. is present -->
+			<id>jbosseap-home-on-openshift</id>
+			<activation>
+				<property>
+					<name>OPENSHIFT_JBOSSEAP_DIR</name>
+				</property>
+			</activation>
+			<properties>
+				<jboss.home>${env.OPENSHIFT_JBOSSEAP_DIR}</jboss.home>
+			</properties>
+		</profile>
+	</profiles>
 
 	<dependencies>
 		<dependency>
