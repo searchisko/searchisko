@@ -33,7 +33,9 @@
 
 	<properties>
 		<es.client.embedded.data.path>${user.home}/.dcp_data</es.client.embedded.data.path>
-		<jboss.home>${env.JBOSS_HOME}</jboss.home>
+		<arquillian.jboss.home>${env.JBOSS_HOME}</arquillian.jboss.home>
+		<arquillian.jboss.managementAddress>127.0.0.1</arquillian.jboss.managementAddress>
+		<arquillian.jboss.managementPort>9999</arquillian.jboss.managementPort>
 	</properties>
 
 	<profiles>
@@ -54,7 +56,11 @@
 				</file>
 			</activation>
 			<properties>
-				<jboss.home>${env.OPENSHIFT_JBOSSEAP_DIR}</jboss.home>
+				<arquillian.jboss.home>${env.OPENSHIFT_JBOSSEAP_DIR}</arquillian.jboss.home>
+				<arquillian.jboss.managementAddress>${env.OPENSHIFT_JBOSSEAP_IP}</arquillian.jboss.managementAddress>
+				<arquillian.jboss.managementPort>
+					${env.OPENSHIFT_JBOSSEAP_MANAGEMENT_NATIVE_PORT}
+				</arquillian.jboss.managementPort>
 			</properties>
 		</profile>
 	</profiles>
