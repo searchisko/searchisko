@@ -457,7 +457,7 @@
 												<artifactId>maven-war-plugin</artifactId>
 												<configuration>
 														<outputDirectory>${project.parent.basedir}/deployments</outputDirectory>
-														<attachClasses>false</attachClasses>
+														<attachClasses>true</attachClasses>
 												</configuration>
 										</plugin>
 								</plugins>
