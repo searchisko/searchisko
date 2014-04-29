@@ -5,14 +5,18 @@
  */
 package org.searchisko.api.rest.search;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 import org.elasticsearch.common.settings.SettingsException;
 import org.searchisko.api.service.ConfigService;
 
-import java.util.*;
-
 /**
  * Utility class that can parse facet and filter configurations.
- *
+ * 
  * @author Lukas Vlcek
  * @since 1.0.2
  */
@@ -25,7 +29,8 @@ public class ConfigParseUtil {
 	private static final String FILTER_CACHE_KEY_ALIAS = "_cacheKey"; // alias found in the ES codebase
 
 	// Each filter (and query since 0.90.4) can accept "_name"
-	// @see http://www.elasticsearch.org/guide/en/elasticsearch/reference/0.90/search-request-named-queries-and-filters.html#search-request-named-queries-and-filters
+	// @see
+	// http://www.elasticsearch.org/guide/en/elasticsearch/reference/0.90/search-request-named-queries-and-filters.html#search-request-named-queries-and-filters
 	private static final String FILTER_NAME = "_name";
 
 	// Searchisko custom field
@@ -45,22 +50,23 @@ public class ConfigParseUtil {
 	private static final String RANGE_FILTER_PROCESSOR = "_processor";
 
 	// Elasticsearch filter optional settings
-	private static final List<String> OPTIONAL_SETTINGS = Arrays.asList(
-			FILTER_CACHE, FILTER_CACHE_KEY, FILTER_CACHE_KEY_ALIAS, FILTER_NAME
-	);
+	private static final List<String> OPTIONAL_SETTINGS = Arrays.asList(FILTER_CACHE, FILTER_CACHE_KEY,
+			FILTER_CACHE_KEY_ALIAS, FILTER_NAME);
 
 	/**
 	 * Parse filter type.
-	 *
+	 * 
 	 * @param filterConfig
 	 * @param filterName
 	 * @return
 	 */
+	@SuppressWarnings("unchecked")
 	public static SemiParsedFilterConfig parseFilterType(final Object filterConfig, final String filterName) {
 		try {
 			Map<String, Object> map = (Map<String, Object>) filterConfig;
-			if (map.isEmpty() ||
-					!(map.containsKey(TERMS_FILTER_TYPE) || map.containsKey(TERMS_FILTER_TYPE_ALIAS) || map.containsKey(RANGE_FILTER_TYPE))) {
+			if (map.isEmpty()
+					|| !(map.containsKey(TERMS_FILTER_TYPE) || map.containsKey(TERMS_FILTER_TYPE_ALIAS) || map
+							.containsKey(RANGE_FILTER_TYPE))) {
 				throw new SettingsException("Invalid configuration of fulltext search filter field '" + filterName
 						+ "' in configuration document " + ConfigService.CFGNAME_SEARCH_FULLTEXT_FILTER_FIELDS
 						+ ": Supported type not found.");
@@ -69,7 +75,8 @@ public class ConfigParseUtil {
 			SemiParsedFilterConfig config;
 
 			// parse terms filter
-			if ((map.containsKey(TERMS_FILTER_TYPE) || map.containsKey(TERMS_FILTER_TYPE_ALIAS)) && !map.containsKey(RANGE_FILTER_TYPE)) {
+			if ((map.containsKey(TERMS_FILTER_TYPE) || map.containsKey(TERMS_FILTER_TYPE_ALIAS))
+					&& !map.containsKey(RANGE_FILTER_TYPE)) {
 
 				config = new SemiParsedTermsFilterConfig();
 				SemiParsedTermsFilterConfig conf = (SemiParsedTermsFilterConfig) config;
@@ -85,15 +92,15 @@ public class ConfigParseUtil {
 				} else {
 					throw new SettingsException("Invalid configuration of fulltext search filter field '" + filterName
 							+ "' in configuration document " + ConfigService.CFGNAME_SEARCH_FULLTEXT_FILTER_FIELDS
-							+ ": The configuration of ["+key+"] contains unexpected fields.");
+							+ ": The configuration of [" + key + "] contains unexpected fields.");
 				}
 
 				if (map.containsKey(TERMS_FILTER_LOWERCASE)) {
 					conf.setLowercase((Boolean) map.get(TERMS_FILTER_LOWERCASE));
 				}
 
-			// parse range filter
-			} else if(map.containsKey(RANGE_FILTER_TYPE) && !map.containsKey(TERMS_FILTER_TYPE)) {
+				// parse range filter
+			} else if (map.containsKey(RANGE_FILTER_TYPE) && !map.containsKey(TERMS_FILTER_TYPE)) {
 
 				config = new SemiParsedRangeFilterConfig();
 				SemiParsedRangeFilterConfig conf = (SemiParsedRangeFilterConfig) config;
@@ -114,12 +121,12 @@ public class ConfigParseUtil {
 					} else {
 						throw new SettingsException("Invalid configuration of fulltext search filter field '" + filterName
 								+ "' in configuration document " + ConfigService.CFGNAME_SEARCH_FULLTEXT_FILTER_FIELDS
-								+ ": The configuration of ["+RANGE_FILTER_TYPE+":"+fieldName+"] contains unexpected fields.");
+								+ ": The configuration of [" + RANGE_FILTER_TYPE + ":" + fieldName + "] contains unexpected fields.");
 					}
 				} else {
 					throw new SettingsException("Invalid configuration of fulltext search filter field '" + filterName
 							+ "' in configuration document " + ConfigService.CFGNAME_SEARCH_FULLTEXT_FILTER_FIELDS
-							+ ": The configuration of ["+RANGE_FILTER_TYPE+"] contains unexpected fields.");
+							+ ": The configuration of [" + RANGE_FILTER_TYPE + "] contains unexpected fields.");
 				}
 				// parse enum
 				if (map.containsKey(RANGE_FILTER_PROCESSOR)) {
@@ -170,11 +177,12 @@ public class ConfigParseUtil {
 
 	/**
 	 * Parse facet type.
-	 *
+	 * 
 	 * @param facetConfig
 	 * @param facetName
 	 * @return
 	 */
+	@SuppressWarnings("unchecked")
 	public static SemiParsedFacetConfig parseFacetType(final Object facetConfig, final String facetName) {
 		try {
 			Map<String, Object> map = (Map<String, Object>) facetConfig;

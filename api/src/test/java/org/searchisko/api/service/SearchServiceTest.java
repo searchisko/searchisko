@@ -530,7 +530,7 @@ public class SearchServiceTest {
 
 		// case - list of projects is empty
 		{
-			filters.acknowledgeUrlFilterCandidate("project", Collections.EMPTY_LIST);
+			filters.acknowledgeUrlFilterCandidate("project", Collections.<String> emptyList());
 			tested.parsedFilterConfigService.prepareFiltersForRequest(filters);
 			QueryBuilder qb = QueryBuilders.matchAllQuery();
 			QueryBuilder qbRes = tested.applyCommonFilters(tested.parsedFilterConfigService.getSearchFiltersForRequest(), qb);
@@ -582,7 +582,7 @@ public class SearchServiceTest {
 
 		// case - list of tags is empty
 		{
-			filters.acknowledgeUrlFilterCandidate("tag", Collections.EMPTY_LIST);
+			filters.acknowledgeUrlFilterCandidate("tag", Collections.<String> emptyList());
 			tested.parsedFilterConfigService.prepareFiltersForRequest(filters);
 			QueryBuilder qb = QueryBuilders.matchAllQuery();
 			QueryBuilder qbRes = tested.applyCommonFilters(tested.parsedFilterConfigService.getSearchFiltersForRequest(), qb);
@@ -644,7 +644,7 @@ public class SearchServiceTest {
 
 		// case - list of contributors is empty
 		{
-			filters.acknowledgeUrlFilterCandidate("contributor", Collections.EMPTY_LIST);
+			filters.acknowledgeUrlFilterCandidate("contributor", Collections.<String> emptyList());
 			tested.parsedFilterConfigService.prepareFiltersForRequest(filters);
 			QueryBuilder qb = QueryBuilders.matchAllQuery();
 			QueryBuilder qbRes = tested.applyCommonFilters(tested.parsedFilterConfigService.getSearchFiltersForRequest(), qb);

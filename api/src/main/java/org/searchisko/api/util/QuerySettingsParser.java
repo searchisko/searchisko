@@ -17,14 +17,13 @@ import javax.inject.Named;
 import javax.ws.rs.core.MultivaluedMap;
 
 import org.elasticsearch.common.joda.time.format.ISODateTimeFormat;
-import org.searchisko.api.model.PastIntervalValue;
 import org.searchisko.api.model.QuerySettings;
 import org.searchisko.api.model.SortByValue;
 import org.searchisko.api.service.SearchService;
 
 /**
  * Search Query parameters parser component.
- *
+ * 
  * @author Libor Krzyzanek
  * @author Lukas Vlcek
  * @author Vlastimil Elias (velias at redhat dot com)
@@ -38,7 +37,7 @@ public class QuerySettingsParser {
 
 	/**
 	 * Parse REST parameters, validate them, sanity them, and store into {@link QuerySettings} bean.
-	 *
+	 * 
 	 * @param params REST request params to parse
 	 * @return query settings instance filled with valid search settings
 	 * @throws IllegalArgumentException if some param has invalid value. Message from exception contains parameter name
@@ -91,7 +90,7 @@ public class QuerySettingsParser {
 
 		// process from
 		for (String key = QuerySettings.FROM_KEY; paramKeys.contains(key); paramKeys.remove(key)) {
-			settings.setFrom(readIntegerParam(params,key));
+			settings.setFrom(readIntegerParam(params, key));
 			if (settings.getFrom() != null && settings.getFrom() < 0)
 				throw new IllegalArgumentException(key);
 		}
@@ -99,13 +98,14 @@ public class QuerySettingsParser {
 		// process size
 		for (String key = QuerySettings.SIZE_KEY; paramKeys.contains(key); paramKeys.remove(key)) {
 			settings.setSize(readIntegerParam(params, key));
-			if (settings.getSize() != null && (settings.getSize() < 0 || settings.getSize() > SearchService.RESPONSE_MAX_SIZE))
+			if (settings.getSize() != null
+					&& (settings.getSize() < 0 || settings.getSize() > SearchService.RESPONSE_MAX_SIZE))
 				throw new IllegalArgumentException(key);
 		}
 
 		// remaining url parameters can be all search filters
 		QuerySettings.Filters filters = settings.getFiltersInit();
-		for (String key: paramKeys) {
+		for (String key : paramKeys) {
 			List<String> urlValues = SearchUtils.safeList(params.get(key));
 			if (urlValues != null)
 				filters.acknowledgeUrlFilterCandidate(key, urlValues);
@@ -119,7 +119,7 @@ public class QuerySettingsParser {
 
 	/**
 	 * Sanity query in given settings. Trim it and patch wildcard if not null, else use <code>match_all:{}</code>.
-	 *
+	 * 
 	 * @param settings to sanity query in.
 	 * @throws IllegalArgumentException if settings is null
 	 */
@@ -137,7 +137,7 @@ public class QuerySettingsParser {
 
 	/**
 	 * Normalize search query string - trim it, return null if empty, patch wildcards.
-	 *
+	 * 
 	 * @param query to normalize
 	 * @return normalized query
 	 */
@@ -161,7 +161,7 @@ public class QuerySettingsParser {
 
 	/**
 	 * Read request param value as integer.
-	 *
+	 * 
 	 * @param params to get param from
 	 * @param paramKey key of param
 	 * @return param value as integer or null
@@ -184,7 +184,7 @@ public class QuerySettingsParser {
 
 	/**
 	 * Read request param value as ISO datetime format and return it as millis.
-	 *
+	 * 
 	 * @param params to get param from
 	 * @param paramKey key of param
 	 * @return param timestamp value as Long or null
@@ -206,7 +206,7 @@ public class QuerySettingsParser {
 
 	/**
 	 * Read request param value as boolean.
-	 *
+	 * 
 	 * @param params to get param from
 	 * @param paramKey key of param
 	 * @return param boolean value
@@ -220,7 +220,7 @@ public class QuerySettingsParser {
 
 	/**
 	 * Normalize list with param values. Trim values, remove empty values, return null list if empty etc.
-	 *
+	 * 
 	 * @param paramValue value to normalize
 	 * @return normalized List param value
 	 */
