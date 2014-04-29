@@ -17,6 +17,7 @@ import org.elasticsearch.search.SearchHit;
 import org.jboss.elasticsearch.tools.content.InvalidDataException;
 import org.searchisko.api.ContentObjectFields;
 import org.searchisko.api.service.ProviderService;
+import org.searchisko.api.service.ProviderService.ProviderContentTypeInfo;
 import org.searchisko.api.service.SearchClientService;
 
 /**
@@ -71,7 +72,7 @@ public abstract class RenormalizeTaskBase extends ReindexingTaskBase {
 		Map<String, Object> content = hit.getSource();
 		String id = hit.getId();
 		String sysContentType = (String) content.get(ContentObjectFields.SYS_CONTENT_TYPE);
-		Map<String, Object> typeDef = providerService.findContentType(sysContentType);
+		ProviderContentTypeInfo typeDef = providerService.findContentType(sysContentType);
 		if (typeDef == null) {
 			writeTaskLog("No type definition found for document id=" + id + " so is skipped");
 		} else {

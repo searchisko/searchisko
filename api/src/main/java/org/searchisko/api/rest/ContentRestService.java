@@ -43,10 +43,13 @@ import org.searchisko.api.events.ContentBeforeIndexedEvent;
 import org.searchisko.api.events.ContentDeletedEvent;
 import org.searchisko.api.events.ContentStoredEvent;
 import org.searchisko.api.rest.exception.BadFieldException;
+import org.searchisko.api.rest.exception.NotAuthorizedException;
 import org.searchisko.api.rest.exception.RequiredFieldException;
 import org.searchisko.api.rest.security.AuthenticationUtilService;
 import org.searchisko.api.service.ProviderService;
+import org.searchisko.api.service.ProviderService.ProviderContentTypeInfo;
 import org.searchisko.api.service.SearchClientService;
+import org.searchisko.api.util.SearchUtils;
 import org.searchisko.persistence.service.ContentPersistenceService;
 
 /**
@@ -92,17 +95,17 @@ public class ContentRestService extends RestServiceBase {
 	@GuestAllowed
 	public Object getAllContent(@PathParam("type") String type, @QueryParam("from") Integer from,
 			@QueryParam("size") Integer size, @QueryParam("sort") String sort) {
-		if (type == null || type.isEmpty()) {
-			// return createRequiredFieldResponse("type");
+		if (type == null || SearchUtils.isBlank(type)) {
+			throw new RequiredFieldException("type");
 		}
 		try {
-			Map<String, Object> typeDef = providerService.findContentType(type);
-			if (typeDef == null) {
-				throw new BadFieldException("type");
+			ProviderContentTypeInfo typeInfo = providerService.findContentType(type);
+			if (typeInfo == null) {
+				throw new BadFieldException("type", "type not found");
 			}
 
-			String indexName = ProviderService.extractIndexName(typeDef, type);
-			String indexType = ProviderService.extractIndexType(typeDef, type);
+			String indexName = ProviderService.extractIndexName(typeInfo, type);
+			String indexType = ProviderService.extractIndexType(typeInfo, type);
 
 			SearchRequestBuilder srb = new SearchRequestBuilder(searchClientService.getClient());
 			srb.setIndices(indexName);
@@ -142,19 +145,19 @@ public class ContentRestService extends RestServiceBase {
 		if (contentId == null || contentId.isEmpty()) {
 			throw new RequiredFieldException("contentId");
 		}
-		if (type == null || type.isEmpty()) {
+		if (type == null || SearchUtils.isBlank(type)) {
 			throw new RequiredFieldException("type");
 		}
 		try {
-			Map<String, Object> typeDef = providerService.findContentType(type);
-			if (typeDef == null) {
+			ProviderContentTypeInfo typeInfo = providerService.findContentType(type);
+			if (typeInfo == null) {
 				throw new BadFieldException("type");
 			}
 
 			String sysContentId = providerService.generateSysId(type, contentId);
 
-			String indexName = ProviderService.extractIndexName(typeDef, type);
-			String indexType = ProviderService.extractIndexType(typeDef, type);
+			String indexName = ProviderService.extractIndexName(typeInfo, type);
+			String indexType = ProviderService.extractIndexType(typeInfo, type);
 
 			GetResponse getResponse = searchClientService.getClient().prepareGet(indexName, indexType, sysContentId)
 					.execute().actionGet();
@@ -185,33 +188,25 @@ public class ContentRestService extends RestServiceBase {
 		if (contentId == null || contentId.isEmpty()) {
 			throw new RequiredFieldException("contentId");
 		}
-		if (type == null || type.isEmpty()) {
-			throw new RequiredFieldException("type");
-		}
+
 		if (content == null || content.isEmpty()) {
 			return Response.status(Status.BAD_REQUEST).entity("Some content for pushing must be defined").build();
 		}
 
-		Map<String, Object> provider = providerService.findProvider(authenticationUtilService
-				.getAuthenticatedProvider(securityContext));
-		Map<String, Object> typeDef = ProviderService.extractContentType(provider, type);
-		if (typeDef == null) {
-			throw new BadFieldException("type");
-		}
+		ProviderContentTypeInfo typeInfo = getTypeInfoWithManagePermissionCheck(type);
 
 		String sysContentId = providerService.generateSysId(type, contentId);
 
 		// check search subsystem configuration
-		String indexName = ProviderService.extractIndexName(typeDef, type);
-		String indexType = ProviderService.extractIndexType(typeDef, type);
+		String indexName = ProviderService.extractIndexName(typeInfo, type);
+		String indexType = ProviderService.extractIndexType(typeInfo, type);
 
 		// fill some normalized fields - should be last step to avoid changing them via preprocessors
-		content.put(ContentObjectFields.SYS_CONTENT_PROVIDER,
-				authenticationUtilService.getAuthenticatedProvider(securityContext));
+		content.put(ContentObjectFields.SYS_CONTENT_PROVIDER, typeInfo.getProviderName());
 		content.put(ContentObjectFields.SYS_CONTENT_ID, contentId);
 		content.put(ContentObjectFields.SYS_CONTENT_TYPE, type);
 		content.put(ContentObjectFields.SYS_ID, sysContentId);
-		content.put(ContentObjectFields.SYS_TYPE, ProviderService.extractSysType(typeDef, type));
+		content.put(ContentObjectFields.SYS_TYPE, ProviderService.extractSysType(typeInfo.getTypeDef(), type));
 		content.put(ContentObjectFields.SYS_UPDATED, new Date());
 		// Copy distinct data from content to normalized fields
 		content.put(ContentObjectFields.SYS_TAGS, content.get(ContentObjectFields.TAGS));
@@ -219,23 +214,23 @@ public class ContentRestService extends RestServiceBase {
 		// Fill type of content from configuration
 		if (content.containsKey(ContentObjectFields.SYS_CONTENT)) {
 			content.put(ContentObjectFields.SYS_CONTENT_CONTENT_TYPE,
-					ProviderService.extractSysContentContentType(typeDef, type));
+					ProviderService.extractSysContentContentType(typeInfo.getTypeDef(), type));
 		} else {
 			content.remove(ContentObjectFields.SYS_CONTENT_CONTENT_TYPE);
 		}
 
 		// Run preprocessors to manipulate other fields
 		List<Map<String, String>> contentWarnings = providerService.runPreprocessors(type,
-				ProviderService.extractPreprocessors(typeDef, type), content);
+				ProviderService.extractPreprocessors(typeInfo, type), content);
 
 		// Refill type of content from configuration if content was added in preprocessors
 		if (content.containsKey(ContentObjectFields.SYS_CONTENT)
 				&& !content.containsKey(ContentObjectFields.SYS_CONTENT_CONTENT_TYPE)) {
 			content.put(ContentObjectFields.SYS_CONTENT_CONTENT_TYPE,
-					ProviderService.extractSysContentContentType(typeDef, type));
+					ProviderService.extractSysContentContentType(typeInfo.getTypeDef(), type));
 		}
 
-		if (ProviderService.extractPersist(typeDef)) {
+		if (ProviderService.extractPersist(typeInfo.getTypeDef())) {
 			contentPersistenceService.store(sysContentId, type, content);
 		}
 
@@ -267,6 +262,29 @@ public class ContentRestService extends RestServiceBase {
 	}
 
 	/**
+	 * Get info about requested content type with permission check for management.
+	 * 
+	 * @param type name to get info for
+	 * @return type info, never null
+	 * @throws BadFieldException if type is unknown
+	 * @throws NotAuthorizedException if user has no permission to manage this type
+	 */
+	protected ProviderContentTypeInfo getTypeInfoWithManagePermissionCheck(String type) throws NotAuthorizedException,
+			BadFieldException {
+
+		if (type == null || SearchUtils.isBlank(type)) {
+			throw new RequiredFieldException("type");
+		}
+
+		ProviderContentTypeInfo typeInfo = providerService.findContentType(type);
+		if (typeInfo == null) {
+			throw new BadFieldException("type", "content type not found");
+		}
+		authenticationUtilService.checkProviderManagementPermission(securityContext, typeInfo.getProviderName());
+		return typeInfo;
+	}
+
+	/**
 	 * Delete content from Searchisko. This method fires {@link ContentDeletedEvent}.
 	 */
 	@DELETE
@@ -279,25 +297,17 @@ public class ContentRestService extends RestServiceBase {
 		if (contentId == null || contentId.isEmpty()) {
 			throw new RequiredFieldException("contentId");
 		}
-		if (type == null || type.isEmpty()) {
-			throw new RequiredFieldException("type");
-		}
 
-		Map<String, Object> provider = providerService.findProvider(authenticationUtilService
-				.getAuthenticatedProvider(securityContext));
-		Map<String, Object> typeDef = ProviderService.extractContentType(provider, type);
-		if (typeDef == null) {
-			throw new BadFieldException("type");
-		}
+		ProviderContentTypeInfo typeInfo = getTypeInfoWithManagePermissionCheck(type);
 
 		String sysContentId = providerService.generateSysId(type, contentId);
 
-		if (ProviderService.extractPersist(typeDef)) {
+		if (ProviderService.extractPersist(typeInfo.getTypeDef())) {
 			contentPersistenceService.delete(sysContentId, type);
 		}
 
-		String indexName = ProviderService.extractIndexName(typeDef, type);
-		String indexType = ProviderService.extractIndexType(typeDef, type);
+		String indexName = ProviderService.extractIndexName(typeInfo, type);
+		String indexType = ProviderService.extractIndexType(typeInfo, type);
 
 		DeleteResponse dr = searchClientService.getClient().prepareDelete(indexName, indexType, sysContentId).execute()
 				.actionGet();

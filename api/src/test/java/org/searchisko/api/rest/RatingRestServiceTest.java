@@ -25,6 +25,7 @@ import org.searchisko.api.ContentObjectFields;
 import org.searchisko.api.rest.exception.RequiredFieldException;
 import org.searchisko.api.rest.security.AuthenticationUtilService;
 import org.searchisko.api.service.ProviderService;
+import org.searchisko.api.service.ProviderServiceTest;
 import org.searchisko.api.service.SearchClientService;
 import org.searchisko.api.service.SearchIndexMissingException;
 import org.searchisko.api.testtools.TestUtils;
@@ -271,7 +272,8 @@ public class RatingRestServiceTest {
 			Mockito.when(tested.providerService.parseTypeNameFromSysId(MOCK_CONTENT_ID_1)).thenReturn(MOCK_PROVIDER_NAME);
 
 			Map<String, Object> typeDef = mockTypeDef();
-			Mockito.when(tested.providerService.findContentType(MOCK_PROVIDER_NAME)).thenReturn(typeDef);
+			Mockito.when(tested.providerService.findContentType(MOCK_PROVIDER_NAME)).thenReturn(
+					ProviderServiceTest.createProviderContentTypeInfo(typeDef));
 
 			GetResponse grMock = Mockito.mock(GetResponse.class);
 			Mockito.when(grMock.isExists()).thenReturn(false);
@@ -292,7 +294,8 @@ public class RatingRestServiceTest {
 			Mockito.when(tested.providerService.parseTypeNameFromSysId(MOCK_CONTENT_ID_1)).thenReturn(MOCK_PROVIDER_NAME);
 
 			Map<String, Object> typeDef = mockTypeDef();
-			Mockito.when(tested.providerService.findContentType(MOCK_PROVIDER_NAME)).thenReturn(typeDef);
+			Mockito.when(tested.providerService.findContentType(MOCK_PROVIDER_NAME)).thenReturn(
+					ProviderServiceTest.createProviderContentTypeInfo(typeDef));
 
 			GetResponse grMock = Mockito.mock(GetResponse.class);
 			Mockito.when(grMock.isExists()).thenReturn(true);

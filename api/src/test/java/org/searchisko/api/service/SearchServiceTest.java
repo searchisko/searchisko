@@ -6,7 +6,14 @@
 package org.searchisko.api.service;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.logging.Logger;
 
 import org.elasticsearch.action.search.SearchRequestBuilder;
@@ -19,21 +26,21 @@ import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.sort.SortOrder;
 import org.json.JSONException;
+import org.junit.Assert;
+import org.junit.Test;
+import org.mockito.Mockito;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 import org.searchisko.api.cache.IndexNamesCache;
 import org.searchisko.api.model.PastIntervalValue;
 import org.searchisko.api.model.QuerySettings;
 import org.searchisko.api.model.QuerySettings.Filters;
 import org.searchisko.api.model.SortByValue;
 import org.searchisko.api.testtools.TestUtils;
-import org.junit.Assert;
-import org.junit.Test;
-import org.mockito.Mockito;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
 
 /**
  * Unit test for {@link SearchService}
- *
+ * 
  * @author Vlastimil Elias (velias at redhat dot com)
  * @author Lukas Vlcek
  */
@@ -150,9 +157,8 @@ public class SearchServiceTest {
 			tested.setSearchRequestIndicesAndTypes(querySettings, searchRequestBuilderMock);
 			Mockito.verify(tested.indexNamesCache).get("_all||false");
 			Mockito.verify(tested.providerService).getAll();
-			Mockito.verify(searchRequestBuilderMock).setIndices(
-					"idx_provider1_issue", "idx_provider1_mailing1", "idx_provider1_mailing2",
-					"idx_provider2_mailing", "idx_provider2_issue1", "idx_provider2_issue2");
+			Mockito.verify(searchRequestBuilderMock).setIndices("idx_provider1_issue", "idx_provider1_mailing1",
+					"idx_provider1_mailing2", "idx_provider2_mailing", "idx_provider2_issue1", "idx_provider2_issue2");
 			Mockito.verifyNoMoreInteractions(searchRequestBuilderMock);
 		}
 
@@ -163,8 +169,8 @@ public class SearchServiceTest {
 			filters.acknowledgeUrlFilterCandidate("type", testedType);
 			tested.parsedFilterConfigService.prepareFiltersForRequest(filters);
 			Mockito.when(tested.providerService.findContentType(testedType)).thenReturn(
-					((Map<String, Map<String, Object>>) TestUtils.loadJSONFromClasspathFile("/search/provider_1.json").get(
-							ProviderService.TYPE)).get(testedType));
+					ProviderServiceTest.createProviderContentTypeInfo(((Map<String, Map<String, Object>>) TestUtils
+							.loadJSONFromClasspathFile("/search/provider_1.json").get(ProviderService.TYPE)).get(testedType)));
 			tested.setSearchRequestIndicesAndTypes(querySettings, searchRequestBuilderMock);
 			Mockito.verifyZeroInteractions(tested.indexNamesCache);
 			Mockito.verify(searchRequestBuilderMock).setIndices("idx_provider1_issue");
@@ -179,12 +185,11 @@ public class SearchServiceTest {
 			filters.acknowledgeUrlFilterCandidate("type", testedType);
 			tested.parsedFilterConfigService.prepareFiltersForRequest(filters);
 			Mockito.when(tested.providerService.findContentType(testedType)).thenReturn(
-					((Map<String, Map<String, Object>>) TestUtils.loadJSONFromClasspathFile("/search/provider_1.json").get(
-							ProviderService.TYPE)).get(testedType));
+					ProviderServiceTest.createProviderContentTypeInfo(((Map<String, Map<String, Object>>) TestUtils
+							.loadJSONFromClasspathFile("/search/provider_1.json").get(ProviderService.TYPE)).get(testedType)));
 			tested.setSearchRequestIndicesAndTypes(querySettings, searchRequestBuilderMock);
 			Mockito.verifyZeroInteractions(tested.indexNamesCache);
-			Mockito.verify(searchRequestBuilderMock).setIndices(
-					"idx_provider1_mailing1", "idx_provider1_mailing2");
+			Mockito.verify(searchRequestBuilderMock).setIndices("idx_provider1_mailing1", "idx_provider1_mailing2");
 			Mockito.verify(searchRequestBuilderMock).setTypes("t_provider1_mailing");
 			Mockito.verifyNoMoreInteractions(searchRequestBuilderMock);
 		}
@@ -196,12 +201,11 @@ public class SearchServiceTest {
 			filters.acknowledgeUrlFilterCandidate("type", testedType);
 			tested.parsedFilterConfigService.prepareFiltersForRequest(filters);
 			Mockito.when(tested.providerService.findContentType(testedType)).thenReturn(
-					((Map<String, Map<String, Object>>) TestUtils.loadJSONFromClasspathFile("/search/provider_1.json").get(
-							ProviderService.TYPE)).get(testedType));
+					ProviderServiceTest.createProviderContentTypeInfo(((Map<String, Map<String, Object>>) TestUtils
+							.loadJSONFromClasspathFile("/search/provider_1.json").get(ProviderService.TYPE)).get(testedType)));
 			tested.setSearchRequestIndicesAndTypes(querySettings, searchRequestBuilderMock);
 			Mockito.verifyZeroInteractions(tested.indexNamesCache);
-			Mockito.verify(searchRequestBuilderMock)
-					.setIndices("idx_provider1_cosi1", "idx_provider1_cosi2");
+			Mockito.verify(searchRequestBuilderMock).setIndices("idx_provider1_cosi1", "idx_provider1_cosi2");
 			Mockito.verify(searchRequestBuilderMock).setTypes("t_provider1_cosi");
 			Mockito.verifyNoMoreInteractions(searchRequestBuilderMock);
 		}
@@ -226,8 +230,8 @@ public class SearchServiceTest {
 					Mockito.eq(SearchService.prepareIndexNamesCacheKey(sysTypesRequested, false)), Mockito.anySet());
 			Mockito.verifyNoMoreInteractions(tested.indexNamesCache);
 			Mockito.verify(tested.providerService).getAll();
-			Mockito.verify(searchRequestBuilderMock).setIndices(
-					"idx_provider1_issue", "idx_provider2_issue1", "idx_provider2_issue2");
+			Mockito.verify(searchRequestBuilderMock).setIndices("idx_provider1_issue", "idx_provider2_issue1",
+					"idx_provider2_issue2");
 			Mockito.verifyNoMoreInteractions(searchRequestBuilderMock);
 		}
 
@@ -249,8 +253,8 @@ public class SearchServiceTest {
 					Mockito.eq(SearchService.prepareIndexNamesCacheKey(sysTypesRequested, false)), Mockito.anySet());
 			Mockito.verifyNoMoreInteractions(tested.indexNamesCache);
 			Mockito.verify(tested.providerService).getAll();
-			Mockito.verify(searchRequestBuilderMock).setIndices(
-					"idx_provider1_cosi1", "idx_provider1_cosi2", "idx_provider2_cosi1", "idx_provider2_cosi2");
+			Mockito.verify(searchRequestBuilderMock).setIndices("idx_provider1_cosi1", "idx_provider1_cosi2",
+					"idx_provider2_cosi1", "idx_provider2_cosi2");
 			Mockito.verifyNoMoreInteractions(searchRequestBuilderMock);
 		}
 
@@ -273,9 +277,9 @@ public class SearchServiceTest {
 					Mockito.eq(SearchService.prepareIndexNamesCacheKey(sysTypesRequested, false)), Mockito.anySet());
 			Mockito.verifyNoMoreInteractions(tested.indexNamesCache);
 			Mockito.verify(tested.providerService).getAll();
-			Mockito.verify(searchRequestBuilderMock).setIndices(
-					"idx_provider1_cosi1", "idx_provider1_cosi2", "idx_provider1_issue", "idx_provider2_cosi1",
-					"idx_provider2_cosi2", "idx_provider2_issue1", "idx_provider2_issue2");
+			Mockito.verify(searchRequestBuilderMock).setIndices("idx_provider1_cosi1", "idx_provider1_cosi2",
+					"idx_provider1_issue", "idx_provider2_cosi1", "idx_provider2_cosi2", "idx_provider2_issue1",
+					"idx_provider2_issue2");
 			Mockito.verifyNoMoreInteractions(searchRequestBuilderMock);
 		}
 
@@ -299,9 +303,8 @@ public class SearchServiceTest {
 					Mockito.eq(SearchService.prepareIndexNamesCacheKey(sysTypesRequested, true)), Mockito.anySet());
 			Mockito.verifyNoMoreInteractions(tested.indexNamesCache);
 			Mockito.verify(tested.providerService).getAll();
-			Mockito.verify(searchRequestBuilderMock).setIndices(
-					"idx_provider1_issue", "idx_provider1_mailing1", "idx_provider1_mailing2",
-					"idx_provider2_mailing", "idx_provider2_issue1", "idx_provider2_issue2");
+			Mockito.verify(searchRequestBuilderMock).setIndices("idx_provider1_issue", "idx_provider1_mailing1",
+					"idx_provider1_mailing2", "idx_provider2_mailing", "idx_provider2_issue1", "idx_provider2_issue2");
 			Mockito.verifyNoMoreInteractions(searchRequestBuilderMock);
 			querySettings.getFacets().clear();
 		}
@@ -327,10 +330,9 @@ public class SearchServiceTest {
 					Mockito.eq(SearchService.prepareIndexNamesCacheKey(sysTypesRequested, true)), Mockito.anySet());
 			Mockito.verifyNoMoreInteractions(tested.indexNamesCache);
 			Mockito.verify(tested.providerService).getAll();
-			Mockito.verify(searchRequestBuilderMock).setIndices(
-					"idx_provider1_cosi1", "idx_provider1_cosi2", "idx_provider1_issue", "idx_provider1_mailing1",
-					"idx_provider1_mailing2", "idx_provider2_cosi1", "idx_provider2_cosi2", "idx_provider2_mailing",
-					"idx_provider2_issue1", "idx_provider2_issue2");
+			Mockito.verify(searchRequestBuilderMock).setIndices("idx_provider1_cosi1", "idx_provider1_cosi2",
+					"idx_provider1_issue", "idx_provider1_mailing1", "idx_provider1_mailing2", "idx_provider2_cosi1",
+					"idx_provider2_cosi2", "idx_provider2_mailing", "idx_provider2_issue1", "idx_provider2_issue2");
 			Mockito.verifyNoMoreInteractions(searchRequestBuilderMock);
 			querySettings.getFacets().clear();
 		}
@@ -357,8 +359,8 @@ public class SearchServiceTest {
 			Mockito.verify(tested.indexNamesCache).get(SearchService.prepareIndexNamesCacheKey(sysTypesRequested, false));
 			Mockito.verifyNoMoreInteractions(tested.indexNamesCache);
 			Mockito.verifyZeroInteractions(tested.providerService);
-			Mockito.verify(searchRequestBuilderMock).setIndices(
-					"idx_provider1_cosi1", "idx_provider1_cosi2", "idx_provider1_issue");
+			Mockito.verify(searchRequestBuilderMock).setIndices("idx_provider1_cosi1", "idx_provider1_cosi2",
+					"idx_provider1_issue");
 			Mockito.verifyNoMoreInteractions(searchRequestBuilderMock);
 		}
 
@@ -409,8 +411,10 @@ public class SearchServiceTest {
 			filters.acknowledgeUrlFilterCandidate("project", "pr1", "pr2");
 			filters.acknowledgeUrlFilterCandidate("contributor", "John Doe <john@doe.com>", "Dan Boo <boo@boo.net>");
 			// activityDateInterval not tested here because variable, see separate test
-			filters.acknowledgeUrlFilterCandidate("activity_date_from", new DateTime(1359232356456L).toString(DATE_TIME_FORMATTER_UTC));
-			filters.acknowledgeUrlFilterCandidate("activity_date_to", new DateTime(1359232366456L).toString(DATE_TIME_FORMATTER_UTC));
+			filters.acknowledgeUrlFilterCandidate("activity_date_from",
+					new DateTime(1359232356456L).toString(DATE_TIME_FORMATTER_UTC));
+			filters.acknowledgeUrlFilterCandidate("activity_date_to",
+					new DateTime(1359232366456L).toString(DATE_TIME_FORMATTER_UTC));
 			tested.parsedFilterConfigService.prepareFiltersForRequest(filters);
 			QueryBuilder qb = QueryBuilders.matchAllQuery();
 			QueryBuilder qbRes = tested.applyCommonFilters(tested.parsedFilterConfigService.getSearchFiltersForRequest(), qb);
@@ -419,7 +423,8 @@ public class SearchServiceTest {
 	}
 
 	@Test
-	public void handleCommonFiltersSettings_ActivityDateInterval() throws IOException, JSONException, ReflectiveOperationException {
+	public void handleCommonFiltersSettings_ActivityDateInterval() throws IOException, JSONException,
+			ReflectiveOperationException {
 		SearchService tested = new SearchService();
 		tested.log = Logger.getLogger("testlogger");
 
@@ -436,8 +441,10 @@ public class SearchServiceTest {
 		querySettings.setFilters(filters);
 		filters.acknowledgeUrlFilterCandidate("activity_date_interval", PastIntervalValue.TEST.toString());
 		// set date_from and date_to to some values to test this is ignored if interval is used
-		filters.acknowledgeUrlFilterCandidate("activity_date_to", new DateTime(1359232366456L).toString(DATE_TIME_FORMATTER_UTC));
-		filters.acknowledgeUrlFilterCandidate("activity_date_from", new DateTime(1359232356456L).toString(DATE_TIME_FORMATTER_UTC));
+		filters.acknowledgeUrlFilterCandidate("activity_date_to",
+				new DateTime(1359232366456L).toString(DATE_TIME_FORMATTER_UTC));
+		filters.acknowledgeUrlFilterCandidate("activity_date_from",
+				new DateTime(1359232356456L).toString(DATE_TIME_FORMATTER_UTC));
 		tested.parsedFilterConfigService.prepareFiltersForRequest(filters);
 		{
 			QueryBuilder qb = QueryBuilders.matchAllQuery();
@@ -447,7 +454,8 @@ public class SearchServiceTest {
 	}
 
 	@Test
-	public void handleCommonFiltersSettings_ActivityDateFromTo() throws IOException, JSONException, ReflectiveOperationException {
+	public void handleCommonFiltersSettings_ActivityDateFromTo() throws IOException, JSONException,
+			ReflectiveOperationException {
 		ConfigService configService = Mockito.mock(ConfigService.class);
 		Map<String, Object> cfg = TestUtils.loadJSONFromClasspathFile("/search/search_fulltext_filter_fields.json");
 		Mockito.when(configService.get(ConfigService.CFGNAME_SEARCH_FULLTEXT_FILTER_FIELDS)).thenReturn(cfg);
@@ -462,7 +470,8 @@ public class SearchServiceTest {
 		querySettings.setFilters(filters);
 
 		// case - only from
-		filters.acknowledgeUrlFilterCandidate("activity_date_from", new DateTime(1359232356456L).toString(DATE_TIME_FORMATTER_UTC));
+		filters.acknowledgeUrlFilterCandidate("activity_date_from",
+				new DateTime(1359232356456L).toString(DATE_TIME_FORMATTER_UTC));
 		filters.acknowledgeUrlFilterCandidate("activity_date_to");
 		tested.parsedFilterConfigService.prepareFiltersForRequest(filters);
 		{
@@ -473,7 +482,8 @@ public class SearchServiceTest {
 
 		// case - only to
 		filters.acknowledgeUrlFilterCandidate("activity_date_from");
-		filters.acknowledgeUrlFilterCandidate("activity_date_to", new DateTime(1359232366456L).toString(DATE_TIME_FORMATTER_UTC));
+		filters.acknowledgeUrlFilterCandidate("activity_date_to",
+				new DateTime(1359232366456L).toString(DATE_TIME_FORMATTER_UTC));
 		tested.parsedFilterConfigService.prepareFiltersForRequest(filters);
 		{
 			QueryBuilder qb = QueryBuilders.matchAllQuery();
@@ -482,8 +492,10 @@ public class SearchServiceTest {
 		}
 
 		// case - both bounds
-		filters.acknowledgeUrlFilterCandidate("activity_date_from", new DateTime(1359232356456L).toString(DATE_TIME_FORMATTER_UTC));
-		filters.acknowledgeUrlFilterCandidate("activity_date_to", new DateTime(1359232366456L).toString(DATE_TIME_FORMATTER_UTC));
+		filters.acknowledgeUrlFilterCandidate("activity_date_from",
+				new DateTime(1359232356456L).toString(DATE_TIME_FORMATTER_UTC));
+		filters.acknowledgeUrlFilterCandidate("activity_date_to",
+				new DateTime(1359232366456L).toString(DATE_TIME_FORMATTER_UTC));
 		tested.parsedFilterConfigService.prepareFiltersForRequest(filters);
 		{
 			QueryBuilder qb = QueryBuilders.matchAllQuery();
@@ -518,7 +530,7 @@ public class SearchServiceTest {
 
 		// case - list of projects is empty
 		{
-			filters.acknowledgeUrlFilterCandidate("project", Collections.EMPTY_LIST);
+			filters.acknowledgeUrlFilterCandidate("project", Collections.<String> emptyList());
 			tested.parsedFilterConfigService.prepareFiltersForRequest(filters);
 			QueryBuilder qb = QueryBuilders.matchAllQuery();
 			QueryBuilder qbRes = tested.applyCommonFilters(tested.parsedFilterConfigService.getSearchFiltersForRequest(), qb);
@@ -570,7 +582,7 @@ public class SearchServiceTest {
 
 		// case - list of tags is empty
 		{
-			filters.acknowledgeUrlFilterCandidate("tag", Collections.EMPTY_LIST);
+			filters.acknowledgeUrlFilterCandidate("tag", Collections.<String> emptyList());
 			tested.parsedFilterConfigService.prepareFiltersForRequest(filters);
 			QueryBuilder qb = QueryBuilders.matchAllQuery();
 			QueryBuilder qbRes = tested.applyCommonFilters(tested.parsedFilterConfigService.getSearchFiltersForRequest(), qb);
@@ -606,7 +618,8 @@ public class SearchServiceTest {
 	}
 
 	@Test
-	public void handleCommonFiltersSettings_contributors() throws IOException, JSONException, ReflectiveOperationException {
+	public void handleCommonFiltersSettings_contributors() throws IOException, JSONException,
+			ReflectiveOperationException {
 		SearchService tested = new SearchService();
 		tested.log = Logger.getLogger("testlogger");
 
@@ -631,7 +644,7 @@ public class SearchServiceTest {
 
 		// case - list of contributors is empty
 		{
-			filters.acknowledgeUrlFilterCandidate("contributor", Collections.EMPTY_LIST);
+			filters.acknowledgeUrlFilterCandidate("contributor", Collections.<String> emptyList());
 			tested.parsedFilterConfigService.prepareFiltersForRequest(filters);
 			QueryBuilder qb = QueryBuilders.matchAllQuery();
 			QueryBuilder qbRes = tested.applyCommonFilters(tested.parsedFilterConfigService.getSearchFiltersForRequest(), qb);
@@ -1216,8 +1229,10 @@ public class SearchServiceTest {
 			SearchRequestBuilder srbMock = new SearchRequestBuilder(null);
 			QuerySettings querySettings = new QuerySettings();
 			Filters filters = new Filters();
-			filters.acknowledgeUrlFilterCandidate("activity_date_from", new DateTime(100000l).toString(DATE_TIME_FORMATTER_UTC));
-			filters.acknowledgeUrlFilterCandidate("activity_date_to", new DateTime(100200l).toString(DATE_TIME_FORMATTER_UTC));
+			filters.acknowledgeUrlFilterCandidate("activity_date_from",
+					new DateTime(100000l).toString(DATE_TIME_FORMATTER_UTC));
+			filters
+					.acknowledgeUrlFilterCandidate("activity_date_to", new DateTime(100200l).toString(DATE_TIME_FORMATTER_UTC));
 			filters.acknowledgeUrlFilterCandidate("type", "my_content_type");
 			filters.acknowledgeUrlFilterCandidate("contributor", "my_contributor_1", "my_contributor_2");
 			filters.acknowledgeUrlFilterCandidate("content_provider", "my_sys_content_provider");
@@ -1283,7 +1298,8 @@ public class SearchServiceTest {
 	}
 
 	@Test
-	public void handleFacetSettings_activity_dates_histogram() throws IOException, JSONException, ReflectiveOperationException {
+	public void handleFacetSettings_activity_dates_histogram() throws IOException, JSONException,
+			ReflectiveOperationException {
 
 		SearchService tested = new SearchService();
 		tested.log = Logger.getLogger("testlogger");
@@ -1322,8 +1338,10 @@ public class SearchServiceTest {
 			Filters filters = new Filters();
 			filters.acknowledgeUrlFilterCandidate("tag", "tag1", "tag2");
 			filters.acknowledgeUrlFilterCandidate("activity_date_interval", PastIntervalValue.TEST.toString());
-			filters.acknowledgeUrlFilterCandidate("activity_date_from", new DateTime(1256545l).toString(DATE_TIME_FORMATTER_UTC));
-			filters.acknowledgeUrlFilterCandidate("activity_date_to", new DateTime(2256545l).toString(DATE_TIME_FORMATTER_UTC));
+			filters.acknowledgeUrlFilterCandidate("activity_date_from",
+					new DateTime(1256545l).toString(DATE_TIME_FORMATTER_UTC));
+			filters.acknowledgeUrlFilterCandidate("activity_date_to",
+					new DateTime(2256545l).toString(DATE_TIME_FORMATTER_UTC));
 			tested.parsedFilterConfigService.prepareFiltersForRequest(filters);
 			querySettings.setFilters(filters);
 			tested.handleFacetSettings(querySettings, tested.parsedFilterConfigService.getSearchFiltersForRequest(), srbMock);
@@ -1338,8 +1356,10 @@ public class SearchServiceTest {
 			querySettings.addFacet("activity_dates_histogram");
 			Filters filters = new Filters();
 			filters.acknowledgeUrlFilterCandidate("tag", "tag1", "tag2");
-			filters.acknowledgeUrlFilterCandidate("activity_date_from", new DateTime(1256545l).toString(DATE_TIME_FORMATTER_UTC));
-			filters.acknowledgeUrlFilterCandidate("activity_date_to", new DateTime(22256545l).toString(DATE_TIME_FORMATTER_UTC));
+			filters.acknowledgeUrlFilterCandidate("activity_date_from",
+					new DateTime(1256545l).toString(DATE_TIME_FORMATTER_UTC));
+			filters.acknowledgeUrlFilterCandidate("activity_date_to",
+					new DateTime(22256545l).toString(DATE_TIME_FORMATTER_UTC));
 			tested.parsedFilterConfigService.prepareFiltersForRequest(filters);
 			querySettings.setFilters(filters);
 			tested.handleFacetSettings(querySettings, tested.parsedFilterConfigService.getSearchFiltersForRequest(), srbMock);
@@ -1370,7 +1390,8 @@ public class SearchServiceTest {
 		Filters filters = new Filters();
 		// case - activity date interval precedence against from/to
 		filters.acknowledgeUrlFilterCandidate("activity_date_interval", PastIntervalValue.YEAR.toString());
-		filters.acknowledgeUrlFilterCandidate("activity_date_from", new DateTime().minus(1000000).toString(DATE_TIME_FORMATTER_UTC));
+		filters.acknowledgeUrlFilterCandidate("activity_date_from",
+				new DateTime().minus(1000000).toString(DATE_TIME_FORMATTER_UTC));
 		filters.acknowledgeUrlFilterCandidate("activity_date_to", new DateTime().toString(DATE_TIME_FORMATTER_UTC));
 		tested.parsedFilterConfigService.prepareFiltersForRequest(filters);
 		Assert.assertEquals("week", tested.getDateHistogramFacetInterval(fieldName));
@@ -1433,7 +1454,8 @@ public class SearchServiceTest {
 		Assert.assertEquals("month", tested.getDateHistogramFacetInterval(fieldName));
 
 		filters.forgetUrlFilterCandidate("activity_date_from", "activity_date_to");
-		filters.acknowledgeUrlFilterCandidate("activity_date_to", new DateTime().minusYears(10).toString(DATE_TIME_FORMATTER_UTC));
+		filters.acknowledgeUrlFilterCandidate("activity_date_to",
+				new DateTime().minusYears(10).toString(DATE_TIME_FORMATTER_UTC));
 		tested.parsedFilterConfigService.prepareFiltersForRequest(filters);
 		Assert.assertEquals("month", tested.getDateHistogramFacetInterval(fieldName));
 
@@ -1446,34 +1468,42 @@ public class SearchServiceTest {
 
 		// clear cache
 		filters.forgetUrlFilterCandidate("activity_date_from", "activity_date_to");
-		filters.acknowledgeUrlFilterCandidate("activity_date_from", new DateTime().minusHours(1).plusMillis(100).toString(DATE_TIME_FORMATTER_UTC));
+		filters.acknowledgeUrlFilterCandidate("activity_date_from",
+				new DateTime().minusHours(1).plusMillis(100).toString(DATE_TIME_FORMATTER_UTC));
 		tested.parsedFilterConfigService.prepareFiltersForRequest(filters);
 		Assert.assertEquals("minute", tested.getDateHistogramFacetInterval(fieldName));
-		filters.acknowledgeUrlFilterCandidate("activity_date_from", new DateTime().minusHours(1).minusMillis(100).toString(DATE_TIME_FORMATTER_UTC));
+		filters.acknowledgeUrlFilterCandidate("activity_date_from",
+				new DateTime().minusHours(1).minusMillis(100).toString(DATE_TIME_FORMATTER_UTC));
 		tested.parsedFilterConfigService.prepareFiltersForRequest(filters);
 		Assert.assertEquals("hour", tested.getDateHistogramFacetInterval(fieldName));
 
 		filters.forgetUrlFilterCandidate("activity_date_from", "activity_date_to");
-		filters.acknowledgeUrlFilterCandidate("activity_date_from", new DateTime().minusDays(2).plusMillis(100).toString(DATE_TIME_FORMATTER_UTC));
+		filters.acknowledgeUrlFilterCandidate("activity_date_from",
+				new DateTime().minusDays(2).plusMillis(100).toString(DATE_TIME_FORMATTER_UTC));
 		tested.parsedFilterConfigService.prepareFiltersForRequest(filters);
 		Assert.assertEquals("hour", tested.getDateHistogramFacetInterval(fieldName));
-		filters.acknowledgeUrlFilterCandidate("activity_date_from", new DateTime().minusDays(2).minusMillis(100).toString(DATE_TIME_FORMATTER_UTC));
+		filters.acknowledgeUrlFilterCandidate("activity_date_from",
+				new DateTime().minusDays(2).minusMillis(100).toString(DATE_TIME_FORMATTER_UTC));
 		tested.parsedFilterConfigService.prepareFiltersForRequest(filters);
 		Assert.assertEquals("day", tested.getDateHistogramFacetInterval(fieldName));
 
 		filters.forgetUrlFilterCandidate("activity_date_from", "activity_date_to");
-		filters.acknowledgeUrlFilterCandidate("activity_date_from", new DateTime(System.currentTimeMillis() - 1000L * 60L * 60L * 24l * 7l * 8l + 100l).toString(DATE_TIME_FORMATTER_UTC));
+		filters.acknowledgeUrlFilterCandidate("activity_date_from", new DateTime(System.currentTimeMillis() - 1000L * 60L
+				* 60L * 24l * 7l * 8l + 100l).toString(DATE_TIME_FORMATTER_UTC));
 		tested.parsedFilterConfigService.prepareFiltersForRequest(filters);
 		Assert.assertEquals("day", tested.getDateHistogramFacetInterval(fieldName));
-		filters.acknowledgeUrlFilterCandidate("activity_date_from", new DateTime(System.currentTimeMillis() - 1000L * 60L * 60L * 24l * 7l * 8l - 100l).toString(DATE_TIME_FORMATTER_UTC));
+		filters.acknowledgeUrlFilterCandidate("activity_date_from", new DateTime(System.currentTimeMillis() - 1000L * 60L
+				* 60L * 24l * 7l * 8l - 100l).toString(DATE_TIME_FORMATTER_UTC));
 		tested.parsedFilterConfigService.prepareFiltersForRequest(filters);
 		Assert.assertEquals("week", tested.getDateHistogramFacetInterval(fieldName));
 
 		filters.forgetUrlFilterCandidate("activity_date_from", "activity_date_to");
-		filters.acknowledgeUrlFilterCandidate("activity_date_from", new DateTime().minusDays(366).plusMillis(100).toString(DATE_TIME_FORMATTER_UTC));
+		filters.acknowledgeUrlFilterCandidate("activity_date_from",
+				new DateTime().minusDays(366).plusMillis(100).toString(DATE_TIME_FORMATTER_UTC));
 		tested.parsedFilterConfigService.prepareFiltersForRequest(filters);
 		Assert.assertEquals("week", tested.getDateHistogramFacetInterval(fieldName));
-		filters.acknowledgeUrlFilterCandidate("activity_date_from", new DateTime().minusDays(366).minusMillis(100).toString(DATE_TIME_FORMATTER_UTC));
+		filters.acknowledgeUrlFilterCandidate("activity_date_from", new DateTime().minusDays(366).minusMillis(100)
+				.toString(DATE_TIME_FORMATTER_UTC));
 		tested.parsedFilterConfigService.prepareFiltersForRequest(filters);
 		Assert.assertEquals("month", tested.getDateHistogramFacetInterval(fieldName));
 
@@ -1484,34 +1514,45 @@ public class SearchServiceTest {
 		tested.parsedFilterConfigService.prepareFiltersForRequest(filters);
 		Assert.assertEquals("minute", tested.getDateHistogramFacetInterval(fieldName));
 
-		filters.acknowledgeUrlFilterCandidate("activity_date_to", new DateTime(1000L + 1000L * 60L * 60L - 100L).toString(DATE_TIME_FORMATTER_UTC));
+		filters.acknowledgeUrlFilterCandidate("activity_date_to",
+				new DateTime(1000L + 1000L * 60L * 60L - 100L).toString(DATE_TIME_FORMATTER_UTC));
 		tested.parsedFilterConfigService.prepareFiltersForRequest(filters);
 		Assert.assertEquals("minute", tested.getDateHistogramFacetInterval(fieldName));
-		filters.acknowledgeUrlFilterCandidate("activity_date_to", new DateTime(1000L + 1000L * 60L * 60L + 100L).toString(DATE_TIME_FORMATTER_UTC));
+		filters.acknowledgeUrlFilterCandidate("activity_date_to",
+				new DateTime(1000L + 1000L * 60L * 60L + 100L).toString(DATE_TIME_FORMATTER_UTC));
 		tested.parsedFilterConfigService.prepareFiltersForRequest(filters);
 		Assert.assertEquals("hour", tested.getDateHistogramFacetInterval(fieldName));
 
-		filters.acknowledgeUrlFilterCandidate("activity_date_from", new DateTime(1000000L).toString(DATE_TIME_FORMATTER_UTC));
-		filters.acknowledgeUrlFilterCandidate("activity_date_to", new DateTime(1000000L + 1000L * 60L * 60L * 24l * 2l - 100L).toString(DATE_TIME_FORMATTER_UTC));
+		filters.acknowledgeUrlFilterCandidate("activity_date_from",
+				new DateTime(1000000L).toString(DATE_TIME_FORMATTER_UTC));
+		filters.acknowledgeUrlFilterCandidate("activity_date_to", new DateTime(1000000L + 1000L * 60L * 60L * 24l * 2l
+				- 100L).toString(DATE_TIME_FORMATTER_UTC));
 		tested.parsedFilterConfigService.prepareFiltersForRequest(filters);
 		Assert.assertEquals("hour", tested.getDateHistogramFacetInterval(fieldName));
-		filters.acknowledgeUrlFilterCandidate("activity_date_to", new DateTime(1000000L + 1000L * 60L * 60L * 24l * 2l + 100L).toString(DATE_TIME_FORMATTER_UTC));
+		filters.acknowledgeUrlFilterCandidate("activity_date_to", new DateTime(1000000L + 1000L * 60L * 60L * 24l * 2l
+				+ 100L).toString(DATE_TIME_FORMATTER_UTC));
 		tested.parsedFilterConfigService.prepareFiltersForRequest(filters);
 		Assert.assertEquals("day", tested.getDateHistogramFacetInterval(fieldName));
 
-		filters.acknowledgeUrlFilterCandidate("activity_date_from", new DateTime(100000000L).toString(DATE_TIME_FORMATTER_UTC));
-		filters.acknowledgeUrlFilterCandidate("activity_date_to", new DateTime(100000000L + 1000L * 60L * 60L * 24l * 7l * 8l - 100L).toString(DATE_TIME_FORMATTER_UTC));
+		filters.acknowledgeUrlFilterCandidate("activity_date_from",
+				new DateTime(100000000L).toString(DATE_TIME_FORMATTER_UTC));
+		filters.acknowledgeUrlFilterCandidate("activity_date_to", new DateTime(100000000L + 1000L * 60L * 60L * 24l * 7l
+				* 8l - 100L).toString(DATE_TIME_FORMATTER_UTC));
 		tested.parsedFilterConfigService.prepareFiltersForRequest(filters);
 		Assert.assertEquals("day", tested.getDateHistogramFacetInterval(fieldName));
-		filters.acknowledgeUrlFilterCandidate("activity_date_to", new DateTime(100000000L + 1000L * 60L * 60L * 24l * 7l * 8l + 100L).toString(DATE_TIME_FORMATTER_UTC));
+		filters.acknowledgeUrlFilterCandidate("activity_date_to", new DateTime(100000000L + 1000L * 60L * 60L * 24l * 7l
+				* 8l + 100L).toString(DATE_TIME_FORMATTER_UTC));
 		tested.parsedFilterConfigService.prepareFiltersForRequest(filters);
 		Assert.assertEquals("week", tested.getDateHistogramFacetInterval(fieldName));
 
-		filters.acknowledgeUrlFilterCandidate("activity_date_from", new DateTime(1000000000L).toString(DATE_TIME_FORMATTER_UTC));
-		filters.acknowledgeUrlFilterCandidate("activity_date_to", new DateTime(1000000000L + 1000L * 60L * 60L * 24L * 366L - 100L).toString(DATE_TIME_FORMATTER_UTC));
+		filters.acknowledgeUrlFilterCandidate("activity_date_from",
+				new DateTime(1000000000L).toString(DATE_TIME_FORMATTER_UTC));
+		filters.acknowledgeUrlFilterCandidate("activity_date_to", new DateTime(1000000000L + 1000L * 60L * 60L * 24L * 366L
+				- 100L).toString(DATE_TIME_FORMATTER_UTC));
 		tested.parsedFilterConfigService.prepareFiltersForRequest(filters);
 		Assert.assertEquals("week", tested.getDateHistogramFacetInterval(fieldName));
-		filters.acknowledgeUrlFilterCandidate("activity_date_to", new DateTime(1000000000L + 1000L * 60L * 60L * 24L * 366L + 100L).toString(DATE_TIME_FORMATTER_UTC));
+		filters.acknowledgeUrlFilterCandidate("activity_date_to", new DateTime(1000000000L + 1000L * 60L * 60L * 24L * 366L
+				+ 100L).toString(DATE_TIME_FORMATTER_UTC));
 		tested.parsedFilterConfigService.prepareFiltersForRequest(filters);
 		Assert.assertEquals("month", tested.getDateHistogramFacetInterval(fieldName));
 	}

@@ -16,11 +16,13 @@ import javax.ws.rs.core.SecurityContext;
 import org.searchisko.api.annotations.security.ContributorAllowed;
 import org.searchisko.api.annotations.security.ProviderAllowed;
 import org.searchisko.api.rest.exception.NotAuthenticatedException;
+import org.searchisko.api.rest.exception.NotAuthorizedException;
 import org.searchisko.api.service.ContributorProfileService;
 import org.searchisko.api.util.SearchUtils;
 
 /**
- * Authentication utility service. Use it in your RestServices if you need info about currently logged in user!
+ * Authentication utility service. Use it in your RestServices if you need info about currently logged in user! Also
+ * contains methods for fine grained permission checks.
  * 
  * @author Libor Krzyzanek
  * @author Vlastimil Elias (velias at redhat dot com)
@@ -54,6 +56,27 @@ public class AuthenticationUtilService {
 			throw new NotAuthenticatedException(AuthenticatedUserType.PROVIDER);
 		}
 		return securityContext.getUserPrincipal().getName();
+	}
+
+	/**
+	 * Check if logged in user has management permission for passed in provider.
+	 * 
+	 * @param securityContext to look for currently logged in user in
+	 * @param providerName to check permission for
+	 * @throws NotAuthorizedException if user has not the permission
+	 */
+	public void checkProviderManagementPermission(SecurityContext securityContext, String providerName)
+			throws NotAuthorizedException {
+		if (log.isLoggable(Level.FINE))
+			log.fine("Going to check ProviderManage permission for provider " + providerName + " and securityContext "
+					+ securityContext);
+		if (securityContext != null
+				&& providerName != null
+				&& (securityContext.isUserInRole(ProviderCustomSecurityContext.SUPER_ADMIN_ROLE) || providerName
+						.equalsIgnoreCase(getAuthenticatedProvider(securityContext)))) {
+			return;
+		}
+		throw new NotAuthorizedException("management permission for content provider " + providerName);
 	}
 
 	/**

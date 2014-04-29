@@ -21,6 +21,7 @@ import org.searchisko.api.service.ContributorProfileService;
 import org.searchisko.api.service.ContributorService;
 import org.searchisko.api.service.ProjectService;
 import org.searchisko.api.service.ProviderService;
+import org.searchisko.api.service.ProviderServiceTest;
 import org.searchisko.api.service.SearchClientService;
 import org.searchisko.api.tasker.Task;
 import org.searchisko.api.tasker.TaskConfigurationException;
@@ -101,7 +102,8 @@ public class ReindexingTaskFactoryTest {
 		{
 			Map<String, Object> typeDef = new HashMap<String, Object>();
 			typeDef.put(ProviderService.PERSIST, false);
-			Mockito.when(tested.providerService.findContentType("mytype")).thenReturn(typeDef);
+			Mockito.when(tested.providerService.findContentType("mytype")).thenReturn(
+					ProviderServiceTest.createProviderContentTypeInfo(typeDef));
 			Map<String, Object> config = new HashMap<String, Object>();
 			config.put(ReindexingTaskFactory.CFG_SYS_CONTENT_TYPE, "mytype");
 
@@ -116,7 +118,8 @@ public class ReindexingTaskFactoryTest {
 		{
 			Map<String, Object> typeDef = new HashMap<String, Object>();
 			typeDef.put(ProviderService.PERSIST, true);
-			Mockito.when(tested.providerService.findContentType("mytype")).thenReturn(typeDef);
+			Mockito.when(tested.providerService.findContentType("mytype")).thenReturn(
+					ProviderServiceTest.createProviderContentTypeInfo(typeDef));
 
 			Map<String, Object> config = new HashMap<String, Object>();
 			config.put(ReindexingTaskFactory.CFG_SYS_CONTENT_TYPE, "mytype");
@@ -176,7 +179,8 @@ public class ReindexingTaskFactoryTest {
 		// case - everything is OK
 		{
 			Map<String, Object> typeDef = new HashMap<String, Object>();
-			Mockito.when(tested.providerService.findContentType("mytype")).thenReturn(typeDef);
+			Mockito.when(tested.providerService.findContentType("mytype")).thenReturn(
+					ProviderServiceTest.createProviderContentTypeInfo(typeDef));
 
 			Map<String, Object> config = new HashMap<String, Object>();
 			config.put(ReindexingTaskFactory.CFG_SYS_CONTENT_TYPE, "mytype");

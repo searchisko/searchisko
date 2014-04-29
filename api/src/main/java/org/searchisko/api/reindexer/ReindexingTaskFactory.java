@@ -24,6 +24,7 @@ import org.searchisko.api.service.ContributorProfileService;
 import org.searchisko.api.service.ContributorService;
 import org.searchisko.api.service.ProjectService;
 import org.searchisko.api.service.ProviderService;
+import org.searchisko.api.service.ProviderService.ProviderContentTypeInfo;
 import org.searchisko.api.service.SearchClientService;
 import org.searchisko.api.tasker.Task;
 import org.searchisko.api.tasker.TaskConfigurationException;
@@ -110,7 +111,7 @@ public class ReindexingTaskFactory implements TaskFactory {
 
 	private Task createRenormalizeByContentTypeTask(Map<String, Object> taskConfig) throws TaskConfigurationException {
 		String sysContentType = getMandatoryConfigString(taskConfig, CFG_SYS_CONTENT_TYPE);
-		Map<String, Object> typeDef = providerService.findContentType(sysContentType);
+		ProviderContentTypeInfo typeDef = providerService.findContentType(sysContentType);
 		if (typeDef == null) {
 			throw new TaskConfigurationException("Content type '" + sysContentType + "' doesn't exists.");
 		}
@@ -133,11 +134,11 @@ public class ReindexingTaskFactory implements TaskFactory {
 
 	private Task createReindexFromPersistenceTask(Map<String, Object> taskConfig) throws TaskConfigurationException {
 		String sysContentType = getMandatoryConfigString(taskConfig, CFG_SYS_CONTENT_TYPE);
-		Map<String, Object> typeDef = providerService.findContentType(sysContentType);
+		ProviderContentTypeInfo typeDef = providerService.findContentType(sysContentType);
 		if (typeDef == null) {
 			throw new TaskConfigurationException("Content type '" + sysContentType + "' doesn't exists.");
 		}
-		if (!ProviderService.extractPersist(typeDef)) {
+		if (!ProviderService.extractPersist(typeDef.getTypeDef())) {
 			throw new TaskConfigurationException("Content type '" + sysContentType + "' is not persisted.");
 		}
 		return new ReindexFromPersistenceTask(contentPersistenceService, providerService, searchClientService,

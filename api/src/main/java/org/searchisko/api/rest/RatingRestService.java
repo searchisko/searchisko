@@ -33,6 +33,7 @@ import org.searchisko.api.annotations.security.ContributorAllowed;
 import org.searchisko.api.rest.exception.RequiredFieldException;
 import org.searchisko.api.rest.security.AuthenticationUtilService;
 import org.searchisko.api.service.ProviderService;
+import org.searchisko.api.service.ProviderService.ProviderContentTypeInfo;
 import org.searchisko.api.service.SearchClientService;
 import org.searchisko.api.service.SearchIndexMissingException;
 import org.searchisko.api.util.SearchUtils;
@@ -188,14 +189,14 @@ public class RatingRestService extends RestServiceBase {
 			return Response.status(Response.Status.BAD_REQUEST).entity(QUERY_PARAM_ID + " format is invalid").build();
 		}
 
-		Map<String, Object> typeDef = providerService.findContentType(type);
-		if (typeDef == null) {
+		ProviderContentTypeInfo typeInfo = providerService.findContentType(type);
+		if (typeInfo == null) {
 			log.fine("unknown type for content with sys_id=" + contentSysId);
 			return Response.status(Response.Status.NOT_FOUND).entity("content type is unknown").build();
 		}
 
-		String indexName = ProviderService.extractIndexName(typeDef, type);
-		String indexType = ProviderService.extractIndexType(typeDef, type);
+		String indexName = ProviderService.extractIndexName(typeInfo, type);
+		String indexType = ProviderService.extractIndexType(typeInfo, type);
 
 		try {
 			GetResponse getResponse = searchClientService.performGet(indexName, indexType, contentSysId);

@@ -16,6 +16,7 @@ import org.elasticsearch.common.settings.SettingsException;
 import org.jboss.elasticsearch.tools.content.InvalidDataException;
 import org.searchisko.api.events.ContentBeforeIndexedEvent;
 import org.searchisko.api.service.ProviderService;
+import org.searchisko.api.service.ProviderService.ProviderContentTypeInfo;
 import org.searchisko.api.service.SearchClientService;
 import org.searchisko.api.tasker.Task;
 import org.searchisko.persistence.service.ContentPersistenceService;
@@ -59,15 +60,15 @@ public class ReindexFromPersistenceTask extends Task {
 
 	@Override
 	public void performTask() throws Exception {
-		Map<String, Object> typeDef = providerService.findContentType(sysContentType);
-		if (typeDef == null) {
+		ProviderContentTypeInfo typeInfo = providerService.findContentType(sysContentType);
+		if (typeInfo == null) {
 			throw new Exception("Configuration not found for sys_content_type " + sysContentType);
 		}
 
 		int count = 0;
 		try {
-			String indexName = ProviderService.extractIndexName(typeDef, sysContentType);
-			String indexType = ProviderService.extractIndexType(typeDef, sysContentType);
+			String indexName = ProviderService.extractIndexName(typeInfo, sysContentType);
+			String indexType = ProviderService.extractIndexType(typeInfo, sysContentType);
 			ListRequest lr = contentPersistenceService.listRequestInit(sysContentType);
 			if (lr.hasContent()) {
 				long startTimestamp = System.currentTimeMillis();
@@ -82,7 +83,7 @@ public class ReindexFromPersistenceTask extends Task {
 						try {
 							// Run preprocessors to normalize mapped fields
 							providerService.runPreprocessors(sysContentType,
-									ProviderService.extractPreprocessors(typeDef, sysContentType), content);
+									ProviderService.extractPreprocessors(typeInfo, sysContentType), content);
 						} catch (InvalidDataException e) {
 							writeTaskLog("Data error from preprocessors execution so document " + id + " is skipped: "
 									+ e.getMessage());
