@@ -53,7 +53,6 @@ public class JdbcContentPersistenceService implements ContentPersistenceService 
 	@Override
 	public Map<String, Object> get(String id, String sysContentType) {
 		String tableName = getTableName(sysContentType);
-		ensureTableExists(tableName);
 		if (!checkTableExists(tableName))
 			return null;
 		String sqlString = String.format("select json_data from %s where id = ?", tableName);
@@ -206,6 +205,22 @@ public class JdbcContentPersistenceService implements ContentPersistenceService 
 		return null;
 	}
 
+	protected int executeIntegerReturningSql(final String sql, final Object... params) {
+		try (Connection conn = searchiskoDs.getConnection(); PreparedStatement statement = conn.prepareStatement(sql)) {
+			setParams(statement, params);
+
+			try (final ResultSet rs = statement.executeQuery()) {
+				while (rs.next()) {
+					return rs.getInt(1);
+				}
+			}
+		} catch (SQLException e) {
+			log.severe(String.format("Error executing statement -- %s -- Error -- %s", sql, e.getMessage()));
+			throw new RuntimeException(e);
+		}
+		return 0;
+	}
+
 	protected boolean executeRecordExistsSql(final String sql, final Object... params) {
 		try (Connection conn = searchiskoDs.getConnection(); PreparedStatement statement = conn.prepareStatement(sql)) {
 			setParams(statement, params);
@@ -278,7 +293,6 @@ public class JdbcContentPersistenceService implements ContentPersistenceService 
 	protected ListRequest listRequestImpl(String sysContentType, int beginIndex) {
 		List<ContentTuple<String, Map<String, Object>>> content = new ArrayList<>(10);
 		String tableName = getTableName(sysContentType);
-		ensureTableExists(tableName);
 		if (checkTableExists(tableName)) {
 			final String sql = String.format("select json_data, id from %s order by id limit %d offset %d", tableName,
 					LIST_PAGE_SIZE, beginIndex);
@@ -305,6 +319,15 @@ public class JdbcContentPersistenceService implements ContentPersistenceService 
 
 	public DataSource getDataSource() {
 		return searchiskoDs;
+	}
+
+	@Override
+	public int countRecords(String sysContentType) {
+		String tableName = getTableName(sysContentType);
+		if (!checkTableExists(tableName))
+			return 0;
+		String sqlString = String.format("select count(*) from %s", tableName);
+		return executeIntegerReturningSql(sqlString);
 	}
 
 }

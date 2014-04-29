@@ -14,7 +14,13 @@ import java.util.Map;
  */
 public interface ContentPersistenceService {
 
-	// TODO PERSISTENCE - add management operation which allows to get counts of records for all stored sys_content_types
+	/**
+	 * Get number of records for defined content type.
+	 * 
+	 * @param sysContentType sys_content_type of content objects to count
+	 * @return number of records
+	 */
+	public int countRecords(String sysContentType);
 
 	/**
 	 * Get content with specified id
