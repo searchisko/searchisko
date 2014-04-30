@@ -8,6 +8,7 @@
 
 	<container qualifier="jbossas-managed-7" default="true">
 		<configuration>
+			<!-- See https://docs.jboss.org/author/display/ARQ/JBoss+AS+7.1%2C+JBoss+EAP+6.0+-+Managed -->
 			<property name="jbossHome">${arquillian.jboss.home}</property>
 			<property name="managementAddress">${arquillian.jboss.managementAddress}</property>
 			<property name="managementPort">${arquillian.jboss.managementPort}</property>
