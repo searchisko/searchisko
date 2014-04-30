@@ -41,7 +41,9 @@ public class DeploymentHelpers {
 
 	protected static Logger log = Logger.getLogger(DeploymentHelpers.class.getName());
 
-	public static final String DEFAULT_REST_VERSION = "v1/rest/";
+	public static final String DEFAULT_API_VERSION = "v1/";
+
+	public static final String DEFAULT_REST_VERSION = DEFAULT_API_VERSION + "rest/";
 
 	public static final String DEFAULT_PROVIDER_NAME = "jbossorg";
 
