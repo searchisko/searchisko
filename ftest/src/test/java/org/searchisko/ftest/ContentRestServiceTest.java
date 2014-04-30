@@ -28,7 +28,7 @@ import static org.hamcrest.Matchers.not;
 /**
  * Integration tests for {@link org.searchisko.api.rest.ContentRestService} REST API
  * <p/>
- * see http://docs.jbossorg.apiary.io/#contentpushapi
+ * see http://docs.jbossorg.apiary.io/#contentmanipulationapi
  *
  * @author Libor Krzyzanek
  * @see org.searchisko.ftest.ContentRestServiceTest
@@ -63,19 +63,33 @@ public class ContentRestServiceTest {
 	@Test
 	@InSequence(1)
 	public void assertNotAuthenticated() throws MalformedURLException {
-		// TEST: POST
 		int expStatus = 401;
-		given().pathParam("type", TYPE).pathParam("contentId", "test").contentType(ContentType.JSON)
+		// POST /content/type/id
+		given().pathParam("type", TYPE).pathParam("contentId", "id").contentType(ContentType.JSON)
 				.body("{}")
 				.expect().statusCode(expStatus).log().ifStatusCodeMatches(is(not(expStatus)))
 				.when().post(new URL(context, CONTENT_REST_API).toExternalForm());
 
-		// TEST: DELETE
-		expStatus = 401;
-		given().pathParam("type", TYPE).pathParam("contentId", "test").contentType(ContentType.JSON)
+		// POST /content/type/
+		given().pathParam("type", TYPE).pathParam("contentId", "").contentType(ContentType.JSON)
+				.body("{}")
+				.expect().statusCode(expStatus).log().ifStatusCodeMatches(is(not(expStatus)))
+				.when().post(new URL(context, CONTENT_REST_API).toExternalForm());
+
+		// DELETE /content/type/
+		given().pathParam("type", TYPE).pathParam("contentId", "").contentType(ContentType.JSON)
 				.body("{}")
 				.expect().statusCode(expStatus).log().ifStatusCodeMatches(is(not(expStatus)))
 				.when().delete(new URL(context, CONTENT_REST_API).toExternalForm());
+
+		// DELETE /content/type/id
+		given().pathParam("type", TYPE).pathParam("contentId", "id").contentType(ContentType.JSON)
+				.body("{}")
+				.expect().statusCode(expStatus).log().ifStatusCodeMatches(is(not(expStatus)))
+				.when().delete(new URL(context, CONTENT_REST_API).toExternalForm());
+
 	}
+
+	//TODO: FTEST: ContentRestServiceTest: Test adding/removing data via testing provider
 
 }
