@@ -17,7 +17,12 @@ import static com.jayway.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.is;
 
 /**
+ * Integration test for /auth/status REST API.
+ * <p/>
+ * http://docs.jbossorg.apiary.io/#userauthenticationstatusapi
+ *
  * @author Lukas Vlcek
+ * @author Libor Krzyzanek
  */
 @RunWith(Arquillian.class)
 public class AuthStatusRestServiceTest {
@@ -27,21 +32,18 @@ public class AuthStatusRestServiceTest {
 		return DeploymentHelpers.createDeployment();
 	}
 
-	private final String restVersion = "v1/rest/";
-
 	@Test
 	@InSequence(0)
 	public void assertSSOServiceNotAvailable(@ArquillianResource URL context) throws MalformedURLException {
 
 		given().
 				contentType(ContentType.JSON).
-		expect().
+				expect().
 				log().ifError().
-//				log().ifStatusCodeIsEqualTo(200).
 				contentType(ContentType.JSON).
 				statusCode(200).
 				body("authenticated", is(false)).
-		when().
-				get(new URL(context, restVersion + "auth/status").toExternalForm());
+				when().
+				get(new URL(context, DeploymentHelpers.DEFAULT_REST_VERSION + "auth/status").toExternalForm());
 	}
 }
