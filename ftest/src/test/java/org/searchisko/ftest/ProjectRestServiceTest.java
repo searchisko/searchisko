@@ -105,6 +105,12 @@ public class ProjectRestServiceTest {
 
 	@Test
 	@InSequence(21)
+	public void assertRefreshES() throws MalformedURLException {
+		DeploymentHelpers.refreshES();
+	}
+
+	@Test
+	@InSequence(25)
 	public void assertGetCreatedProject() throws MalformedURLException {
 		given().contentType(ContentType.JSON)
 				.expect().statusCode(200)
@@ -116,7 +122,7 @@ public class ProjectRestServiceTest {
 	}
 
 	@Test
-	@InSequence(22) @Ignore("DCP returns same data as unauthenticated request")
+	@InSequence(26) @Ignore("DCP returns same data as unauthenticated request perhaps because of no mapping.")
 	public void assertGetCreatedProjectAuthenticated() throws MalformedURLException {
 		given().contentType(ContentType.JSON)
 				.auth().basic(DeploymentHelpers.DEFAULT_PROVIDER_NAME, DeploymentHelpers.DEFAULT_PROVIDER_PASSWORD)
