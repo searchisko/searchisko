@@ -14,7 +14,6 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.searchisko.api.rest.ContributorRestService;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -26,9 +25,11 @@ import static com.jayway.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.*;
 
 /**
- * Unit test for {@link ContributorRestService}.
+ * Integration test for /contributor REST API.
  *
  * @author Vlastimil Elias (velias at redhat dot com), Jason Porter (jporter@redhat.com)
+ * @author Libor Krzyzanek
+ * @see org.searchisko.api.rest.ContributorRestService
  */
 @RunWith(Arquillian.class)
 public class ContributorRestServiceTest {
@@ -38,11 +39,84 @@ public class ContributorRestServiceTest {
         return DeploymentHelpers.createDeployment();
     }
 
-    private final String restVersion = "v1/rest/";
+    private final String restVersion = DeploymentHelpers.DEFAULT_REST_VERSION;
 
-    private static String contributorId;
+	protected final String CONTRIBUTOR_REST_API = restVersion + "contributor/{id}";
+
+	private static String contributorId;
 
 	private static String contributorCode;
+
+	@Test
+	@InSequence(0)
+	public void assertNotAuthenticated(@ArquillianResource URL context) throws MalformedURLException {
+		int expStatus = 401;
+
+		// GET /contributor/
+		given().contentType(ContentType.JSON)
+				.pathParam("id", "")
+				.expect().statusCode(expStatus)
+				.log().ifStatusCodeMatches(is(not(expStatus)))
+				.when().get(new URL(context, CONTRIBUTOR_REST_API).toExternalForm());
+
+
+		// GET /contributor/some-id
+		given().contentType(ContentType.JSON)
+				.pathParam("id", "some-id")
+				.expect().statusCode(expStatus)
+				.log().ifStatusCodeMatches(is(not(expStatus)))
+				.when().get(new URL(context, CONTRIBUTOR_REST_API).toExternalForm());
+
+		// GET /contributor/search
+		given().contentType(ContentType.JSON)
+				.pathParam("id", "")
+				.expect().statusCode(expStatus)
+				.log().ifStatusCodeMatches(is(not(expStatus)))
+				.when().get(new URL(context, CONTRIBUTOR_REST_API + "search").toExternalForm());
+
+		// POST /contributor/
+		given().contentType(ContentType.JSON)
+				.pathParam("id", "")
+				.body("{}")
+				.expect().statusCode(expStatus)
+				.log().ifStatusCodeMatches(is(not(expStatus)))
+				.when().post(new URL(context, CONTRIBUTOR_REST_API).toExternalForm());
+
+		// POST /contributor/some-id
+		given().contentType(ContentType.JSON)
+				.pathParam("id", "some-id")
+				.body("{}")
+				.expect().statusCode(expStatus)
+				.log().ifStatusCodeMatches(is(not(expStatus)))
+				.when().post(new URL(context, CONTRIBUTOR_REST_API).toExternalForm());
+
+
+		// POST /contributor/some-id/code/some-code
+		given().contentType(ContentType.JSON)
+				.pathParam("id", "some-id")
+				.pathParam("code", "some-code")
+				.body("{}")
+				.expect().statusCode(expStatus)
+				.log().ifStatusCodeMatches(is(not(expStatus)))
+				.when().post(new URL(context, CONTRIBUTOR_REST_API + "/code/{code}").toExternalForm());
+
+		// POST /contributor/some-id/mergeTo/idTo
+		given().contentType(ContentType.JSON)
+				.pathParam("id", "some-id")
+				.pathParam("idTo", "idTo")
+				.body("{}")
+				.expect().statusCode(expStatus)
+				.log().ifStatusCodeMatches(is(not(expStatus)))
+				.when().post(new URL(context, CONTRIBUTOR_REST_API + "/mergeTo/{idTo}").toExternalForm());
+
+		// DELETE /contributor/some-id
+		given().contentType(ContentType.JSON)
+				.pathParam("id", "some-id")
+				.expect().statusCode(expStatus)
+				.log().ifStatusCodeMatches(is(not(expStatus)))
+				.when().delete(new URL(context, CONTRIBUTOR_REST_API).toExternalForm());
+	}
+
 
     @Test @InSequence(0)
     public void assertServiceRespondingNoHits(@ArquillianResource URL context) throws MalformedURLException {
