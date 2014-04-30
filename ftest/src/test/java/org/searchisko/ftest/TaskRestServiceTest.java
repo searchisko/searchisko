@@ -23,6 +23,8 @@ import static org.hamcrest.Matchers.*;
 
 /**
  * Integration test for Tasks REST API {@link org.searchisko.api.rest.TaskRestService}
+ * <p/>
+ * http://docs.jbossorg.apiary.io/#managementapicontentreindexationtasks
  *
  * @author Libor Krzyzanek
  */
