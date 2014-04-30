@@ -12,7 +12,7 @@
 			<property name="managementAddress">${arquillian.jboss.managementAddress}</property>
 			<property name="managementPort">${arquillian.jboss.managementPort}</property>
 			<property name="javaVmArguments">-Xms1024m -Xmx1024m -XX:MaxPermSize=512m</property>
-			<property name="startupTimeoutInSeconds">300</property>
+			<property name="startupTimeoutInSeconds">30</property>
 			<property name="outputToConsole">true</property>
 		</configuration>
 	</container>
