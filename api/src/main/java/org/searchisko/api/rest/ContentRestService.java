@@ -34,6 +34,7 @@ import org.elasticsearch.action.bulk.BulkRequestBuilder;
 import org.elasticsearch.action.bulk.BulkResponse;
 import org.elasticsearch.action.delete.DeleteResponse;
 import org.elasticsearch.action.get.GetResponse;
+import org.elasticsearch.action.index.IndexRequestBuilder;
 import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
@@ -68,6 +69,12 @@ import org.searchisko.persistence.service.ContentPersistenceService;
 @Consumes(MediaType.APPLICATION_JSON)
 @ProviderAllowed
 public class ContentRestService extends RestServiceBase {
+
+	static final String RETFIELD_WARNINGS = "warnings";
+
+	static final String RETFIELD_MESSAGE = "message";
+
+	static final String RETFIELD_STATUS = "status";
 
 	@Inject
 	protected ProviderService providerService;
@@ -179,16 +186,124 @@ public class ContentRestService extends RestServiceBase {
 	/**
 	 * Store new content into Searchisko.
 	 * 
-	 * This method fires {@link ContentStoredEvent}.
+	 * This method fires {@link ContentBeforeIndexedEvent} and {@link ContentStoredEvent}.
 	 */
 	@POST
 	@Path("/{contentId}")
 	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
 	@ProviderAllowed
 	public Object pushContent(@PathParam("type") String type, @PathParam("contentId") String contentId,
 			Map<String, Object> content) {
 
-		// validation
+		ProviderContentTypeInfo typeInfo = getTypeInfoWithManagePermissionCheck(type);
+
+		PushContentImplRet pcir = pushContentImpl(typeInfo, contentId, content);
+
+		// Push to search subsystem
+		IndexResponse ir = pcir.irb.execute().actionGet();
+
+		ContentStoredEvent event = new ContentStoredEvent(pcir.sysContentId, content);
+		log.log(Level.FINE, "Going to fire event {0}", event);
+		eventContentStored.fire(event);
+
+		Map<String, Object> retJson = new LinkedHashMap<String, Object>();
+		processIndexResponse(ir, retJson);
+		if (pcir.contentWarnings != null && !pcir.contentWarnings.isEmpty())
+			retJson.put(RETFIELD_WARNINGS, pcir.contentWarnings);
+		return Response.ok(retJson).build();
+	}
+
+	private void processIndexResponse(IndexResponse ir, Map<String, Object> retJson) {
+		if (ir.getVersion() > 1) {
+			retJson.put(RETFIELD_STATUS, "update");
+			retJson.put(RETFIELD_MESSAGE, "Content updated successfully.");
+		} else {
+			retJson.put(RETFIELD_STATUS, "insert");
+			retJson.put(RETFIELD_MESSAGE, "Content inserted successfully.");
+		}
+	}
+
+	/**
+	 * Store bulk of new content into Searchisko.
+	 * 
+	 * This method fires series of {@link ContentBeforeIndexedEvent} and {@link ContentStoredEvent}.
+	 */
+	@POST
+	@Path("/")
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
+	@ProviderAllowed
+	public Object pushContentBulk(@PathParam("type") String type, Map<String, Object> contentStructure) {
+		ProviderContentTypeInfo typeInfo = getTypeInfoWithManagePermissionCheck(type);
+
+		Map<String, Object> ret = new LinkedHashMap<>();
+
+		if (contentStructure.isEmpty())
+			return ret;
+
+		BulkRequestBuilder brb = searchClientService.getClient().prepareBulk();
+		List<String> ids = new ArrayList<>();
+		Map<String, PushContentImplRet> pcis = new LinkedHashMap<>();
+
+		for (String contentId : contentStructure.keySet()) {
+			Object o = contentStructure.get(contentId);
+			if (!(o instanceof Map)) {
+				Map<String, Object> retitem = new LinkedHashMap<>();
+				retitem.put(RETFIELD_STATUS, "error");
+				retitem.put(RETFIELD_MESSAGE, "content must be JSON structure");
+				ret.put(contentId, retitem);
+			} else {
+				@SuppressWarnings("unchecked")
+				Map<String, Object> content = (Map<String, Object>) o;
+				try {
+					PushContentImplRet pcir = pushContentImpl(typeInfo, contentId, content);
+					brb.add(pcir.irb);
+					ids.add(contentId);
+					pcis.put(contentId, pcir);
+				} catch (RequiredFieldException | BadFieldException e) {
+					Map<String, Object> retitem = new LinkedHashMap<>();
+					retitem.put(RETFIELD_STATUS, "error");
+					retitem.put(RETFIELD_MESSAGE, e.getMessage());
+					ret.put(contentId, retitem);
+				}
+			}
+		}
+
+		if (!ids.isEmpty()) {
+			BulkResponse br = brb.execute().actionGet();
+
+			int i = 0;
+			for (BulkItemResponse bri : br.getItems()) {
+				String contentId = ids.get(i);
+				Map<String, Object> retitem = new LinkedHashMap<>();
+				ret.put(contentId, retitem);
+				if (!bri.isFailed()) {
+					PushContentImplRet pcir = pcis.get(contentId);
+					ContentStoredEvent event = new ContentStoredEvent(pcir.sysContentId, pcir.content);
+					log.log(Level.FINE, "Going to fire event {0}", event);
+					eventContentStored.fire(event);
+
+					processIndexResponse((IndexResponse) bri.getResponse(), retitem);
+					if (pcir.contentWarnings != null && !pcir.contentWarnings.isEmpty())
+						retitem.put(RETFIELD_WARNINGS, pcir.contentWarnings);
+				} else {
+					retitem.put(RETFIELD_STATUS, "error");
+					retitem.put(RETFIELD_MESSAGE, bri.getFailureMessage());
+				}
+				i++;
+			}
+		}
+		return ret;
+
+	}
+
+	public PushContentImplRet pushContentImpl(ProviderContentTypeInfo typeInfo, String contentId,
+			Map<String, Object> content) throws RequiredFieldException, BadFieldException {
+
+		String type = typeInfo.getTypeName();
+
+		// content validation
 		if (contentId == null || contentId.isEmpty()) {
 			throw new RequiredFieldException("contentId");
 		}
@@ -198,10 +313,8 @@ public class ContentRestService extends RestServiceBase {
 		}
 
 		if (content == null || content.isEmpty()) {
-			return Response.status(Status.BAD_REQUEST).entity("Some content for pushing must be defined").build();
+			throw new BadFieldException("content", "Some content for pushing must be defined");
 		}
-
-		ProviderContentTypeInfo typeInfo = getTypeInfoWithManagePermissionCheck(type);
 
 		String sysContentId = providerService.generateSysId(type, contentId);
 
@@ -246,27 +359,27 @@ public class ContentRestService extends RestServiceBase {
 		log.log(Level.FINE, "Going to fire event {0}", event1);
 		eventBeforeIndexed.fire(event1);
 
-		// Push to search subsystem
-		IndexResponse ir = searchClientService.getClient().prepareIndex(indexName, indexType, sysContentId)
-				.setSource(content).execute().actionGet();
+		IndexRequestBuilder irb = searchClientService.getClient().prepareIndex(indexName, indexType, sysContentId)
+				.setSource(content);
+		return new PushContentImplRet(irb, contentWarnings, sysContentId, contentId, content);
+	}
 
-		ContentStoredEvent event = new ContentStoredEvent(sysContentId, content);
-		log.log(Level.FINE, "Going to fire event {0}", event);
-		eventContentStored.fire(event);
+	protected static final class PushContentImplRet {
+		IndexRequestBuilder irb;
+		List<Map<String, String>> contentWarnings;
+		String sysContentId;
+		String contentId;
+		Map<String, Object> content;
 
-		Map<String, Object> retJson = new LinkedHashMap<String, Object>();
-		if (ir.getVersion() > 1) {
-			retJson.put("status", "update");
-			retJson.put("message", "Content was updated successfully.");
-			if (contentWarnings != null && !contentWarnings.isEmpty())
-				retJson.put("warnings", contentWarnings);
-		} else {
-			retJson.put("status", "insert");
-			retJson.put("message", "Content was inserted successfully.");
-			if (contentWarnings != null && !contentWarnings.isEmpty())
-				retJson.put("warnings", contentWarnings);
+		public PushContentImplRet(IndexRequestBuilder irb, List<Map<String, String>> contentWarnings, String sysContentId,
+				String contentId, Map<String, Object> content) {
+			super();
+			this.irb = irb;
+			this.contentWarnings = contentWarnings;
+			this.sysContentId = sysContentId;
+			this.contentId = contentId;
+			this.content = content;
 		}
-		return Response.ok(retJson).build();
 	}
 
 	/**
@@ -359,6 +472,10 @@ public class ContentRestService extends RestServiceBase {
 		@SuppressWarnings("unchecked")
 		List<String> ids = (List<String>) o;
 
+		Map<String, String> ret = new LinkedHashMap<>();
+		if (ids.isEmpty())
+			return ret;
+
 		String indexName = ProviderService.extractIndexName(typeInfo, type);
 		String indexType = ProviderService.extractIndexType(typeInfo, type);
 
@@ -378,7 +495,6 @@ public class ContentRestService extends RestServiceBase {
 
 		BulkResponse br = brb.execute().actionGet();
 
-		Map<String, String> ret = new LinkedHashMap<>();
 		int i = 0;
 		for (BulkItemResponse bri : br.getItems()) {
 			String contentId = ids.get(i);

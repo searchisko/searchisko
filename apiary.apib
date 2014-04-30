@@ -61,7 +61,7 @@ Client JavaScript applications running directly in user browser can use Searchis
 ---
 
 --
-Content Push API
+Content Manipulation API
 This part of API is primarily used by *content providers* to manipulate [content](https://github.com/searchisko/searchisko/blob/master/documentation/rest-api/content/dcp_content_object.md) in Searchisko.
 
 Each provider has set of 'provider types' defined in Searchisko, which are passed on this API as `{sys_content_type}` URL path part.
@@ -146,7 +146,7 @@ GET /rest/content/{sys_content_type}{?from,size,sort}
   ]
 }
 
-Push the content object into Searchisko. The content is updated in Searchisko if exists  or is inserted if does not. 
+Push the content object into Searchisko. The content is updated in Searchisko if exists or is inserted if does not. 
 The data normalizations are performed during this request processing and the content object is extended by the Searchisko system data fields - the performed normalization tasks depend on the configuration for the given `sys_content_type`.
 
 *Provider authentication required.*
@@ -155,13 +155,13 @@ The data normalizations are performed during this request processing and the con
 JSON with content object to store in Searchisko.
 
 ##### Response content
-The response contains a JSON structure with a `status` field containing 'insert' or 'update' string and `message` field with a human readable description of the status.
+The response contains a JSON structure with a `status` field containing `insert` or `update` string and `message` field with a human readable description of the status.
 There is also optional `warnings` array, where you can see warnings from data preprocessing (mainly from data normalization), which may point you to some problems in your data or normalization mappings stored in Searchisko. 
 
 ```
 {
   "status":"insert",
-  "message":"Content was inserted successfully.",
+  "message":"Content inserted successfully.",
   "warnings" : [ {"preprocessor":"Contributor normalization" , "warning":"Contributor not found for 'author'='jdoe'"} ]
 }
 ```
@@ -172,7 +172,78 @@ POST /rest/content/{sys_content_type}/{sys_content_id}
 < Content-Type: application/json
 {
   "status":"insert",
-  "message":"Content was inserted successfully."
+  "message":"Content inserted successfully."
+}
+
+
+Push more content objects into Searchisko by one request. 
+This operation is more efficient than push one by one, but use reasonable number of documents only not to create too big input file.
+
+*Provider authentication required.*
+
+##### Request content
+JSON structure where key is `sys_content_id` identifier of content object you want to push, and value is content object to store in Searchisko.
+
+```
+{
+  "AS7-1254" : {
+    "tags": ["Content_tag1", "tag2", "tag3"],
+    "sys_title": "AS7-1254 - Set the port_range on JGroups stacks to 1",
+    "sys_url_view": "https://issues.jboss.org/browse/AS7-1254",
+    "sys_description": "Set the port_range on JGroups stacks to 1 to lock down the ports."
+  },
+  "AS7-1255" : {
+    "tags": ["Content_tag1", "tag2", "tag3"],
+    "sys_title": "AS7-1255 - another issue",
+    "sys_url_view": "https://issues.jboss.org/browse/AS7-1255",
+    "sys_description": "Another description"
+  }
+}
+```
+
+##### Response content
+The response contains a JSON structure where key is `sys_content_id` identifier of pushed content object and 
+value is status structure same as for one document push. `status` field can contain `error` value indicating 
+there is a problem for given content. 
+
+```
+{
+  "AS7-1254" : {
+    "status":"insert",
+    "message":"Content inserted successfully.",
+    "warnings" : [ {"preprocessor":"Contributor normalization" , "warning":"Contributor not found for 'author'='jdoe'"} ]
+  },
+  "AS7-1255" : {
+    "status":"update",
+    "message":"Content updated successfully.",
+    "warnings" : [ {"preprocessor":"Contributor normalization" , "warning":"Contributor not found for 'author'='jdoe'"} ]
+  },
+  "AS7-125*" : {
+    "status":"error",
+    "message":"Identifier is invalid as it contains star"
+  }
+}
+```
+
+POST /rest/content/{sys_content_type}
+> Accept: application/json
+< 200
+< Content-Type: application/json
+{
+  "AS7-1254" : {
+    "status":"insert",
+    "message":"Content inserted successfully.",
+    "warnings" : [ {"preprocessor":"Contributor normalization" , "warning":"Contributor not found for 'author'='jdoe'"} ]
+  },
+  "AS7-1255" : {
+    "status":"update",
+    "message":"Content updated successfully.",
+    "warnings" : [ {"preprocessor":"Contributor normalization" , "warning":"Contributor not found for 'author'='jdoe'"} ]
+  },
+  "AS7-125*" : {
+    "status":"error",
+    "message":"Identifier is invalid as it contains star"
+  }
 }
 
 Delete defined content object from Searchisko.
@@ -189,7 +260,7 @@ DELETE /rest/content/{sys_content_type}/{sys_content_id}{?ignore_missing}
 Content deleted successfully.
 
 
-Delete more of defined content objects from Searchisko by one request. This operation is more efficient.  
+Delete more of defined content objects from Searchisko by one request. This operation is more efficient than delete one by one.  
 
 *Provider authentication required.* 
 

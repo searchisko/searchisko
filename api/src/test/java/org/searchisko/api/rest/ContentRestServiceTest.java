@@ -8,6 +8,7 @@ package org.searchisko.api.rest;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
@@ -131,11 +132,6 @@ public class ContentRestServiceTest extends ESRealClientTestBase {
 
 	}
 
-	@Test
-	public void pushContent_permissions() throws Exception {
-		TestUtils.assertPermissionProvider(ContentRestService.class, "pushContent", String.class, String.class, Map.class);
-	}
-
 	@Test(expected = RequiredFieldException.class)
 	public void pushContent_invalidParams_1() throws Exception {
 		Map<String, Object> content = new HashMap<String, Object>();
@@ -185,15 +181,15 @@ public class ContentRestServiceTest extends ESRealClientTestBase {
 		getTested(false).pushContent("id*with*star", "1", content);
 	}
 
-	@Test
+	@Test(expected = BadFieldException.class)
 	public void pushContent_invalidParams_MissingContent1() throws Exception {
-		TestUtils.assertResponseStatus(getTested(false).pushContent(TYPE_KNOWN, "1", null), Response.Status.BAD_REQUEST);
+		getTested(false).pushContent(TYPE_KNOWN, "1", null);
 	}
 
-	@Test
+	@Test(expected = BadFieldException.class)
 	public void pushContent_invalidParams_MissingContent2() throws Exception {
 		Map<String, Object> content = new HashMap<String, Object>();
-		TestUtils.assertResponseStatus(getTested(false).pushContent(TYPE_KNOWN, "1", content), Response.Status.BAD_REQUEST);
+		getTested(false).pushContent(TYPE_KNOWN, "1", content);
 	}
 
 	@Test(expected = BadFieldException.class)
@@ -227,7 +223,11 @@ public class ContentRestServiceTest extends ESRealClientTestBase {
 		content.put("test", "test");
 		content.put(ContentObjectFields.SYS_CONTENT, "some content");
 		getTested(false).pushContent(TYPE_INVALID_CONTENT_TYPE, "1", content);
+	}
 
+	@Test
+	public void pushContent_permissions() throws Exception {
+		TestUtils.assertPermissionProvider(ContentRestService.class, "pushContent", String.class, String.class, Map.class);
 	}
 
 	@Test(expected = NotAuthorizedException.class)
@@ -475,6 +475,231 @@ public class ContentRestServiceTest extends ESRealClientTestBase {
 			indexDelete(INDEX_NAME);
 			finalizeESClientForUnitTest();
 		}
+	}
+
+	@Test
+	public void pushContentBulk_permissions() throws Exception {
+		TestUtils.assertPermissionProvider(ContentRestService.class, "pushContentBulk", String.class, Map.class);
+	}
+
+	@Test(expected = NotAuthorizedException.class)
+	public void pushContentBulk_noPermission() throws Exception {
+		ContentRestService tested = getTested(false);
+		Map<String, Object> content = new HashMap<String, Object>();
+		Map<String, Object> contentItem = new HashMap<String, Object>();
+		contentItem.put("title", "aaa");
+		content.put("1", contentItem);
+		Mockito.doThrow(new NotAuthorizedException("no perm")).when(tested.authenticationUtilService)
+				.checkProviderManagementPermission(tested.securityContext, ProviderServiceTest.TEST_PROVIDER_NAME);
+		tested.pushContentBulk(TYPE_KNOWN, content);
+	}
+
+	@SuppressWarnings("unchecked")
+	@Test
+	public void pushContentBulk_noPersistence() throws Exception {
+		try {
+			ContentRestService tested = getTested(true);
+
+			String sys_content_type = TYPE_KNOWN;
+
+			// case - insert/update, fill sys_updated if not provided in content, process tags provided in
+			// content, fill sys_content_content-type because sys_content is present
+			{
+				String sysId_1 = tested.providerService.generateSysId(sys_content_type, "1");
+				String sysId_2 = tested.providerService.generateSysId(sys_content_type, "2");
+
+				indexInsertDocument(INDEX_NAME, INDEX_TYPE, sysId_1, "{\"test\":\"old\"}");
+				indexFlushAndRefresh(INDEX_NAME);
+
+				reset(tested.providerService, tested.contentPersistenceService, tested.eventContentStored,
+						tested.eventBeforeIndexed);
+				setupProviderServiceMock(tested.providerService);
+				Map<String, Object> contentStructure = new LinkedHashMap<>();
+
+				// empty content means error
+				contentStructure.put("empty_content", new HashMap<>());
+
+				Map<String, Object> content_1 = new HashMap<>();
+				contentStructure.put("1", content_1);
+				content_1.put("test", "testvalue");
+				content_1.put(ContentObjectFields.SYS_CONTENT, "sys content");
+				content_1.remove(ContentObjectFields.SYS_UPDATED);
+				String[] tags = new String[] { "tag_value" };
+				content_1.put("tags", tags);
+
+				Map<String, Object> content_2 = new HashMap<>();
+				contentStructure.put("2", content_2);
+				content_2.put("test2", "testvalue2");
+				content_2.put(ContentObjectFields.SYS_CONTENT, "sys content");
+				content_2.remove(ContentObjectFields.SYS_UPDATED);
+				String[] tags2 = new String[] { "tag_value" };
+				content_2.put("tags", tags2);
+
+				// validation of id format
+				contentStructure.put("_bad_id_format", content_2);
+				contentStructure.put("bad_id,format", content_2);
+				contentStructure.put("bad_id*format", content_2);
+
+				Map<String, Map<String, Object>> ret = (Map<String, Map<String, Object>>) tested.pushContentBulk(
+						sys_content_type, contentStructure);
+				Assert.assertEquals(6, ret.size());
+				assertBulkPushRetItem(ret.get("empty_content"), "error",
+						"fieldName=content, description=Some content for pushing must be defined");
+				assertBulkPushRetItem(ret.get("_bad_id_format"), "error",
+						"fieldName=contentId, description=contentId can't start with underscore or contain comma, star");
+				assertBulkPushRetItem(ret.get("bad_id,format"), "error",
+						"fieldName=contentId, description=contentId can't start with underscore or contain comma, star");
+				assertBulkPushRetItem(ret.get("bad_id*format"), "error",
+						"fieldName=contentId, description=contentId can't start with underscore or contain comma, star");
+
+				assertBulkPushRetItem(ret.get("1"), "update", "Content updated successfully.");
+				assertBulkPushRetItem(ret.get("2"), "insert", "Content inserted successfully.");
+
+				verify(tested.eventBeforeIndexed).fire(prepareContentBeforeIndexedEventMatcher(sysId_1, content_1));
+				verify(tested.eventBeforeIndexed).fire(prepareContentBeforeIndexedEventMatcher(sysId_2, content_2));
+				verify(tested.providerService).runPreprocessors(sys_content_type, PREPROCESSORS, content_1);
+				verify(tested.providerService).runPreprocessors(sys_content_type, PREPROCESSORS, content_2);
+				verify(tested.eventContentStored).fire(prepareContentStoredEventMatcher(sysId_1));
+				verify(tested.eventContentStored).fire(prepareContentStoredEventMatcher(sysId_2));
+				verifyNoMoreInteractions(tested.contentPersistenceService, tested.eventBeforeIndexed,
+						tested.eventContentDeleted, tested.eventContentStored);
+
+				indexFlushAndRefresh(INDEX_NAME);
+
+				// assert documents in index
+				{
+					Map<String, Object> doc = indexGetDocument(INDEX_NAME, INDEX_TYPE, sysId_2);
+					assertNotNull(doc);
+					assertEquals("testvalue2", doc.get("test2"));
+					assertEquals("jbossorg", doc.get(ContentObjectFields.SYS_CONTENT_PROVIDER));
+					assertEquals("2", doc.get(ContentObjectFields.SYS_CONTENT_ID));
+					assertEquals(sys_content_type, doc.get(ContentObjectFields.SYS_CONTENT_TYPE));
+					assertEquals("my_sys_type", doc.get(ContentObjectFields.SYS_TYPE));
+					assertEquals("text/plain", doc.get(ContentObjectFields.SYS_CONTENT_CONTENT_TYPE));
+					assertEquals(sysId_2, doc.get(ContentObjectFields.SYS_ID));
+					assertNotNull(doc.get(ContentObjectFields.SYS_UPDATED));
+					assertEquals("tag_value", ((List<String>) doc.get(ContentObjectFields.SYS_TAGS)).get(0));
+				}
+				{
+					Map<String, Object> doc = indexGetDocument(INDEX_NAME, INDEX_TYPE, sysId_1);
+					assertNotNull(doc);
+					assertEquals("testvalue", doc.get("test"));
+					assertEquals("jbossorg", doc.get(ContentObjectFields.SYS_CONTENT_PROVIDER));
+				}
+			}
+
+		} finally {
+			indexDelete(INDEX_NAME);
+			finalizeESClientForUnitTest();
+		}
+	}
+
+	@SuppressWarnings("unchecked")
+	@Test
+	public void pushContentBulk_persistence() throws Exception {
+		try {
+			ContentRestService tested = getTested(true);
+
+			String sys_content_type = TYPE_PERSIST;
+
+			// case - insert/update, fill sys_updated if not provided in content, process tags provided in
+			// content, fill sys_content_content-type because sys_content is present
+			{
+				String sysId_1 = tested.providerService.generateSysId(sys_content_type, "1");
+				String sysId_2 = tested.providerService.generateSysId(sys_content_type, "2");
+
+				indexInsertDocument(INDEX_NAME, INDEX_TYPE, sysId_1, "{\"test\":\"old\"}");
+				indexFlushAndRefresh(INDEX_NAME);
+
+				reset(tested.providerService, tested.contentPersistenceService, tested.eventContentStored,
+						tested.eventBeforeIndexed);
+				setupProviderServiceMock(tested.providerService);
+				Map<String, Object> contentStructure = new LinkedHashMap<>();
+
+				// empty content means error
+				contentStructure.put("empty_content", new HashMap<>());
+
+				Map<String, Object> content_1 = new HashMap<>();
+				contentStructure.put("1", content_1);
+				content_1.put("test", "testvalue");
+				content_1.put(ContentObjectFields.SYS_CONTENT, "sys content");
+				content_1.remove(ContentObjectFields.SYS_UPDATED);
+				String[] tags = new String[] { "tag_value" };
+				content_1.put("tags", tags);
+
+				Map<String, Object> content_2 = new HashMap<>();
+				contentStructure.put("2", content_2);
+				content_2.put("test2", "testvalue2");
+				content_2.put(ContentObjectFields.SYS_CONTENT, "sys content");
+				content_2.remove(ContentObjectFields.SYS_UPDATED);
+				String[] tags2 = new String[] { "tag_value" };
+				content_2.put("tags", tags2);
+
+				// validation of id format
+				contentStructure.put("_bad_id_format", content_2);
+				contentStructure.put("bad_id,format", content_2);
+				contentStructure.put("bad_id*format", content_2);
+
+				Map<String, Map<String, Object>> ret = (Map<String, Map<String, Object>>) tested.pushContentBulk(
+						sys_content_type, contentStructure);
+				Assert.assertEquals(6, ret.size());
+				assertBulkPushRetItem(ret.get("empty_content"), "error",
+						"fieldName=content, description=Some content for pushing must be defined");
+				assertBulkPushRetItem(ret.get("_bad_id_format"), "error",
+						"fieldName=contentId, description=contentId can't start with underscore or contain comma, star");
+				assertBulkPushRetItem(ret.get("bad_id,format"), "error",
+						"fieldName=contentId, description=contentId can't start with underscore or contain comma, star");
+				assertBulkPushRetItem(ret.get("bad_id*format"), "error",
+						"fieldName=contentId, description=contentId can't start with underscore or contain comma, star");
+
+				assertBulkPushRetItem(ret.get("1"), "update", "Content updated successfully.");
+				assertBulkPushRetItem(ret.get("2"), "insert", "Content inserted successfully.");
+
+				verify(tested.eventBeforeIndexed).fire(prepareContentBeforeIndexedEventMatcher(sysId_1, content_1));
+				verify(tested.eventBeforeIndexed).fire(prepareContentBeforeIndexedEventMatcher(sysId_2, content_2));
+				verify(tested.providerService).runPreprocessors(sys_content_type, null, content_1);
+				verify(tested.providerService).runPreprocessors(sys_content_type, null, content_2);
+				verify(tested.contentPersistenceService).store(sysId_1, sys_content_type, content_1);
+				verify(tested.contentPersistenceService).store(sysId_2, sys_content_type, content_2);
+				verify(tested.eventContentStored).fire(prepareContentStoredEventMatcher(sysId_1));
+				verify(tested.eventContentStored).fire(prepareContentStoredEventMatcher(sysId_2));
+				verifyNoMoreInteractions(tested.contentPersistenceService, tested.eventBeforeIndexed,
+						tested.eventContentDeleted, tested.eventContentStored);
+
+				indexFlushAndRefresh(INDEX_NAME);
+
+				// assert documents in index
+				{
+					Map<String, Object> doc = indexGetDocument(INDEX_NAME, INDEX_TYPE, sysId_2);
+					assertNotNull(doc);
+					assertEquals("testvalue2", doc.get("test2"));
+					assertEquals("jbossorg", doc.get(ContentObjectFields.SYS_CONTENT_PROVIDER));
+					assertEquals("2", doc.get(ContentObjectFields.SYS_CONTENT_ID));
+					assertEquals(sys_content_type, doc.get(ContentObjectFields.SYS_CONTENT_TYPE));
+					assertEquals("my_sys_type", doc.get(ContentObjectFields.SYS_TYPE));
+					assertEquals("text/plain", doc.get(ContentObjectFields.SYS_CONTENT_CONTENT_TYPE));
+					assertEquals(sysId_2, doc.get(ContentObjectFields.SYS_ID));
+					assertNotNull(doc.get(ContentObjectFields.SYS_UPDATED));
+					assertEquals("tag_value", ((List<String>) doc.get(ContentObjectFields.SYS_TAGS)).get(0));
+				}
+				{
+					Map<String, Object> doc = indexGetDocument(INDEX_NAME, INDEX_TYPE, sysId_1);
+					assertNotNull(doc);
+					assertEquals("testvalue", doc.get("test"));
+					assertEquals("jbossorg", doc.get(ContentObjectFields.SYS_CONTENT_PROVIDER));
+				}
+			}
+
+		} finally {
+			indexDelete(INDEX_NAME);
+			finalizeESClientForUnitTest();
+		}
+	}
+
+	private void assertBulkPushRetItem(Map<String, Object> map, String expectedStatus, String expectedMessage) {
+		Assert.assertNotNull(map);
+		Assert.assertEquals(expectedStatus, map.get(ContentRestService.RETFIELD_STATUS));
+		Assert.assertEquals(expectedMessage, map.get(ContentRestService.RETFIELD_MESSAGE));
 	}
 
 	private ContentStoredEvent prepareContentStoredEventMatcher(final String expectedContentId) {
