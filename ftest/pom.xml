@@ -33,6 +33,8 @@
 
 	<properties>
 		<es.client.embedded.data.path>${user.home}/.dcp_data</es.client.embedded.data.path>
+		<es.client.embedded.search.ip>127.0.0.1</es.client.embedded.search.ip>
+		<es.client.embedded.search.port.start>15000</es.client.embedded.search.port.start>
 		<arquillian.jboss.home>${env.JBOSS_HOME}</arquillian.jboss.home>
 		<arquillian.jboss.managementAddress>127.0.0.1</arquillian.jboss.managementAddress>
 		<arquillian.jboss.managementPort>9999</arquillian.jboss.managementPort>
@@ -43,6 +45,7 @@
 			<id>openshift</id>
 			<properties>
 				<es.client.embedded.data.path>${env.OPENSHIFT_DATA_DIR}/ftest_dcp_data</es.client.embedded.data.path>
+				<es.client.embedded.search.ip>${env.OPENSHIFT_JBOSSEAP_IP}</es.client.embedded.search.ip>
 			</properties>
 		</profile>
 

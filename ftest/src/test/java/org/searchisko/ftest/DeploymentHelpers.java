@@ -17,6 +17,7 @@
 
 package org.searchisko.ftest;
 
+import com.jayway.restassured.http.ContentType;
 import org.apache.commons.io.FileUtils;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -27,9 +28,14 @@ import org.jboss.shrinkwrap.resolver.api.maven.Maven;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import static com.jayway.restassured.RestAssured.given;
+import static org.hamcrest.Matchers.is;
 
 public class DeploymentHelpers {
 
@@ -39,17 +45,17 @@ public class DeploymentHelpers {
 
 	public static final String DEFAULT_PROVIDER_NAME = "jbossorg";
 
-	public static final String DEFAULT_PROVIDER_PASSWORD= "jbossorgjbossorg";
+	public static final String DEFAULT_PROVIDER_PASSWORD = "jbossorgjbossorg";
 
 	public static Properties appProperties;
 
 	static {
 		appProperties = new Properties();
-		InputStream is = DeploymentHelpers.class.getResourceAsStream("/app.properties");
+		InputStream is = DeploymentHelpers.class.getResourceAsStream("/ftest-settings.properties");
 		try {
 			appProperties.load(is);
 		} catch (IOException e) {
-			log.log(Level.SEVERE, "Cannot load app.properties", e);
+			log.log(Level.SEVERE, "Cannot load ftest-settings.properties", e);
 			throw new RuntimeException(e);
 		}
 	}
@@ -97,15 +103,36 @@ public class DeploymentHelpers {
 				.addAsResource("systeminfo.properties")
 				.addAsResource("app.properties")
 				.addAsResource("search_timeouts.properties")
-				.addAsResource("search_client_connections.properties")
 				.addAsResource("search_client_settings.properties")
-				.addAsResource("stats_client_connections.properties")
-				.addAsResource("stats_client_settings.properties")
 				.addAsResource("stats_client_configuration.properties")
 				.addAsResource("mappings/contributor.json", "mappings/contributor.json")
 				.addAsWebInfResource("webapp/WEB-INF/searchisko-ds.xml", "searchisko-ds.xml")
 				.addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml");
 
 		return war;
+	}
+
+	/**
+	 * Refresh Elastic Search to get data up to date
+	 *
+	 * @throws MalformedURLException
+	 */
+	public static void refreshES() throws MalformedURLException {
+		String esPort = appProperties.getProperty("es.client.embedded.search.port.start");
+		int port = Integer.parseInt(esPort);
+
+		String esIp = appProperties.getProperty("es.client.embedded.search.ip");
+
+		String url = new URL("http", esIp, port, "/_refresh").toExternalForm();
+		log.log(Level.INFO, "Refreshing Elastic Search, url: {0}", url);
+
+		given().contentType(ContentType.JSON)
+				.body("")
+				.expect()
+				.log().ifError()
+				.statusCode(200)
+				.contentType(ContentType.JSON)
+				.body("ok", is(true))
+				.when().post(url);
 	}
 }
