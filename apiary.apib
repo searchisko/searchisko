@@ -66,7 +66,8 @@ This part of API is primarily used by *content providers* to manipulate [content
 
 Each provider has set of 'provider types' defined in Searchisko, which are passed on this API as `{sys_content_type}` URL path part.
 'Provider type' is one type of content object stored into Searchisko by given provider (eg. issue from provider's issue tracking system, blog post from provider's blogging system etc).
-To manipulate content objects over this API provider must use identifiers unique for given 'provider type'. These identifiers are referred as `{sys_content_id}` url path part in API documentation.
+To manipulate content objects over this API provider must use identifiers unique for given 'provider type'. These identifiers are referred as `{sys_content_id}` url path part in API documentation. 
+Identifier can't start with underscore and can't contain comma and star characters.
 --
 
 Get one content object of specified 'provider type' and 'provider id' from Searchisko.
@@ -186,6 +187,43 @@ DELETE /rest/content/{sys_content_type}/{sys_content_id}{?ignore_missing}
 < 200
 < Content-Type: plain/text
 Content deleted successfully.
+
+
+Delete more of defined content objects from Searchisko by one request. This operation is more efficient.  
+
+*Provider authentication required.* 
+
+##### Request content
+JSON structure with `id` field containing array of content identifiers to delete.
+
+```
+{
+  "id":["id_1","id_2","id_3"]
+}
+```
+
+##### Response content
+JSON structure where key is content identifiers and value is status message for delete. 
+It can be `ok` or `not_found` or `error: mmm` where mmm is error description.
+
+```
+{
+  "id_1" : "ok", 
+  "id_2" : "not_found",
+  "id_3" : "error: something is wrong in search subsystem"
+}
+```
+
+ 
+DELETE /rest/content/{sys_content_type}
+> Accept: application/json
+< 200
+< Content-Type: application/json
+{
+  "id_1" : "ok", 
+  "id_2" : "not_found",
+  "id_3" : "error: something is wrong in search subsystem"
+}
 
 
 --

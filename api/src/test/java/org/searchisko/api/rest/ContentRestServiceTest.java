@@ -164,6 +164,27 @@ public class ContentRestServiceTest extends ESRealClientTestBase {
 		getTested(false).pushContent(TYPE_KNOWN, "", content);
 	}
 
+	@Test(expected = BadFieldException.class)
+	public void pushContent_invalidParams_id_1() throws Exception {
+		Map<String, Object> content = new HashMap<String, Object>();
+		content.put("test", "test");
+		getTested(false).pushContent("_id", "1", content);
+	}
+
+	@Test(expected = BadFieldException.class)
+	public void pushContent_invalidParams_id_2() throws Exception {
+		Map<String, Object> content = new HashMap<String, Object>();
+		content.put("test", "test");
+		getTested(false).pushContent("id,withcomma", "1", content);
+	}
+
+	@Test(expected = BadFieldException.class)
+	public void pushContent_invalidParams_id_3() throws Exception {
+		Map<String, Object> content = new HashMap<String, Object>();
+		content.put("test", "test");
+		getTested(false).pushContent("id*with*star", "1", content);
+	}
+
 	@Test
 	public void pushContent_invalidParams_MissingContent1() throws Exception {
 		TestUtils.assertResponseStatus(getTested(false).pushContent(TYPE_KNOWN, "1", null), Response.Status.BAD_REQUEST);
@@ -602,6 +623,176 @@ public class ContentRestServiceTest extends ESRealClientTestBase {
 			indexDelete(INDEX_NAME);
 			finalizeESClientForUnitTest();
 		}
+	}
+
+	@Test(expected = RequiredFieldException.class)
+	public void deleteContentBulk_ParamValidation_1() throws Exception {
+		Map<String, Object> content = new HashMap<String, Object>();
+		content.put("id", new ArrayList<String>());
+		getTested(false).deleteContentBulk(null, content);
+	}
+
+	@Test(expected = RequiredFieldException.class)
+	public void deleteContentBulk_ParamValidation_2() throws Exception {
+		Map<String, Object> content = new HashMap<String, Object>();
+		content.put("id", new ArrayList<String>());
+		getTested(false).deleteContentBulk("", content);
+	}
+
+	@Test
+	public void deleteContentBulk_invalidRequestContent() throws Exception {
+		TestUtils.assertResponseStatus(getTested(false).deleteContentBulk(TYPE_KNOWN, null), Response.Status.BAD_REQUEST);
+		Map<String, Object> content = new HashMap<String, Object>();
+		TestUtils
+				.assertResponseStatus(getTested(false).deleteContentBulk(TYPE_KNOWN, content), Response.Status.BAD_REQUEST);
+		content.put("id", new Object());
+		TestUtils
+				.assertResponseStatus(getTested(false).deleteContentBulk(TYPE_KNOWN, content), Response.Status.BAD_REQUEST);
+	}
+
+	@Test
+	public void deleteContentBulk_permissions() throws Exception {
+		TestUtils.assertPermissionProvider(ContentRestService.class, "deleteContentBulk", String.class, Map.class);
+	}
+
+	@Test(expected = NotAuthorizedException.class)
+	public void deleteContentBulk_noPermission() throws Exception {
+		ContentRestService tested = getTested(false);
+		Map<String, Object> content = new HashMap<String, Object>();
+		content.put("id", new ArrayList<String>());
+		Mockito.doThrow(new NotAuthorizedException("no perm")).when(tested.authenticationUtilService)
+				.checkProviderManagementPermission(tested.securityContext, ProviderServiceTest.TEST_PROVIDER_NAME);
+		tested.deleteContentBulk(TYPE_KNOWN, content);
+	}
+
+	@SuppressWarnings("unchecked")
+	@Test
+	public void deleteContentBulk() {
+		try {
+			ContentRestService tested = getTested(true);
+
+			Map<String, Object> content = new HashMap<String, Object>();
+			List<String> ids = new ArrayList<String>();
+			content.put("id", ids);
+
+			// case - delete when index is not found
+			{
+				ids.add("1");
+				ids.add("2");
+				reset(tested.contentPersistenceService, tested.eventContentDeleted);
+				indexDelete(INDEX_NAME);
+
+				// without persistence
+				Map<String, String> ret = (Map<String, String>) tested.deleteContentBulk(TYPE_KNOWN, content);
+				Assert.assertEquals(2, ret.size());
+				Assert.assertEquals("not_found", ret.get("1"));
+				Assert.assertEquals("not_found", ret.get("2"));
+
+				// persistently stored content
+				ret = (Map<String, String>) tested.deleteContentBulk(TYPE_PERSIST, content);
+				Assert.assertEquals(2, ret.size());
+				Assert.assertEquals("not_found", ret.get("1"));
+				Assert.assertEquals("not_found", ret.get("2"));
+
+				verify(tested.contentPersistenceService).delete(tested.providerService.generateSysId(TYPE_PERSIST, "1"),
+						TYPE_PERSIST);
+				verify(tested.contentPersistenceService).delete(tested.providerService.generateSysId(TYPE_PERSIST, "2"),
+						TYPE_PERSIST);
+				verifyZeroInteractions(tested.eventContentDeleted);
+				verifyNoMoreInteractions(tested.contentPersistenceService);
+			}
+
+			// case - delete when no any of documents exist in index
+			{
+				reset(tested.contentPersistenceService, tested.eventContentDeleted);
+				indexDelete(INDEX_NAME);
+				indexCreate(INDEX_NAME);
+				indexInsertDocument(INDEX_NAME, INDEX_TYPE, "known-3", "{\"test3\":\"test3\"}");
+				indexFlushAndRefresh(INDEX_NAME);
+
+				// without persistence
+				Map<String, String> ret = (Map<String, String>) tested.deleteContentBulk(TYPE_KNOWN, content);
+				Assert.assertEquals(2, ret.size());
+				Assert.assertEquals("not_found", ret.get("1"));
+				Assert.assertEquals("not_found", ret.get("2"));
+				assertNotNull(indexGetDocument(INDEX_NAME, INDEX_TYPE, "known-3"));
+
+				// persistently stored content
+				ret = (Map<String, String>) tested.deleteContentBulk(TYPE_PERSIST, content);
+				Assert.assertEquals(2, ret.size());
+				Assert.assertEquals("not_found", ret.get("1"));
+				Assert.assertEquals("not_found", ret.get("2"));
+
+				verify(tested.contentPersistenceService).delete(tested.providerService.generateSysId(TYPE_PERSIST, "1"),
+						TYPE_PERSIST);
+				verify(tested.contentPersistenceService).delete(tested.providerService.generateSysId(TYPE_PERSIST, "2"),
+						TYPE_PERSIST);
+				verifyZeroInteractions(tested.eventContentDeleted);
+				verifyNoMoreInteractions(tested.contentPersistenceService);
+			}
+
+			// case - delete when part of documents exist in index
+			{
+				ids.add("10");
+				reset(tested.contentPersistenceService, tested.eventContentDeleted);
+				indexInsertDocument(INDEX_NAME, INDEX_TYPE, "known-1", "{\"test1\":\"test1\"}");
+				indexInsertDocument(INDEX_NAME, INDEX_TYPE, "persist-1", "{\"test1\":\"testper1\"}");
+				indexInsertDocument(INDEX_NAME, INDEX_TYPE, "known-2", "{\"test1\":\"test1\"}");
+				indexInsertDocument(INDEX_NAME, INDEX_TYPE, "persist-2", "{\"test1\":\"testper1\"}");
+				indexInsertDocument(INDEX_NAME, INDEX_TYPE, "known-3", "{\"test1\":\"test1\"}");
+				indexInsertDocument(INDEX_NAME, INDEX_TYPE, "persist-3", "{\"test1\":\"testper1\"}");
+				indexInsertDocument(INDEX_NAME, INDEX_TYPE, "known-4", "{\"test1\":\"test1\"}");
+				indexInsertDocument(INDEX_NAME, INDEX_TYPE, "persist-4", "{\"test1\":\"testper1\"}");
+				indexFlushAndRefresh(INDEX_NAME);
+
+				// without persistence
+				Map<String, String> ret = (Map<String, String>) tested.deleteContentBulk(TYPE_KNOWN, content);
+				Assert.assertEquals(3, ret.size());
+				Assert.assertEquals("ok", ret.get("1"));
+				Assert.assertEquals("ok", ret.get("2"));
+				Assert.assertEquals("not_found", ret.get("10"));
+				verify(tested.eventContentDeleted).fire(prepareContentDeletedEventMatcher("known-1"));
+				verify(tested.eventContentDeleted).fire(prepareContentDeletedEventMatcher("known-2"));
+				assertNull(indexGetDocument(INDEX_NAME, INDEX_TYPE, "known-1"));
+				assertNull(indexGetDocument(INDEX_NAME, INDEX_TYPE, "known-2"));
+				assertNotNull(indexGetDocument(INDEX_NAME, INDEX_TYPE, "known-3"));
+				assertNotNull(indexGetDocument(INDEX_NAME, INDEX_TYPE, "known-4"));
+				assertNotNull(indexGetDocument(INDEX_NAME, INDEX_TYPE, "persist-1"));
+				assertNotNull(indexGetDocument(INDEX_NAME, INDEX_TYPE, "persist-2"));
+				assertNotNull(indexGetDocument(INDEX_NAME, INDEX_TYPE, "persist-3"));
+				assertNotNull(indexGetDocument(INDEX_NAME, INDEX_TYPE, "persist-4"));
+
+				// persistently stored content
+				ret = (Map<String, String>) tested.deleteContentBulk(TYPE_PERSIST, content);
+				Assert.assertEquals(3, ret.size());
+				Assert.assertEquals("ok", ret.get("1"));
+				Assert.assertEquals("ok", ret.get("2"));
+				Assert.assertEquals("not_found", ret.get("10"));
+				assertNull(indexGetDocument(INDEX_NAME, INDEX_TYPE, "persist-1"));
+				assertNull(indexGetDocument(INDEX_NAME, INDEX_TYPE, "persist-2"));
+				assertNotNull(indexGetDocument(INDEX_NAME, INDEX_TYPE, "persist-3"));
+				assertNotNull(indexGetDocument(INDEX_NAME, INDEX_TYPE, "persist-4"));
+				assertNotNull(indexGetDocument(INDEX_NAME, INDEX_TYPE, "known-3"));
+				assertNotNull(indexGetDocument(INDEX_NAME, INDEX_TYPE, "known-4"));
+				verify(tested.contentPersistenceService).delete(tested.providerService.generateSysId(TYPE_PERSIST, "1"),
+						TYPE_PERSIST);
+				verify(tested.contentPersistenceService).delete(tested.providerService.generateSysId(TYPE_PERSIST, "2"),
+						TYPE_PERSIST);
+				verify(tested.contentPersistenceService).delete(tested.providerService.generateSysId(TYPE_PERSIST, "10"),
+						TYPE_PERSIST);
+				verify(tested.eventContentDeleted).fire(prepareContentDeletedEventMatcher("persist-1"));
+				verify(tested.eventContentDeleted).fire(prepareContentDeletedEventMatcher("persist-2"));
+				// event is not fired for 10 as it is not deleted actually because doesn't exist
+				verifyNoMoreInteractions(tested.eventContentDeleted);
+				verifyNoMoreInteractions(tested.contentPersistenceService);
+
+			}
+
+		} finally {
+			indexDelete(INDEX_NAME);
+			finalizeESClientForUnitTest();
+		}
+
 	}
 
 	@Test

@@ -5,6 +5,7 @@
  */
 package org.searchisko.api.rest;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -28,6 +29,9 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.SecurityContext;
 
+import org.elasticsearch.action.bulk.BulkItemResponse;
+import org.elasticsearch.action.bulk.BulkRequestBuilder;
+import org.elasticsearch.action.bulk.BulkResponse;
 import org.elasticsearch.action.delete.DeleteResponse;
 import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.index.IndexResponse;
@@ -189,6 +193,10 @@ public class ContentRestService extends RestServiceBase {
 			throw new RequiredFieldException("contentId");
 		}
 
+		if (contentId.startsWith("_") || contentId.contains(",") || contentId.contains("*")) {
+			throw new BadFieldException("contentId", "contentId can't start with underscore or contain comma, star");
+		}
+
 		if (content == null || content.isEmpty()) {
 			return Response.status(Status.BAD_REQUEST).entity("Some content for pushing must be defined").build();
 		}
@@ -323,5 +331,73 @@ public class ContentRestService extends RestServiceBase {
 		} else {
 			return Response.ok("Content deleted successfully.").build();
 		}
+	}
+
+	/**
+	 * Bulk delete of content from Searchisko. This method fires {@link ContentDeletedEvent}.
+	 */
+	@DELETE
+	@Path("/")
+	@ProviderAllowed
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
+	public Object deleteContentBulk(@PathParam("type") String type, Map<String, Object> content) {
+
+		ProviderContentTypeInfo typeInfo = getTypeInfoWithManagePermissionCheck(type);
+
+		Object o = content == null ? null : content.get("id");
+		if (o == null) {
+			return Response.status(Status.BAD_REQUEST)
+					.entity("Request content must contain 'id' field with array of strings with content identifiers to delete")
+					.build();
+		}
+		if (!(o instanceof List)) {
+			return Response.status(Status.BAD_REQUEST)
+					.entity("Request content 'id' field must be an array of strings with identifiers").build();
+		}
+
+		@SuppressWarnings("unchecked")
+		List<String> ids = (List<String>) o;
+
+		String indexName = ProviderService.extractIndexName(typeInfo, type);
+		String indexType = ProviderService.extractIndexType(typeInfo, type);
+
+		BulkRequestBuilder brb = searchClientService.getClient().prepareBulk();
+
+		List<String> sysIds = new ArrayList<>();
+		for (String contentId : ids) {
+			String sysContentId = providerService.generateSysId(type, contentId);
+			sysIds.add(sysContentId);
+
+			if (ProviderService.extractPersist(typeInfo.getTypeDef())) {
+				contentPersistenceService.delete(sysContentId, type);
+			}
+
+			brb.add(searchClientService.getClient().prepareDelete(indexName, indexType, sysContentId));
+		}
+
+		BulkResponse br = brb.execute().actionGet();
+
+		Map<String, String> ret = new LinkedHashMap<>();
+		int i = 0;
+		for (BulkItemResponse bri : br.getItems()) {
+			String contentId = ids.get(i);
+			if (!bri.isFailed()) {
+				DeleteResponse dr = bri.getResponse();
+				if (!dr.isNotFound()) {
+					ContentDeletedEvent event = new ContentDeletedEvent(sysIds.get(i));
+					log.log(Level.FINE, "Going to fire event {0}", event);
+					eventContentDeleted.fire(event);
+					ret.put(contentId, "ok");
+				} else {
+					ret.put(contentId, "not_found");
+				}
+			} else {
+				ret.put(contentId, "error: " + bri.getFailureMessage());
+			}
+			i++;
+		}
+
+		return ret;
 	}
 }
