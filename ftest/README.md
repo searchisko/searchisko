@@ -11,6 +11,8 @@ Set environment variable `JBOSS_HOME` to AS location e.g.
 
 	export JBOSS_HOME={your user home}/app/INTEG-TEST-jboss-eap-6.2.2
 
+Integration tests are executed againts AS with `standalone-full.xml` profile as default.
+
 Running tests
 -------------
 

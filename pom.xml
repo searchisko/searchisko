@@ -203,7 +203,7 @@
 		<profile>
 			<id>openshift</id>
 			<!--
-			Disabled now, see issue #78D
+			Disabled - still doesn't work
 			<modules>
 				<module>ftest</module>
 			</modules>
