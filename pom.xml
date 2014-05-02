@@ -202,9 +202,12 @@
         </profile>
 		<profile>
 			<id>openshift</id>
+			<!--
+			Disabled - still doesn't work
 			<modules>
 				<module>ftest</module>
 			</modules>
+			-->
 		</profile>
     </profiles>
 
