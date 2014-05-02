@@ -4,6 +4,8 @@
 ##   - query fields (including boost value)
 ##   - response fields
 ##   - highlight fields
+##   - facet fields
+##   - filter fields
 ##
 ## You can use first commandline parameter to change base URL of system API call (/v1/rest/... is appended automatically to this base URL)
 ## You can use second commandline parameter to change system username
@@ -37,7 +39,7 @@ do
 	code="${filename%.*}"
 	echo -ne "Pushing $code"
 
-	output=$(curl -i -s -o $outputfile --user ${username}:${password} -w "%{http_code}" -H "Content-Type: application/json" -X POST -d@$filename ${sysapi}$code)
+	#output=$(curl -i -s -o $outputfile --user ${username}:${password} -w "%{http_code}" -H "Content-Type: application/json" -X POST -d@$filename ${sysapi}$code)
 
 	if [ "$output" == "200" ]; then
 	  echo " [OK]"
