@@ -12,6 +12,7 @@ This document contains high-level release notes. More details can be found in [m
 - added two new admin tasks `reindex_contributor` and `reindex_project` useful to rebuild search indices for Project and Contributor configurations
 - added 'Content Indexers API' which allows force reindex and get status for content indexers hosted in Searchisko
 - updated elasticsearch-river-remote and elasticsearch-river-jira to latest versions
+- Integration tests on REST API [#12](https://github.com/searchisko/searchisko/issues/12)
 
 ## 1.0.1
 
