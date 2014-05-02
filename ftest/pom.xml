@@ -32,7 +32,7 @@
 	<name>Searchisko Integration Tests</name>
 
 	<properties>
-		<es.client.embedded.data.path>${user.home}/.dcp_data</es.client.embedded.data.path>
+		<es.client.embedded.data.path>${user.home}/.ftest_dcp_data</es.client.embedded.data.path>
 		<es.client.embedded.search.ip>127.0.0.1</es.client.embedded.search.ip>
 		<es.client.embedded.search.port.start>15000</es.client.embedded.search.port.start>
 		<arquillian.jboss.home>${env.JBOSS_HOME}</arquillian.jboss.home>
