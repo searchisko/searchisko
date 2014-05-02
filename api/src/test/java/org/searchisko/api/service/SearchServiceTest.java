@@ -49,6 +49,26 @@ public class SearchServiceTest {
 	// TODO: should be on one place only
 	private static final DateTimeFormatter DATE_TIME_FORMATTER_UTC = ISODateTimeFormat.dateTime().withZoneUTC();
 
+	/**
+	 * https://github.com/searchisko/searchisko/issues/79
+ 	 */
+	@Test
+	public void missingFilterFieldsConfigDoesNotThrowNPE() throws ReflectiveOperationException {
+		ConfigService configService = Mockito.mock(ConfigService.class);
+		Mockito.when(configService.get(ConfigService.CFGNAME_SEARCH_FULLTEXT_FILTER_FIELDS)).thenReturn(null);
+
+		SearchService tested = new SearchService();
+		tested.configService = configService;
+		tested.parsedFilterConfigService = new ParsedFilterConfigService();
+		tested.parsedFilterConfigService.log = Logger.getLogger("testlogger");
+		tested.parsedFilterConfigService.configService = configService;
+
+		Filters filters = new Filters();
+		filters.acknowledgeUrlFilterCandidate("test", "value");
+
+		tested.parsedFilterConfigService.prepareFiltersForRequest(filters);
+	}
+
 	@Test
 	public void getSearchResponseAdditionalFields() throws ReflectiveOperationException {
 		SearchService tested = new SearchService();

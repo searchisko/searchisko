@@ -68,6 +68,7 @@ public class ParsedFilterConfigService {
 	 * available.
 	 *
 	 * @param filters to use to prepare relevant parsed filter configurations into request scope
+	 * @throws java.lang.ReflectiveOperationException if filter field configuration file can not be parsed correctly
 	 */
 	protected void prepareFiltersForRequest(QuerySettings.Filters filters) throws ReflectiveOperationException {
 
@@ -77,6 +78,12 @@ public class ParsedFilterConfigService {
 
 		if (filters != null && !filters.getFilterCandidatesKeys().isEmpty()) {
 			Map<String, Object> filtersConfig = configService.get(ConfigService.CFGNAME_SEARCH_FULLTEXT_FILTER_FIELDS);
+
+			if (filtersConfig == null || (filtersConfig != null && filtersConfig.isEmpty())) {
+				log.log(Level.INFO,"Configuration document [" +
+						ConfigService.CFGNAME_SEARCH_FULLTEXT_FILTER_FIELDS + "] not found or is empty! This might be a bug.");
+				return;
+			}
 
 			// collect parsed filter configurations that are relevant to filters required by client
 			for (String filterCandidateKey : filters.getFilterCandidatesKeys()) {
