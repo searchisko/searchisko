@@ -80,8 +80,10 @@ public class ParsedFilterConfigService {
 			Map<String, Object> filtersConfig = configService.get(ConfigService.CFGNAME_SEARCH_FULLTEXT_FILTER_FIELDS);
 
 			if (filtersConfig == null || (filtersConfig != null && filtersConfig.isEmpty())) {
-				log.log(Level.INFO,"Configuration document [" +
-						ConfigService.CFGNAME_SEARCH_FULLTEXT_FILTER_FIELDS + "] not found or is empty! This might be a bug.");
+				if (log.isLoggable(Level.FINEST)) {
+					log.log(Level.FINEST, "Configuration document [" +
+							ConfigService.CFGNAME_SEARCH_FULLTEXT_FILTER_FIELDS + "] not found or is empty! This might be a bug.");
+				}
 				return;
 			}
 
