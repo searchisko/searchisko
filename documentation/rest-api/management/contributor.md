@@ -2,7 +2,7 @@ Contributor
 ===========
 
 Contributor configuration contains distinct information/identifiers used
-by preprocessors in 'Content Push API' to normalize contributor identifier 
+by preprocessors in 'Content Manipulation API' to normalize contributor identifier
 for `sys_contributors` field.
 
 It's managed over 'Management API - contributors'.

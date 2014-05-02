@@ -1,7 +1,7 @@
 Project
 =======
 
-Project configuration is used by preprocessors in 'Content Push API' to 
+Project configuration is used by preprocessors in 'Content Manipulation API' to
 normalize project identifier for `sys_project` field.
 It's managed over 'Management API - projects'.
 

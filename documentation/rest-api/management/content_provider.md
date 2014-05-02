@@ -1,7 +1,7 @@
 Content provider
 ================
 
-*Content provider* is an entity that stores content into Searchisko (see Content Push API).
+*Content provider* is an entity that stores content into Searchisko (see Content Manipulation API).
 Configuration for the *content provider* contains some descriptive/contact information, information 
 for authentication/authorization on the Searchisko REST API, and configuration of content types pushed 
 into Searchisko by this provider.
@@ -14,13 +14,13 @@ Content provider configuration fields:
 * `contact_email` - contact email for responsible person on provider side, so Searchisko admin can contact he/she.
 * `super_provider` - if `true` then this provider has 'Searchisko administrator' role on the Searchisko REST API.
 * `pwd_hash` - password hash for authentication on the Searchisko REST API. This field is accepted only during provider creation and never returned back over `get` operations. Special REST API operation must be used to change password later.  
-* `type` - structure with configuration of content types pushed into Searchisko by this provider. Key in the structure is type name, which **MUST** be Searchisko instance wide unique (typically starts with content provider `name`). It is used on the 'Content Push API' and stored into `sys_content_type` field of content pushed into Searchisko by this provider. Configuration of each type contains these fields:
+* `type` - structure with configuration of content types pushed into Searchisko by this provider. Key in the structure is type name, which **MUST** be Searchisko instance wide unique (typically starts with content provider `name`). It is used on the 'Content Manipulation API' and stored into `sys_content_type` field of content pushed into Searchisko by this provider. Configuration of each type contains these fields:
  * `description` - description of this type, what contains, which system produces it etc.
  * `sys_type` - value stored into `sys_type` field of pushed content (see description in the [Searchisko Content object](../content/dcp_content_object.md) chapter).
  * `sys_content_content-type` - MIME identifier of content type stored in the `sys_content` field if it is used. Eg. `text/plain`, `text/html`, `text/x-markdown`. Fulltext search analyzer for `sys_content` field must be set correctly in ElasticSearch mapping regarding this type (eg. use of html stripping etc.).
  * `search_all_excluded` - optional, if `true` then documents with this type are excluded from searchings targeted to all documents (so can be searched only by explicit requests for this type)
  * `persist` - optional, if `true` then documents with this type are stored into Searchisko persistent store during push. Search index can be rebuilt from this persistent store. Used for content which is hard or expensive to obtain again in the future.
- * `input_preprocessors` - array of preprocessors applied on content of this type while pushed over 'Content Push API'. Typically used to normalize values into other `sys_` fields as `sys_project`, `sys_contributors`, `sys_activity_dates` etc. [structured-content-tools](https://github.com/jbossorg/structured-content-tools) framework is used here.
+ * `input_preprocessors` - array of preprocessors applied on content of this type while pushed over 'Content Manipulation API'. Typically used to normalize values into other `sys_` fields as `sys_project`, `sys_contributors`, `sys_activity_dates` etc. [structured-content-tools](https://github.com/jbossorg/structured-content-tools) framework is used here.
  * `index/name` - name of search index in Searchisko internal Elasticsearch cluster content of this type is stored into during push.  
  * `index/type` - type for mapping in Searchisko internal Elasticsearch cluster content of this type is stored into.
  * `index/search_indices` - array with names of search indices in Searchisko internal Elasticsearch cluster used during searching for this content type. Optional, name from `index/name` field is used for search if this field is not defined.
