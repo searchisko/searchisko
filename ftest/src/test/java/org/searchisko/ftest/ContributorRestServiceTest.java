@@ -5,13 +5,14 @@
  */
 package org.searchisko.ftest;
 
+import com.jayway.restassured.builder.ResponseSpecBuilder;
 import com.jayway.restassured.http.ContentType;
+import com.jayway.restassured.specification.ResponseSpecification;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.junit.InSequence;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -25,7 +26,7 @@ import static com.jayway.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.*;
 
 /**
- * Integration test for /contributor REST API.
+ * Integration tests for /contributor REST API.
  *
  * @author Vlastimil Elias (velias at redhat dot com), Jason Porter (jporter@redhat.com)
  * @author Libor Krzyzanek
@@ -214,10 +215,12 @@ public class ContributorRestServiceTest {
     @Test @InSequence(6)
     public void assertAuthenticatedUpdate(@ArquillianResource URL context) throws Exception {
         final Map<String, Object> typeSpecificCode = new HashMap<>();
-        typeSpecificCode.put("jbossorg_blog", "seam.Jason Porter");
+        typeSpecificCode.put("jbossorg_blog", new String[] {"seam.Jason Porter"});
 
         final Map<String, Object> params = new HashMap<>();
 		params.put("code", contributorCode);
+		params.put("email", "jporter@redhat.com");
+		params.put("name", "Jason Porter");
         params.put("type_specific_code", typeSpecificCode);
 
         given().
@@ -225,89 +228,117 @@ public class ContributorRestServiceTest {
                 contentType(ContentType.JSON).
                 body(params).
                 auth().basic("jbossorg", "jbossorgjbossorg").
-                log().all(true).
         expect().
                 statusCode(200).
+				contentType(ContentType.JSON).
+				body("id", is(contributorId)).
         when().
                 post(new URL(context, restVersion + "contributor/{id}").toExternalForm());
     }
 
-    @Test @InSequence(7) @Ignore("Not implemented yet (we need to figure out how to do for updates)")
+	@Test
+	@InSequence(7)
+	public void assertRefreshES() throws MalformedURLException {
+		DeploymentHelpers.refreshES();
+	}
+
+
+	@Test @InSequence(8)
     public void assertAuthenticatedGet(@ArquillianResource URL context) throws MalformedURLException {
         given().
                 parameters("from", 0, "to", 100).
                 auth().basic("jbossorg", "jbossorgjbossorg").
         expect().
                 statusCode(200).
+				log().ifError().
                 contentType(ContentType.JSON).
                 body("total", is(1)).
                 body("hits[0].id", is(contributorId)).
-                body("hits[0].data.jbossorg_blog", hasItem("seam.Jason Porter")).
+				body("hits[0].data.email", is("jporter@redhat.com")).
+				body("hits[0].data.name", is("Jason Porter")).
+				body("hits[0].data.type_specific_code.jbossorg_blog", hasItem("seam.Jason Porter")).
         when().
                 get(new URL(context, restVersion + "contributor/").toExternalForm());
     }
 
-//
-//	@Test
-//	public void search() throws Exception {
-//		ContributorRestService tested = new ContributorRestService();
-//		tested.contributorService = Mockito.mock(ContributorService.class);
-//		RestEntityServiceBaseTest.mockLogger(tested);
-//
-//		// case - return from service OK, one result
-//		{
-//			SearchResponse sr = ESDataOnlyResponseTest.mockSearchResponse("ve", "email@em", null, null);
-//			Mockito.when(tested.contributorService.search("email@em")).thenReturn(sr);
-//			StreamingOutput ret = (StreamingOutput) tested.search("email@em");
-//			TestUtils.assetStreamingOutputContent(
-//					"{\"total\":1,\"hits\":[{\"id\":\"ve\",\"data\":{\"sys_name\":\"email@em\",\"sys_id\":\"ve\"}}]}", ret);
-//		}
-//
-//		// case - return from service OK, no result
-//		{
-//			Mockito.reset(tested.contributorService);
-//			SearchResponse sr = ESDataOnlyResponseTest.mockSearchResponse(null, null, null, null);
-//			Mockito.when(tested.contributorService.search("email@em")).thenReturn(sr);
-//			StreamingOutput ret = (StreamingOutput) tested.search("email@em");
-//			TestUtils.assetStreamingOutputContent("{\"total\":0,\"hits\":[]}", ret);
-//		}
-//
-//		// case - Exception from service
-//		{
-//			Mockito.reset(tested.contributorService);
-//			Mockito.when(tested.contributorService.search("email@em")).thenThrow(new RuntimeException("test exception"));
-//			TestUtils.assertResponseStatus(tested.search("email@em"), Status.INTERNAL_SERVER_ERROR);
-//		}
-//	}
-//
-//    	@Test
-    // TODO: This should be in a unit test, but has been covered in this file
-//	public void search_permissions() throws Exception {
-//		TestUtils.assertPermissionGuest(ContributorRestService.class, "search", String.class);
-//	}
-//	@Test
-    // TODO: This should be in a Unit test
-//	public void getAll_permissions() {
-//		TestUtils.assertPermissionSuperProvider(ContributorRestService.class, "getAll", Integer.class, Integer.class);
-//	}
-//
-//	@Test
-    // TODO: This should be in a Unit test, but has been covered in this file
-//	public void get_permissions() {
-//		TestUtils.assertPermissionSuperProvider(ContributorRestService.class, "get", String.class);
-//	}
-//
-//	@Test
-    // TODO: This should be in a Unit test
-//	public void create_permissions() {
-//		TestUtils.assertPermissionSuperProvider(ContributorRestService.class, "create", String.class, Map.class);
-//		TestUtils.assertPermissionSuperProvider(ContributorRestService.class, "create", Map.class);
-//	}
-//
-//	@Test
-    // TODO: This should be in a Unit test
-//	public void delete_permissions() {
-//		TestUtils.assertPermissionSuperProvider(ContributorRestService.class, "delete", String.class);
-//	}
+	@Test @InSequence(20)
+	public void assertSearch(@ArquillianResource URL context) throws MalformedURLException {
+		ResponseSpecBuilder builder = new ResponseSpecBuilder();
+		builder.expectContentType(ContentType.JSON);
+		builder.expectStatusCode(200);
+		builder.expectBody("total", is(1));
+		builder.expectBody("hits[0].id", is(contributorId));
+		builder.expectBody("hits[0].data.code", is(contributorCode));
+		builder.expectBody("hits[0].data.name", is("Jason Porter"));
+		builder.expectBody("hits[0].data.email", is("jporter@redhat.com"));
+		builder.expectBody("hits[0].data.type_specific_code.jbossorg_blog", hasItem("seam.Jason Porter"));
+		ResponseSpecification responseSpec = builder.build();
+
+		given().
+				parameters("code", contributorCode).
+				auth().basic(DeploymentHelpers.DEFAULT_PROVIDER_NAME, DeploymentHelpers.DEFAULT_PROVIDER_PASSWORD).
+				expect().
+				log().ifError().
+				spec(responseSpec).
+				when().
+				get(new URL(context, restVersion + "contributor/search").toExternalForm());
+
+		given().
+				parameters("email", "jporter@redhat.com").
+				auth().basic(DeploymentHelpers.DEFAULT_PROVIDER_NAME, DeploymentHelpers.DEFAULT_PROVIDER_PASSWORD).
+				expect().
+				log().ifError().
+				spec(responseSpec).
+				when().
+				get(new URL(context, restVersion + "contributor/search").toExternalForm());
+		// Can be tested when .fulltext is present in mapping
+//		given().
+//				parameters("name", "jason").
+//				auth().basic(DeploymentHelpers.DEFAULT_PROVIDER_NAME, DeploymentHelpers.DEFAULT_PROVIDER_PASSWORD).
+//				expect().
+//				log().ifError().
+//				spec(responseSpec).
+//				when().
+//				get(new URL(context, restVersion + "contributor/search").toExternalForm());
+
+	}
+
+	@Test @InSequence(21)
+	public void assertSearchNoResult(@ArquillianResource URL context) throws MalformedURLException {
+		given().
+				parameters("code", "bad-code").
+				auth().basic(DeploymentHelpers.DEFAULT_PROVIDER_NAME, DeploymentHelpers.DEFAULT_PROVIDER_PASSWORD).
+				expect().
+				statusCode(200).
+				log().ifError().
+				contentType(ContentType.JSON).
+				body("total", is(0)).
+				when().
+				get(new URL(context, restVersion + "contributor/search").toExternalForm());
+
+		given().
+				parameters("email", "bad-email").
+				auth().basic(DeploymentHelpers.DEFAULT_PROVIDER_NAME, DeploymentHelpers.DEFAULT_PROVIDER_PASSWORD).
+				expect().
+				statusCode(200).
+				log().ifError().
+				contentType(ContentType.JSON).
+				body("total", is(0)).
+				when().
+				get(new URL(context, restVersion + "contributor/search").toExternalForm());
+
+		given().
+				parameters("name", "bad-name").
+				auth().basic(DeploymentHelpers.DEFAULT_PROVIDER_NAME, DeploymentHelpers.DEFAULT_PROVIDER_PASSWORD).
+				expect().
+				statusCode(200).
+				log().ifError().
+				contentType(ContentType.JSON).
+				body("total", is(0)).
+				when().
+				get(new URL(context, restVersion + "contributor/search").toExternalForm());
+
+	}
+
 
 }
