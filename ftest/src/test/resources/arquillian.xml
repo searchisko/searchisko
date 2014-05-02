@@ -14,8 +14,7 @@
 			<!-- See https://docs.jboss.org/author/display/ARQ/JBoss+AS+7.1%2C+JBoss+EAP+6.0+-+Managed -->
 			<!-- See https://docs.jboss.org/author/display/ARQ/Servlet+3.0 -->
 			<property name="jbossHome">${arquillian.jboss.home}</property>
-			<!-- Using different profile to got isolation from standard deployment -->
-			<property name="serverConfig">standalone-full.xml</property>
+			<property name="serverConfig">${arquillian.jboss.serverConfig}</property>
 			<property name="host">${arquillian.jboss.host}</property>
 			<property name="port">${arquillian.jboss.port}</property>
 			<property name="managementAddress">${arquillian.jboss.host}</property>

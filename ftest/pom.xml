@@ -36,6 +36,8 @@
 		<es.client.embedded.search.ip>127.0.0.1</es.client.embedded.search.ip>
 		<es.client.embedded.search.port.start>15000</es.client.embedded.search.port.start>
 		<arquillian.jboss.home>${env.JBOSS_HOME}</arquillian.jboss.home>
+		<!-- Using different profile to get isolation from standard deployment -->
+		<arquillian.jboss.serverConfig>standalone-full.xml</arquillian.jboss.serverConfig>
 		<arquillian.jboss.host>127.0.0.1</arquillian.jboss.host>
 		<arquillian.jboss.port>9999</arquillian.jboss.port>
 	</properties>
@@ -46,7 +48,45 @@
 			<properties>
 				<es.client.embedded.data.path>${env.OPENSHIFT_DATA_DIR}/ftest_dcp_data</es.client.embedded.data.path>
 				<es.client.embedded.search.ip>${env.OPENSHIFT_JBOSSEAP_IP}</es.client.embedded.search.ip>
+				<!-- Only standalone.xml is in place -->
+				<arquillian.jboss.serverConfig>standalone.xml</arquillian.jboss.serverConfig>
 			</properties>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-antrun-plugin</artifactId>
+						<executions>
+							<!-- Avoid deploying ROOT.war -->
+							<execution>
+								<id>skip-root.war-deployment</id>
+								<phase>process-test-classes</phase>
+								<configuration>
+									<tasks>
+										<touch file="../deployments/ROOT.war.skipdeploy"/>
+									</tasks>
+								</configuration>
+								<goals>
+									<goal>run</goal>
+								</goals>
+							</execution>
+							<!-- Remove flag allowing ROOT.war deployment -->
+							<execution>
+								<id>unskip-root.war-deployment</id>
+								<phase>prepare-package</phase>
+								<configuration>
+									<tasks>
+										<delete file="../deployments/ROOT.war.skipdeploy"/>
+									</tasks>
+								</configuration>
+								<goals>
+									<goal>run</goal>
+								</goals>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
 		</profile>
 
 		<profile>
