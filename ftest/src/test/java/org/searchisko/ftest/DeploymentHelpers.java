@@ -96,19 +96,18 @@ public class DeploymentHelpers {
 
 
 		final WebArchive war = ShrinkWrap.create(WebArchive.class, "searchisko-ftest.war")
+				.addAsLibraries(runtimeDeps)
 				.addPackages(true, "org.searchisko.api")
 				.addPackages(true, "org.searchisko.contribprofile")
 				.addPackages(true, "org.searchisko.persistence")
-				.addAsLibraries(runtimeDeps)
-				.addAsResource("META-INF/test-persistence.xml", "META-INF/persistence.xml")
-				.addAsWebInfResource("webapp/WEB-INF/web.xml", "web.xml")
 				.addAsResource("systeminfo.properties")
 				.addAsResource("app.properties")
 				.addAsResource("search_timeouts.properties")
 				.addAsResource("search_client_settings.properties")
 				.addAsResource("stats_client_configuration.properties")
 				.addAsResource("mappings/contributor.json", "mappings/contributor.json")
-				.addAsWebInfResource("webapp/WEB-INF/searchisko-ds.xml", "searchisko-ds.xml")
+				.addAsResource("META-INF/test-persistence.xml", "META-INF/persistence.xml")
+				.addAsWebInfResource("webapp/WEB-INF/test-searchisko-ds.xml", "searchisko-ds.xml")
 				.addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml");
 
 		return war;
