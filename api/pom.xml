@@ -113,7 +113,7 @@
 						</exclusions>
 				</dependency>
 
-				<!-- Resteasy using common-codes (as module) which is needed by app as well. Therefore there is no need to add dependency 
+				<!-- Resteasy using common-codes (as module) which is needed by app as well. Therefore there is no need to add dependency
 						on common-codecs. Only dependency is defined in Manifest - see bellow. -->
 
 				<dependency>
@@ -198,7 +198,7 @@
 						</exclusions>
 				</dependency>
 
-				<!-- Needed to be here instead of individual profiles because it has transitive dependecy on httpclient which is needed 
+				<!-- Needed to be here instead of individual profiles because it has transitive dependecy on httpclient which is needed
 						for DCP API iteself -->
 				<dependency>
 						<groupId>org.jboss.elasticsearch</groupId>
@@ -211,7 +211,7 @@
 						<artifactId>elasticsearch-river-remote</artifactId>
 						<version>${elasticsearch-river-remote.version}</version>
 				</dependency>
-				
+
 				<dependency>
 						<groupId>commons-io</groupId>
 						<artifactId>commons-io</artifactId>
@@ -452,13 +452,39 @@
 						<build>
 								<plugins>
 										<plugin>
-												<!-- This is used to exclude unwanted JAR files from `deployments` folder and put ROOT.war to deployments DIR. -->
-												<groupId>org.apache.maven.plugins</groupId>
-												<artifactId>maven-war-plugin</artifactId>
-												<configuration>
-														<outputDirectory>${project.parent.basedir}/deployments</outputDirectory>
-														<attachClasses>true</attachClasses>
-												</configuration>
+											<groupId>org.apache.maven.plugins</groupId>
+											<artifactId>maven-antrun-plugin</artifactId>
+											<executions>
+												<execution>
+													<id>clean-deployments</id>
+													<phase>clean</phase>
+													<configuration>
+														<tasks>
+															<delete>
+																<fileset dir="${basedir}/../deployments/">
+																	<include name="**/*.war"/>
+																	<include name="**/*.jar"/>
+																</fileset>
+															</delete>
+														</tasks>
+													</configuration>
+													<goals>
+														<goal>run</goal>
+													</goals>
+												</execution>
+												<execution>
+													<id>copy-war-to-deployments</id>
+													<phase>package</phase>
+													<configuration>
+														<tasks>
+															<copy file="${project.build.directory}/${project.build.finalName}.war" todir="${basedir}/../deployments/"/>
+														</tasks>
+													</configuration>
+													<goals>
+														<goal>run</goal>
+													</goals>
+												</execution>
+											</executions>
 										</plugin>
 								</plugins>
 								<filters>
