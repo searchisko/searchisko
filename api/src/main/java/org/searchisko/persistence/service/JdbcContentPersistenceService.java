@@ -153,10 +153,12 @@ public class JdbcContentPersistenceService implements ContentPersistenceService 
 	 * 
 	 * @param tableName to check/create
 	 */
-	protected synchronized void ensureTableExists(String tableName) {
-		if (!checkTableExists(tableName)) {
-			executeNonReturningSql(String.format("create table %s%s", tableName, TABLE_STRUCTURE_DDL));
-			TABLES_EXISTS.put(tableName, Boolean.TRUE);
+	protected void ensureTableExists(String tableName) {
+		synchronized (TABLE_STRUCTURE_DDL) {
+			if (!checkTableExists(tableName)) {
+				executeNonReturningSql(String.format("create table %s%s", tableName, TABLE_STRUCTURE_DDL));
+				TABLES_EXISTS.put(tableName, Boolean.TRUE);
+			}
 		}
 	}
 
