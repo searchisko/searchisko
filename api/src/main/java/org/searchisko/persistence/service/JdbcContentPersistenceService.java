@@ -33,8 +33,8 @@ import org.searchisko.api.util.SearchUtils;
  * JDBC based implementation of {@link ContentPersistenceService}. We use raw JDBC here because we dynamically create
  * and use tables for distinct sys_content_types to handle big numbers of documents.<br>
  * It uses select from SQL standard <code>information_schema.tables</code> view to check table existence, which may be
- * incompatible with some DB engines who do not follow SQL exactly (like Oracle)! It also uses <code>text</code> data
- * type for one column, which may be incompatible with some DB engines also.<br>
+ * incompatible with some DB engines who do not follow SQL exactly (like Oracle)! It also uses <code>LONGTEXT</code>
+ * data type for one column, which may be incompatible with some DB engines also.<br>
  * It's session bean to work with transactions.
  * 
  * @author Vlastimil Elias (velias at redhat dot com)
@@ -160,7 +160,7 @@ public class JdbcContentPersistenceService implements ContentPersistenceService 
 		}
 	}
 
-	private static final String TABLE_STRUCTURE_DDL = " ( id varchar(200) not null primary key, json_data text, sys_content_type varchar(100) not null, updated timestamp )";
+	private static final String TABLE_STRUCTURE_DDL = " ( id varchar(200) not null primary key, json_data longtext, sys_content_type varchar(100) not null, updated timestamp )";
 
 	protected void executeNonReturningSql(final String sql, final Object... params) {
 		try (final Connection conn = searchiskoDs.getConnection();
