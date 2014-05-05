@@ -15,9 +15,9 @@
   ~ limitations under the License.
   -->
 
-<datasources xmlns="http://www.jboss.org/ironjacamar/schema"
+<datasources xmlns="http://www.ironjacamar.org/doc/schema"
 			 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-			 xsi:schemaLocation="http://www.jboss.org/ironjacamar/schema http://www.ironjacamar.org/doc/schema/datasources_1_1.xsd">
+			 xsi:schemaLocation="http://www.ironjacamar.org/doc/schema http://www.ironjacamar.org/doc/schema/datasources_1_1.xsd">
 	<!-- The datasource is bound into JNDI at this location. We reference this in META-INF/persistence.xml -->
 	<datasource jndi-name="java:jboss/datasources/FTestSearchiskoDS"
 				pool-name="ftestsearchisko" enabled="true"
