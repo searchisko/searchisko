@@ -1,618 +1,625 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-		xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-		<modelVersion>4.0.0</modelVersion>
+		 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
 
-		<parent>
-				<groupId>org.searchisko</groupId>
-				<artifactId>parent</artifactId>
-				<relativePath>../pom.xml</relativePath>
-				<version>1.0.2-M1</version>
-		</parent>
-		<artifactId>api</artifactId>
-		<name>Searchisko API</name>
-		<packaging>war</packaging>
+	<parent>
+		<groupId>org.searchisko</groupId>
+		<artifactId>parent</artifactId>
+		<relativePath>../pom.xml</relativePath>
+		<version>1.0.2-M1</version>
+	</parent>
+	<artifactId>api</artifactId>
+	<name>Searchisko API</name>
+	<packaging>war</packaging>
 
-		<properties>
-				<compileSource>1.7</compileSource>
-				<buildTimestamp>${maven.build.timestamp}</buildTimestamp>
-        <maven.build.timestamp.format>yyyy-MM-dd'T'HH:mm:ss.SSSZ</maven.build.timestamp.format>
-		</properties>
+	<properties>
+		<compileSource>1.7</compileSource>
+		<buildTimestamp>${maven.build.timestamp}</buildTimestamp>
+		<maven.build.timestamp.format>yyyy-MM-dd'T'HH:mm:ss.SSSZ</maven.build.timestamp.format>
+	</properties>
 
-		<dependencies>
-				<!-- First declare the APIs we depend on and need for compilation. All of them are provided by JBoss AS 7 -->
+	<dependencies>
+		<!-- First declare the APIs we depend on and need for compilation. All of them are provided by JBoss AS 7 -->
 
-				<!-- Import the CDI API, we use provided scope as the API is included in JBoss AS 7 -->
-				<dependency>
-						<groupId>javax.enterprise</groupId>
-						<artifactId>cdi-api</artifactId>
-						<scope>provided</scope>
-				</dependency>
+		<!-- Import the CDI API, we use provided scope as the API is included in JBoss AS 7 -->
+		<dependency>
+			<groupId>javax.enterprise</groupId>
+			<artifactId>cdi-api</artifactId>
+			<scope>provided</scope>
+		</dependency>
 
-				<!-- Import the Common Annotations API (JSR-250), we use provided scope as the API is included in JBoss AS 7 -->
-				<dependency>
-						<groupId>org.jboss.spec.javax.annotation</groupId>
-						<artifactId>jboss-annotations-api_1.1_spec</artifactId>
-						<scope>provided</scope>
-				</dependency>
+		<!-- Import the Common Annotations API (JSR-250), we use provided scope as the API is included in JBoss AS 7 -->
+		<dependency>
+			<groupId>org.jboss.spec.javax.annotation</groupId>
+			<artifactId>jboss-annotations-api_1.1_spec</artifactId>
+			<scope>provided</scope>
+		</dependency>
 
-				<!-- Import the JAX-RS API, we use provided scope as the API is included in JBoss AS 7 -->
-				<dependency>
-						<groupId>org.jboss.spec.javax.ws.rs</groupId>
-						<artifactId>jboss-jaxrs-api_1.1_spec</artifactId>
-						<scope>provided</scope>
-				</dependency>
+		<!-- Import the JAX-RS API, we use provided scope as the API is included in JBoss AS 7 -->
+		<dependency>
+			<groupId>org.jboss.spec.javax.ws.rs</groupId>
+			<artifactId>jboss-jaxrs-api_1.1_spec</artifactId>
+			<scope>provided</scope>
+		</dependency>
 
-				<!-- Import the JPA API, we use provided scope as the API is included in JBoss AS 7 -->
-				<dependency>
-						<groupId>org.hibernate.javax.persistence</groupId>
-						<artifactId>hibernate-jpa-2.0-api</artifactId>
-						<scope>provided</scope>
-				</dependency>
+		<!-- Import the JPA API, we use provided scope as the API is included in JBoss AS 7 -->
+		<dependency>
+			<groupId>org.hibernate.javax.persistence</groupId>
+			<artifactId>hibernate-jpa-2.0-api</artifactId>
+			<scope>provided</scope>
+		</dependency>
 
-				<!-- Import the EJB API, we use provided scope as the API is included in JBoss AS 7 -->
-				<dependency>
-						<groupId>org.jboss.spec.javax.ejb</groupId>
-						<artifactId>jboss-ejb-api_3.1_spec</artifactId>
-						<scope>provided</scope>
-				</dependency>
+		<!-- Import the EJB API, we use provided scope as the API is included in JBoss AS 7 -->
+		<dependency>
+			<groupId>org.jboss.spec.javax.ejb</groupId>
+			<artifactId>jboss-ejb-api_3.1_spec</artifactId>
+			<scope>provided</scope>
+		</dependency>
 
-				<!-- Import the Servlet API, we use provided scope as the API is included in JBoss AS 7 -->
-				<dependency>
-						<groupId>org.jboss.spec.javax.servlet</groupId>
-						<artifactId>jboss-servlet-api_3.0_spec</artifactId>
-						<scope>provided</scope>
-				</dependency>
-
-
-				<!-- JSR-303 (Bean Validation) Implementation -->
-				<!-- Provides portable constraints such as @Email -->
-				<!-- Hibernate Validator is shipped in JBoss AS 7 -->
-				<dependency>
-						<groupId>org.hibernate</groupId>
-						<artifactId>hibernate-validator</artifactId>
-						<scope>provided</scope>
-				</dependency>
-
-				<dependency>
-						<groupId>org.hibernate</groupId>
-						<artifactId>hibernate-core</artifactId>
-						<scope>provided</scope>
-				</dependency>
-
-				<!-- Import the JSF API, we use provided scope as the API is included in JBoss AS 7 -->
-				<dependency>
-						<groupId>org.jboss.spec.javax.faces</groupId>
-						<artifactId>jboss-jsf-api_2.1_spec</artifactId>
-						<scope>provided</scope>
-				</dependency>
-
-				<dependency>
-						<groupId>org.jboss.spec.javax.el</groupId>
-						<artifactId>jboss-el-api_2.2_spec</artifactId>
-						<scope>provided</scope>
-				</dependency>
+		<!-- Import the Servlet API, we use provided scope as the API is included in JBoss AS 7 -->
+		<dependency>
+			<groupId>org.jboss.spec.javax.servlet</groupId>
+			<artifactId>jboss-servlet-api_3.0_spec</artifactId>
+			<scope>provided</scope>
+		</dependency>
 
 
-				<!-- Artifacts needed by application -->
-				<!-- Needed for PreProcessInterceptor -->
-				<dependency>
-						<groupId>org.jboss.resteasy</groupId>
-						<artifactId>resteasy-jaxrs</artifactId>
-						<scope>provided</scope>
-						<!-- Excluded because of dependency in elasticsearch-river-jira -->
-						<exclusions>
-								<exclusion>
-										<artifactId>httpcore</artifactId>
-										<groupId>org.apache.httpcomponents</groupId>
-								</exclusion>
-								<exclusion>
-										<artifactId>httpclient</artifactId>
-										<groupId>org.apache.httpcomponents</groupId>
-								</exclusion>
-						</exclusions>
-				</dependency>
+		<!-- JSR-303 (Bean Validation) Implementation -->
+		<!-- Provides portable constraints such as @Email -->
+		<!-- Hibernate Validator is shipped in JBoss AS 7 -->
+		<dependency>
+			<groupId>org.hibernate</groupId>
+			<artifactId>hibernate-validator</artifactId>
+			<scope>provided</scope>
+		</dependency>
 
-				<!-- Resteasy using common-codes (as module) which is needed by app as well. Therefore there is no need to add dependency
-						on common-codecs. Only dependency is defined in Manifest - see bellow. -->
+		<dependency>
+			<groupId>org.hibernate</groupId>
+			<artifactId>hibernate-core</artifactId>
+			<scope>provided</scope>
+		</dependency>
 
-				<dependency>
-						<groupId>org.jboss.resteasy</groupId>
-						<artifactId>resteasy-cdi</artifactId>
-						<scope>provided</scope>
-				</dependency>
+		<!-- Import the JSF API, we use provided scope as the API is included in JBoss AS 7 -->
+		<dependency>
+			<groupId>org.jboss.spec.javax.faces</groupId>
+			<artifactId>jboss-jsf-api_2.1_spec</artifactId>
+			<scope>provided</scope>
+		</dependency>
 
-				<dependency>
-						<groupId>org.jboss.resteasy</groupId>
-						<artifactId>resteasy-atom-provider</artifactId>
-						<scope>provided</scope>
-				</dependency>
+		<dependency>
+			<groupId>org.jboss.spec.javax.el</groupId>
+			<artifactId>jboss-el-api_2.2_spec</artifactId>
+			<scope>provided</scope>
+		</dependency>
 
-				<dependency>
-						<groupId>org.jboss.resteasy</groupId>
-						<artifactId>resteasy-jackson-provider</artifactId>
-						<scope>provided</scope>
-				</dependency>
 
-				<!-- Needed for DigestUtils but it's bundled in httpclient anyway -->
-				<dependency>
-						<groupId>commons-codec</groupId>
-						<artifactId>commons-codec</artifactId>
-						<version>1.6</version>
-				</dependency>
+		<!-- Artifacts needed by application -->
+		<!-- Needed for PreProcessInterceptor -->
+		<dependency>
+			<groupId>org.jboss.resteasy</groupId>
+			<artifactId>resteasy-jaxrs</artifactId>
+			<scope>provided</scope>
+			<!-- Excluded because of dependency in elasticsearch-river-jira -->
+			<exclusions>
+				<exclusion>
+					<artifactId>httpcore</artifactId>
+					<groupId>org.apache.httpcomponents</groupId>
+				</exclusion>
+				<exclusion>
+					<artifactId>httpclient</artifactId>
+					<groupId>org.apache.httpcomponents</groupId>
+				</exclusion>
+			</exclusions>
+		</dependency>
 
-				<dependency>
-						<groupId>org.elasticsearch</groupId>
-						<artifactId>elasticsearch</artifactId>
-						<version>${org.elasticsearch.version}</version>
-						<exclusions>
-								<exclusion>
-										<groupId>com.sun.jmx</groupId>
-										<artifactId>jmxri</artifactId>
-								</exclusion>
-								<exclusion>
-										<groupId>com.sun.jdmk</groupId>
-										<artifactId>jmxtools</artifactId>
-								</exclusion>
-								<exclusion>
-										<groupId>javax.jms</groupId>
-										<artifactId>jms</artifactId>
-								</exclusion>
-								<exclusion>
-										<groupId>javax.mail</groupId>
-										<artifactId>mail</artifactId>
-								</exclusion>
-						</exclusions>
-				</dependency>
+		<!-- Resteasy using common-codes (as module) which is needed by app as well. Therefore there is no need to add dependency
+				on common-codecs. Only dependency is defined in Manifest - see bellow. -->
 
-				<dependency>
-						<groupId>org.jboss.elasticsearch</groupId>
-						<artifactId>structured-content-tools</artifactId>
-						<version>${structured-content-tools.version}</version>
-				</dependency>
+		<dependency>
+			<groupId>org.jboss.resteasy</groupId>
+			<artifactId>resteasy-cdi</artifactId>
+			<scope>provided</scope>
+		</dependency>
 
-				<!-- Needed for JSON parsing. Version is taken from EAP BOMs -->
-				<dependency>
-						<groupId>org.codehaus.jackson</groupId>
-						<artifactId>jackson-core-asl</artifactId>
-				</dependency>
-				<dependency>
-						<groupId>org.codehaus.jackson</groupId>
-						<artifactId>jackson-mapper-asl</artifactId>
-				</dependency>
-				<dependency>
-						<groupId>org.codehaus.jackson</groupId>
-						<artifactId>jackson-jaxrs</artifactId>
-				</dependency>
+		<dependency>
+			<groupId>org.jboss.resteasy</groupId>
+			<artifactId>resteasy-atom-provider</artifactId>
+			<scope>provided</scope>
+		</dependency>
 
-				<!-- SSO integration; JBoss.org custom (improved) CAS JAVA client -->
-				<dependency>
-						<groupId>org.jboss.community.cas</groupId>
-						<artifactId>cas-jboss-org-client</artifactId>
-						<version>${cas-jboss-org-client.version}</version>
-						<exclusions>
-								<exclusion>
-										<artifactId>commons-logging</artifactId>
-										<groupId>commons-logging</groupId>
-								</exclusion>
-						</exclusions>
-				</dependency>
+		<dependency>
+			<groupId>org.jboss.resteasy</groupId>
+			<artifactId>resteasy-jackson-provider</artifactId>
+			<scope>provided</scope>
+		</dependency>
 
-				<!-- Needed to be here instead of individual profiles because it has transitive dependecy on httpclient which is needed
-						for DCP API iteself -->
-				<dependency>
-						<groupId>org.jboss.elasticsearch</groupId>
-						<artifactId>elasticsearch-river-jira</artifactId>
-						<version>${elasticsearch-river-jira.version}</version>
-						<!-- re-enabled commons-logging otherwise httpclient doesn't work -->
-				</dependency>
-				<dependency>
-						<groupId>org.jboss.elasticsearch</groupId>
-						<artifactId>elasticsearch-river-remote</artifactId>
-						<version>${elasticsearch-river-remote.version}</version>
-				</dependency>
+		<!-- Needed for DigestUtils but it's bundled in httpclient anyway -->
+		<dependency>
+			<groupId>commons-codec</groupId>
+			<artifactId>commons-codec</artifactId>
+			<version>1.6</version>
+		</dependency>
 
-				<dependency>
-						<groupId>commons-io</groupId>
-						<artifactId>commons-io</artifactId>
-						<version>2.4</version>
-				</dependency>
+		<dependency>
+			<groupId>org.elasticsearch</groupId>
+			<artifactId>elasticsearch</artifactId>
+			<version>${org.elasticsearch.version}</version>
+			<exclusions>
+				<exclusion>
+					<groupId>com.sun.jmx</groupId>
+					<artifactId>jmxri</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>com.sun.jdmk</groupId>
+					<artifactId>jmxtools</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>javax.jms</groupId>
+					<artifactId>jms</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>javax.mail</groupId>
+					<artifactId>mail</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
 
-				<!-- Unit test dependencies -->
-				<dependency>
-						<groupId>junit</groupId>
-						<artifactId>junit</artifactId>
-						<scope>test</scope>
-				</dependency>
-				<dependency>
-						<groupId>org.mockito</groupId>
-						<artifactId>mockito-all</artifactId>
-						<version>1.9.5</version>
-						<scope>test</scope>
-				</dependency>
+		<dependency>
+			<groupId>org.jboss.elasticsearch</groupId>
+			<artifactId>structured-content-tools</artifactId>
+			<version>${structured-content-tools.version}</version>
+		</dependency>
 
-				<!-- dependencies necessary for JPA code unit tests -->
-				<dependency>
-						<groupId>com.h2database</groupId>
-						<artifactId>h2</artifactId>
-						<version>1.3.170</version>
-						<scope>test</scope>
-				</dependency>
-				<dependency>
-						<groupId>org.hibernate</groupId>
-						<artifactId>hibernate-entitymanager</artifactId>
-						<scope>test</scope>
-				</dependency>
-				<!-- Allows better "non-strict" comparison of JSON objects. -->
-				<dependency>
-						<groupId>org.skyscreamer</groupId>
-						<artifactId>jsonassert</artifactId>
-						<version>1.2.3</version>
-						<scope>test</scope>
-				</dependency>
-		</dependencies>
+		<!-- Needed for JSON parsing. Version is taken from EAP BOMs -->
+		<dependency>
+			<groupId>org.codehaus.jackson</groupId>
+			<artifactId>jackson-core-asl</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.codehaus.jackson</groupId>
+			<artifactId>jackson-mapper-asl</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.codehaus.jackson</groupId>
+			<artifactId>jackson-jaxrs</artifactId>
+		</dependency>
 
-		<build>
-				<finalName>ROOT</finalName>
-				<resources>
+		<!-- SSO integration; JBoss.org custom (improved) CAS JAVA client -->
+		<dependency>
+			<groupId>org.jboss.community.cas</groupId>
+			<artifactId>cas-jboss-org-client</artifactId>
+			<version>${cas-jboss-org-client.version}</version>
+			<exclusions>
+				<exclusion>
+					<artifactId>commons-logging</artifactId>
+					<groupId>commons-logging</groupId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+
+		<!-- Needed to be here instead of individual profiles because it has transitive dependecy on httpclient which is needed
+				for DCP API iteself -->
+		<dependency>
+			<groupId>org.jboss.elasticsearch</groupId>
+			<artifactId>elasticsearch-river-jira</artifactId>
+			<version>${elasticsearch-river-jira.version}</version>
+			<!-- re-enabled commons-logging otherwise httpclient doesn't work -->
+		</dependency>
+		<dependency>
+			<groupId>org.jboss.elasticsearch</groupId>
+			<artifactId>elasticsearch-river-remote</artifactId>
+			<version>${elasticsearch-river-remote.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>commons-io</groupId>
+			<artifactId>commons-io</artifactId>
+			<version>2.4</version>
+		</dependency>
+
+		<!-- Unit test dependencies -->
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.mockito</groupId>
+			<artifactId>mockito-all</artifactId>
+			<version>1.9.5</version>
+			<scope>test</scope>
+		</dependency>
+
+		<!-- dependencies necessary for JPA code unit tests -->
+		<dependency>
+			<groupId>com.h2database</groupId>
+			<artifactId>h2</artifactId>
+			<version>1.3.170</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.hibernate</groupId>
+			<artifactId>hibernate-entitymanager</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<!-- Allows better "non-strict" comparison of JSON objects. -->
+		<dependency>
+			<groupId>org.skyscreamer</groupId>
+			<artifactId>jsonassert</artifactId>
+			<version>1.2.3</version>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
+
+	<build>
+		<finalName>ROOT</finalName>
+		<resources>
+			<resource>
+				<filtering>true</filtering>
+				<directory>src/main/resources</directory>
+			</resource>
+		</resources>
+
+		<plugins>
+			<!-- Prepare exploded WAR content so that we can replace tokens in html files during prepare-package phase -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-war-plugin</artifactId>
+				<version>2.1.1</version>
+				<configuration>
+					<failOnMissingWebXml>false</failOnMissingWebXml>
+					<archive>
+						<manifest>
+							<addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+							<addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
+						</manifest>
+						<manifestEntries>
+							<Specification-Title>${project.name}</Specification-Title>
+							<Implementation-Title>${project.name}</Implementation-Title>
+							<Implementation-Version>${buildNumber}</Implementation-Version>
+							<Dependencies>
+								org.jboss.resteasy.resteasy-jaxrs,
+								org.jboss.resteasy.resteasy-cdi,
+								org.apache.commons.codec
+							</Dependencies>
+						</manifestEntries>
+					</archive>
+					<warName>ROOT</warName>
+					<attachClasses>true</attachClasses>
+					<webResources>
 						<resource>
-								<filtering>true</filtering>
-								<directory>src/main/resources</directory>
+							<directory>${basedir}/src/main/webapp/WEB-INF</directory>
+							<filtering>true</filtering>
+							<targetPath>WEB-INF</targetPath>
 						</resource>
+					</webResources>
+				</configuration>
+			</plugin>
+
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>buildnumber-maven-plugin</artifactId>
+				<version>1.2</version>
+				<executions>
+					<execution>
+						<phase>validate</phase>
+						<goals>
+							<goal>create</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<doCheck>false</doCheck>
+					<doUpdate>false</doUpdate>
+				</configuration>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<version>2.14</version>
+				<configuration>
+					<systemProperties>
+						<property>
+							<name>java.util.logging.config.file</name>
+							<value>src/test/resources/logging.properties</value>
+						</property>
+					</systemProperties>
+				</configuration>
+			</plugin>
+
+		</plugins>
+	</build>
+
+	<profiles>
+		<profile>
+			<!-- local development on localhost -->
+			<id>localhost</id>
+			<activation>
+				<activeByDefault>true</activeByDefault>
+			</activation>
+			<properties>
+				<filter.name>localhost</filter.name>
+				<es.client.embedded.data.path>${user.home}/.dcp_data</es.client.embedded.data.path>
+				<persistence.xml.jta-data-source>java:jboss/datasources/SearchiskoDS</persistence.xml.jta-data-source>
+				<persistence.xml.hibernate.dialect>org.hibernate.dialect.H2Dialect</persistence.xml.hibernate.dialect>
+				<!-- By Default h2 database is persisted -->
+				<datasource.connection.url>jdbc:h2:searchisko</datasource.connection.url>
+				<datasource.driver>h2</datasource.driver>
+				<datasource.username>sa</datasource.username>
+				<datasource.password>sa</datasource.password>
+			</properties>
+			<build>
+				<filters>
+					<filter>src/main/profiles/${filter.name}/sso.properties</filter>
+				</filters>
+				<resources>
+					<resource>
+						<filtering>true</filtering>
+						<directory>src/main/profiles/${filter.name}</directory>
+					</resource>
 				</resources>
-
+			</build>
+		</profile>
+		<profile>
+			<id>skiptests</id>
+			<build>
 				<plugins>
-						<!-- Prepare exploded WAR content so that we can replace tokens in html files during prepare-package phase -->
-						<plugin>
-								<groupId>org.apache.maven.plugins</groupId>
-								<artifactId>maven-war-plugin</artifactId>
-								<version>2.1.1</version>
-								<configuration>
-										<failOnMissingWebXml>false</failOnMissingWebXml>
-										<archive>
-												<manifest>
-														<addDefaultImplementationEntries>true</addDefaultImplementationEntries>
-														<addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
-												</manifest>
-												<manifestEntries>
-														<Specification-Title>${project.name}</Specification-Title>
-														<Implementation-Title>${project.name}</Implementation-Title>
-														<Implementation-Version>${buildNumber}</Implementation-Version>
-														<Dependencies>
-																org.jboss.resteasy.resteasy-jaxrs,
-																org.jboss.resteasy.resteasy-cdi,
-																org.apache.commons.codec
-														</Dependencies>
-												</manifestEntries>
-										</archive>
-										<warName>ROOT</warName>
-										<attachClasses>true</attachClasses>
-										<webResources>
-												<resource>
-														<directory>${basedir}/src/main/webapp/WEB-INF</directory>
-														<filtering>true</filtering>
-														<targetPath>WEB-INF</targetPath>
-												</resource>
-										</webResources>
-								</configuration>
-						</plugin>
-
-						<plugin>
-								<groupId>org.codehaus.mojo</groupId>
-								<artifactId>buildnumber-maven-plugin</artifactId>
-								<version>1.2</version>
-								<executions>
-										<execution>
-												<phase>validate</phase>
-												<goals>
-														<goal>create</goal>
-												</goals>
-										</execution>
-								</executions>
-								<configuration>
-										<doCheck>false</doCheck>
-										<doUpdate>false</doUpdate>
-								</configuration>
-						</plugin>
-
-						<plugin>
-								<groupId>org.apache.maven.plugins</groupId>
-								<artifactId>maven-surefire-plugin</artifactId>
-								<version>2.14</version>
-								<configuration>
-										<systemProperties>
-												<property>
-														<name>java.util.logging.config.file</name>
-														<value>src/test/resources/logging.properties</value>
-												</property>
-										</systemProperties>
-								</configuration>
-						</plugin>
-
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-surefire-plugin</artifactId>
+						<version>2.14</version>
+						<configuration>
+							<skipTests>true</skipTests>
+						</configuration>
+					</plugin>
 				</plugins>
-		</build>
+			</build>
+		</profile>
+		<profile>
+			<id>production</id>
+			<properties>
+				<filter.name>production</filter.name>
+				<persistence.xml.jta-data-source>java:jboss/datasources/SearchiskoDS</persistence.xml.jta-data-source>
+				<persistence.xml.hibernate.dialect>org.hibernate.dialect.MySQLDialect
+				</persistence.xml.hibernate.dialect>
+			</properties>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-war-plugin</artifactId>
+						<configuration>
+							<packagingExcludes>WEB-INF/searchisko-ds.xml</packagingExcludes>
+						</configuration>
+					</plugin>
+				</plugins>
+				<filters>
+					<filter>src/main/profiles/${filter.name}/sso.properties</filter>
+				</filters>
+				<resources>
+					<resource>
+						<directory>src/main/profiles/${filter.name}</directory>
+					</resource>
+				</resources>
+			</build>
+		</profile>
+		<profile>
+			<!-- development on RHEL6 based dev machine with standard installation of jboss EAP bundle -->
+			<id>rhel6-dev</id>
+			<properties>
+				<filter.name>rhel6-dev</filter.name>
+				<es.client.embedded.data.path>/var/lib/jbossas/standalone/.dcp_data</es.client.embedded.data.path>
+				<persistence.xml.jta-data-source>java:jboss/datasources/SearchiskoDS</persistence.xml.jta-data-source>
+				<persistence.xml.hibernate.dialect>org.hibernate.dialect.H2Dialect</persistence.xml.hibernate.dialect>
+				<datasource.connection.url>jdbc:h2:mem:searchisko;DB_CLOSE_DELAY=-1</datasource.connection.url>
+				<datasource.driver>h2</datasource.driver>
+				<datasource.username>sa</datasource.username>
+				<datasource.password>sa</datasource.password>
+			</properties>
+			<build>
+				<filters>
+					<filter>src/main/profiles/${filter.name}/sso.properties</filter>
+				</filters>
+				<resources>
+					<resource>
+						<filtering>true</filtering>
+						<directory>src/main/profiles/${filter.name}</directory>
+					</resource>
+				</resources>
+			</build>
+		</profile>
+		<profile>
+			<!-- When built in OpenShift the openshift profile will be used when invoking mvn. -->
+			<!-- Use this profile for any OpenShift specific customization your app will need. -->
+			<!-- By default that is to put the resulting archive into the deployments folder. -->
+			<!-- http://maven.apache.org/guides/mini/guide-building-for-different-environments.html -->
+			<id>openshift</id>
+			<properties>
+				<filter.name>openshift</filter.name>
+				<es.client.embedded.data.path>${env.OPENSHIFT_DATA_DIR}</es.client.embedded.data.path>
+				<es.network.host>${env.OPENSHIFT_JBOSSEAP_IP}</es.network.host>
+				<!-- Variables defined on Openshift via custom variables. See documentation development.md -->
+				<contributorprofile.provider.username>${env.SEARCHISKO_CB_PROVIDER_USERNAME}
+				</contributorprofile.provider.username>
+				<contributorprofile.provider.password>${env.SEARCHISKO_CB_PROVIDER_PASSWORD}
+				</contributorprofile.provider.password>
+				<persistence.xml.jta-data-source>java:jboss/datasources/SearchiskoDS</persistence.xml.jta-data-source>
+				<persistence.xml.hibernate.dialect>org.hibernate.dialect.MySQLDialect
+				</persistence.xml.hibernate.dialect>
+				<datasource.connection.url>
+					jdbc:mysql://${env.OPENSHIFT_MYSQL_DB_HOST}:${env.OPENSHIFT_MYSQL_DB_PORT}/${env.OPENSHIFT_APP_NAME}
+				</datasource.connection.url>
+				<datasource.driver>mysql</datasource.driver>
+				<datasource.username>${env.OPENSHIFT_MYSQL_DB_USERNAME}</datasource.username>
+				<datasource.password>${env.OPENSHIFT_MYSQL_DB_PASSWORD}</datasource.password>
+			</properties>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-antrun-plugin</artifactId>
+						<executions>
+							<execution>
+								<id>clean-deployments</id>
+								<phase>clean</phase>
+								<configuration>
+									<tasks>
+										<delete>
+											<fileset dir="${basedir}/../deployments/">
+												<include name="**/*.war"/>
+												<include name="**/*.jar"/>
+											</fileset>
+										</delete>
+									</tasks>
+								</configuration>
+								<goals>
+									<goal>run</goal>
+								</goals>
+							</execution>
+							<execution>
+								<id>copy-war-to-deployments</id>
+								<phase>package</phase>
+								<configuration>
+									<tasks>
+										<copy file="${project.build.directory}/${project.build.finalName}.war"
+											  todir="${basedir}/../deployments/"/>
+									</tasks>
+								</configuration>
+								<goals>
+									<goal>run</goal>
+								</goals>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+				<filters>
+					<filter>src/main/profiles/${filter.name}/sso.properties</filter>
+				</filters>
+				<resources>
+					<resource>
+						<filtering>true</filtering>
+						<directory>src/main/profiles/${filter.name}</directory>
+					</resource>
+				</resources>
+			</build>
+		</profile>
+		<profile>
+			<!-- Profile for building API DOCS -->
+			<id>apidocs</id>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.codehaus.enunciate</groupId>
+						<artifactId>maven-enunciate-plugin</artifactId>
+						<version>1.28</version>
+						<configuration>
+							<enunciateArtifactId>docs</enunciateArtifactId>
+							<moduleName>docs</moduleName>
+							<configFile>src/conf/enunciate.xml</configFile>
+							<docsDir>${project.build.directory}/apidocs</docsDir>
+						</configuration>
+						<executions>
+							<execution>
+								<goals>
+									<goal>docs</goal>
+								</goals>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+		<profile>
+			<id>site</id>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-site-plugin</artifactId>
+						<version>3.2</version>
+						<configuration>
+							<reportPlugins>
+								<plugin>
+									<groupId>org.apache.maven.plugins</groupId>
+									<artifactId>maven-project-info-reports-plugin</artifactId>
+									<version>2.5</version>
+									<configuration>
+										<dependencyDetailsEnabled>false</dependencyDetailsEnabled>
+										<dependencyLocationsEnabled>false</dependencyLocationsEnabled>
+									</configuration>
+								</plugin>
+								<plugin>
+									<groupId>org.apache.maven.plugins</groupId>
+									<artifactId>maven-surefire-report-plugin</artifactId>
+									<version>2.14</version>
+									<!-- See http://jira.codehaus.org/browse/SUREFIRE-257 -->
+									<reportSets>
+										<reportSet>
+											<reports>
+												<report>report-only</report>
+											</reports>
+										</reportSet>
+									</reportSets>
+								</plugin>
+								<plugin>
+									<groupId>org.apache.maven.plugins</groupId>
+									<artifactId>maven-jxr-plugin</artifactId>
+									<version>2.3</version>
+								</plugin>
+								<plugin>
+									<groupId>org.apache.maven.plugins</groupId>
+									<artifactId>maven-javadoc-plugin</artifactId>
+									<version>2.9</version>
+								</plugin>
+								<plugin>
+									<groupId>org.codehaus.mojo</groupId>
+									<artifactId>cobertura-maven-plugin</artifactId>
+									<version>2.5.2</version>
+								</plugin>
+								<plugin>
+									<groupId>org.codehaus.mojo</groupId>
+									<artifactId>taglist-maven-plugin</artifactId>
+									<version>2.4</version>
+								</plugin>
+							</reportPlugins>
+						</configuration>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
 
-		<profiles>
-				<profile>
-						<!-- local development on localhost -->
-						<id>localhost</id>
-						<activation>
-								<activeByDefault>true</activeByDefault>
-						</activation>
-						<properties>
-								<filter.name>localhost</filter.name>
-								<es.client.embedded.data.path>${user.home}/.dcp_data</es.client.embedded.data.path>
-								<persistence.xml.jta-data-source>java:jboss/datasources/SearchiskoDS</persistence.xml.jta-data-source>
-								<persistence.xml.hibernate.dialect>org.hibernate.dialect.H2Dialect</persistence.xml.hibernate.dialect>
-								<!-- By Default h2 database is persisted -->
-								<datasource.connection.url>jdbc:h2:searchisko</datasource.connection.url>
-								<datasource.driver>h2</datasource.driver>
-								<datasource.username>sa</datasource.username>
-								<datasource.password>sa</datasource.password>
-						</properties>
-						<build>
-								<filters>
-										<filter>src/main/profiles/${filter.name}/sso.properties</filter>
-								</filters>
-								<resources>
-										<resource>
-												<filtering>true</filtering>
-												<directory>src/main/profiles/${filter.name}</directory>
-										</resource>
-								</resources>
-						</build>
-				</profile>
-				<profile>
-						<id>skiptests</id>
-						<build>
-								<plugins>
-										<plugin>
-												<groupId>org.apache.maven.plugins</groupId>
-												<artifactId>maven-surefire-plugin</artifactId>
-												<version>2.14</version>
-												<configuration>
-														<skipTests>true</skipTests>
-												</configuration>
-										</plugin>
-								</plugins>
-						</build>
-				</profile>
-				<profile>
-						<id>production</id>
-						<properties>
-								<filter.name>production</filter.name>
-								<persistence.xml.jta-data-source>java:jboss/datasources/SearchiskoDS</persistence.xml.jta-data-source>
-								<persistence.xml.hibernate.dialect>org.hibernate.dialect.MySQLDialect</persistence.xml.hibernate.dialect>
-						</properties>
-						<build>
-								<plugins>
-										<plugin>
-												<groupId>org.apache.maven.plugins</groupId>
-												<artifactId>maven-war-plugin</artifactId>
-												<configuration>
-														<packagingExcludes>WEB-INF/searchisko-ds.xml</packagingExcludes>
-												</configuration>
-										</plugin>
-								</plugins>
-								<filters>
-										<filter>src/main/profiles/${filter.name}/sso.properties</filter>
-								</filters>
-								<resources>
-										<resource>
-												<directory>src/main/profiles/${filter.name}</directory>
-										</resource>
-								</resources>
-						</build>
-				</profile>
-				<profile>
-						<!-- development on RHEL6 based dev machine with standard installation of jboss EAP bundle -->
-						<id>rhel6-dev</id>
-						<properties>
-								<filter.name>rhel6-dev</filter.name>
-								<es.client.embedded.data.path>/var/lib/jbossas/standalone/.dcp_data</es.client.embedded.data.path>
-								<persistence.xml.jta-data-source>java:jboss/datasources/SearchiskoDS</persistence.xml.jta-data-source>
-								<persistence.xml.hibernate.dialect>org.hibernate.dialect.H2Dialect</persistence.xml.hibernate.dialect>
-								<datasource.connection.url>jdbc:h2:mem:searchisko;DB_CLOSE_DELAY=-1</datasource.connection.url>
-								<datasource.driver>h2</datasource.driver>
-								<datasource.username>sa</datasource.username>
-								<datasource.password>sa</datasource.password>
-						</properties>
-						<build>
-								<filters>
-										<filter>src/main/profiles/${filter.name}/sso.properties</filter>
-								</filters>
-								<resources>
-										<resource>
-												<filtering>true</filtering>
-												<directory>src/main/profiles/${filter.name}</directory>
-										</resource>
-								</resources>
-						</build>
-				</profile>
-				<profile>
-						<!-- When built in OpenShift the openshift profile will be used when invoking mvn. -->
-						<!-- Use this profile for any OpenShift specific customization your app will need. -->
-						<!-- By default that is to put the resulting archive into the deployments folder. -->
-						<!-- http://maven.apache.org/guides/mini/guide-building-for-different-environments.html -->
-						<id>openshift</id>
-						<properties>
-								<filter.name>openshift</filter.name>
-								<es.client.embedded.data.path>${env.OPENSHIFT_DATA_DIR}</es.client.embedded.data.path>
-								<es.network.host>${env.OPENSHIFT_JBOSSEAP_IP}</es.network.host>
-								<!-- Variables defined on Openshift via custom variables. See documentation development.md -->
-								<contributorprofile.provider.username>${env.SEARCHISKO_CB_PROVIDER_USERNAME}</contributorprofile.provider.username>
-								<contributorprofile.provider.password>${env.SEARCHISKO_CB_PROVIDER_PASSWORD}</contributorprofile.provider.password>
-								<persistence.xml.jta-data-source>java:jboss/datasources/SearchiskoDS</persistence.xml.jta-data-source>
-								<persistence.xml.hibernate.dialect>org.hibernate.dialect.MySQLDialect</persistence.xml.hibernate.dialect>
-								<datasource.connection.url>jdbc:mysql://${env.OPENSHIFT_MYSQL_DB_HOST}:${env.OPENSHIFT_MYSQL_DB_PORT}/${env.OPENSHIFT_APP_NAME}</datasource.connection.url>
-								<datasource.driver>mysql</datasource.driver>
-								<datasource.username>${env.OPENSHIFT_MYSQL_DB_USERNAME}</datasource.username>
-								<datasource.password>${env.OPENSHIFT_MYSQL_DB_PASSWORD}</datasource.password>
-						</properties>
-						<build>
-								<plugins>
-										<plugin>
-											<groupId>org.apache.maven.plugins</groupId>
-											<artifactId>maven-antrun-plugin</artifactId>
-											<executions>
-												<execution>
-													<id>clean-deployments</id>
-													<phase>clean</phase>
-													<configuration>
-														<tasks>
-															<delete>
-																<fileset dir="${basedir}/../deployments/">
-																	<include name="**/*.war"/>
-																	<include name="**/*.jar"/>
-																</fileset>
-															</delete>
-														</tasks>
-													</configuration>
-													<goals>
-														<goal>run</goal>
-													</goals>
-												</execution>
-												<execution>
-													<id>copy-war-to-deployments</id>
-													<phase>package</phase>
-													<configuration>
-														<tasks>
-															<copy file="${project.build.directory}/${project.build.finalName}.war" todir="${basedir}/../deployments/"/>
-														</tasks>
-													</configuration>
-													<goals>
-														<goal>run</goal>
-													</goals>
-												</execution>
-											</executions>
-										</plugin>
-								</plugins>
-								<filters>
-										<filter>src/main/profiles/${filter.name}/sso.properties</filter>
-								</filters>
-								<resources>
-										<resource>
-												<filtering>true</filtering>
-												<directory>src/main/profiles/${filter.name}</directory>
-										</resource>
-								</resources>
-						</build>
-				</profile>
-				<profile>
-						<!-- Profile for building API DOCS -->
-						<id>apidocs</id>
-						<build>
-								<plugins>
-										<plugin>
-												<groupId>org.codehaus.enunciate</groupId>
-												<artifactId>maven-enunciate-plugin</artifactId>
-												<version>1.28</version>
-												<configuration>
-														<enunciateArtifactId>docs</enunciateArtifactId>
-														<moduleName>docs</moduleName>
-														<configFile>src/conf/enunciate.xml</configFile>
-														<docsDir>${project.build.directory}/apidocs</docsDir>
-												</configuration>
-												<executions>
-														<execution>
-																<goals>
-																		<goal>docs</goal>
-																</goals>
-														</execution>
-												</executions>
-										</plugin>
-								</plugins>
-						</build>
-				</profile>
-				<profile>
-						<id>site</id>
-						<build>
-								<plugins>
-										<plugin>
-												<groupId>org.apache.maven.plugins</groupId>
-												<artifactId>maven-site-plugin</artifactId>
-												<version>3.2</version>
-												<configuration>
-														<reportPlugins>
-																<plugin>
-																		<groupId>org.apache.maven.plugins</groupId>
-																		<artifactId>maven-project-info-reports-plugin</artifactId>
-																		<version>2.5</version>
-																		<configuration>
-																				<dependencyDetailsEnabled>false</dependencyDetailsEnabled>
-																				<dependencyLocationsEnabled>false</dependencyLocationsEnabled>
-																		</configuration>
-																</plugin>
-																<plugin>
-																		<groupId>org.apache.maven.plugins</groupId>
-																		<artifactId>maven-surefire-report-plugin</artifactId>
-																		<version>2.14</version>
-																		<!-- See http://jira.codehaus.org/browse/SUREFIRE-257 -->
-																		<reportSets>
-																				<reportSet>
-																						<reports>
-																								<report>report-only</report>
-																						</reports>
-																				</reportSet>
-																		</reportSets>
-																</plugin>
-																<plugin>
-																		<groupId>org.apache.maven.plugins</groupId>
-																		<artifactId>maven-jxr-plugin</artifactId>
-																		<version>2.3</version>
-																</plugin>
-																<plugin>
-																		<groupId>org.apache.maven.plugins</groupId>
-																		<artifactId>maven-javadoc-plugin</artifactId>
-																		<version>2.9</version>
-																</plugin>
-																<plugin>
-																		<groupId>org.codehaus.mojo</groupId>
-																		<artifactId>cobertura-maven-plugin</artifactId>
-																		<version>2.5.2</version>
-																</plugin>
-																<plugin>
-																		<groupId>org.codehaus.mojo</groupId>
-																		<artifactId>taglist-maven-plugin</artifactId>
-																		<version>2.4</version>
-																</plugin>
-														</reportPlugins>
-												</configuration>
-										</plugin>
-								</plugins>
-						</build>
-				</profile>
-		</profiles>
-
-		<!-- Repository where enhanced CAS client can be found -->
-		<repositories>
-				<repository>
-						<id>jboss-public-repository-group</id>
-						<name>JBoss Public Repository Group</name>
-						<url>http://repository.jboss.org/nexus/content/groups/public/</url>
-						<layout>default</layout>
-						<releases>
-								<enabled>true</enabled>
-								<updatePolicy>never</updatePolicy>
-						</releases>
-						<snapshots>
-								<enabled>true</enabled>
-								<updatePolicy>never</updatePolicy>
-						</snapshots>
-				</repository>
-		</repositories>
-		<pluginRepositories>
-				<pluginRepository>
-						<id>jboss-public-repository-group</id>
-						<name>JBoss Public Repository Group</name>
-						<url>http://repository.jboss.org/nexus/content/groups/public/</url>
-						<releases>
-								<enabled>true</enabled>
-						</releases>
-						<snapshots>
-								<enabled>true</enabled>
-						</snapshots>
-				</pluginRepository>
-		</pluginRepositories>
+	<!-- Repository where enhanced CAS client can be found -->
+	<repositories>
+		<repository>
+			<id>jboss-public-repository-group</id>
+			<name>JBoss Public Repository Group</name>
+			<url>http://repository.jboss.org/nexus/content/groups/public/</url>
+			<layout>default</layout>
+			<releases>
+				<enabled>true</enabled>
+				<updatePolicy>never</updatePolicy>
+			</releases>
+			<snapshots>
+				<enabled>true</enabled>
+				<updatePolicy>never</updatePolicy>
+			</snapshots>
+		</repository>
+	</repositories>
+	<pluginRepositories>
+		<pluginRepository>
+			<id>jboss-public-repository-group</id>
+			<name>JBoss Public Repository Group</name>
+			<url>http://repository.jboss.org/nexus/content/groups/public/</url>
+			<releases>
+				<enabled>true</enabled>
+			</releases>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+		</pluginRepository>
+	</pluginRepositories>
 
 </project>
