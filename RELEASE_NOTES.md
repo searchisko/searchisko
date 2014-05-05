@@ -2,6 +2,10 @@
 
 This document contains high-level release notes. More details can be found in [milestones](https://github.com/searchisko/searchisko/issues/milestones) on GitHub.
 
+## 1.0.3
+
+- WIP
+
 ## 1.0.2
 
 - Filtering by document fields has been generalized [#41](https://github.com/searchisko/searchisko/issues/41)
