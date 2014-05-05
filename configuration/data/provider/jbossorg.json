@@ -58,6 +58,7 @@
       "description": "Information about projects (name, links, icons, licenses used etc). Now pushed into system by Magnolia CMS.",
       "sys_type": "project_info",
       "search_all_excluded": "true",
+      "persist" : true,
       "input_preprocessors": [
         {
           "name": "Project mapper - sys_content_id to sys_project mapping",
