@@ -5,40 +5,33 @@
  */
 package org.searchisko.api.rest;
 
-import java.util.Map;
+import org.searchisko.api.rest.exception.RequiredFieldException;
+import org.searchisko.api.rest.security.ProviderCustomSecurityContext;
+import org.searchisko.api.security.Role;
+import org.searchisko.api.service.ProviderService;
+import org.searchisko.api.service.SecurityService;
 
 import javax.annotation.PostConstruct;
+import javax.annotation.security.RolesAllowed;
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
+import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.SecurityContext;
-
-import org.searchisko.api.annotations.security.ProviderAllowed;
-import org.searchisko.api.rest.exception.RequiredFieldException;
-import org.searchisko.api.rest.security.ProviderCustomSecurityContext;
-import org.searchisko.api.service.ProviderService;
-import org.searchisko.api.service.SecurityService;
+import java.util.Map;
 
 /**
  * Provider REST API
- * 
+ *
  * @author Libor Krzyzanek
  * @author Vlastimil Elias (velias at redhat dot com)
- * 
  */
 @RequestScoped
 @Path("/provider")
-@ProviderAllowed(superProviderOnly = true)
+@RolesAllowed(Role.ADMIN)
 public class ProviderRestService extends RestEntityServiceBase {
 
 	@Inject
@@ -55,7 +48,7 @@ public class ProviderRestService extends RestEntityServiceBase {
 		setEntityService(providerService);
 	}
 
-	protected static final String[] FIELDS_TO_REMOVE = new String[] { ProviderService.PASSWORD_HASH };
+	protected static final String[] FIELDS_TO_REMOVE = new String[]{ProviderService.PASSWORD_HASH};
 
 	@GET
 	@Path("/")
@@ -67,7 +60,7 @@ public class ProviderRestService extends RestEntityServiceBase {
 	@GET
 	@Path("/{id}")
 	@Produces(MediaType.APPLICATION_JSON)
-	@ProviderAllowed
+	@RolesAllowed({Role.ADMIN, Role.PROVIDER})
 	@Override
 	public Object get(@PathParam("id") String id) {
 
@@ -135,7 +128,7 @@ public class ProviderRestService extends RestEntityServiceBase {
 
 	@POST
 	@Path("/{id}/password")
-	@ProviderAllowed
+	@RolesAllowed({Role.ADMIN, Role.PROVIDER})
 	public Object changePassword(@PathParam("id") String id, String pwd) {
 
 		if (id == null || id.isEmpty()) {

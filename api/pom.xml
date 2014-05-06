@@ -198,6 +198,13 @@
 			</exclusions>
 		</dependency>
 
+		<!-- Needed by ProviderLoginModule -->
+		<dependency>
+			<groupId>org.picketbox</groupId>
+			<artifactId>picketbox</artifactId>
+			<scope>provided</scope>
+		</dependency>
+
 		<!-- Needed to be here instead of individual profiles because it has transitive dependecy on httpclient which is needed
 				for DCP API iteself -->
 		<dependency>

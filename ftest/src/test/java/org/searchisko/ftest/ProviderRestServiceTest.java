@@ -78,7 +78,7 @@ public class ProviderRestServiceTest {
 	@InSequence(10)
 	public void assertGetAllProviders(@ArquillianResource URL context) throws MalformedURLException {
 		given().pathParam("id", "").contentType(ContentType.JSON)
-				.auth().basic(DeploymentHelpers.DEFAULT_PROVIDER_NAME, DeploymentHelpers.DEFAULT_PROVIDER_PASSWORD)
+				.auth().preemptive().basic(DeploymentHelpers.DEFAULT_PROVIDER_NAME, DeploymentHelpers.DEFAULT_PROVIDER_PASSWORD)
 				.expect()
 				.log().ifError()
 				.statusCode(200)
@@ -94,7 +94,7 @@ public class ProviderRestServiceTest {
 	public void assertGetDefaultProvider(@ArquillianResource URL context) throws MalformedURLException {
 		// TEST: Correct ID
 		given().pathParam("id", DeploymentHelpers.DEFAULT_PROVIDER_NAME).contentType(ContentType.JSON)
-				.auth().basic(DeploymentHelpers.DEFAULT_PROVIDER_NAME, DeploymentHelpers.DEFAULT_PROVIDER_PASSWORD)
+				.auth().preemptive().basic(DeploymentHelpers.DEFAULT_PROVIDER_NAME, DeploymentHelpers.DEFAULT_PROVIDER_PASSWORD)
 				.expect()
 				.log().ifError()
 				.statusCode(200)
@@ -120,7 +120,7 @@ public class ProviderRestServiceTest {
 		// TEST: Missing params in body
 		given().pathParam("id", "").contentType(ContentType.JSON)
 				.body("")
-				.auth().basic(DeploymentHelpers.DEFAULT_PROVIDER_NAME, DeploymentHelpers.DEFAULT_PROVIDER_PASSWORD)
+				.auth().preemptive().basic(DeploymentHelpers.DEFAULT_PROVIDER_NAME, DeploymentHelpers.DEFAULT_PROVIDER_PASSWORD)
 				.expect()
 				.statusCode(400)
 				.when().post(new URL(context, PROVIDER_REST_API).toExternalForm());

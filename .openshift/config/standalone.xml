@@ -465,6 +465,18 @@
                         <policy-module code="Delegating" flag="required"/>
                     </authorization>
                 </security-domain>
+
+				<!--
+				More info:
+					https://access.redhat.com/site/documentation/en-US/JBoss_Enterprise_Application_Platform/6.2/html/Security_Guide/Configure_Authentication_in_a_Security_Domain.html
+					https://wiki.jasig.org/display/casc/jaas+integration
+				-->
+				<security-domain name="SearchiskoSecurityDomain">
+					<authentication>
+						<login-module code="org.searchisko.api.security.jaas.ProviderLoginModule" flag="sufficient">
+						</login-module>
+					</authentication>
+				</security-domain>
             </security-domains>
         </subsystem>
 		<subsystem xmlns="urn:jboss:domain:threads:1.1" />

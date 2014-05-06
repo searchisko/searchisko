@@ -79,12 +79,13 @@ public class DeploymentHelpers {
 		log.log(Level.FINEST, "Root Path for test classes: {0}", rootPath);
 
 		final File[] runtimeDeps;
+		final String projectRootPath;
 		try {
 			// Root Path is /searchisko/ftest/target/test-classes/
 			File projectRoot = new File(rootPath).getParentFile().getParentFile().getParentFile();
 			log.log(Level.FINE, "Project Root: {0}", rootPath);
-
-			File apiPom = new File(projectRoot.getAbsolutePath() + "/api/pom.xml");
+			projectRootPath = projectRoot.getAbsolutePath();
+			File apiPom = new File(projectRootPath + "/api/pom.xml");
 
 			runtimeDeps = Maven.resolver().loadPomFromFile(apiPom).importRuntimeDependencies().resolve()
 					.withTransitivity().asFile();
@@ -107,6 +108,8 @@ public class DeploymentHelpers {
 				.addAsResource("stats_client_configuration.properties")
 				.addAsResource("mappings/contributor.json", "mappings/contributor.json")
 				.addAsResource("META-INF/test-persistence.xml", "META-INF/persistence.xml")
+				.setWebXML(new File(projectRootPath + "/api/src/main/webapp/WEB-INF/web.xml"))
+				.addAsWebInfResource(new File(projectRootPath + "/api/src/main/webapp/WEB-INF/jboss-web.xml"))
 				.addAsWebInfResource("webapp/WEB-INF/test-searchisko-ds.xml", "searchisko-ds.xml")
 				.addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml");
 

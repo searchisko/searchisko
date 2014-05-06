@@ -24,16 +24,24 @@
 		</user-data-constraint>
 	</security-constraint>
 
+	<!-- RestEasy Security activator -->
+	<!-- see https://docs.jboss.org/resteasy/2.0.0.GA/userguide/html/Securing_JAX-RS_and_RESTeasy.html -->
+	<context-param>
+		<param-name>resteasy.role.based.security</param-name>
+		<param-value>true</param-value>
+	</context-param>
+
 	<!-- ###### CORS handling filter ###### -->
 	<filter>
 		<filter-name>CORS Filter</filter-name>
 		<filter-class>org.searchisko.api.filter.CORSWithCredentialsFilter</filter-class>
 	</filter>
-	<filter-mapping>
-		<filter-name>CORS Filter</filter-name>
-		<url-pattern>/v1/rest/*</url-pattern>
-	</filter-mapping>
 
+	<!-- ###### HTTP Basic Authentication Consumer ###### -->
+	<filter>
+		<filter-name>Basic Authentication Consumer Filter</filter-name>
+		<filter-class>org.searchisko.api.filter.BasicAuthenticationFilter</filter-class>
+	</filter>
 
 	<!-- ###### CAS SSO begin ###### -->
 
@@ -83,7 +91,17 @@
 			<param-value>org.jasig.cas.client.proxy.ProxyGrantingTicketStorageImpl</param-value>
 		</init-param>
 	</filter>
+	<!-- ###### CAS SSO end ###### -->
 
+	<!-- Filter Mappings -->
+	<filter-mapping>
+		<filter-name>Basic Authentication Consumer Filter</filter-name>
+		<url-pattern>/*</url-pattern>
+	</filter-mapping>
+	<filter-mapping>
+		<filter-name>CORS Filter</filter-name>
+		<url-pattern>/v1/rest/*</url-pattern>
+	</filter-mapping>
 
 	<filter-mapping>
 		<filter-name>CAS Single Sign Out Filter</filter-name>
@@ -105,7 +123,6 @@
 		<listener-class>org.jasig.cas.client.session.SingleSignOutHttpSessionListener</listener-class>
 	</listener>
 
-	<!-- ###### CAS SSO end ###### -->
 
 	<welcome-file-list>
 		<welcome-file>index.html</welcome-file>

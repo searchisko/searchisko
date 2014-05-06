@@ -7,5 +7,6 @@ target
 !.settings/.jsdtscope
 deployments
 # these can be found in ftest folder as a result of test execution, TODO: clear them
+ftest_dcp_data
 .dcp_data
 test.*
