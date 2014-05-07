@@ -24,6 +24,7 @@ import java.util.Map;
 
 import static com.jayway.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
 
 /**
@@ -45,32 +46,33 @@ public class ProviderRestServiceTest {
 	@Test
 	@InSequence(0)
 	public void assertNotAuthenticated(@ArquillianResource URL context) throws MalformedURLException {
+		int expStatus = 401;
 		// TEST: GET /provider
 		given().pathParam("id", "").contentType(ContentType.JSON)
-				.expect().statusCode(401)
+				.expect().statusCode(expStatus).log().ifStatusCodeMatches(is(not(expStatus)))
 				.when().get(new URL(context, PROVIDER_REST_API).toExternalForm());
 
 		// TEST: GET /provider/jbossorg
 		given().pathParam("id", DeploymentHelpers.DEFAULT_PROVIDER_NAME).contentType(ContentType.JSON)
-				.expect().statusCode(401)
+				.expect().statusCode(expStatus).log().ifStatusCodeMatches(is(not(expStatus)))
 				.when().get(new URL(context, PROVIDER_REST_API).toExternalForm());
 
 		// TEST: POST /provider
 		given().contentType(ContentType.JSON)
 				.body("")
-				.expect().statusCode(401)
+				.expect().statusCode(expStatus).log().ifStatusCodeMatches(is(not(expStatus)))
 				.when().post(new URL(context, PROVIDER_REST_API).toExternalForm());
 
 		// TEST: POST /provider/test
 		given().pathParam("id", "test").contentType(ContentType.JSON)
 				.body("")
-				.expect().statusCode(401)
+				.expect().statusCode(expStatus).log().ifStatusCodeMatches(is(not(expStatus)))
 				.when().post(new URL(context, PROVIDER_REST_API).toExternalForm());
 
 		// TEST: DELETE /provider/test
 		given().pathParam("id", DeploymentHelpers.DEFAULT_PROVIDER_NAME).contentType(ContentType.JSON)
 				.body("")
-				.expect().statusCode(401)
+				.expect().statusCode(expStatus).log().ifStatusCodeMatches(is(not(expStatus)))
 				.when().delete(new URL(context, PROVIDER_REST_API).toExternalForm());
 	}
 
@@ -78,7 +80,7 @@ public class ProviderRestServiceTest {
 	@InSequence(10)
 	public void assertGetAllProviders(@ArquillianResource URL context) throws MalformedURLException {
 		given().pathParam("id", "").contentType(ContentType.JSON)
-				.auth().preemptive().basic(DeploymentHelpers.DEFAULT_PROVIDER_NAME, DeploymentHelpers.DEFAULT_PROVIDER_PASSWORD)
+				.auth().basic(DeploymentHelpers.DEFAULT_PROVIDER_NAME, DeploymentHelpers.DEFAULT_PROVIDER_PASSWORD)
 				.expect()
 				.log().ifError()
 				.statusCode(200)
@@ -94,7 +96,7 @@ public class ProviderRestServiceTest {
 	public void assertGetDefaultProvider(@ArquillianResource URL context) throws MalformedURLException {
 		// TEST: Correct ID
 		given().pathParam("id", DeploymentHelpers.DEFAULT_PROVIDER_NAME).contentType(ContentType.JSON)
-				.auth().preemptive().basic(DeploymentHelpers.DEFAULT_PROVIDER_NAME, DeploymentHelpers.DEFAULT_PROVIDER_PASSWORD)
+				.auth().basic(DeploymentHelpers.DEFAULT_PROVIDER_NAME, DeploymentHelpers.DEFAULT_PROVIDER_PASSWORD)
 				.expect()
 				.log().ifError()
 				.statusCode(200)
@@ -120,7 +122,7 @@ public class ProviderRestServiceTest {
 		// TEST: Missing params in body
 		given().pathParam("id", "").contentType(ContentType.JSON)
 				.body("")
-				.auth().preemptive().basic(DeploymentHelpers.DEFAULT_PROVIDER_NAME, DeploymentHelpers.DEFAULT_PROVIDER_PASSWORD)
+				.auth().basic(DeploymentHelpers.DEFAULT_PROVIDER_NAME, DeploymentHelpers.DEFAULT_PROVIDER_PASSWORD)
 				.expect()
 				.statusCode(400)
 				.when().post(new URL(context, PROVIDER_REST_API).toExternalForm());
@@ -201,7 +203,7 @@ public class ProviderRestServiceTest {
 		given().pathParam("id", name).contentType(ContentType.JSON)
 				.auth().basic(name, pwd)
 				.expect()
-				.statusCode(401)
+				.expect().statusCode(403).log().ifStatusCodeMatches(is(not(403)))
 				.when().get(new URL(context, PROVIDER_REST_API).toExternalForm());
 
 	}
@@ -218,8 +220,7 @@ public class ProviderRestServiceTest {
 
 		given().pathParam("id", name).contentType(ContentType.JSON)
 				.auth().basic(DeploymentHelpers.DEFAULT_PROVIDER_NAME, DeploymentHelpers.DEFAULT_PROVIDER_PASSWORD)
-				.expect()
-				.statusCode(404)
+				.expect().statusCode(404).log().ifStatusCodeMatches(is(not(404)))
 				.when().get(new URL(context, PROVIDER_REST_API).toExternalForm());
 	}
 }
