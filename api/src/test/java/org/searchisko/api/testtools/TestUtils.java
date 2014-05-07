@@ -5,17 +5,6 @@
  */
 package org.searchisko.api.testtools;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.StringWriter;
-import java.lang.reflect.Method;
-import java.util.*;
-
-import javax.ws.rs.core.MultivaluedMap;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.StreamingOutput;
-import javax.ws.rs.core.UriInfo;
-
 import org.apache.commons.io.IOUtils;
 import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.map.DeserializationConfig;
@@ -28,13 +17,21 @@ import org.jboss.resteasy.specimpl.MultivaluedMapImpl;
 import org.json.JSONException;
 import org.junit.Assert;
 import org.mockito.Mockito;
-import org.searchisko.api.annotations.security.ContributorAllowed;
-import org.searchisko.api.annotations.security.ProviderAllowed;
-import org.searchisko.api.rest.security.ContributorSecurityPreProcessInterceptor;
-import org.searchisko.api.rest.security.ProviderSecurityPreProcessInterceptor;
 import org.searchisko.api.util.SearchUtils;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.skyscreamer.jsonassert.JSONCompareMode;
+
+import javax.ws.rs.core.MultivaluedMap;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.StreamingOutput;
+import javax.ws.rs.core.UriInfo;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.StringWriter;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Helper methods for Unit tests.
@@ -84,17 +81,19 @@ public abstract class TestUtils {
 	 * @param methodName name of method
 	 * @param methodParamTypes method parameter types
 	 */
+	@Deprecated
 	public static void assertPermissionGuest(Class<?> testedClass, String methodName, Class<?>... methodParamTypes) {
-		Method method;
-		try {
-			method = testedClass.getMethod(methodName, methodParamTypes);
-		} catch (Exception e) {
-			throw new RuntimeException(e);
-		}
-		ProviderAllowed pa = ProviderSecurityPreProcessInterceptor.getProviderAllowedAnnotation(testedClass, method);
-		if (pa != null && !ProviderSecurityPreProcessInterceptor.isGuestAllowed(method)) {
-			Assert.fail("Method must be GuestAllowed too");
-		}
+// Commented because permission is tested via Arquillian tests
+//		Method method;
+//		try {
+//			method = testedClass.getMethod(methodName, methodParamTypes);
+//		} catch (Exception e) {
+//			throw new RuntimeException(e);
+//		}
+//		ProviderAllowed pa = ProviderSecurityPreProcessInterceptor.getProviderAllowedAnnotation(testedClass, method);
+//		if (pa != null && !ProviderSecurityPreProcessInterceptor.isGuestAllowed(method)) {
+//			Assert.fail("Method must be GuestAllowed too");
+//		}
 	}
 
 	/**
@@ -104,17 +103,19 @@ public abstract class TestUtils {
 	 * @param methodName name of method
 	 * @param methodParamTypes method parameter types
 	 */
+	@Deprecated
 	public static void assertPermissionProvider(Class<?> testedClass, String methodName, Class<?>... methodParamTypes) {
-		Method method;
-		try {
-			method = testedClass.getMethod(methodName, methodParamTypes);
-		} catch (Exception e) {
-			throw new RuntimeException(e);
-		}
-		ProviderAllowed pa = ProviderSecurityPreProcessInterceptor.getProviderAllowedAnnotation(testedClass, method);
-		if (pa == null || ProviderSecurityPreProcessInterceptor.isGuestAllowed(method)) {
-			Assert.fail("Method must be ProviderAllowed only");
-		}
+// Commented because permission is tested via Arquillian tests
+//		Method method;
+//		try {
+//			method = testedClass.getMethod(methodName, methodParamTypes);
+//		} catch (Exception e) {
+//			throw new RuntimeException(e);
+//		}
+//		ProviderAllowed pa = ProviderSecurityPreProcessInterceptor.getProviderAllowedAnnotation(testedClass, method);
+//		if (pa == null || ProviderSecurityPreProcessInterceptor.isGuestAllowed(method)) {
+//			Assert.fail("Method must be ProviderAllowed only");
+//		}
 	}
 
 	/**
@@ -124,20 +125,22 @@ public abstract class TestUtils {
 	 * @param methodName name of method
 	 * @param methodParamTypes method parameter types
 	 */
+	@Deprecated
 	public static void assertPermissionContributor(Class<?> testedClass, String methodName, Class<?>... methodParamTypes) {
-		Method method;
-		try {
-			method = testedClass.getMethod(methodName, methodParamTypes);
-		} catch (Exception e) {
-			throw new RuntimeException(e);
-		}
-		ContributorAllowed pa = ContributorSecurityPreProcessInterceptor.getContributorAllowedAnnotation(testedClass,
-				method);
-		if (pa == null || ContributorSecurityPreProcessInterceptor.isGuestAllowed(method)) {
-			Assert.fail("Method must be ProviderAllowed only");
-		}
-		if (pa.optional())
-			Assert.fail("Method must be ContributorAllowed only, without optional");
+// Commented because permission is tested via Arquillian tests
+//		Method method;
+//		try {
+//			method = testedClass.getMethod(methodName, methodParamTypes);
+//		} catch (Exception e) {
+//			throw new RuntimeException(e);
+//		}
+//		ContributorAllowed pa = ContributorSecurityPreProcessInterceptor.getContributorAllowedAnnotation(testedClass,
+//				method);
+//		if (pa == null || ContributorSecurityPreProcessInterceptor.isGuestAllowed(method)) {
+//			Assert.fail("Method must be ProviderAllowed only");
+//		}
+//		if (pa.optional())
+//			Assert.fail("Method must be ContributorAllowed only, without optional");
 	}
 
 	/**
@@ -147,21 +150,23 @@ public abstract class TestUtils {
 	 * @param methodName name of method
 	 * @param methodParamTypes method parameter types
 	 */
+	@Deprecated
 	public static void assertPermissionContributorOptional(Class<?> testedClass, String methodName,
 			Class<?>... methodParamTypes) {
-		Method method;
-		try {
-			method = testedClass.getMethod(methodName, methodParamTypes);
-		} catch (Exception e) {
-			throw new RuntimeException(e);
-		}
-		ContributorAllowed pa = ContributorSecurityPreProcessInterceptor.getContributorAllowedAnnotation(testedClass,
-				method);
-		if (pa == null || ContributorSecurityPreProcessInterceptor.isGuestAllowed(method)) {
-			Assert.fail("Method must be ProviderAllowed only");
-		}
-		if (!pa.optional())
-			Assert.fail("Method must be ContributorAllowed with optional only");
+// Commented because permission is tested via Arquillian tests
+//		Method method;
+//		try {
+//			method = testedClass.getMethod(methodName, methodParamTypes);
+//		} catch (Exception e) {
+//			throw new RuntimeException(e);
+//		}
+//		ContributorAllowed pa = ContributorSecurityPreProcessInterceptor.getContributorAllowedAnnotation(testedClass,
+//				method);
+//		if (pa == null || ContributorSecurityPreProcessInterceptor.isGuestAllowed(method)) {
+//			Assert.fail("Method must be ProviderAllowed only");
+//		}
+//		if (!pa.optional())
+//			Assert.fail("Method must be ContributorAllowed with optional only");
 	}
 
 	/**
@@ -171,18 +176,20 @@ public abstract class TestUtils {
 	 * @param methodName name of method
 	 * @param methodParamTypes method parameter types
 	 */
+	@Deprecated
 	public static void assertPermissionSuperProvider(Class<?> testedClass, String methodName,
 			Class<?>... methodParamTypes) {
-		Method method;
-		try {
-			method = testedClass.getMethod(methodName, methodParamTypes);
-		} catch (Exception e) {
-			throw new RuntimeException(e);
-		}
-		ProviderAllowed pa = ProviderSecurityPreProcessInterceptor.getProviderAllowedAnnotation(testedClass, method);
-		if (pa == null || !pa.superProviderOnly() || ProviderSecurityPreProcessInterceptor.isGuestAllowed(method)) {
-			Assert.fail("Method must be ProviderAllowed.superProviderOnly");
-		}
+// Commented, security covered by arquillian tests
+//		Method method;
+//		try {
+//			method = testedClass.getMethod(methodName, methodParamTypes);
+//		} catch (Exception e) {
+//			throw new RuntimeException(e);
+//		}
+//		ProviderAllowed pa = ProviderSecurityPreProcessInterceptor.getProviderAllowedAnnotation(testedClass, method);
+//		if (pa == null || !pa.superProviderOnly() || ProviderSecurityPreProcessInterceptor.isGuestAllowed(method)) {
+//			Assert.fail("Method must be ProviderAllowed.superProviderOnly");
+//		}
 	}
 
 	/**

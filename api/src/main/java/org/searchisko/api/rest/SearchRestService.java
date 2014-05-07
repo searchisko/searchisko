@@ -5,27 +5,8 @@
  */
 package org.searchisko.api.rest;
 
-import java.util.Map;
-import java.util.UUID;
-
-import javax.enterprise.context.RequestScoped;
-import javax.inject.Inject;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.MultivaluedMap;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriInfo;
-
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.indices.IndexMissingException;
-import org.searchisko.api.annotations.security.GuestAllowed;
 import org.searchisko.api.model.QuerySettings;
 import org.searchisko.api.rest.exception.BadFieldException;
 import org.searchisko.api.rest.exception.RequiredFieldException;
@@ -33,6 +14,14 @@ import org.searchisko.api.service.SearchService;
 import org.searchisko.api.service.StatsRecordType;
 import org.searchisko.api.util.QuerySettingsParser;
 import org.searchisko.api.util.SearchUtils;
+
+import javax.annotation.security.PermitAll;
+import javax.enterprise.context.RequestScoped;
+import javax.inject.Inject;
+import javax.ws.rs.*;
+import javax.ws.rs.core.*;
+import java.util.Map;
+import java.util.UUID;
 
 /**
  * Search REST API.
@@ -56,7 +45,7 @@ public class SearchRestService extends RestServiceBase {
 	@GET
 	@Path("/")
 	@Produces(MediaType.APPLICATION_JSON)
-	@GuestAllowed
+	@PermitAll
 	public Object search(@Context UriInfo uriInfo) {
 
 		QuerySettings querySettings = null;
@@ -82,7 +71,7 @@ public class SearchRestService extends RestServiceBase {
 
 	@PUT
 	@Path("/{search_result_uuid}/{hit_id}")
-	@GuestAllowed
+	@PermitAll
 	public Object writeSearchHitUsedStatisticsRecordPUT(@PathParam("search_result_uuid") String uuid,
 			@PathParam("hit_id") String contentId, @QueryParam("session_id") String sessionId) {
 		return writeSearchHitUsedStatisticsRecord(uuid, contentId, sessionId);
@@ -90,7 +79,7 @@ public class SearchRestService extends RestServiceBase {
 
 	@POST
 	@Path("/{search_result_uuid}/{hit_id}")
-	@GuestAllowed
+	@PermitAll
 	public Object writeSearchHitUsedStatisticsRecordPOST(@PathParam("search_result_uuid") String uuid,
 			@PathParam("hit_id") String contentId, @QueryParam("session_id") String sessionId) {
 		return writeSearchHitUsedStatisticsRecord(uuid, contentId, sessionId);

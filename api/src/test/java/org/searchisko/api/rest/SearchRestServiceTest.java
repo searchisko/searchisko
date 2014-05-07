@@ -5,14 +5,6 @@
  */
 package org.searchisko.api.rest;
 
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.logging.Logger;
-
-import javax.ws.rs.core.MultivaluedMap;
-import javax.ws.rs.core.Response.Status;
-import javax.ws.rs.core.UriInfo;
-
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.common.xcontent.ToXContent.Params;
 import org.elasticsearch.common.xcontent.XContentBuilder;
@@ -30,17 +22,19 @@ import org.searchisko.api.service.StatsRecordType;
 import org.searchisko.api.testtools.TestUtils;
 import org.searchisko.api.util.QuerySettingsParser;
 
+import javax.ws.rs.core.MultivaluedMap;
+import javax.ws.rs.core.Response.Status;
+import javax.ws.rs.core.UriInfo;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.logging.Logger;
+
 /**
  * Unit test for {@link SearchRestService}
  * 
  * @author Vlastimil Elias (velias at redhat dot com)
  */
 public class SearchRestServiceTest {
-
-	@Test
-	public void search_permissions() {
-		TestUtils.assertPermissionGuest(SearchRestService.class, "search", UriInfo.class);
-	}
 
 	@Test(expected = BadFieldException.class)
 	public void search_inputParam_1() throws IOException {

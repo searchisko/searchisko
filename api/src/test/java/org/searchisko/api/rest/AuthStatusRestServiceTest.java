@@ -5,18 +5,17 @@
  */
 package org.searchisko.api.rest;
 
-import java.util.Map;
-import java.util.logging.Logger;
-
-import javax.ws.rs.core.SecurityContext;
-
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.searchisko.api.rest.exception.NotAuthenticatedException;
-import org.searchisko.api.rest.security.AuthenticatedUserType;
 import org.searchisko.api.rest.security.AuthenticationUtilService;
+import org.searchisko.api.security.AuthenticatedUserType;
 import org.searchisko.api.testtools.TestUtils;
+
+import javax.ws.rs.core.SecurityContext;
+import java.util.Map;
+import java.util.logging.Logger;
 
 /**
  * Unit test for {@link AuthStatusRestService}

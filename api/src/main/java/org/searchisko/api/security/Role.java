@@ -17,5 +17,9 @@ public class Role {
 	 */
 	public static final String PROVIDER = "provider";
 
+	/**
+	 * Default role for authenticated contributor
+	 */
+	public static final String CONTRIBUTOR = "contributor";
 
 }

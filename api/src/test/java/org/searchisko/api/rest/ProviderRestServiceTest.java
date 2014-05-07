@@ -5,21 +5,19 @@
  */
 package org.searchisko.api.rest;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.logging.Logger;
-
-import javax.ws.rs.core.Response.Status;
-
-import org.jboss.resteasy.plugins.server.embedded.SimplePrincipal;
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.searchisko.api.rest.exception.RequiredFieldException;
-import org.searchisko.api.rest.security.ProviderCustomSecurityContext;
 import org.searchisko.api.service.ProviderService;
 import org.searchisko.api.service.SecurityService;
 import org.searchisko.api.testtools.TestUtils;
+
+import javax.ws.rs.core.Response.Status;
+import javax.ws.rs.core.SecurityContext;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.logging.Logger;
 
 /**
  * Unit test for {@link ProviderRestService}.
@@ -82,56 +80,6 @@ public class ProviderRestServiceTest {
 		}
 	}
 
-	@SuppressWarnings("unchecked")
-	@Test
-	public void get() {
-		ProviderRestService tested = getTested();
-
-		// case entity not found
-		{
-			Mockito.when(tested.entityService.get("ahoj")).thenReturn(null);
-			TestUtils.assertResponseStatus(tested.get("ahoj"), Status.NOT_FOUND);
-		}
-
-		// case - entity found but authenticated provider has different name and is not superprovider
-		{
-			Mockito.reset(tested.entityService, tested.providerService, tested.securityService);
-			Map<String, Object> m = new HashMap<String, Object>();
-			m.put(ProviderService.NAME, "ahoj");
-			Mockito.when(tested.entityService.get("ahoj")).thenReturn(m);
-			Mockito.when(tested.providerService.isSuperProvider("aa")).thenReturn(false);
-			TestUtils.assertResponseStatus(tested.get("ahoj"), Status.FORBIDDEN);
-		}
-
-		// case - entity found, authenticated provider has different name but is superprovider
-		{
-			Mockito.reset(tested.entityService, tested.providerService, tested.securityService);
-			tested.securityContext = new ProviderCustomSecurityContext(new SimplePrincipal("aa"), true, true, "Basic");
-			Map<String, Object> m = new HashMap<String, Object>();
-			m.put(ProviderService.NAME, "ahoj");
-			m.put(ProviderService.PASSWORD_HASH, "sdasdasda");
-			Mockito.when(tested.entityService.get("ahoj")).thenReturn(m);
-			Mockito.when(tested.providerService.isSuperProvider("aa")).thenReturn(true);
-			Map<String, Object> r = (Map<String, Object>) tested.get("ahoj");
-			Assert.assertEquals(m, r);
-			Assert.assertNull("Password hash must be removed!", r.get(ProviderService.PASSWORD_HASH));
-		}
-
-		// case - entity found, authenticated provider has same name and is not superprovider
-		{
-			Mockito.reset(tested.entityService, tested.providerService, tested.securityService);
-			tested.securityContext = new ProviderCustomSecurityContext(new SimplePrincipal("aa"), false, true, "Basic");
-			Map<String, Object> m = new HashMap<String, Object>();
-			m.put(ProviderService.NAME, "aa");
-			m.put(ProviderService.PASSWORD_HASH, "sdasdasda");
-			Mockito.when(tested.entityService.get("aa")).thenReturn(m);
-			Mockito.when(tested.providerService.isSuperProvider("aa")).thenReturn(false);
-			Map<String, Object> r = (Map<String, Object>) tested.get("aa");
-			Assert.assertEquals(m, r);
-			Assert.assertNull("Password hash must be removed!", r.get(ProviderService.PASSWORD_HASH));
-		}
-	}
-
 	@Test(expected = RequiredFieldException.class)
 	public void changePassword_inputPatamValidation_1() {
 		ProviderRestService tested = getTested();
@@ -178,57 +126,6 @@ public class ProviderRestServiceTest {
 	public void changePassword_inputPatamValidation_8() {
 		ProviderRestService tested = getTested();
 		TestUtils.assertResponseStatus(tested.changePassword("", ""), Status.BAD_REQUEST);
-	}
-
-	@Test
-	public void changePassword() {
-		ProviderRestService tested = getTested();
-
-		// case entity not found
-		{
-			Mockito.when(tested.entityService.get("ahoj")).thenReturn(null);
-			TestUtils.assertResponseStatus(tested.changePassword("ahoj", "pwd"), Status.NOT_FOUND);
-		}
-
-		// case - provider entity found and is same as caller, caller is not superprovider
-		{
-			Mockito.reset(tested.entityService, tested.providerService, tested.securityService);
-			Map<String, Object> m = new HashMap<String, Object>();
-			m.put(ProviderService.NAME, "aa");
-			Mockito.when(tested.entityService.get("aa")).thenReturn(m);
-			Mockito.when(tested.providerService.isSuperProvider("aa")).thenReturn(false);
-			Mockito.when(tested.securityService.createPwdHash("aa", "pwd")).thenReturn("pwdhash");
-			// we also check input password is trimmed!
-			TestUtils.assertResponseStatus(tested.changePassword("aa", "\n pwd \n"), Status.OK);
-			Mockito.verify(tested.entityService).update("aa", m);
-			Assert.assertEquals("pwdhash", m.get(ProviderService.PASSWORD_HASH));
-		}
-
-		// case - provider entity found but is different from caller, caller is not superprovider
-		{
-			Mockito.reset(tested.entityService, tested.providerService, tested.securityService);
-			Map<String, Object> m = new HashMap<String, Object>();
-			m.put(ProviderService.NAME, "ahoj");
-			Mockito.when(tested.entityService.get("ahoj")).thenReturn(m);
-			Mockito.when(tested.providerService.isSuperProvider("aa")).thenReturn(false);
-			TestUtils.assertResponseStatus(tested.changePassword("ahoj", "pwd"), Status.FORBIDDEN);
-			Mockito.verify(tested.entityService).get("ahoj");
-			Mockito.verifyNoMoreInteractions(tested.entityService);
-		}
-
-		// case - provider entity found but is different from caller, caller is superprovider
-		{
-			Mockito.reset(tested.entityService, tested.providerService, tested.securityService);
-			tested.securityContext = new ProviderCustomSecurityContext(new SimplePrincipal("aa"), true, true, "Basic");
-			Map<String, Object> m = new HashMap<String, Object>();
-			m.put(ProviderService.NAME, "ahoj");
-			Mockito.when(tested.entityService.get("ahoj")).thenReturn(m);
-			Mockito.when(tested.providerService.isSuperProvider("aa")).thenReturn(true);
-			Mockito.when(tested.securityService.createPwdHash("ahoj", "pwd")).thenReturn("pwdhash");
-			TestUtils.assertResponseStatus(tested.changePassword("ahoj", "pwd"), Status.OK);
-			Mockito.verify(tested.entityService).update("ahoj", m);
-			Assert.assertEquals("pwdhash", m.get(ProviderService.PASSWORD_HASH));
-		}
 	}
 
 	@Test(expected = RequiredFieldException.class)
@@ -434,31 +331,6 @@ public class ProviderRestServiceTest {
 		tested.create(m);
 	}
 
-	@Test
-	public void getAll_permissions() {
-		TestUtils.assertPermissionSuperProvider(ProviderRestService.class, "getAll", Integer.class, Integer.class);
-	}
-
-	@Test
-	public void get_permissions() {
-		TestUtils.assertPermissionProvider(ProviderRestService.class, "get", String.class);
-	}
-
-	@Test
-	public void create_permissions() {
-		TestUtils.assertPermissionSuperProvider(ProviderRestService.class, "create", String.class, Map.class);
-		TestUtils.assertPermissionSuperProvider(ProviderRestService.class, "create", Map.class);
-	}
-
-	@Test
-	public void delete_permissions() {
-		TestUtils.assertPermissionSuperProvider(ProviderRestService.class, "delete", String.class);
-	}
-
-	@Test
-	public void changePassword_permissions() {
-		TestUtils.assertPermissionProvider(ProviderRestService.class, "changePassword", String.class, String.class);
-	}
 
 	protected ProviderRestService getTested() {
 		ProviderRestService tested = new ProviderRestService();
@@ -466,7 +338,7 @@ public class ProviderRestServiceTest {
 		tested.providerService = Mockito.mock(ProviderService.class);
 		tested.setEntityService(Mockito.mock(ProviderService.class));
 		tested.securityService = Mockito.mock(SecurityService.class);
-		tested.securityContext = new ProviderCustomSecurityContext(new SimplePrincipal("aa"), false, true, "Basic");
+		tested.securityContext = Mockito.mock(SecurityContext.class);
 		return tested;
 	}
 

@@ -5,7 +5,7 @@
  */
 package org.searchisko.api.rest.exception;
 
-import org.searchisko.api.rest.security.AuthenticatedUserType;
+import org.searchisko.api.security.AuthenticatedUserType;
 
 /**
  * Exception used when authenticated user is expected in REST handler but none is found. This generally means some

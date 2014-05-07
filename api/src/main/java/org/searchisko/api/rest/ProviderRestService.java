@@ -6,7 +6,6 @@
 package org.searchisko.api.rest;
 
 import org.searchisko.api.rest.exception.RequiredFieldException;
-import org.searchisko.api.rest.security.ProviderCustomSecurityContext;
 import org.searchisko.api.security.Role;
 import org.searchisko.api.service.ProviderService;
 import org.searchisko.api.service.SecurityService;
@@ -77,7 +76,7 @@ public class ProviderRestService extends RestEntityServiceBase {
 			return Response.status(Status.NOT_FOUND).build();
 
 		if (!(provider.equals(entity.get(ProviderService.NAME)) || securityContext
-				.isUserInRole(ProviderCustomSecurityContext.SUPER_ADMIN_ROLE))) {
+				.isUserInRole(Role.ADMIN))) {
 			return Response.status(Status.FORBIDDEN).build();
 		}
 		return ESDataOnlyResponse.removeFields(entity, FIELDS_TO_REMOVE);
@@ -149,7 +148,7 @@ public class ProviderRestService extends RestEntityServiceBase {
 
 		String username = entity.get(ProviderService.NAME).toString();
 		if (!(provider.equals(entity.get(ProviderService.NAME)) || securityContext
-				.isUserInRole(ProviderCustomSecurityContext.SUPER_ADMIN_ROLE))) {
+				.isUserInRole(Role.ADMIN))) {
 			return Response.status(Status.FORBIDDEN).build();
 		}
 		entity.put(ProviderService.PASSWORD_HASH, securityService.createPwdHash(username, pwd.trim()));

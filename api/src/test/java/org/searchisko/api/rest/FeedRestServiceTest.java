@@ -5,18 +5,6 @@
  */
 package org.searchisko.api.rest;
 
-import java.io.IOException;
-import java.net.URISyntaxException;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.logging.Logger;
-
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.MultivaluedMap;
-import javax.ws.rs.core.Response.Status;
-import javax.ws.rs.core.UriInfo;
-
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.indices.IndexMissingException;
 import org.elasticsearch.search.SearchHit;
@@ -42,6 +30,17 @@ import org.searchisko.api.testtools.TestUtils;
 import org.searchisko.api.util.QuerySettingsParser;
 import org.searchisko.api.util.SearchUtils;
 
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.MultivaluedMap;
+import javax.ws.rs.core.Response.Status;
+import javax.ws.rs.core.UriInfo;
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.logging.Logger;
+
 /**
  * Unit test for {@link FeedRestService}
  * 
@@ -59,10 +58,6 @@ public class FeedRestServiceTest {
 	final static private String ACTIVITY_DATE_FROM_KEY = "activity_date_from";
 	final static private String ACTIVITY_DATE_TO_KEY = "activity_date_to";
 
-	@Test
-	public void feed_permissions() {
-		TestUtils.assertPermissionGuest(FeedRestService.class, "feed", UriInfo.class);
-	}
 
 	@Test
 	public void patchQuerySettings() {
