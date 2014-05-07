@@ -5,25 +5,22 @@
  */
 package org.searchisko.api.rest;
 
+import org.elasticsearch.action.search.SearchResponse;
+import org.searchisko.api.rest.exception.RequiredFieldException;
+import org.searchisko.api.security.Role;
+import org.searchisko.api.service.ContributorService;
+import org.searchisko.api.util.SearchUtils;
+
 import javax.annotation.PostConstruct;
+import javax.annotation.security.RolesAllowed;
 import javax.ejb.ObjectNotFoundException;
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
+import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
-
-import org.elasticsearch.action.search.SearchResponse;
-import org.searchisko.api.annotations.security.ProviderAllowed;
-import org.searchisko.api.rest.exception.RequiredFieldException;
-import org.searchisko.api.service.ContributorService;
-import org.searchisko.api.util.SearchUtils;
 
 /**
  * Contributor REST API
@@ -33,7 +30,7 @@ import org.searchisko.api.util.SearchUtils;
  */
 @RequestScoped
 @Path("/contributor")
-@ProviderAllowed(superProviderOnly = true)
+@RolesAllowed(Role.ADMIN)
 public class ContributorRestService extends RestEntityServiceBase {
 
 	public static final String PARAM_EMAIL = "email";
