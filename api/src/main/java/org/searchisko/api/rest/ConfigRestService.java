@@ -5,13 +5,14 @@
  */
 package org.searchisko.api.rest;
 
+import org.searchisko.api.security.Role;
+import org.searchisko.api.service.ConfigService;
+
 import javax.annotation.PostConstruct;
+import javax.annotation.security.RolesAllowed;
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
 import javax.ws.rs.Path;
-
-import org.searchisko.api.annotations.security.ProviderAllowed;
-import org.searchisko.api.service.ConfigService;
 
 /**
  * Config REST API
@@ -21,7 +22,7 @@ import org.searchisko.api.service.ConfigService;
  */
 @RequestScoped
 @Path("/config")
-@ProviderAllowed(superProviderOnly = true)
+@RolesAllowed(Role.ADMIN)
 public class ConfigRestService extends RestEntityServiceBase {
 
 	@Inject
