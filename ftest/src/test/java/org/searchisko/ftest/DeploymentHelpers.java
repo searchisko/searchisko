@@ -22,6 +22,7 @@ import org.apache.commons.io.FileUtils;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
+import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.jboss.shrinkwrap.resolver.api.maven.Maven;
 
@@ -48,6 +49,8 @@ public class DeploymentHelpers {
 	public static final String DEFAULT_PROVIDER_NAME = "jbossorg";
 
 	public static final String DEFAULT_PROVIDER_PASSWORD = "jbossorgjbossorg";
+
+	public static final String SECURITY_DOMAIN = "SearchiskoSecurityDomain";
 
 	public static Properties appProperties;
 
@@ -109,7 +112,8 @@ public class DeploymentHelpers {
 				.addAsResource("mappings/contributor.json", "mappings/contributor.json")
 				.addAsResource("META-INF/test-persistence.xml", "META-INF/persistence.xml")
 				.setWebXML(new File(projectRootPath + "/api/src/main/webapp/WEB-INF/web.xml"))
-				.addAsWebInfResource(new File(projectRootPath + "/api/src/main/webapp/WEB-INF/jboss-web.xml"))
+				.addAsWebInfResource(new StringAsset("<jboss-web><security-domain>" + SECURITY_DOMAIN
+						+ "</security-domain></jboss-web>"), "jboss-web.xml")
 				.addAsWebInfResource("webapp/WEB-INF/test-searchisko-ds.xml", "searchisko-ds.xml")
 				.addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml");
 
