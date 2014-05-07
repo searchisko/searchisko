@@ -11,7 +11,6 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.junit.InSequence;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -122,10 +121,10 @@ public class ProjectRestServiceTest {
 	}
 
 	@Test
-	@InSequence(26) @Ignore("DCP returns same data as unauthenticated request perhaps because of no mapping.")
+	@InSequence(26)
 	public void assertGetCreatedProjectAuthenticated() throws MalformedURLException {
 		given().contentType(ContentType.JSON)
-				.auth().basic(DeploymentHelpers.DEFAULT_PROVIDER_NAME, DeploymentHelpers.DEFAULT_PROVIDER_PASSWORD)
+				.auth().preemptive().basic(DeploymentHelpers.DEFAULT_PROVIDER_NAME, DeploymentHelpers.DEFAULT_PROVIDER_PASSWORD)
 				.expect().statusCode(200)
 				.log().ifError()
 				.body("code", is("jbosstools"))
@@ -136,13 +135,13 @@ public class ProjectRestServiceTest {
 
 
 	@Test
-	@InSequence(30) @Ignore("Returns 0 hits. Probably because of ES caching")
+	@InSequence(30)
 	public void assertSearchCreatedProject() throws MalformedURLException {
 		given().contentType(ContentType.JSON)
 				.auth().basic(DeploymentHelpers.DEFAULT_PROVIDER_NAME, DeploymentHelpers.DEFAULT_PROVIDER_PASSWORD)
 				.param("jbossorg_jira", "JBIDE")
 				.expect().statusCode(200)
-				.log().all()
+				.log().ifError()
 				.body("total", is(1))
 				.body("hits[0].id", is("jbosstools"))
 				.when().get(new URL(context, PROJECT_REST_API + "/search").toExternalForm());
@@ -151,7 +150,7 @@ public class ProjectRestServiceTest {
 				.auth().basic(DeploymentHelpers.DEFAULT_PROVIDER_NAME, DeploymentHelpers.DEFAULT_PROVIDER_PASSWORD)
 				.param("code", "jbosstools")
 				.expect().statusCode(200)
-				.log().all()
+				.log().ifError()
 				.body("total", is(1))
 				.body("hits[0].id", is("jbosstools"))
 				.when().get(new URL(context, PROJECT_REST_API + "/search").toExternalForm());

@@ -5,46 +5,35 @@
  */
 package org.searchisko.api.rest;
 
-import java.security.Principal;
-import java.util.Map;
-
-import javax.annotation.PostConstruct;
-import javax.enterprise.context.RequestScoped;
-import javax.inject.Inject;
-import javax.inject.Named;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
-import javax.ws.rs.core.SecurityContext;
-import javax.ws.rs.core.UriInfo;
-
 import org.elasticsearch.action.search.SearchResponse;
-import org.searchisko.api.annotations.security.GuestAllowed;
-import org.searchisko.api.annotations.security.ProviderAllowed;
 import org.searchisko.api.rest.exception.RequiredFieldException;
+import org.searchisko.api.security.Role;
 import org.searchisko.api.service.ProjectService;
 import org.searchisko.api.util.SearchUtils;
 
+import javax.annotation.PostConstruct;
+import javax.annotation.security.PermitAll;
+import javax.annotation.security.RolesAllowed;
+import javax.enterprise.context.RequestScoped;
+import javax.inject.Inject;
+import javax.inject.Named;
+import javax.ws.rs.*;
+import javax.ws.rs.core.*;
+import javax.ws.rs.core.Response.Status;
+import java.security.Principal;
+import java.util.Map;
+
 /**
  * Project REST API
- * 
+ *
  * @author Libor Krzyzanek
- * 
  */
 @RequestScoped
 @Path("/project")
-@ProviderAllowed(superProviderOnly = true)
+@RolesAllowed(Role.ADMIN)
 public class ProjectRestService extends RestEntityServiceBase {
 
-	protected final String[] fieldsToRemove = new String[] { "type_specific_code" };
+	protected final String[] fieldsToRemove = new String[]{"type_specific_code"};
 
 	public static final String PARAM_CODE = "code";
 
@@ -62,14 +51,14 @@ public class ProjectRestService extends RestEntityServiceBase {
 
 	/**
 	 * Get all projects. If user is authenticated then all data are returned otherwise sensitive data are removed.
-	 * 
+	 *
 	 * @see #fieldsToRemove
 	 */
 	@GET
 	@Path("/")
 	@Produces(MediaType.APPLICATION_JSON)
 	@Override
-	@GuestAllowed
+	@PermitAll
 	public Object getAll(@QueryParam("from") Integer from, @QueryParam("size") Integer size) {
 		Principal principal = securityContext.getUserPrincipal();
 
@@ -84,7 +73,7 @@ public class ProjectRestService extends RestEntityServiceBase {
 	@Path("/{id}")
 	@Produces(MediaType.APPLICATION_JSON)
 	@Override
-	@GuestAllowed
+	@PermitAll
 	public Object get(@PathParam("id") String id) {
 		Principal principal = securityContext.getUserPrincipal();
 		if (principal == null) {
