@@ -5,30 +5,6 @@
  */
 package org.searchisko.api.rest;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.logging.Level;
-
-import javax.enterprise.context.RequestScoped;
-import javax.enterprise.event.Event;
-import javax.inject.Inject;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
-import javax.ws.rs.core.SecurityContext;
-
 import org.elasticsearch.action.bulk.BulkItemResponse;
 import org.elasticsearch.action.bulk.BulkRequestBuilder;
 import org.elasticsearch.action.bulk.BulkResponse;
@@ -42,8 +18,6 @@ import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.indices.IndexMissingException;
 import org.elasticsearch.search.sort.SortOrder;
 import org.searchisko.api.ContentObjectFields;
-import org.searchisko.api.annotations.security.GuestAllowed;
-import org.searchisko.api.annotations.security.ProviderAllowed;
 import org.searchisko.api.events.ContentBeforeIndexedEvent;
 import org.searchisko.api.events.ContentDeletedEvent;
 import org.searchisko.api.events.ContentStoredEvent;
@@ -51,11 +25,26 @@ import org.searchisko.api.rest.exception.BadFieldException;
 import org.searchisko.api.rest.exception.NotAuthorizedException;
 import org.searchisko.api.rest.exception.RequiredFieldException;
 import org.searchisko.api.rest.security.AuthenticationUtilService;
+import org.searchisko.api.security.Role;
 import org.searchisko.api.service.ProviderService;
 import org.searchisko.api.service.ProviderService.ProviderContentTypeInfo;
 import org.searchisko.api.service.SearchClientService;
 import org.searchisko.api.util.SearchUtils;
 import org.searchisko.persistence.service.ContentPersistenceService;
+
+import javax.annotation.security.PermitAll;
+import javax.annotation.security.RolesAllowed;
+import javax.enterprise.context.RequestScoped;
+import javax.enterprise.event.Event;
+import javax.inject.Inject;
+import javax.ws.rs.*;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
+import javax.ws.rs.core.SecurityContext;
+import java.util.*;
+import java.util.logging.Level;
 
 /**
  * REST API for Content related operations.
@@ -67,7 +56,7 @@ import org.searchisko.persistence.service.ContentPersistenceService;
 @Path("/content/{type}")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
-@ProviderAllowed
+@RolesAllowed({Role.ADMIN, Role.PROVIDER})
 public class ContentRestService extends RestServiceBase {
 
 	static final String RETFIELD_WARNINGS = "warnings";
@@ -103,7 +92,7 @@ public class ContentRestService extends RestServiceBase {
 	@GET
 	@Path("/")
 	@Produces(MediaType.APPLICATION_JSON)
-	@GuestAllowed
+	@PermitAll
 	public Object getAllContent(@PathParam("type") String type, @QueryParam("from") Integer from,
 			@QueryParam("size") Integer size, @QueryParam("sort") String sort) {
 		if (type == null || SearchUtils.isBlank(type)) {
@@ -149,7 +138,7 @@ public class ContentRestService extends RestServiceBase {
 	@GET
 	@Path("/{contentId}")
 	@Produces(MediaType.APPLICATION_JSON)
-	@GuestAllowed
+	@PermitAll
 	public Object getContent(@PathParam("type") String type, @PathParam("contentId") String contentId) {
 
 		// validation
@@ -192,7 +181,6 @@ public class ContentRestService extends RestServiceBase {
 	@Path("/{contentId}")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	@ProviderAllowed
 	public Object pushContent(@PathParam("type") String type, @PathParam("contentId") String contentId,
 			Map<String, Object> content) {
 
@@ -233,7 +221,6 @@ public class ContentRestService extends RestServiceBase {
 	@Path("/")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	@ProviderAllowed
 	public Object pushContentBulk(@PathParam("type") String type, Map<String, Object> contentStructure) {
 		ProviderContentTypeInfo typeInfo = getTypeInfoWithManagePermissionCheck(type);
 
@@ -410,7 +397,6 @@ public class ContentRestService extends RestServiceBase {
 	 */
 	@DELETE
 	@Path("/{contentId}")
-	@ProviderAllowed
 	public Object deleteContent(@PathParam("type") String type, @PathParam("contentId") String contentId,
 			@QueryParam("ignore_missing") String ignoreMissing) {
 
@@ -451,7 +437,6 @@ public class ContentRestService extends RestServiceBase {
 	 */
 	@DELETE
 	@Path("/")
-	@ProviderAllowed
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	public Object deleteContentBulk(@PathParam("type") String type, Map<String, Object> content) {
