@@ -36,13 +36,12 @@ public class BasicAuthenticationFilter implements Filter {
 		HttpServletResponse response = (HttpServletResponse) resp;
 
 		// Check http basic authentication first
-		Enumeration<String> authentication = request.getHeaders("Authorization");
 		if (log.isLoggable(Level.FINEST)) {
 			log.log(Level.FINEST, "Request headers: {0}", Collections.list(request.getHeaderNames()));
-			log.log(Level.FINEST, "Basic Authentication, authentications: {0}", Collections.list(authentication));
+			log.log(Level.FINEST, "Basic Authentication, authentications: {0}", Collections.list(request.getHeaders("Authorization")));
 		}
 
-
+		Enumeration<String> authentication = request.getHeaders("Authorization");
 		while (authentication.hasMoreElements()) {
 			String auth = authentication.nextElement();
 			log.log(Level.FINEST, "Basic Authentication, examining: {0}", auth);

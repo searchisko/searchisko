@@ -36,12 +36,12 @@ public class ProviderLoginModule extends UsernamePasswordLoginModule {
 
 	@Override
 	public void initialize(Subject subject, CallbackHandler callbackHandler, Map<String, ?> sharedState, Map<String, ?> options) {
-		log.log(Level.INFO, "Initializing JAAS ProviderLoginModule");
 		try {
 			CdiHelper.programmaticInjection(ProviderLoginModule.class, this);
 		} catch (NamingException e) {
 			throw new RuntimeException("Cannot initialize Login module", e);
 		}
+		log.log(Level.INFO, "Initializing JAAS ProviderLoginModule");
 		super.initialize(subject, callbackHandler, sharedState, options);
 	}
 
