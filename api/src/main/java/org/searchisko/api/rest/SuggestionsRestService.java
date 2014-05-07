@@ -26,7 +26,6 @@ import org.elasticsearch.action.search.SearchType;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.searchisko.api.ContentObjectFields;
-import org.searchisko.api.annotations.security.GuestAllowed;
 import org.searchisko.api.model.QuerySettings;
 import org.searchisko.api.rest.exception.BadFieldException;
 import org.searchisko.api.rest.exception.RequiredFieldException;
@@ -71,7 +70,6 @@ public class SuggestionsRestService extends RestServiceBase {
 	@GET
 	@Path("/query_string")
 	@Produces(MediaType.APPLICATION_JSON)
-	@GuestAllowed
 	public Object queryString(@Context UriInfo uriInfo) {
 
 		MultivaluedMap<String, String> params = uriInfo.getQueryParameters();
@@ -86,7 +84,6 @@ public class SuggestionsRestService extends RestServiceBase {
 	@GET
 	@Path("/project")
 	@Produces(MediaType.APPLICATION_JSON)
-	@GuestAllowed
 	public Object project(@Context UriInfo uriInfo) {
 
 		QuerySettings querySettings = null;
