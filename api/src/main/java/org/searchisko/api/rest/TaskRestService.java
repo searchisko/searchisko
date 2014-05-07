@@ -5,39 +5,32 @@
  */
 package org.searchisko.api.rest;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
-import javax.enterprise.context.RequestScoped;
-import javax.inject.Inject;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
-
-import org.searchisko.api.annotations.security.ProviderAllowed;
+import org.searchisko.api.security.Role;
 import org.searchisko.api.service.TaskService;
 import org.searchisko.api.tasker.TaskConfigurationException;
 import org.searchisko.api.tasker.TaskStatus;
 import org.searchisko.api.tasker.TaskStatusInfo;
 import org.searchisko.api.tasker.UnsupportedTaskException;
 
+import javax.annotation.security.RolesAllowed;
+import javax.enterprise.context.RequestScoped;
+import javax.inject.Inject;
+import javax.ws.rs.*;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
 /**
  * Long running Tasks execution related REST API.
- * 
+ *
  * @author Vlastimil Elias (velias at redhat dot com)
  */
 @RequestScoped
 @Path("/tasks")
-@ProviderAllowed(superProviderOnly = true)
+@RolesAllowed(Role.ADMIN)
 public class TaskRestService extends RestServiceBase {
 
 	@Inject
@@ -54,7 +47,7 @@ public class TaskRestService extends RestServiceBase {
 	@Path("/task")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Object getTasks(@QueryParam("taskType") String taskType, @QueryParam("taskStatus") String[] taskStatus,
-			@QueryParam("from") Integer from, @QueryParam("size") Integer size) {
+						   @QueryParam("from") Integer from, @QueryParam("size") Integer size) {
 
 		List<TaskStatus> taskStatusFilter = null;
 		if (taskStatus != null && taskStatus.length > 0) {
