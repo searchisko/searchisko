@@ -11,7 +11,6 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.junit.InSequence;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -20,7 +19,9 @@ import java.net.MalformedURLException;
 import java.net.URL;
 
 import static com.jayway.restassured.RestAssured.given;
+import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.nullValue;
 
 /**
  * Integration test for /sys REST API.
@@ -54,24 +55,26 @@ public class SystemRestServiceTest {
 				.contentType(ContentType.JSON)
 				.body("build.version", notNullValue())
 				.body("build.build-timestamp", notNullValue())
+				.body("system", is(nullValue()))
+				.body("servlet-container", is(nullValue()))
 				.when().get(new URL(context, SYSTEM_REST_API).toExternalForm());
 	}
 
 	@Test
 	@InSequence(11)
-	@Ignore("get system info returns same data as un authenticated.")
 	public void assertGetInfoAuthenticated() throws MalformedURLException {
-		//TODO: Check why /sys/info returns same values for authenticated provider like for unauthenticated
+		// Authentication needs to be preemptive because guest is allowed as well.
 		given().contentType(ContentType.JSON)
 				.pathParam("operation", "info")
-				.auth().basic(DeploymentHelpers.DEFAULT_PROVIDER_NAME, DeploymentHelpers.DEFAULT_PROVIDER_PASSWORD)
+				.auth().preemptive().basic(DeploymentHelpers.DEFAULT_PROVIDER_NAME, DeploymentHelpers.DEFAULT_PROVIDER_PASSWORD)
 				.expect()
-				.log().all()
+				.log().ifError()
 				.statusCode(200)
 				.contentType(ContentType.JSON)
 				.body("build.version", notNullValue())
 				.body("build.build-timestamp", notNullValue())
 				.body("system", notNullValue())
+				.body("servlet-container", notNullValue())
 				.when().get(new URL(context, SYSTEM_REST_API).toExternalForm());
 	}
 

@@ -5,9 +5,11 @@
  */
 package org.searchisko.api.rest;
 
-import java.io.IOException;
-import java.util.Map;
+import org.searchisko.api.security.Role;
+import org.searchisko.api.service.SystemInfoService;
 
+import javax.annotation.security.PermitAll;
+import javax.annotation.security.RolesAllowed;
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
 import javax.ws.rs.GET;
@@ -16,20 +18,17 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.SecurityContext;
-
-import org.searchisko.api.annotations.security.GuestAllowed;
-import org.searchisko.api.annotations.security.ProviderAllowed;
-import org.searchisko.api.rest.security.ProviderCustomSecurityContext;
-import org.searchisko.api.service.SystemInfoService;
+import java.io.IOException;
+import java.util.Map;
 
 /**
  * System related REST service
- * 
+ *
  * @author Vlastimil Elias (velias at redhat dot com)
  */
 @Path("/sys")
 @RequestScoped
-@ProviderAllowed
+@RolesAllowed(Role.PROVIDER)
 public class SystemRestService {
 
 	@Context
@@ -41,11 +40,9 @@ public class SystemRestService {
 	@GET
 	@Path("/info")
 	@Produces(MediaType.APPLICATION_JSON)
-	@GuestAllowed
+	@PermitAll
 	public Map<Object, Object> info() throws IOException {
-
-		return systemInfoService
-				.getSystemInfo(securityContext.isUserInRole(ProviderCustomSecurityContext.SUPER_ADMIN_ROLE));
+		return systemInfoService.getSystemInfo(securityContext.isUserInRole(Role.ADMIN));
 	}
 
 }
