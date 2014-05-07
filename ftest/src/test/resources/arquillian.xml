@@ -21,7 +21,7 @@
 			<property name="serverConfig">${arquillian.jboss.serverConfig}</property>
 			<property name="managementAddress">${arquillian.jboss.host}</property>
 			<property name="managementPort">${arquillian.jboss.port}</property>
-			<property name="javaVmArguments">-Xms1024m -Xmx1024m -XX:MaxPermSize=512m</property>
+			<property name="javaVmArguments">-Xms1024m -Xmx1024m -XX:MaxPermSize=512m -Xrunjdwp:transport=dt_socket,address=8787,server=y,suspend=n</property>
 			<property name="startupTimeoutInSeconds">30</property>
 			<property name="outputToConsole">true</property>
 		</configuration>
