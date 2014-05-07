@@ -41,13 +41,13 @@ public class ProviderLoginModule extends UsernamePasswordLoginModule {
 		} catch (NamingException e) {
 			throw new RuntimeException("Cannot initialize Login module", e);
 		}
-		log.log(Level.INFO, "Initializing JAAS ProviderLoginModule");
+		log.log(Level.FINE, "Initializing JAAS ProviderLoginModule");
 		super.initialize(subject, callbackHandler, sharedState, options);
 	}
 
 	@Override
 	public boolean login() throws LoginException {
-		log.log(Level.INFO, "ProviderLoginModule.Login called");
+		log.log(Level.FINE, "ProviderLoginModule.Login called");
 		return super.login();
 	}
 
