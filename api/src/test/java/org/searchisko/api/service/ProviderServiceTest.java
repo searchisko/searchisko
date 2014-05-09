@@ -21,10 +21,10 @@ import org.junit.Test;
 import org.mockito.Mockito;
 import org.searchisko.api.cache.IndexNamesCache;
 import org.searchisko.api.cache.ProviderCache;
-import org.searchisko.api.service.ProviderService.PreprocessChainContextImpl;
 import org.searchisko.api.service.ProviderService.ProviderContentTypeInfo;
 import org.searchisko.api.testtools.ESRealClientTestBase;
 import org.searchisko.api.testtools.TestUtils;
+import org.searchisko.api.util.PreprocessChainContextImpl;
 import org.searchisko.persistence.service.EntityService;
 import org.searchisko.persistence.service.ListRequest;
 

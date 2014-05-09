@@ -1,0 +1,203 @@
+{
+  "contributor_profile_by_jbossorg_username" : {
+    "preprocessors" : [
+      { 
+        "name"     : "username to Contributor code mapper",
+        "class"    : "org.jboss.elasticsearch.tools.content.ESLookupValuePreprocessor",
+        "settings" : {
+          "index_name"       : "sys_contributors",
+          "index_type"       : "contributor",
+          "source_field"     : "input_id",
+          "idx_search_field" : "type_specific_code.jbossorg_username",
+          "result_mapping"   : [{
+            "idx_result_field" : "code",
+            "target_field"     : "sys_contributor"
+          }]
+        } 
+      },{ 
+        "name"     : "Profile by Contributor code loader",
+        "class"    : "org.jboss.elasticsearch.tools.content.ESLookupValuePreprocessor",
+        "settings" : {
+          "index_name"       : "data_contributor_profile",
+          "index_type"       : "jbossorg_contributor_profile",
+          "source_field"     : "sys_contributor",
+          "idx_search_field" : "sys_contributors",
+          "result_mapping"   : [{
+            "idx_result_field" : "sys_title",
+            "target_field"     : "contributor_profile.sys_title"
+          },{
+            "idx_result_field" : "sys_url_view",
+            "target_field"     : "contributor_profile.sys_url_view"
+          },{
+            "idx_result_field" : "thumbnailUrl",
+            "target_field"     : "contributor_profile.thumbnailUrl"
+          },{
+            "idx_result_field" : "accounts",
+            "target_field"     : "contributor_profile.accounts"
+          }]
+        } 
+      }
+    ]
+  },
+  "contributor_profile_by_email" : {
+    "preprocessors" : [
+      { 
+        "name"     : "email to Contributor code mapper",
+        "class"    : "org.jboss.elasticsearch.tools.content.ESLookupValuePreprocessor",
+        "settings" : {
+          "index_name"       : "sys_contributors",
+          "index_type"       : "contributor",
+          "source_field"     : "input_id",
+          "idx_search_field" : "email",
+          "result_mapping"   : [{
+            "idx_result_field" : "code",
+            "target_field"     : "sys_contributor"
+          }]
+        } 
+      },{ 
+        "name"     : "Profile by Contributor code loader",
+        "class"    : "org.jboss.elasticsearch.tools.content.ESLookupValuePreprocessor",
+        "settings" : {
+          "index_name"       : "data_contributor_profile",
+          "index_type"       : "jbossorg_contributor_profile",
+          "source_field"     : "sys_contributor",
+          "idx_search_field" : "sys_contributors",
+          "result_mapping"   : [{
+            "idx_result_field" : "sys_title",
+            "target_field"     : "contributor_profile.sys_title"
+          },{
+            "idx_result_field" : "sys_url_view",
+            "target_field"     : "contributor_profile.sys_url_view"
+          },{
+            "idx_result_field" : "thumbnailUrl",
+            "target_field"     : "contributor_profile.thumbnailUrl"
+          },{
+            "idx_result_field" : "accounts",
+            "target_field"     : "contributor_profile.accounts"
+          }]
+        } 
+      }
+    ]
+  },
+  "contributor_profile_by_github_username" : {
+    "preprocessors" : [
+      { 
+        "name"     : "username to Contributor code mapper",
+        "class"    : "org.jboss.elasticsearch.tools.content.ESLookupValuePreprocessor",
+        "settings" : {
+          "index_name"       : "sys_contributors",
+          "index_type"       : "contributor",
+          "source_field"     : "input_id",
+          "idx_search_field" : "type_specific_code.github_username",
+          "result_mapping"   : [{
+            "idx_result_field" : "code",
+            "target_field"     : "sys_contributor"
+          }]
+        } 
+      },{ 
+        "name"     : "Profile by Contributor code loader",
+        "class"    : "org.jboss.elasticsearch.tools.content.ESLookupValuePreprocessor",
+        "settings" : {
+          "index_name"       : "data_contributor_profile",
+          "index_type"       : "jbossorg_contributor_profile",
+          "source_field"     : "sys_contributor",
+          "idx_search_field" : "sys_contributors",
+          "result_mapping"   : [{
+            "idx_result_field" : "sys_title",
+            "target_field"     : "contributor_profile.sys_title"
+          },{
+            "idx_result_field" : "sys_url_view",
+            "target_field"     : "contributor_profile.sys_url_view"
+          },{
+            "idx_result_field" : "thumbnailUrl",
+            "target_field"     : "contributor_profile.thumbnailUrl"
+          },{
+            "idx_result_field" : "accounts",
+            "target_field"     : "contributor_profile.accounts"
+          }]
+        } 
+      }
+    ]
+  },  
+  "contributor_profile_by_vimeo_username" : {
+    "preprocessors" : [
+      { 
+        "name"     : "username to Contributor code mapper",
+        "class"    : "org.jboss.elasticsearch.tools.content.ESLookupValuePreprocessor",
+        "settings" : {
+          "index_name"       : "sys_contributors",
+          "index_type"       : "contributor",
+          "source_field"     : "input_id",
+          "idx_search_field" : "type_specific_code.vimeo_username",
+          "result_mapping"   : [{
+            "idx_result_field" : "code",
+            "target_field"     : "sys_contributor"
+          }]
+        } 
+      },{ 
+        "name"     : "Profile by Contributor code loader",
+        "class"    : "org.jboss.elasticsearch.tools.content.ESLookupValuePreprocessor",
+        "settings" : {
+          "index_name"       : "data_contributor_profile",
+          "index_type"       : "jbossorg_contributor_profile",
+          "source_field"     : "sys_contributor",
+          "idx_search_field" : "sys_contributors",
+          "result_mapping"   : [{
+            "idx_result_field" : "sys_title",
+            "target_field"     : "contributor_profile.sys_title"
+          },{
+            "idx_result_field" : "sys_url_view",
+            "target_field"     : "contributor_profile.sys_url_view"
+          },{
+            "idx_result_field" : "thumbnailUrl",
+            "target_field"     : "contributor_profile.thumbnailUrl"
+          },{
+            "idx_result_field" : "accounts",
+            "target_field"     : "contributor_profile.accounts"
+          }]
+        } 
+      }
+    ]
+  },  
+  "contributor_profile_by_jbossdeveloper_quickstart_author" : {
+    "preprocessors" : [
+      { 
+        "name"     : "author name to Contributor code mapper",
+        "class"    : "org.jboss.elasticsearch.tools.content.ESLookupValuePreprocessor",
+        "settings" : {
+          "index_name"       : "sys_contributors",
+          "index_type"       : "contributor",
+          "source_field"     : "input_id",
+          "idx_search_field": ["jbossdeveloper_quickstart_author","name"],
+          "result_multiple_ignore" : true,
+          "result_mapping"   : [{
+            "idx_result_field" : "code",
+            "target_field"     : "sys_contributor"
+          }]
+        } 
+      },{ 
+        "name"     : "Profile by Contributor code loader",
+        "class"    : "org.jboss.elasticsearch.tools.content.ESLookupValuePreprocessor",
+        "settings" : {
+          "index_name"       : "data_contributor_profile",
+          "index_type"       : "jbossorg_contributor_profile",
+          "source_field"     : "sys_contributor",
+          "idx_search_field" : "sys_contributors",
+          "result_mapping"   : [{
+            "idx_result_field" : "sys_title",
+            "target_field"     : "contributor_profile.sys_title"
+          },{
+            "idx_result_field" : "sys_url_view",
+            "target_field"     : "contributor_profile.sys_url_view"
+          },{
+            "idx_result_field" : "thumbnailUrl",
+            "target_field"     : "contributor_profile.thumbnailUrl"
+          },{
+            "idx_result_field" : "accounts",
+            "target_field"     : "contributor_profile.accounts"
+          }]
+        } 
+      }
+    ]
+  }  
+}

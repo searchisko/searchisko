@@ -5,8 +5,6 @@
  */
 package org.searchisko.api.service;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
@@ -19,11 +17,11 @@ import javax.inject.Named;
 import javax.ws.rs.core.StreamingOutput;
 
 import org.elasticsearch.common.settings.SettingsException;
-import org.jboss.elasticsearch.tools.content.PreprocessChainContext;
 import org.jboss.elasticsearch.tools.content.StructuredContentPreprocessor;
 import org.jboss.elasticsearch.tools.content.StructuredContentPreprocessorFactory;
 import org.searchisko.api.cache.IndexNamesCache;
 import org.searchisko.api.cache.ProviderCache;
+import org.searchisko.api.util.PreprocessChainContextImpl;
 import org.searchisko.api.util.SearchUtils;
 import org.searchisko.persistence.service.EntityService;
 import org.searchisko.persistence.service.ListRequest;
@@ -354,26 +352,6 @@ public class ProviderService implements EntityService {
 			throw new SettingsException("Bad configuration structure of some 'input_preprocessors' for sys_content_type="
 					+ typeName + ". Contact administrators please. Cause: " + e.getMessage(), e);
 		}
-	}
-
-	protected static final class PreprocessChainContextImpl implements PreprocessChainContext {
-
-		public static final String WD_PREPROC_NAME = "preprocessor";
-		public static final String WD_WARNING = "warning";
-
-		protected List<Map<String, String>> warnings = null;
-
-		@Override
-		public void addDataWarning(String preprocessorName, String warningMessage) throws IllegalArgumentException {
-			if (warnings == null) {
-				warnings = new ArrayList<>();
-			}
-			Map<String, String> wd = new HashMap<String, String>();
-			wd.put(WD_PREPROC_NAME, preprocessorName);
-			wd.put(WD_WARNING, warningMessage);
-			warnings.add(wd);
-		}
-
 	}
 
 	/**
