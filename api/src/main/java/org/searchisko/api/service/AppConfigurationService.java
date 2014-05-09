@@ -5,11 +5,8 @@
  */
 package org.searchisko.api.service;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Properties;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.searchisko.api.model.AppConfiguration;
+import org.searchisko.api.model.AppConfiguration.ClientType;
 
 import javax.annotation.PostConstruct;
 import javax.ejb.Singleton;
@@ -18,13 +15,15 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Produces;
 import javax.inject.Inject;
 import javax.inject.Named;
-
-import org.searchisko.api.model.AppConfiguration;
-import org.searchisko.api.model.AppConfiguration.ClientType;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Application configuration service
- * 
+ *
  * @author Libor Krzyzanek
  * @author Vlastimil Elias (velias at redhat dot com)
  */
@@ -103,8 +102,16 @@ public class AppConfigurationService {
 		AppConfiguration.ContributorProfileProviderConfig cppc = new AppConfiguration.ContributorProfileProviderConfig(
 				prop.getProperty("contributorprofile.provider.urlbase"),
 				prop.getProperty("contributorprofile.provider.username"),
-				prop.getProperty(CONTRIBUTORPROFILE_PROVIDER_PASSWORD));
+				prop.getProperty(CONTRIBUTORPROFILE_PROVIDER_PASSWORD)
+		);
 		appConfiguration.setContributorProfileProviderConfig(cppc);
+
+		AppConfiguration.CasConfig casConfig = new AppConfiguration.CasConfig(
+				prop.getProperty("cas.serverName"),
+				prop.getProperty("cas.ssoServerUrl")
+		);
+		appConfiguration.setCasConfig(casConfig);
+
 
 		log.log(Level.INFO, "App Configuration: {0}", appConfiguration);
 	}
