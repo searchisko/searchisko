@@ -36,8 +36,8 @@
 		<es.client.embedded.search.ip>127.0.0.1</es.client.embedded.search.ip>
 		<es.client.embedded.search.port.start>15000</es.client.embedded.search.port.start>
 		<arquillian.jboss.home>${env.JBOSS_HOME}</arquillian.jboss.home>
-		<!-- Using different profile to get isolation from standard deployment -->
-		<arquillian.jboss.serverConfig>standalone-full.xml</arquillian.jboss.serverConfig>
+		<!-- Use different profile to get isolation from standard deployment -->
+		<arquillian.jboss.serverConfig>standalone.xml</arquillian.jboss.serverConfig>
 		<arquillian.jboss.host>127.0.0.1</arquillian.jboss.host>
 		<arquillian.jboss.port>9999</arquillian.jboss.port>
 	</properties>

@@ -17,7 +17,7 @@ It's needed to add security domain `SearchiskoSecurityDomainFTEST` into the `$JB
 
 		<subsystem xmlns="urn:jboss:domain:security:1.2">
             <security-domains>
-				<security-domain name="SearchiskoSecurityDomain">
+				<security-domain name="SearchiskoSecurityDomainFTEST">
 					<authentication>
 						<login-module code="org.searchisko.api.security.jaas.ProviderLoginModule" flag="sufficient">
 						</login-module>
