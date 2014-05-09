@@ -32,6 +32,8 @@ import java.util.logging.Logger;
 @RequestScoped
 public class AuthenticationUtilService {
 
+	//TODO: Move to services package
+
 	@Inject
 	protected Logger log;
 
