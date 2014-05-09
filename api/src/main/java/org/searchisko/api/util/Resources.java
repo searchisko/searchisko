@@ -5,11 +5,6 @@
  */
 package org.searchisko.api.util;
 
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.StringWriter;
-import java.util.logging.Logger;
-
 import javax.ejb.Singleton;
 import javax.enterprise.context.ContextNotActiveException;
 import javax.enterprise.context.RequestScoped;
@@ -17,21 +12,28 @@ import javax.enterprise.inject.Produces;
 import javax.enterprise.inject.spi.InjectionPoint;
 import javax.faces.context.FacesContext;
 import javax.inject.Named;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import javax.sql.DataSource;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.StringWriter;
+import java.util.logging.Logger;
 
 /**
  * This class uses CDI to alias Java EE resources, such as the persistence context, to CDI beans
- *
+ * <p/>
  * <p>
  * Examples injection on a managed bean field:
  * </p>
- *
+ * <p/>
  * <pre>
  * &#064;Inject
  * private Logger log;
  * </pre>
- *
+ * <p/>
  * <pre>
  * &#064;Inject
  * private EntityManager em;
@@ -45,6 +47,20 @@ public class Resources {
 	@Produces
 	@PersistenceContext
 	private static EntityManager em;
+
+	/**
+	 * Produces Default DataSource. JNDI name of datasource is taken from Entity Manager
+	 *
+	 * @return
+	 * @throws NamingException
+	 */
+	@Produces
+	public DataSource produceDefaultDataSource() throws NamingException {
+		Object ds = em.getEntityManagerFactory().getProperties().get("javax.persistence.jtaDataSource");
+		InitialContext initialContext = new InitialContext();
+		Object lookup = initialContext.lookup(ds.toString());
+		return (DataSource) lookup;
+	}
 
 	@Produces
 	public Logger produceLog(InjectionPoint injectionPoint) {

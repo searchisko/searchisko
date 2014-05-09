@@ -33,21 +33,5 @@
 		</validation>
 	</datasource>
 
-	<!-- This DS is just for compatibility of app's DS
-		 because ftest depends on "api-classes.jar" which contains persistance.xml using SearchiskoD -->
-	<datasource jndi-name="java:jboss/datasources/SearchiskoDS"
-				pool-name="searchisko" enabled="true"
-				use-java-context="true">
-		<connection-url>jdbc:h2:mem:searchisko-app-arquillian</connection-url>
-		<driver>h2</driver>
-		<security>
-			<user-name>sa</user-name>
-			<password>sa</password>
-		</security>
-		<validation>
-			<check-valid-connection-sql>SELECT 1</check-valid-connection-sql>
-		</validation>
-	</datasource>
-
 
 </datasources>

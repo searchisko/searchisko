@@ -5,12 +5,16 @@
  */
 package org.searchisko.persistence.service;
 
+import org.searchisko.api.ContentObjectFields;
+import org.searchisko.api.util.SearchUtils;
+
+import javax.ejb.LocalBean;
+import javax.ejb.Stateless;
+import javax.inject.Inject;
+import javax.inject.Named;
+import javax.sql.DataSource;
 import java.io.IOException;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Timestamp;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -18,16 +22,6 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.logging.Logger;
-
-import javax.annotation.Resource;
-import javax.ejb.LocalBean;
-import javax.ejb.Stateless;
-import javax.inject.Inject;
-import javax.inject.Named;
-import javax.sql.DataSource;
-
-import org.searchisko.api.ContentObjectFields;
-import org.searchisko.api.util.SearchUtils;
 
 /**
  * JDBC based implementation of {@link ContentPersistenceService}. We use raw JDBC here because we dynamically create
@@ -48,7 +42,7 @@ public class JdbcContentPersistenceService implements ContentPersistenceService 
 	@Inject
 	protected Logger log;
 
-	@Resource(name = "java:jboss/datasources/SearchiskoDS")
+	@Inject
 	protected DataSource searchiskoDs;
 
 	@Override
