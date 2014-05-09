@@ -5,7 +5,9 @@
  */
 package org.searchisko.api.rest;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
@@ -26,7 +28,9 @@ import org.searchisko.api.rest.exception.RequiredFieldException;
 import org.searchisko.api.rest.security.AuthenticatedUserType;
 import org.searchisko.api.rest.security.AuthenticationUtilService;
 import org.searchisko.api.service.ProviderService;
+import org.searchisko.api.service.ProviderService.ProviderContentTypeInfo;
 import org.searchisko.api.service.ProviderServiceTest;
+import org.searchisko.api.testtools.TestUtils;
 
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -41,6 +45,7 @@ public class IndexerRestServiceTest {
 	private static final String TYPE_KNOWN_WITH_INDEXER = "known-with-indexer";
 	private static final String TYPE_KNOWN = "known";
 	private static final String TYPE_UNKNOWN = "unknown";
+	private static final String TEST_PROVIDER_NAME_UNAUTH = "other_provider";
 
 	@Test
 	public void getIndexerConfigurationWithManagePermissionCheck() throws ObjectNotFoundException {
@@ -113,6 +118,45 @@ public class IndexerRestServiceTest {
 			Assert.fail("NotAuthenticatedException expected");
 		} catch (NotAuthenticatedException e) {
 			// OK
+		}
+
+	}
+
+	@Test
+	public void getAllIndexerConfigurationsWithManagePermissionCheck() {
+		IndexerRestService tested = getTested();
+
+		// case - no one indexer available
+		{
+			List<ProviderContentTypeInfo> ret = tested.getAllIndexerConfigurationsWithManagePermissionCheck();
+			Assert.assertNotNull(ret);
+			Assert.assertEquals(0, ret.size());
+		}
+
+		// case - some indexers available, permission filtering etc.
+		{
+
+			List<Map<String, Object>> allProviders = new ArrayList<>();
+			allProviders.add(TestUtils.loadJSONFromClasspathFile("/indexer/provider_1.json"));
+			allProviders.add(TestUtils.loadJSONFromClasspathFile("/indexer/provider_2.json"));
+
+			Mockito.when(tested.providerService.getAll()).thenReturn(allProviders);
+
+			Mockito.doThrow(new NotAuthorizedException("no perm")).when(tested.authenticationUtilService)
+					.checkProviderManagementPermission(tested.securityContext, TEST_PROVIDER_NAME_UNAUTH);
+
+			List<ProviderContentTypeInfo> ret = tested.getAllIndexerConfigurationsWithManagePermissionCheck();
+			Assert.assertNotNull(ret);
+			Assert.assertEquals(2, ret.size());
+			Assert.assertEquals(ProviderServiceTest.TEST_PROVIDER_NAME, ret.get(0).getProviderName());
+			Assert.assertEquals("jbossorg_type_1", ret.get(0).getTypeName());
+			Assert.assertEquals(ProviderServiceTest.TEST_PROVIDER_NAME, ret.get(1).getProviderName());
+			Assert.assertEquals("jbossorg_type_3", ret.get(1).getTypeName());
+
+			verify(tested.authenticationUtilService).checkProviderManagementPermission(tested.securityContext,
+					ProviderServiceTest.TEST_PROVIDER_NAME);
+			verify(tested.authenticationUtilService).checkProviderManagementPermission(tested.securityContext,
+					TEST_PROVIDER_NAME_UNAUTH);
 		}
 
 	}

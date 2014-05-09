@@ -5,6 +5,9 @@
  */
 package org.searchisko.api.rest;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.ejb.ObjectNotFoundException;
@@ -39,7 +42,7 @@ import org.searchisko.api.util.SearchUtils;
  * @author Vlastimil Elias (velias at redhat dot com)
  */
 @RequestScoped
-@Path("/indexer/{type}")
+@Path("/indexer")
 @Produces(MediaType.APPLICATION_JSON)
 @ProviderAllowed
 public class IndexerRestService extends RestServiceBase {
@@ -68,7 +71,7 @@ public class IndexerRestService extends RestServiceBase {
 	 * @throws ObjectNotFoundException
 	 */
 	@POST
-	@Path("/_force_reindex")
+	@Path("/{type}/_force_reindex")
 	@ProviderAllowed
 	public Response forceReindex(@PathParam("type") String type) throws ObjectNotFoundException {
 
@@ -87,12 +90,152 @@ public class IndexerRestService extends RestServiceBase {
 	}
 
 	/**
+	 * Stop indexing for all content types using Searchisko internal indexer.
+	 * 
+	 * @throws ObjectNotFoundException
+	 */
+	@POST
+	@Path("/_all/_stop")
+	@ProviderAllowed
+	public Map<String, String> stopAll() throws ObjectNotFoundException {
+
+		Map<String, String> ret = new HashMap<>();
+
+		List<ProviderContentTypeInfo> allI = getAllIndexerConfigurationsWithManagePermissionCheck();
+
+		for (ProviderContentTypeInfo typeInfo : allI) {
+			String typeName = typeInfo.getTypeName();
+			Map<String, Object> ic = ProviderService.extractIndexerConfiguration(typeInfo.getTypeDef(), typeName);
+
+			IndexerHandler ih = getIndexerHandler((String) ic.get(ProviderService.TYPE), typeName);
+
+			try {
+				ih.stop(extractIndexerName(ic, typeName));
+				ret.put(typeName, "Indexer stopped successfuly");
+			} catch (ObjectNotFoundException e) {
+				ret.put(typeName, "Indexer name or type is not configured correctly because indexer instance has not found");
+			}
+		}
+
+		return ret;
+	}
+
+	/**
+	 * Stop indexing for given content type using Searchisko internal indexer.
+	 * 
+	 * @throws ObjectNotFoundException
+	 */
+	@POST
+	@Path("/{type}/_stop")
+	@ProviderAllowed
+	public Response stop(@PathParam("type") String type) throws ObjectNotFoundException {
+
+		Map<String, Object> ic = getIndexerConfigurationWithManagePermissionCheck(type);
+
+		IndexerHandler ih = getIndexerHandler((String) ic.get(ProviderService.TYPE), type);
+
+		try {
+			ih.stop(extractIndexerName(ic, type));
+			return Response.ok("Indexer stopped successfuly").build();
+		} catch (ObjectNotFoundException e) {
+			throw new ObjectNotFoundException(
+					"Indexer name or type is not configured correctly because indexer instance has not found for content type "
+							+ type);
+		}
+	}
+
+	/**
+	 * Restart indexing for all content types using Searchisko internal indexer.
+	 * 
+	 * @throws ObjectNotFoundException
+	 */
+	@POST
+	@Path("/_all/_restart")
+	@ProviderAllowed
+	public Map<String, String> restartAll() throws ObjectNotFoundException {
+
+		Map<String, String> ret = new HashMap<>();
+
+		List<ProviderContentTypeInfo> allI = getAllIndexerConfigurationsWithManagePermissionCheck();
+
+		for (ProviderContentTypeInfo typeInfo : allI) {
+			String typeName = typeInfo.getTypeName();
+			Map<String, Object> ic = ProviderService.extractIndexerConfiguration(typeInfo.getTypeDef(), typeName);
+
+			IndexerHandler ih = getIndexerHandler((String) ic.get(ProviderService.TYPE), typeName);
+
+			try {
+				ih.restart(extractIndexerName(ic, typeName));
+				ret.put(typeName, "Indexer restarted successfuly");
+			} catch (ObjectNotFoundException e) {
+				ret.put(typeName, "Indexer name or type is not configured correctly because indexer instance has not found");
+			}
+		}
+
+		return ret;
+	}
+
+	/**
+	 * Restart indexing for given content type using Searchisko internal indexer.
+	 * 
+	 * @throws ObjectNotFoundException
+	 */
+	@POST
+	@Path("/{type}/_restart")
+	@ProviderAllowed
+	public Response restart(@PathParam("type") String type) throws ObjectNotFoundException {
+
+		Map<String, Object> ic = getIndexerConfigurationWithManagePermissionCheck(type);
+
+		IndexerHandler ih = getIndexerHandler((String) ic.get(ProviderService.TYPE), type);
+
+		try {
+			ih.restart(extractIndexerName(ic, type));
+			return Response.ok("Indexer restarted successfuly").build();
+		} catch (ObjectNotFoundException e) {
+			throw new ObjectNotFoundException(
+					"Indexer name or type is not configured correctly because indexer instance has not found for content type "
+							+ type);
+		}
+	}
+
+	/**
+	 * Get status information for all Searchisko internal indexer you have permission to manage.
+	 * 
+	 * @throws ObjectNotFoundException
+	 */
+	@POST
+	@Path("/_all/_status")
+	@ProviderAllowed
+	public Map<String, Object> statusAll() throws ObjectNotFoundException {
+
+		Map<String, Object> ret = new HashMap<>();
+
+		List<ProviderContentTypeInfo> allI = getAllIndexerConfigurationsWithManagePermissionCheck();
+
+		for (ProviderContentTypeInfo typeInfo : allI) {
+			String typeName = typeInfo.getTypeName();
+			Map<String, Object> ic = ProviderService.extractIndexerConfiguration(typeInfo.getTypeDef(), typeName);
+
+			IndexerHandler ih = getIndexerHandler((String) ic.get(ProviderService.TYPE), typeName);
+
+			try {
+				ret.put(typeName, ih.getStatus(extractIndexerName(ic, typeName)));
+			} catch (ObjectNotFoundException e) {
+				ret.put(typeName, "Indexer name or type is not configured correctly because indexer instance has not found");
+			}
+		}
+
+		return ret;
+	}
+
+	/**
 	 * Get status information of indexer for given content type using Searchisko internal indexer.
 	 * 
 	 * @throws ObjectNotFoundException
 	 */
 	@GET
-	@Path("/_status")
+	@Path("/{type}/_status")
 	@ProviderAllowed
 	public Object getStatus(@PathParam("type") String type) throws ObjectNotFoundException {
 
@@ -131,6 +274,7 @@ public class IndexerRestService extends RestServiceBase {
 	 * @throws ObjectNotFoundException if indexer configuration is not found for given content type
 	 * @throws NotAuthorizedException if user is not authorized
 	 * @throws NotAuthenticatedException if user is not authenticated
+	 * @see AuthenticationUtilService#checkProviderManagementPermission(SecurityContext, String)
 	 */
 	protected Map<String, Object> getIndexerConfigurationWithManagePermissionCheck(String contentType)
 			throws ObjectNotFoundException {
@@ -149,6 +293,42 @@ public class IndexerRestService extends RestServiceBase {
 			throw new ObjectNotFoundException("Indexer is not configured for content type " + contentType);
 		}
 		return ic;
+	}
+
+	/**
+	 * Get configuration of all indexers from all content types user has permission to manage (provider permission check).
+	 * 
+	 * @return list of type infos with indexers, never null.
+	 * @see AuthenticationUtilService#checkProviderManagementPermission(SecurityContext, String)
+	 */
+	protected List<ProviderContentTypeInfo> getAllIndexerConfigurationsWithManagePermissionCheck() {
+		List<ProviderContentTypeInfo> ret = new ArrayList<>();
+
+		List<Map<String, Object>> allProviders = providerService.getAll();
+
+		if (allProviders != null) {
+			for (Map<String, Object> providerDef : allProviders) {
+				String providerName = (String) providerDef.get(ProviderService.NAME);
+				try {
+					authenticationUtilService.checkProviderManagementPermission(securityContext, providerName);
+
+					Map<String, Map<String, Object>> allCt = ProviderService.extractAllContentTypes(providerDef);
+					if (allCt != null) {
+						for (String typeName : allCt.keySet()) {
+							Map<String, Object> typeDef = allCt.get(typeName);
+
+							Map<String, Object> ic = ProviderService.extractIndexerConfiguration(typeDef, typeName);
+							if (ic != null) {
+								ret.add(new ProviderContentTypeInfo(providerDef, typeName));
+							}
+						}
+					}
+				} catch (NotAuthorizedException e) {
+					// OK, ignore it
+				}
+			}
+		}
+		return ret;
 	}
 
 	/**

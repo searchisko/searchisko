@@ -31,4 +31,23 @@ public interface IndexerHandler {
 	 */
 	public Object getStatus(String indexerName) throws ObjectNotFoundException;
 
+	/**
+	 * Stop indexer of given name. You have to use {@link #restart(String)} call to start it again.
+	 * 
+	 * @param indexerName to stop
+	 * @throws ObjectNotFoundException if indexer of given name doesn't exist.
+	 * @see #restart(String)
+	 */
+	public void stop(String indexerName) throws ObjectNotFoundException;
+
+	/**
+	 * Restart indexer of given name. Restart means it is stopped (if not stopped before), configuration is reloaded, and
+	 * then it is started again.
+	 * 
+	 * @param indexerName to restart
+	 * @throws ObjectNotFoundException if indexer of given name doesn't exist.
+	 * @see #stop(String)
+	 */
+	public void restart(String indexerName) throws ObjectNotFoundException;
+
 }

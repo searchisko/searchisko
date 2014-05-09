@@ -4,7 +4,7 @@ This document contains high-level release notes. More details can be found in [m
 
 ## 1.0.3
 
-- WIP
+- 'Content Indexers API' extended by `_stop` and `_restart` operations. `_status`, `_stop` and `_restart` can be used for one indexer or all indexer at all also. [#91](https://github.com/searchisko/searchisko/issues/91)
 
 ## 1.0.2
 

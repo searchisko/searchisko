@@ -16,6 +16,11 @@ import org.jboss.elasticsearch.river.jira.mgm.fullupdate.FullUpdateAction;
 import org.jboss.elasticsearch.river.jira.mgm.fullupdate.FullUpdateRequest;
 import org.jboss.elasticsearch.river.jira.mgm.fullupdate.FullUpdateResponse;
 import org.jboss.elasticsearch.river.jira.mgm.fullupdate.NodeFullUpdateResponse;
+import org.jboss.elasticsearch.river.jira.mgm.lifecycle.JRLifecycleAction;
+import org.jboss.elasticsearch.river.jira.mgm.lifecycle.JRLifecycleCommand;
+import org.jboss.elasticsearch.river.jira.mgm.lifecycle.JRLifecycleRequest;
+import org.jboss.elasticsearch.river.jira.mgm.lifecycle.JRLifecycleResponse;
+import org.jboss.elasticsearch.river.jira.mgm.lifecycle.NodeJRLifecycleResponse;
 import org.jboss.elasticsearch.river.jira.mgm.state.JRStateAction;
 import org.jboss.elasticsearch.river.jira.mgm.state.JRStateRequest;
 import org.jboss.elasticsearch.river.jira.mgm.state.JRStateResponse;
@@ -63,6 +68,27 @@ public class EsRiverJiraIndexerHandler implements IndexerHandler {
 		}
 
 		return nr.getStateInformation();
+	}
+
+	@Override
+	public void stop(String indexerName) throws ObjectNotFoundException {
+		performLifecycleCommand(indexerName, JRLifecycleCommand.STOP);
+	}
+
+	@Override
+	public void restart(String indexerName) throws ObjectNotFoundException {
+		performLifecycleCommand(indexerName, JRLifecycleCommand.RESTART);
+	}
+
+	private void performLifecycleCommand(String indexerName, JRLifecycleCommand command) throws ObjectNotFoundException {
+		JRLifecycleRequest actionRequest = new JRLifecycleRequest(indexerName, command);
+		JRLifecycleResponse resp = searchClientService.getClient().admin().cluster()
+				.execute(JRLifecycleAction.INSTANCE, actionRequest).actionGet();
+
+		final NodeJRLifecycleResponse nr = resp.getSuccessNodeResponse();
+		if (nr == null) {
+			throw new ObjectNotFoundException();
+		}
 	}
 
 }

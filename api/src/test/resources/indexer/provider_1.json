@@ -1,0 +1,34 @@
+{
+    "name"    : "jbossorg",
+    "type"     : {
+        "jbossorg_type_1" : {
+            "sys_type"  : "issue",
+            "index": {
+                "name" : "idx_provider1_issue",
+                "type"  : "t_provider1_issue"
+            },
+            "indexer" : {
+              "name" : "indexer_1",
+              "type" : "indexer_1_type"
+            }
+        },
+        "jbossorg_type_2" : {
+            "sys_type"  : "mailing",
+            "index": {
+                "name" : "idx_provider1_mailing",
+                "type"  : "t_provider1_mailing"
+            }
+        },
+        "jbossorg_type_3" : {
+            "sys_type"  : "mailing",
+            "index": {
+                "name" : "idx_provider1_mailing",
+                "type"  : "t_provider1_mailing"
+            },
+            "indexer" : {
+              "name" : "indexer_2",
+              "type" : "indexer_2_type"
+            }
+        }
+    }
+}
