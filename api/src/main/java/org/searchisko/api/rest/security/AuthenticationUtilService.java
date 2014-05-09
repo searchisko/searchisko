@@ -5,12 +5,10 @@
  */
 package org.searchisko.api.rest.security;
 
-import org.searchisko.api.annotations.security.ContributorAllowed;
 import org.searchisko.api.rest.exception.NotAuthenticatedException;
 import org.searchisko.api.rest.exception.NotAuthorizedException;
 import org.searchisko.api.security.AuthenticatedUserType;
 import org.searchisko.api.security.Role;
-import org.searchisko.api.security.jaas.ContributorCasLoginModule;
 import org.searchisko.api.service.ContributorProfileService;
 import org.searchisko.api.util.SearchUtils;
 
@@ -18,6 +16,7 @@ import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.ws.rs.core.SecurityContext;
+import java.security.Principal;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -47,10 +46,10 @@ public class AuthenticationUtilService {
 
 	/**
 	 * Get name of authenticated/logged in 'provider' based on security user principal. Can be used only in methods where
-	 * roles PROVIDER or ADMIN is applied.
+	 * roles ${@link org.searchisko.api.security.Role#PROVIDER} is applied.
 	 *
 	 * @return name of authenticated provider
-	 * @throws NotAuthenticatedException if Provider is not authenticated. Use roles PROVIDER, ADMIN annotation to your
+	 * @throws NotAuthenticatedException if Provider is not authenticated. Use role PROVIDER to your
 	 *                                   REST service to prevent this exception.
 	 */
 	public String getAuthenticatedProvider(SecurityContext securityContext) throws NotAuthenticatedException {
@@ -83,7 +82,7 @@ public class AuthenticationUtilService {
 
 	/**
 	 * Get 'contributor id' for currently authenticated/logged in user based on security user principal. Can be used only
-	 * in methods where {@link ContributorAllowed} annotation is applied.
+	 * in methods where {@link org.searchisko.api.security.Role#CONTRIBUTOR} applied.
 	 *
 	 * @param forceCreate if <code>true</code> we need contributor id so backend should create it for logged in user if
 	 *                    not created yet. If <code>false</code> then we do not need it currently, so system can't create it but
@@ -92,7 +91,7 @@ public class AuthenticationUtilService {
 	 * for current user.
 	 * @throws NotAuthenticatedException in case contributor is not authenticated/logged in. This should never happen if
 	 *                                   security interceptor is correctly implemented and configured for this class and
-	 *                                   {@link ContributorAllowed} is used without <code>optional</code>.
+	 *                                   {@link org.searchisko.api.security.Role#CONTRIBUTOR} is applied.
 	 */
 	public String getAuthenticatedContributor(SecurityContext securityContext, boolean forceCreate)
 			throws NotAuthenticatedException {
@@ -105,12 +104,14 @@ public class AuthenticationUtilService {
 		}
 
 		// cache contributor id in request not to call backend service too often
-		if (cachedContributorId != null)
+		if (cachedContributorId != null) {
 			return cachedContributorId;
+		}
+
+		Principal user = securityContext.getUserPrincipal();
 
 		String cid = SearchUtils.trimToNull(contributorProfileService.getContributorId(
-				mapAuthenticationSchemeToContrinutorCodeType(securityContext.getAuthenticationScheme()), securityContext
-						.getUserPrincipal().getName(), forceCreate
+				mapPrincipalToContributorCodeType(user), user.getName(), forceCreate
 		));
 		cachedContributorId = cid;
 
@@ -130,7 +131,7 @@ public class AuthenticationUtilService {
 				if (uname != null) {
 					// TODO CONTRIBUTOR_PROFILE we should consider to run update in another thread not to block caller
 					contributorProfileService.createOrUpdateProfile(
-							mapAuthenticationSchemeToContrinutorCodeType(securityContext.getAuthenticationScheme()), uname, false);
+							mapPrincipalToContributorCodeType(securityContext.getUserPrincipal()), uname, false);
 				}
 			} catch (Exception e) {
 				log.log(Level.WARNING, "Contributor profile update failed: " + e.getMessage(), e);
@@ -138,11 +139,12 @@ public class AuthenticationUtilService {
 		}
 	}
 
-	protected String mapAuthenticationSchemeToContrinutorCodeType(String authenticationScheme) {
-		if (ContributorCasLoginModule.AUTH_METHOD_CAS.equals(authenticationScheme)) {
+	protected String mapPrincipalToContributorCodeType(Principal principal) {
+		// CAS uses own principal so we can distinguish authentication source based on it
+		if (principal instanceof org.jasig.cas.client.jaas.AssertionPrincipal) {
 			return ContributorProfileService.FIELD_TSC_JBOSSORG_USERNAME;
 		} else {
-			throw new UnsupportedOperationException("Unsupported authentication scheme " + authenticationScheme);
+			throw new UnsupportedOperationException("Unsupported Principal Type: " + principal);
 		}
 	}
 
@@ -162,7 +164,7 @@ public class AuthenticationUtilService {
 		}
 		switch (userType) {
 			case PROVIDER:
-				return securityContext.isUserInRole(Role.ADMIN) || securityContext.isUserInRole(Role.PROVIDER);
+				return securityContext.isUserInRole(Role.PROVIDER);
 			case CONTRIBUTOR:
 				return securityContext.isUserInRole(Role.CONTRIBUTOR);
 		}

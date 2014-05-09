@@ -475,6 +475,21 @@
 					<authentication>
 						<login-module code="org.searchisko.api.security.jaas.ProviderLoginModule" flag="sufficient">
 						</login-module>
+
+						<login-module code="org.searchisko.api.security.jaas.ContributorCasLoginModule" flag="required">
+							<module-option name="ticketValidatorClass" value="org.jasig.cas.client.validation.Cas20ServiceTicketValidator" />
+							<!--
+							casServerUrlPrefix is dynamically set from app.properties
+							<module-option name="casServerUrlPrefix" value="https://sso-dev.jboss.org"/>
+							-->
+							<module-option name="tolerance" value="20000" />
+							<module-option name="defaultRoles" value="contributor" />
+							<module-option name="roleAttributeNames" value="" />
+							<module-option name="principalGroupName" value="CallerPrincipal"/>
+							<module-option name="roleGroupName" value="Roles"/>
+							<module-option name="cacheAssertions" value="true" />
+							<module-option name="cacheTimeout" value="480" />
+						</login-module>
 					</authentication>
 				</security-domain>
             </security-domains>

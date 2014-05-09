@@ -28,7 +28,7 @@ It's necessary to use **Maven 3** to build this project! To build it simply use:
 
 		mvn clean package
 
-in the root folder. Build output is a `ROOT.war` file placed in the `deployments` folder.
+in the root folder. Build output is a `ROOT.war` file placed in the `api/target` folder.
 
 The `pom.xml` file defines a few [build profiles](http://maven.apache.org/guides/introduction/introduction-to-profiles.html) 
 used to build for different target environments (the `localhost` profile is activated by default):
@@ -59,6 +59,30 @@ used to build for different target environments (the `localhost` profile is acti
 
 ## Deployment
 
+### Authentication and Authorization
+Searchisko is secured by JAAS framework and application server needs to be configured.
+Two modules are prepared for Provider authentication and CAS integration for Contributor authentication.
+Just copy this security domain definition into `standalone.xml`:
+
+	<security-domain name="SearchiskoSecurityDomain">
+		<authentication>
+			<login-module code="org.searchisko.api.security.jaas.ProviderLoginModule" flag="sufficient">
+			</login-module>
+
+			<login-module code="org.searchisko.api.security.jaas.ContributorCasLoginModule" flag="required">
+				<module-option name="ticketValidatorClass" value="org.jasig.cas.client.validation.Cas20ServiceTicketValidator" />
+				<module-option name="tolerance" value="20000" />
+				<module-option name="defaultRoles" value="contributor" />
+				<module-option name="roleAttributeNames" value="" />
+				<module-option name="principalGroupName" value="CallerPrincipal"/>
+				<module-option name="roleGroupName" value="Roles"/>
+				<module-option name="cacheAssertions" value="true" />
+				<module-option name="cacheTimeout" value="480" />
+			</login-module>
+		</authentication>
+	</security-domain>
+
+
 #### localhost development
 
 Build project with `localhost` development profile. 
@@ -75,7 +99,6 @@ when EAP is shutdown/restarted. To persist the data simply open the `pom.xml` an
 Data is then persisted in the `$EAP6HOME/bin/searchislo.h2.db` file so you can delete it manually if necessary.
 
 **Note #2**: You might get the following exception when `ROOT.war` is deployed:
-
 
 	JBAS018038: Root contexts can not be deployed when the virtual host configuration has the welcome root enabled, disable it and redeploy
 

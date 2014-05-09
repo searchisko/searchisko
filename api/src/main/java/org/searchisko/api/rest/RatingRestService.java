@@ -5,33 +5,11 @@
  */
 package org.searchisko.api.rest;
 
-import java.util.HashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.logging.Logger;
-
-import javax.enterprise.context.RequestScoped;
-import javax.inject.Inject;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
-import javax.ws.rs.core.SecurityContext;
-import javax.ws.rs.core.UriInfo;
-
 import org.elasticsearch.action.get.GetResponse;
 import org.searchisko.api.ContentObjectFields;
-import org.searchisko.api.annotations.security.ContributorAllowed;
 import org.searchisko.api.rest.exception.RequiredFieldException;
 import org.searchisko.api.rest.security.AuthenticationUtilService;
+import org.searchisko.api.security.Role;
 import org.searchisko.api.service.ProviderService;
 import org.searchisko.api.service.ProviderService.ProviderContentTypeInfo;
 import org.searchisko.api.service.SearchClientService;
@@ -40,6 +18,15 @@ import org.searchisko.api.util.SearchUtils;
 import org.searchisko.persistence.jpa.model.Rating;
 import org.searchisko.persistence.service.RatingPersistenceService;
 import org.searchisko.persistence.service.RatingPersistenceService.RatingStats;
+
+import javax.annotation.security.RolesAllowed;
+import javax.enterprise.context.RequestScoped;
+import javax.inject.Inject;
+import javax.ws.rs.*;
+import javax.ws.rs.core.*;
+import javax.ws.rs.core.Response.Status;
+import java.util.*;
+import java.util.logging.Logger;
 
 /**
  * REST API endpoint for 'Personalized Content Rating API'.
@@ -50,7 +37,7 @@ import org.searchisko.persistence.service.RatingPersistenceService.RatingStats;
 @Path("/rating")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
-@ContributorAllowed
+@RolesAllowed({Role.ADMIN, Role.CONTRIBUTOR})
 public class RatingRestService extends RestServiceBase {
 
 	public static final String QUERY_PARAM_ID = "id";

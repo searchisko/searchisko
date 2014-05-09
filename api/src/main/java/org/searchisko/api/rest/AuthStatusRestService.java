@@ -5,11 +5,12 @@
  */
 package org.searchisko.api.rest;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.searchisko.api.rest.exception.NotAuthenticatedException;
+import org.searchisko.api.rest.security.AuthenticationUtilService;
+import org.searchisko.api.security.Role;
 
+import javax.annotation.security.PermitAll;
+import javax.annotation.security.RolesAllowed;
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
 import javax.ws.rs.GET;
@@ -18,10 +19,10 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.SecurityContext;
-
-import org.searchisko.api.annotations.security.ContributorAllowed;
-import org.searchisko.api.rest.exception.NotAuthenticatedException;
-import org.searchisko.api.rest.security.AuthenticationUtilService;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Authentication status REST service.
@@ -45,7 +46,8 @@ public class AuthStatusRestService {
 	@GET
 	@Path("/status")
 	@Produces(MediaType.APPLICATION_JSON)
-	@ContributorAllowed(optional = true)
+	@PermitAll
+	@RolesAllowed({Role.CONTRIBUTOR})
 	public Map<String, Object> authStatus() {
 		log.log(Level.FINEST, "Security Context: {0}", securityContext);
 
