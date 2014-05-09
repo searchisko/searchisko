@@ -261,10 +261,18 @@
 
 	<build>
 		<finalName>ROOT</finalName>
+		<filters>
+			<filter>src/main/profiles/${filter.name}/sso.properties</filter>
+		</filters>
+
 		<resources>
 			<resource>
 				<filtering>true</filtering>
 				<directory>src/main/resources</directory>
+			</resource>
+			<resource>
+				<filtering>true</filtering>
+				<directory>src/main/profiles/${filter.name}</directory>
 			</resource>
 		</resources>
 
@@ -357,17 +365,6 @@
 				<datasource.username>sa</datasource.username>
 				<datasource.password>sa</datasource.password>
 			</properties>
-			<build>
-				<filters>
-					<filter>src/main/profiles/${filter.name}/sso.properties</filter>
-				</filters>
-				<resources>
-					<resource>
-						<filtering>true</filtering>
-						<directory>src/main/profiles/${filter.name}</directory>
-					</resource>
-				</resources>
-			</build>
 		</profile>
 		<profile>
 			<id>skiptests</id>
@@ -402,14 +399,6 @@
 						</configuration>
 					</plugin>
 				</plugins>
-				<filters>
-					<filter>src/main/profiles/${filter.name}/sso.properties</filter>
-				</filters>
-				<resources>
-					<resource>
-						<directory>src/main/profiles/${filter.name}</directory>
-					</resource>
-				</resources>
 			</build>
 		</profile>
 		<profile>
@@ -425,17 +414,6 @@
 				<datasource.username>sa</datasource.username>
 				<datasource.password>sa</datasource.password>
 			</properties>
-			<build>
-				<filters>
-					<filter>src/main/profiles/${filter.name}/sso.properties</filter>
-				</filters>
-				<resources>
-					<resource>
-						<filtering>true</filtering>
-						<directory>src/main/profiles/${filter.name}</directory>
-					</resource>
-				</resources>
-			</build>
 		</profile>
 		<profile>
 			<!-- When built in OpenShift the openshift profile will be used when invoking mvn. -->
@@ -501,15 +479,6 @@
 						</executions>
 					</plugin>
 				</plugins>
-				<filters>
-					<filter>src/main/profiles/${filter.name}/sso.properties</filter>
-				</filters>
-				<resources>
-					<resource>
-						<filtering>true</filtering>
-						<directory>src/main/profiles/${filter.name}</directory>
-					</resource>
-				</resources>
 			</build>
 		</profile>
 		<profile>
