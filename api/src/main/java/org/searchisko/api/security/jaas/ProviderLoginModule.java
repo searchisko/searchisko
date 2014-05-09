@@ -13,18 +13,20 @@ import javax.security.auth.Subject;
 import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.login.LoginException;
 import java.security.acl.Group;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
  * Provider login module. Extension of Picketbox's UsernamePasswordLoginModule.
- * Authentication is done via providerService
+ * Authentication is done via providerService and ${@link org.searchisko.api.security.jaas.ProviderPrincipal} used as principal class
  *
  * @author Libor Krzyzanek
  * @see org.searchisko.api.service.ProviderService#authenticate(String, String)
  * @see org.searchisko.api.service.ProviderService#isSuperProvider(String)
  * @see org.searchisko.api.security.Role
+ * @see org.searchisko.api.security.jaas.ProviderPrincipal
  */
 public class ProviderLoginModule extends UsernamePasswordLoginModule {
 
@@ -42,7 +44,12 @@ public class ProviderLoginModule extends UsernamePasswordLoginModule {
 			throw new RuntimeException("Cannot initialize Login module", e);
 		}
 		log.log(Level.FINE, "Initializing JAAS ProviderLoginModule");
-		super.initialize(subject, callbackHandler, sharedState, options);
+		HashMap<String, Object> ops = new HashMap(options);
+
+		// see org.jboss.security.auth.spi.AbstractServerLoginModule#PRINCIPAL_CLASS
+		ops.put("principalClass", ProviderPrincipal.class.getCanonicalName());
+
+		super.initialize(subject, callbackHandler, sharedState, ops);
 	}
 
 	@Override
