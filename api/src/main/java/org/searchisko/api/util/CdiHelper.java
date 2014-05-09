@@ -9,9 +9,22 @@ import javax.naming.NamingException;
 
 /**
  * CDI Helper utility
+ *
  * @author Libor Krzyzanek
  */
 public class CdiHelper {
+
+
+	/**
+	 * Programatically inject dependencies to desired bean.
+	 * It's shortcut for programmaticInjection(injectionObject.getClass(), injectionObject);
+	 *
+	 * @param injectionObject
+	 * @throws NamingException
+	 */
+	public static void programmaticInjection(Object injectionObject) throws NamingException {
+		programmaticInjection(injectionObject.getClass(), injectionObject);
+	}
 
 	/**
 	 * Programaticaly inject dependencies. Inspired by https://community.jboss.org/thread/196807
