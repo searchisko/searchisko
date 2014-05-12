@@ -1,6 +1,6 @@
 #!/bin/bash
 
-## This script uses DCP REST API
+## This script uses both Searchisko REST API and Elasticsearch http API to init Elasticsearch indices and DCP configurations. No rivers are installed.
 ##
 ## You can use first commandline parameter to change base URL for Searchisko API call (/v1/rest/... is appended automatically to this base URL)
 ## You can use second commandline parameter to change Searchisko admin username
