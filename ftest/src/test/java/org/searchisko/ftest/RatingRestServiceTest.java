@@ -56,7 +56,7 @@ public class RatingRestServiceTest {
 				.log().ifStatusCodeMatches(is(not(expStatus)))
 				.statusCode(expStatus)
 				.header("WWW-Authenticate", nullValue())
-				.body(is("Required authentication of {0} user type."))
+				.body(is("Required authorization {0}."))
 				.when().get(new URL(context, RATING_REST_API).toExternalForm());
 
 		// GET /rating/bad-id
