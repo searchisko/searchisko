@@ -5,17 +5,6 @@
  */
 package org.searchisko.api.rest;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.logging.Logger;
-
-import javax.ws.rs.core.MultivaluedMap;
-import javax.ws.rs.core.Response.Status;
-import javax.ws.rs.core.SecurityContext;
-import javax.ws.rs.core.UriInfo;
-
 import org.elasticsearch.action.get.GetResponse;
 import org.jboss.resteasy.specimpl.MultivaluedMapImpl;
 import org.junit.Assert;
@@ -32,6 +21,16 @@ import org.searchisko.api.testtools.TestUtils;
 import org.searchisko.persistence.jpa.model.Rating;
 import org.searchisko.persistence.service.RatingPersistenceService;
 import org.searchisko.persistence.service.RatingPersistenceService.RatingStats;
+
+import javax.ws.rs.core.MultivaluedMap;
+import javax.ws.rs.core.Response.Status;
+import javax.ws.rs.core.SecurityContext;
+import javax.ws.rs.core.UriInfo;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.logging.Logger;
 
 /**
  * Unit test for {@link RatingRestService}
@@ -107,11 +106,6 @@ public class RatingRestServiceTest {
 		Assert.assertNotNull(ratingJsonMap);
 		Assert.assertEquals(1, ratingJsonMap.size());
 		Assert.assertEquals(ratingValue, ratingJsonMap.get(RatingRestService.DATA_FIELD_RATING));
-	}
-
-	@Test
-	public void getRatings_permissions() throws Exception {
-		TestUtils.assertPermissionContributor(RatingRestService.class, "getRatings", UriInfo.class);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -349,6 +343,11 @@ public class RatingRestServiceTest {
 		Mockito.when(
 				tested.authenticationUtilService.getAuthenticatedContributor(Mockito.any(SecurityContext.class),
 						Mockito.anyBoolean())).thenReturn(MOCK_CONTRIB_ID);
+		// Pretend authenticated
+		tested.securityContext = Mockito.mock(SecurityContext.class);
+		Mockito.when(
+				tested.securityContext.isUserInRole(Mockito.anyString())).thenReturn(true);
+
 		return tested;
 	}
 
