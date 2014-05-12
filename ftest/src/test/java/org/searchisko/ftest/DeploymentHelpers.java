@@ -89,10 +89,24 @@ public class DeploymentHelpers {
 
 	@Deployment(testable = false)
 	public static WebArchive createDeployment() throws IOException {
-		log.log(Level.INFO, "Creating Deployment");
+		log.log(Level.INFO, "Creating default deployment");
+		removeSearchiskoDataDir();
+		return createWar();
+	}
 
+	@Deployment(testable = false)
+	public static WebArchive createDeploymentMinimalWebXML() throws IOException {
+		log.log(Level.INFO, "Creating default deployment");
 		removeSearchiskoDataDir();
 
+		WebArchive war = createWar();
+		war.setWebXML("webapp/WEB-INF/web-minimal.xml");
+
+		return war;
+	}
+
+
+	protected static WebArchive createWar() throws IOException {
 		// /api/pom.xml determined dynamically allowing running single test in IDE
 		String rootPath = DeploymentHelpers.class.getResource("/").getFile();
 		log.log(Level.FINEST, "Root Path for test classes: {0}", rootPath);
@@ -114,8 +128,7 @@ public class DeploymentHelpers {
 			throw e;
 		}
 
-
-		final WebArchive war = ShrinkWrap.create(WebArchive.class, "searchisko-ftest.war")
+		WebArchive war = ShrinkWrap.create(WebArchive.class, "searchisko-ftest.war")
 				.addAsLibraries(runtimeDeps)
 				.addPackages(true, "org.searchisko.api")
 				.addPackages(true, "org.searchisko.contribprofile")

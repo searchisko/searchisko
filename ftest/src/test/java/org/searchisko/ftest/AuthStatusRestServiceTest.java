@@ -29,13 +29,12 @@ public class AuthStatusRestServiceTest {
 
 	@Deployment(testable = false)
 	public static WebArchive createDeployment() throws IOException {
-		return DeploymentHelpers.createDeployment();
+		return DeploymentHelpers.createDeploymentMinimalWebXML();
 	}
 
 	@Test
 	@InSequence(0)
 	public void assertSSOServiceNotAvailable(@ArquillianResource URL context) throws MalformedURLException {
-
 		given().
 				contentType(ContentType.JSON).
 				expect().
