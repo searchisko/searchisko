@@ -15,6 +15,7 @@ import java.net.URL;
 
 import static com.jayway.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.nullValue;
 
 /**
  * Integration test for /auth/status REST API.
@@ -41,6 +42,7 @@ public class AuthStatusRestServiceTest {
 				log().ifError().
 				contentType(ContentType.JSON).
 				statusCode(200).
+				header("WWW-Authenticate", nullValue()).
 				body("authenticated", is(false)).
 				when().
 				get(new URL(context, DeploymentHelpers.DEFAULT_REST_VERSION + "auth/status").toExternalForm());

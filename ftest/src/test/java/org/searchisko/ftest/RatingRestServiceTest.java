@@ -19,7 +19,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 
 import static com.jayway.restassured.RestAssured.given;
-import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.*;
 import static org.hamcrest.Matchers.not;
 
 /**
@@ -52,14 +52,18 @@ public class RatingRestServiceTest {
 		// GET /rating
 		given().contentType(ContentType.JSON)
 				.pathParam("id", "")
-				.expect().statusCode(expStatus)
+				.expect()
 				.log().ifStatusCodeMatches(is(not(expStatus)))
+				.statusCode(expStatus)
+				.header("WWW-Authenticate", nullValue())
+				.body(is("Required authentication of {0} user type."))
 				.when().get(new URL(context, RATING_REST_API).toExternalForm());
 
 		// GET /rating/bad-id
 		given().contentType(ContentType.JSON)
 				.pathParam("id", "bad-id")
 				.expect().statusCode(expStatus)
+				.header("WWW-Authenticate", nullValue())
 				.log().ifStatusCodeMatches(is(not(expStatus)))
 				.when().get(new URL(context, RATING_REST_API).toExternalForm());
 
@@ -67,6 +71,7 @@ public class RatingRestServiceTest {
 		given().contentType(ContentType.JSON)
 				.pathParam("id", "bad-id")
 				.expect().statusCode(expStatus)
+				.header("WWW-Authenticate", nullValue())
 				.log().ifStatusCodeMatches(is(not(expStatus)))
 				.when().get(new URL(context, RATING_REST_API).toExternalForm());
 
