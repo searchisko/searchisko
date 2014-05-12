@@ -1,7 +1,7 @@
 {
     "type" : "remote",
     "remote" : {
-        "urlGetDocuments"       : "https://github.com/searchisko/elasticsearch-river-remote/raw/master/src/test/resources/test_documents_json/rht_knowledgebase_solution_list.json",
+        "urlGetDocuments"       : "http://www-beta.jboss.org/rht_solutions.json",
         "simpleGetDocuments"    : "true",
         "urlGetDocumentDetailsField":"url",
         "spacesIndexed"					: "MAIN",
