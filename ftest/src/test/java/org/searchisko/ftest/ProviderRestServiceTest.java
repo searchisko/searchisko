@@ -18,6 +18,8 @@ import org.searchisko.api.service.ProviderService;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import static com.jayway.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.*;
@@ -30,6 +32,8 @@ import static org.hamcrest.Matchers.*;
  */
 @RunWith(Arquillian.class)
 public class ProviderRestServiceTest {
+
+	protected static Logger log = Logger.getLogger(ProviderRestServiceTest.class.getName());
 
 	public static final String PROVIDER_REST_API = DeploymentHelpers.DEFAULT_REST_VERSION + "provider/{id}";
 
@@ -132,6 +136,7 @@ public class ProviderRestServiceTest {
 	 * @throws MalformedURLException
 	 */
 	public static void createNewProvider(URL context, ProviderModel provider) throws MalformedURLException {
+		log.log(Level.INFO, "Create new provider, data: {0}", provider);
 		// TEST: Ensure that provider doesn't exist
 		given().pathParam("id", provider.name).contentType(ContentType.JSON)
 				.auth().basic(DeploymentHelpers.DEFAULT_PROVIDER_NAME, DeploymentHelpers.DEFAULT_PROVIDER_PASSWORD)

@@ -38,7 +38,7 @@ public class ContentRestServiceTest {
 
 	public static final String CONTENT_REST_API = DeploymentHelpers.DEFAULT_REST_VERSION + "content/{type}/{contentId}";
 
-	public static final String TYPE = "testtype";
+	public static final String TYPE = "provider_blog";
 
 	@ArquillianResource
 	protected URL context;
@@ -89,6 +89,33 @@ public class ContentRestServiceTest {
 				.when().delete(new URL(context, CONTENT_REST_API).toExternalForm());
 
 	}
+
+	static ProviderModel provider = new ProviderModel("provider", "password");
+
+	@Test
+	@InSequence(1)
+	public void assertCreateProviderBlogPost() throws MalformedURLException {
+		provider.addContentType(TYPE, "blogpost", true);
+
+		ProviderRestServiceTest.createNewProvider(context, provider);
+	}
+
+	@Test
+	@InSequence(10)
+	public void assertPushContent() throws MalformedURLException {
+		String contentId = "test-id";
+		given().pathParam("type", TYPE).pathParam("contentId", contentId).contentType(ContentType.JSON)
+				.auth().basic(provider.name, provider.password)
+				.body("{\"data\": \"test\"}")
+				.expect()
+				.statusCode(200)
+				.contentType(ContentType.JSON)
+				.log().ifError()
+				.body("status", is("insert"))
+				.body("message", is("Content inserted successfully."))
+				.when().post(new URL(context, CONTENT_REST_API).toExternalForm());
+	}
+
 
 	//TODO: FTEST: ContentRestServiceTest: Test adding/removing data via testing provider
 

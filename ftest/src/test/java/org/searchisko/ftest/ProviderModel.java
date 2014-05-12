@@ -19,10 +19,25 @@ public class ProviderModel {
 
 	protected String passwordHash;
 
+	protected Map<String, Object> contentTypes = new HashMap<>();
+
 	public ProviderModel(String name, String password) {
 		this.name = name;
 		this.password = password;
 		this.passwordHash = DigestUtils.shaHex(password + name);
+	}
+
+	public void addContentType(String contentType, String sysType, boolean persist) {
+		Map<String, Object> data = new HashMap<>();
+		data.put(ProviderService.SYS_TYPE, sysType);
+		data.put(ProviderService.PERSIST, persist);
+
+		Map<String, Object> index = new HashMap<>();
+		index.put("name", "data_" + contentType);
+		index.put("type", contentType);
+		data.put(ProviderService.INDEX, index);
+
+		contentTypes.put(contentType, data);
 	}
 
 	/**
@@ -35,6 +50,7 @@ public class ProviderModel {
 		final Map<String, Object> data = new HashMap<>();
 		data.put(ProviderService.NAME, name);
 		data.put(ProviderService.PASSWORD_HASH, passwordHash);
+		data.put(ProviderService.TYPE, contentTypes);
 		return data;
 	}
 
@@ -43,6 +59,8 @@ public class ProviderModel {
 		return "ProviderModel{" +
 				"name='" + name + '\'' +
 				", password='" + password + '\'' +
+				", passwordHash='" + passwordHash + '\'' +
+				", contentTypes=" + contentTypes +
 				'}';
 	}
 }
