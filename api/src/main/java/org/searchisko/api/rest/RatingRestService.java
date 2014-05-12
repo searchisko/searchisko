@@ -7,6 +7,7 @@ package org.searchisko.api.rest;
 
 import org.elasticsearch.action.get.GetResponse;
 import org.searchisko.api.ContentObjectFields;
+import org.searchisko.api.rest.exception.NotAuthorizedException;
 import org.searchisko.api.rest.exception.RequiredFieldException;
 import org.searchisko.api.rest.security.AuthenticationUtilService;
 import org.searchisko.api.security.Role;
@@ -19,7 +20,6 @@ import org.searchisko.persistence.jpa.model.Rating;
 import org.searchisko.persistence.service.RatingPersistenceService;
 import org.searchisko.persistence.service.RatingPersistenceService.RatingStats;
 
-import javax.annotation.security.RolesAllowed;
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
 import javax.ws.rs.*;
@@ -30,14 +30,15 @@ import java.util.logging.Logger;
 
 /**
  * REST API endpoint for 'Personalized Content Rating API'.
- * 
+ *
  * @author Vlastimil Elias (velias at redhat dot com)
  */
 @RequestScoped
 @Path("/rating")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
-@RolesAllowed({Role.ADMIN, Role.CONTRIBUTOR})
+// Standard Roles are not used because it's designed to return 403 if user is not authenticated.
+//@RolesAllowed({Role.ADMIN, Role.CONTRIBUTOR})
 public class RatingRestService extends RestServiceBase {
 
 	public static final String QUERY_PARAM_ID = "id";
@@ -61,10 +62,23 @@ public class RatingRestService extends RestServiceBase {
 	@Context
 	protected SecurityContext securityContext;
 
+	/**
+	 * Custom authentication check if user is in role ${@link org.searchisko.api.security.Role#CONTRIBUTOR}
+	 * or ${@link org.searchisko.api.security.Role#CONTRIBUTOR}
+	 *
+	 * @throws NotAuthorizedException if user doesn't have role
+	 */
+	protected void checkIfUserAuthenticated() throws NotAuthorizedException {
+		if (!securityContext.isUserInRole(Role.CONTRIBUTOR) || !securityContext.isUserInRole(Role.ADMIN)) {
+			throw new NotAuthorizedException("User Not Authorized for Content Rating API");
+		}
+	}
+
 	@GET
 	@Path("/{id}")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Object getRating(@PathParam(QUERY_PARAM_ID) String contentSysId) {
+		checkIfUserAuthenticated();
 
 		contentSysId = SearchUtils.trimToNull(contentSysId);
 
@@ -90,7 +104,7 @@ public class RatingRestService extends RestServiceBase {
 
 	/**
 	 * Convert {@link Rating} object into JSON map.
-	 * 
+	 *
 	 * @param rating to convert
 	 * @return JSON map with rating informations
 	 */
@@ -104,6 +118,7 @@ public class RatingRestService extends RestServiceBase {
 	@Path("/")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Map<String, Object> getRatings(@Context UriInfo uriInfo) {
+		checkIfUserAuthenticated();
 
 		Map<String, Object> ret = new HashMap<>();
 
@@ -142,6 +157,7 @@ public class RatingRestService extends RestServiceBase {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	public Object postRating(@PathParam(QUERY_PARAM_ID) String contentSysId, Map<String, Object> requestContent) {
+		checkIfUserAuthenticated();
 
 		String currentContributorId = authenticationUtilService.getAuthenticatedContributor(securityContext, true);
 
