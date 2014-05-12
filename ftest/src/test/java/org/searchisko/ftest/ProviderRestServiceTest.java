@@ -6,7 +6,6 @@
 package org.searchisko.ftest;
 
 import com.jayway.restassured.http.ContentType;
-import org.apache.commons.codec.digest.DigestUtils;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.junit.InSequence;
@@ -19,13 +18,9 @@ import org.searchisko.api.service.ProviderService;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.HashMap;
-import java.util.Map;
 
 import static com.jayway.restassured.RestAssured.given;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.not;
-import static org.hamcrest.Matchers.nullValue;
+import static org.hamcrest.Matchers.*;
 
 /**
  * Integration test for /provider REST API.
@@ -37,6 +32,10 @@ import static org.hamcrest.Matchers.nullValue;
 public class ProviderRestServiceTest {
 
 	public static final String PROVIDER_REST_API = DeploymentHelpers.DEFAULT_REST_VERSION + "provider/{id}";
+
+	public static final ProviderModel provider1 = new ProviderModel("provider1", "Password1");
+
+	public static final ProviderModel provider2 = new ProviderModel("provider2", "Password2");
 
 	@Deployment(testable = false)
 	public static WebArchive createDeployment() throws IOException {
@@ -113,9 +112,6 @@ public class ProviderRestServiceTest {
 	}
 
 
-	final String name = "provider-test";
-	final String pwd = "pwd1";
-
 	@Test
 	@InSequence(20)
 	public void assertValidateNewProvider(@ArquillianResource URL context) throws MalformedURLException {
@@ -126,101 +122,230 @@ public class ProviderRestServiceTest {
 				.expect()
 				.statusCode(400)
 				.when().post(new URL(context, PROVIDER_REST_API).toExternalForm());
-
 	}
 
-	@Test
-	@InSequence(21)
-	public void assertNewProvider(@ArquillianResource URL context) throws MalformedURLException {
-		final Map<String, Object> params = new HashMap<>();
-		params.put(ProviderService.NAME, name);
-		// See SecurityService#createPwdHash
-		params.put(ProviderService.PASSWORD_HASH, DigestUtils.shaHex(pwd + name));
-
+	/**
+	 * Helper method to create new provider
+	 *
+	 * @param context
+	 * @param provider
+	 * @throws MalformedURLException
+	 */
+	public static void createNewProvider(URL context, ProviderModel provider) throws MalformedURLException {
 		// TEST: Ensure that provider doesn't exist
-		given().pathParam("id", name).contentType(ContentType.JSON)
+		given().pathParam("id", provider.name).contentType(ContentType.JSON)
 				.auth().basic(DeploymentHelpers.DEFAULT_PROVIDER_NAME, DeploymentHelpers.DEFAULT_PROVIDER_PASSWORD)
 				.expect()
+				.log().ifStatusCodeMatches(is(not(404)))
 				.statusCode(404)
 				.when().get(new URL(context, PROVIDER_REST_API).toExternalForm());
 
 
 		// TEST: New Provider
-		given().pathParam("id", name).contentType(ContentType.JSON)
+		given().pathParam("id", provider.name).contentType(ContentType.JSON)
 				.auth().basic(DeploymentHelpers.DEFAULT_PROVIDER_NAME, DeploymentHelpers.DEFAULT_PROVIDER_PASSWORD)
-				.body(params)
+				.body(provider.getProviderJSONModel())
 				.expect()
 				.log().ifError()
 				.statusCode(200)
-				.body("id", is(name))
+				.body("id", is(provider.name))
 				.when().post(new URL(context, PROVIDER_REST_API).toExternalForm());
 
 		// TEST: Get provider back
-		given().pathParam("id", name).contentType(ContentType.JSON)
-				.auth().basic(name, pwd)
+		given().pathParam("id", provider.name).contentType(ContentType.JSON)
+				.auth().basic(provider.name, provider.password)
 				.expect()
 				.log().ifError()
 				.statusCode(200)
-				.body("name", is(name))
+				.body("name", is(provider.name))
 				.body("super_provider", nullValue())
 				.body(ProviderService.PASSWORD_HASH, nullValue())
 				.when().get(new URL(context, PROVIDER_REST_API).toExternalForm());
 
-		// TEST: Get different provider
-		given().pathParam("id", DeploymentHelpers.DEFAULT_PROVIDER_NAME).contentType(ContentType.JSON)
-				.auth().basic(name, pwd)
-				.expect()
-				.statusCode(403)
-				.when().get(new URL(context, PROVIDER_REST_API).toExternalForm());
 	}
 
-	final String newPwd = "password-new1";
+	@Test
+	@InSequence(21)
+	public void assertNewProvider1(@ArquillianResource URL context) throws MalformedURLException {
+		createNewProvider(context, provider1);
+	}
 
 	@Test
 	@InSequence(22)
+	public void assertNewProvider2(@ArquillianResource URL context) throws MalformedURLException {
+		createNewProvider(context, provider2);
+	}
+
+
+	@Test
+	@InSequence(23)
+	public void assertProvidersRoles(@ArquillianResource URL context) throws MalformedURLException {
+		// TEST: Get provider2 via provider1 authentication
+		given().pathParam("id", provider2.name).contentType(ContentType.JSON)
+				.auth().basic(provider1.name, provider1.password)
+				.expect()
+				.log().ifStatusCodeMatches(is(not(403)))
+				.statusCode(403)
+				.when().get(new URL(context, PROVIDER_REST_API).toExternalForm());
+
+
+		// TEST: Get provider1 via Super Provider
+		given().pathParam("id", provider1.name).contentType(ContentType.JSON)
+				.auth().basic(DeploymentHelpers.DEFAULT_PROVIDER_NAME, DeploymentHelpers.DEFAULT_PROVIDER_PASSWORD)
+				.expect()
+				.log().ifError()
+				.statusCode(200)
+				.body("name", is(provider1.name))
+				.body("super_provider", nullValue())
+				.body(ProviderService.PASSWORD_HASH, nullValue())
+				.when().get(new URL(context, PROVIDER_REST_API).toExternalForm());
+
+		// TEST: Create a new Provider via standard (not super) provider
+		given().pathParam("id", provider2.name).contentType(ContentType.JSON)
+				.auth().basic(provider1.name, provider1.password)
+				.body(provider2.getProviderJSONModel())
+				.expect()
+				.log().ifStatusCodeMatches(is(not(401)))
+				.statusCode(401)
+				.when().post(new URL(context, PROVIDER_REST_API).toExternalForm());
+	}
+
+
+	@Test
+	@InSequence(30)
 	public void assertChangePassword(@ArquillianResource URL context) throws MalformedURLException {
-		// TEST: New Provider
-		given().pathParam("id", name).contentType(ContentType.JSON)
-				.auth().basic(name, pwd)
+		final String newPwd = "password-new1";
+
+		// TEST: New Password
+		given().pathParam("id", provider1.name).contentType(ContentType.JSON)
+				.auth().basic(provider1.name, provider1.password)
 				.body(newPwd)
 				.expect()
 				.log().ifError()
 				.statusCode(200)
 				.when().post(new URL(context, PROVIDER_REST_API + "/password").toExternalForm());
 
-		// TEST: New Password
-		given().pathParam("id", name).contentType(ContentType.JSON)
-				.auth().basic(name, newPwd)
+		// TEST: Get Provider Back via new password
+		given().pathParam("id", provider1.name).contentType(ContentType.JSON)
+				.auth().basic(provider1.name, newPwd)
 				.expect()
 				.log().ifError()
 				.statusCode(200)
-				.body("name", is(name))
+				.body("name", is(provider1.name))
 				.body("super_provider", nullValue())
 				.body(ProviderService.PASSWORD_HASH, nullValue())
 				.when().get(new URL(context, PROVIDER_REST_API).toExternalForm());
+	}
 
-		// TEST: old Password
-		given().pathParam("id", name).contentType(ContentType.JSON)
-				.auth().basic(name, pwd)
+
+	@Test
+	@InSequence(31)
+	public void assertChangePasswordViaAdmin(@ArquillianResource URL context) throws MalformedURLException {
+		// TEST: Change password via Super Provider
+		given().pathParam("id", provider1.name).contentType(ContentType.JSON)
+				.auth().basic(DeploymentHelpers.DEFAULT_PROVIDER_NAME, DeploymentHelpers.DEFAULT_PROVIDER_PASSWORD)
+				.body(provider1.password)
 				.expect()
-				.expect().statusCode(403).log().ifStatusCodeMatches(is(not(403)))
-				.when().get(new URL(context, PROVIDER_REST_API).toExternalForm());
+				.log().ifError()
+				.statusCode(200)
+				.when().post(new URL(context, PROVIDER_REST_API + "/password").toExternalForm());
 
+		// TEST: Get Provider Back via new password
+		given().pathParam("id", provider1.name).contentType(ContentType.JSON)
+				.auth().basic(provider1.name, provider1.password)
+				.expect()
+				.log().ifError()
+				.statusCode(200)
+				.body("name", is(provider1.name))
+				.body("super_provider", nullValue())
+				.body(ProviderService.PASSWORD_HASH, nullValue())
+				.when().get(new URL(context, PROVIDER_REST_API).toExternalForm());
 	}
 
 	@Test
-	@InSequence(30)
-	public void assertDelete(@ArquillianResource URL context) throws MalformedURLException {
-		given().pathParam("id", name).contentType(ContentType.JSON)
+	@InSequence(32)
+	public void assertChangePasswordSecurity(@ArquillianResource URL context) throws MalformedURLException {
+		// Providers cannot Change password each other
+		given().pathParam("id", provider2.name).contentType(ContentType.JSON)
+				.auth().basic(provider1.name, provider1.password)
+				.body(provider1.password)
+				.expect()
+				.log().ifStatusCodeMatches(is(not(403)))
+				.statusCode(403)
+				.when().post(new URL(context, PROVIDER_REST_API + "/password").toExternalForm());
+	}
+
+	@Test
+	@InSequence(40)
+	public void assertRefreshES() throws MalformedURLException {
+		DeploymentHelpers.refreshES();
+	}
+
+	@Test
+	@InSequence(41)
+	public void assertGetAllProvidersWithNewlyCreated(@ArquillianResource URL context) throws MalformedURLException {
+		given().pathParam("id", "").contentType(ContentType.JSON)
+				.auth().basic(DeploymentHelpers.DEFAULT_PROVIDER_NAME, DeploymentHelpers.DEFAULT_PROVIDER_PASSWORD)
+				.expect()
+				.log().ifError()
+				.statusCode(200)
+				.body("total", is(3))
+				.when().get(new URL(context, PROVIDER_REST_API).toExternalForm());
+	}
+
+
+	/**
+	 * Helper method to delete provider
+	 *
+	 * @param context
+	 * @param provider
+	 * @throws MalformedURLException
+	 */
+	public static void deleteProvider(URL context, ProviderModel provider) throws MalformedURLException {
+		given().pathParam("id", provider.name).contentType(ContentType.JSON)
 				.auth().basic(DeploymentHelpers.DEFAULT_PROVIDER_NAME, DeploymentHelpers.DEFAULT_PROVIDER_PASSWORD)
 				.expect()
 				.log().ifError()
 				.statusCode(200)
 				.when().delete(new URL(context, PROVIDER_REST_API).toExternalForm());
 
-		given().pathParam("id", name).contentType(ContentType.JSON)
+		given().pathParam("id", provider.name).contentType(ContentType.JSON)
 				.auth().basic(DeploymentHelpers.DEFAULT_PROVIDER_NAME, DeploymentHelpers.DEFAULT_PROVIDER_PASSWORD)
 				.expect().statusCode(404).log().ifStatusCodeMatches(is(not(404)))
 				.when().get(new URL(context, PROVIDER_REST_API).toExternalForm());
 	}
+
+	@Test
+	@InSequence(50)
+	public void assertDeleteProviderSecurity(@ArquillianResource URL context) throws MalformedURLException {
+		// Provider1 cannot delete itself
+		given().pathParam("id", provider1.name).contentType(ContentType.JSON)
+				.auth().basic(provider1.name, provider1.password)
+				.expect()
+				.log().ifStatusCodeMatches(is(not(401)))
+				.statusCode(401)
+				.when().delete(new URL(context, PROVIDER_REST_API).toExternalForm());
+
+		// Provider1 cannot delete Provider2
+		given().pathParam("id", provider2.name).contentType(ContentType.JSON)
+				.auth().basic(provider1.name, provider1.password)
+				.expect()
+				.log().ifStatusCodeMatches(is(not(401)))
+				.statusCode(401)
+				.when().delete(new URL(context, PROVIDER_REST_API).toExternalForm());
+
+	}
+
+	@Test
+	@InSequence(51)
+	public void assertDeleteProvider1(@ArquillianResource URL context) throws MalformedURLException {
+		deleteProvider(context, provider1);
+	}
+
+	@Test
+	@InSequence(52)
+	public void assertDeleteProvider2(@ArquillianResource URL context) throws MalformedURLException {
+		deleteProvider(context, provider2);
+	}
+
 }
