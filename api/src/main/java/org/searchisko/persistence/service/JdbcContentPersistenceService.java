@@ -6,12 +6,16 @@
 package org.searchisko.persistence.service;
 
 import org.searchisko.api.ContentObjectFields;
+import org.searchisko.api.util.CdiHelper;
 import org.searchisko.api.util.SearchUtils;
 
+import javax.annotation.PostConstruct;
 import javax.ejb.LocalBean;
 import javax.ejb.Stateless;
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.naming.NamingException;
+import javax.persistence.EntityManager;
 import javax.sql.DataSource;
 import java.io.IOException;
 import java.sql.*;
@@ -43,7 +47,14 @@ public class JdbcContentPersistenceService implements ContentPersistenceService 
 	protected Logger log;
 
 	@Inject
+	protected EntityManager em;
+
 	protected DataSource searchiskoDs;
+
+	@PostConstruct
+	public void init() throws NamingException {
+		searchiskoDs = CdiHelper.getDefaultDataSource(em);
+	}
 
 	@Override
 	public Map<String, Object> get(String id, String sysContentType) {
