@@ -96,6 +96,7 @@ public class SearchRestService extends RestServiceBase {
 		}
 		sessionId = SearchUtils.trimToNull(sessionId);
 		boolean result = searchService.writeSearchHitUsedStatisticsRecord(uuid, contentId, sessionId);
+		// TODO: Search REST API: Return Bad Request Return code if result is false.
 		return Response.ok(result ? "statistics record accepted" : "statistics record ignored").build();
 	}
 
