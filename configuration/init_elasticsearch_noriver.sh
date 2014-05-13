@@ -15,7 +15,7 @@ if [ -n "${OPENSHIFT_JBOSSEAP_IP}" ]; then
 fi
 
 if [ -n "$1" ]; then
-  esurl=$2
+  esurl=$1
 fi
 
 if [ -n "$2" ]; then
