@@ -6,18 +6,22 @@
 package org.searchisko.api.rest;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
 import javax.ejb.ObjectNotFoundException;
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
-import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
+import javax.ws.rs.core.UriInfo;
 
 import org.elasticsearch.common.settings.SettingsException;
 import org.jboss.elasticsearch.tools.content.StructuredContentPreprocessor;
@@ -36,10 +40,18 @@ import org.searchisko.api.util.SearchUtils;
  */
 @RequestScoped
 @Path("/normalization")
-@Produces(MediaType.APPLICATION_JSON)
-@Consumes(MediaType.APPLICATION_JSON)
 @ProviderAllowed
 public class NormalizationRestService extends RestServiceBase {
+
+	public static final String INKEY_ID = "id";
+
+	/** Configuration Key for preprocessors setting **/
+	public static final String CFG_PREPROCESSORS = "preprocessors";
+
+	/** Normalization output structure key */
+	public static final String OUTKEY_WARNINGS = "warnings";
+	/** Normalization output structure key */
+	public static final String OUTKEY_INPUT_ID = "input_id";
 
 	@Inject
 	protected SearchClientService searchClientService;
@@ -50,80 +62,119 @@ public class NormalizationRestService extends RestServiceBase {
 	/**
 	 * Run normalization of defined type for one input id
 	 */
-	@SuppressWarnings("unchecked")
 	@GET
-	@Path("/{type}/{id}")
-	@ProviderAllowed
-	public Object normalizeOne(@PathParam("type") String type, @PathParam("id") String id) throws ObjectNotFoundException {
+	@Path("/{normalizationName}/{id}")
+	@Produces(MediaType.APPLICATION_JSON)
+	public Object normalizeOne(@PathParam("normalizationName") String normalizationName, @PathParam(INKEY_ID) String id)
+			throws ObjectNotFoundException {
 
-		if (type == null || SearchUtils.isBlank(type)) {
-			throw new RequiredFieldException("type");
+		if (SearchUtils.isBlank(normalizationName)) {
+			throw new RequiredFieldException("normalizationName");
 		}
 
-		if (id == null || SearchUtils.isBlank(id)) {
-			throw new RequiredFieldException("id");
+		if (SearchUtils.isBlank(id)) {
+			throw new RequiredFieldException(INKEY_ID);
 		}
+
+		List<StructuredContentPreprocessor> preprocessors = getPreprocessors(normalizationName);
+
+		return runPreprocessors(preprocessors, id);
+	}
+
+	/**
+	 * Run normalization of defined type for more input id's
+	 */
+	@GET
+	@Path("/{normalizationName}")
+	@Produces(MediaType.APPLICATION_JSON)
+	public Object normalizeBulk(@PathParam("normalizationName") String normalizationName, @Context UriInfo uriInfo)
+			throws ObjectNotFoundException {
+		if (SearchUtils.isBlank(normalizationName)) {
+			throw new RequiredFieldException("normalizationName");
+		}
+
+		if (uriInfo == null || uriInfo.getQueryParameters().isEmpty()
+				|| !uriInfo.getQueryParameters().containsKey(INKEY_ID)) {
+			return Response.status(Status.BAD_REQUEST)
+					.entity("Request content must contain 'id' field with array of strings with content identifiers to delete")
+					.build();
+		}
+
+		List<String> ids = uriInfo.getQueryParameters().get(INKEY_ID);
+
+		Map<String, Object> ret = new LinkedHashMap<>();
+
+		if (!ids.isEmpty()) {
+			List<StructuredContentPreprocessor> preprocessors = getPreprocessors(normalizationName);
+			for (String id : ids) {
+				ret.put(id, runPreprocessors(preprocessors, id));
+			}
+		}
+		return ret;
+	}
+
+	/**
+	 * Get preprocessors for given normalization name.
+	 * 
+	 * @param normalizationName we want preprocessors for
+	 * @return list of preprocessors
+	 * @throws SettingsException if configuration is incorrect
+	 * @throws ObjectNotFoundException if normalization of given name is not found
+	 */
+	@SuppressWarnings("unchecked")
+	public List<StructuredContentPreprocessor> getPreprocessors(String normalizationName) throws SettingsException,
+			ObjectNotFoundException {
 
 		Map<String, Object> normalizations = configService.get(ConfigService.CFGNAME_NORMALIZATIONS);
 
-		if (normalizations == null || normalizations.isEmpty() || !normalizations.containsKey(type)) {
-			throw new ObjectNotFoundException("Normalization '" + type + "' is not configured");
+		if (normalizations == null || normalizations.isEmpty() || !normalizations.containsKey(normalizationName)) {
+			throw new ObjectNotFoundException("Normalization '" + normalizationName + "' is not found in configuration.");
 		}
 
-		Object o = normalizations.get(type);
+		Object o = normalizations.get(normalizationName);
 
 		if (!(o instanceof Map)) {
-			throw new ObjectNotFoundException("Normalization '" + type + "' is not configured properly");
+			throw new ObjectNotFoundException("Normalization '" + normalizationName + "' is not configured properly.");
 		}
 
 		Map<String, Object> normalizationDef = (Map<String, Object>) o;
 
-		Map<String, Object> content = new HashMap<>();
-		content.put("input_id", id);
-		List<Map<String, String>> warn = runPreprocessors(type, normalizationDef, content);
-
-		if (warn != null && !warn.isEmpty())
-			content.put("warnings", warn);
-
-		return content;
-	}
-
-	// TODO #90 bulk version of the API operation
-
-	// TODO #90 unit tests
-
-	// TODO #90 documentation
-
-	/**
-	 * Run defined content preprocessors on passed in content.
-	 * 
-	 * @param normalizationName <code>sys_content_type</code> name we run preprocessors for to be used for error messages
-	 * @param preprocessorsDef definition of preprocessors - see {@link #extractPreprocessors(Map, String)}
-	 * @param content to run preprocessors on
-	 * @return list of warnings from preprocessors, may be null
-	 * @throws SettingsException if configuration is incorrect
-	 */
-	public List<Map<String, String>> runPreprocessors(String normalizationName, Map<String, Object> normalizationDef,
-			Map<String, Object> content) throws SettingsException {
-		List<StructuredContentPreprocessor> preprocessors = null;
-
 		try {
-			preprocessors = StructuredContentPreprocessorFactory.createPreprocessors(
+			return StructuredContentPreprocessorFactory.createPreprocessors(
 					extractPreprocessors(normalizationDef, normalizationName), searchClientService.getClient());
 		} catch (IllegalArgumentException | ClassCastException e) {
 			throw new SettingsException("Bad configuration for normalization '" + normalizationName
 					+ "'. Contact administrators please. Cause: " + e.getMessage(), e);
 		}
 
-		PreprocessChainContextImpl context = new PreprocessChainContextImpl();
-		for (StructuredContentPreprocessor preprocessor : preprocessors) {
-			content = preprocessor.preprocessData(content, context);
-		}
-		return context.warnings;
 	}
 
-	/** Configuration Key for preprocessors setting **/
-	public static final String CFG_PREPROCESSORS = "preprocessors";
+	/**
+	 * Run defined content preprocessors on passed in content.
+	 * 
+	 * @param preprocessors to run
+	 * @param content to run preprocessors on
+	 * @return list of warnings from preprocessors, may be null
+	 * @throws SettingsException if configuration is incorrect
+	 */
+	public Map<String, Object> runPreprocessors(List<StructuredContentPreprocessor> preprocessors, String id)
+			throws SettingsException {
+
+		Map<String, Object> content = new HashMap<>();
+		content.put(OUTKEY_INPUT_ID, id);
+
+		if (preprocessors != null && !preprocessors.isEmpty()) {
+
+			PreprocessChainContextImpl context = new PreprocessChainContextImpl();
+			for (StructuredContentPreprocessor preprocessor : preprocessors) {
+				content = preprocessor.preprocessData(content, context);
+			}
+
+			if (context.warnings != null && !context.warnings.isEmpty())
+				content.put(OUTKEY_WARNINGS, context.warnings);
+		}
+		return content;
+	}
 
 	/**
 	 * Get preprocessors configuration from one normalization configuration structure.

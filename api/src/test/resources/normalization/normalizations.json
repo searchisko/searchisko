@@ -1,0 +1,32 @@
+{
+  "test_normalization" : {
+    "preprocessors" : [
+      { 
+        "name"     : "username to Contributor code mapper",
+        "class"    : "org.searchisko.api.testtools.WarningMockPreprocessor",
+        "settings" : {
+        } 
+      },{ 
+        "name"     : "Profile by Contributor code loader",
+        "class"    : "org.searchisko.api.testtools.WarningMockPreprocessor",
+        "settings" : {
+        } 
+      }
+    ]
+  },
+  "test_normalization_bad" : {
+    "preprocessors" : [
+      { 
+        "name"     : "email to Contributor code mapper",
+        "class"    : "org.searchisko.api.testtools.UnknownPreprocessor",
+        "settings" : {
+        } 
+      },{ 
+        "name"     : "Profile by Contributor code loader",
+        "class"    : "org.searchisko.api.testtools.WarningMockPreprocessor",
+        "settings" : {
+        } 
+      }
+    ]
+  }  
+}

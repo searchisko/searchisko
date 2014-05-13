@@ -1053,6 +1053,71 @@ POST /rest/rating/{_id}
 
 
 --
+Normalization API
+
+This part of API allows *content providers* to run normalizations defined in Searchisko instance to use them for own work (eg. static html generation for website). 
+These normalizations can use Searchisko internal data (like Projects and Contributor configurations) commonly available for normalizations performed during Content Push only.
+--
+
+Perform given normalization for one input values.
+
+##### Request parameters
+
+* `normalizationName` name of normalization to perform. Available normalizations are configured by Searchisko [normalizations](https://github.com/searchisko/searchisko/blob/master/documentation/rest-api/management/config_normalizations.md) config file. 
+  [Normalizations available for DCP](https://github.com/searchisko/searchisko/blob/master/configuration/data/config/normalizations.json) are:
+  * `contributor_profile_by_jbossorg_username`
+  * `contributor_profile_by_email`
+  * `contributor_profile_by_github_username`
+  * `contributor_profile_by_vimeo_username`
+  * `contributor_profile_by_jbossdeveloper_quickstart_author` 
+* `value` input value we want to run normalization for (meaning depends on normalization configuration).
+
+##### Response content
+
+The response contains a JSON object where `input_id` field holds input value normalization has been performed for, 
+optional `warnings` field contains array of warnings from normalization process, and other fields 
+depend on configuration for given normalization.
+
+```
+{
+  "input_id" : "{value}",
+  "warnings" : [],
+  ... other fields 
+}
+```
+
+GET /rest/normalization/{normalizationName}/{value}
+< 200
+< Content-Type: application/json
+{
+  "input_id" : "john@doe.com",
+  "name" : "John Doe",
+  "sys_contributor" : "John Doe <john@doe.com>"
+}
+
+
+Perform given normalization for more input values. This operation is same as previous obe, but 
+you can pass more values for normalization at once by passing multiple request parameters called `id`.
+Response contains JSON structure where one output record (same as for single call) exists for each input value.
+
+GET /rest/normalization/{normalizationName}{?id}
+< 200
+< Content-Type: application/json
+{
+  "id_1" : {
+    "input_id" : "id_1",
+    "name" : "John Doe",
+    "sys_contributor" : "John Doe <john@doe.com>"
+  },
+  "id_2" : {
+    "input_id" : "id_2",
+    "name" : "No One",
+    "sys_contributor" : "No One <one@no.com>"
+  }
+}
+
+
+--
 Management API - content providers
 
 This part of the API allows to manage configurations of *content providers*. *Content provider* is an entity which stores content into Searchisko (see Content Push API).
