@@ -64,12 +64,12 @@ public class RatingRestService extends RestServiceBase {
 
 	/**
 	 * Custom authentication check if user is in role ${@link org.searchisko.api.security.Role#CONTRIBUTOR}
-	 * or ${@link org.searchisko.api.security.Role#CONTRIBUTOR}
+	 * or ${@link org.searchisko.api.security.Role#ADMIN}
 	 *
-	 * @throws NotAuthorizedException if user doesn't have role
+	 * @throws NotAuthorizedException if user doesn't have required role
 	 */
 	protected void checkIfUserAuthenticated() throws NotAuthorizedException {
-		if (!securityContext.isUserInRole(Role.CONTRIBUTOR) || !securityContext.isUserInRole(Role.ADMIN)) {
+		if (!(securityContext.isUserInRole(Role.CONTRIBUTOR) || securityContext.isUserInRole(Role.ADMIN))) {
 			throw new NotAuthorizedException("User Not Authorized for Content Rating API");
 		}
 	}
