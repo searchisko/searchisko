@@ -116,7 +116,7 @@ public class ContentRestServiceTest {
 
 	static final String contentId = "test-id";
 
-	public void createOrUpdateContent(ProviderModel provider, String contentType, String contentId, Map<String, Object> content) throws MalformedURLException {
+	public static void createOrUpdateContent(URL context, ProviderModel provider, String contentType, String contentId, Map<String, Object> content) throws MalformedURLException {
 		given().pathParam("type", contentType).pathParam("contentId", contentId).contentType(ContentType.JSON)
 				.auth().basic(provider.name, provider.password)
 				.body(content)
@@ -143,7 +143,7 @@ public class ContentRestServiceTest {
 	public void assertPushContentWithId() throws MalformedURLException {
 		Map<String, Object> content = new HashMap<>();
 		content.put("data", "test");
-		createOrUpdateContent(provider1, TYPE1, contentId, content);
+		createOrUpdateContent(context, provider1, TYPE1, contentId, content);
 	}
 
 	@Test
@@ -170,7 +170,7 @@ public class ContentRestServiceTest {
 	public void assertUpdateContentWithId() throws MalformedURLException {
 		Map<String, Object> content = new HashMap<>();
 		content.put("data", "test");
-		createOrUpdateContent(provider1, TYPE1, contentId, content);
+		createOrUpdateContent(context, provider1, TYPE1, contentId, content);
 	}
 
 	@Test
@@ -187,7 +187,7 @@ public class ContentRestServiceTest {
 				.when().delete(new URL(context, CONTENT_REST_API).toExternalForm());
 	}
 
-	public void deleteContent(ProviderModel provider, String contentType, String contentId) throws MalformedURLException {
+	public static void deleteContent(URL context, ProviderModel provider, String contentType, String contentId) throws MalformedURLException {
 		given().pathParam("type", contentType).pathParam("contentId", "").contentType(ContentType.JSON)
 				.auth().basic(provider.name, provider.password)
 				.body("{\"id\":[\"" + contentId + "\"]}")
@@ -209,7 +209,7 @@ public class ContentRestServiceTest {
 	@Test
 	@InSequence(21)
 	public void assertDelete() throws MalformedURLException {
-		deleteContent(provider1, TYPE1, contentId);
+		deleteContent(context, provider1, TYPE1, contentId);
 	}
 
 	@Test
@@ -223,13 +223,13 @@ public class ContentRestServiceTest {
 	public void assertPushContentWithId2() throws MalformedURLException {
 		Map<String, Object> content = new HashMap<>();
 		content.put("data2", "test2");
-		createOrUpdateContent(provider1, TYPE1, contentId, content);
+		createOrUpdateContent(context, provider1, TYPE1, contentId, content);
 	}
 
 	@Test
 	@InSequence(31)
 	public void assertDeleteAsSuperProvider() throws MalformedURLException {
-		deleteContent(DeploymentHelpers.DEFAULT_PROVIDER, TYPE1, contentId);
+		deleteContent(context, DeploymentHelpers.DEFAULT_PROVIDER, TYPE1, contentId);
 	}
 
 }
