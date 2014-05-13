@@ -53,6 +53,8 @@ public class DeploymentHelpers {
 
 	public static final String DEFAULT_PROVIDER_PASSWORD = "jbossorgjbossorg";
 
+	public static final ProviderModel DEFAULT_PROVIDER = new ProviderModel(DEFAULT_PROVIDER_NAME, DEFAULT_PROVIDER_PASSWORD);
+
 	public static final String SECURITY_DOMAIN = "SearchiskoSecurityDomain";
 
 	public static Properties appProperties;
