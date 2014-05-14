@@ -43,7 +43,9 @@ public class IndexerRestServiceTest {
 	@ArquillianResource
 	URL context;
 
-	public final String[] types = {"elasticsearch-river-remote", "elasticsearch-river-jira"};
+	public static final String TYPE_ALL = "_all";
+
+	public final String[] types = {"elasticsearch-river-remote", "elasticsearch-river-jira", TYPE_ALL};
 
 	@Test
 	@InSequence(0)
@@ -59,13 +61,33 @@ public class IndexerRestServiceTest {
 					.log().ifStatusCodeMatches(is(not(expStatus)))
 					.when().get(new URL(context, INDEXER_REST_API).toExternalForm());
 
-			// POST /indexer/{type}/_force_reindex
+			// POST /indexer/{type}/_stop
 			given().contentType(ContentType.JSON)
 					.pathParam("type", type)
-					.pathParam("operation", "_force_reindex")
+					.pathParam("operation", "_stop")
 					.expect().statusCode(expStatus)
 					.log().ifStatusCodeMatches(is(not(expStatus)))
 					.when().post(new URL(context, INDEXER_REST_API).toExternalForm());
+
+
+			// POST /indexer/{type}/_restart
+			given().contentType(ContentType.JSON)
+					.pathParam("type", type)
+					.pathParam("operation", "_restart")
+					.expect().statusCode(expStatus)
+					.log().ifStatusCodeMatches(is(not(expStatus)))
+					.when().post(new URL(context, INDEXER_REST_API).toExternalForm());
+
+
+			if (!TYPE_ALL.equals(type)) {
+				// POST /indexer/{type}/_force_reindex
+				given().contentType(ContentType.JSON)
+						.pathParam("type", type)
+						.pathParam("operation", "_force_reindex")
+						.expect().statusCode(expStatus)
+						.log().ifStatusCodeMatches(is(not(expStatus)))
+						.when().post(new URL(context, INDEXER_REST_API).toExternalForm());
+			}
 		}
 	}
 
