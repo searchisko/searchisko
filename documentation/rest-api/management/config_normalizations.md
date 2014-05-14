@@ -4,9 +4,12 @@ Searchisko configuration - configuration of normalizations for "Normalization RE
 **configuration API id:** `normalizations`
 
 This configuration document contains definition of normalizations which can be performed using 
-Searchisko 'Normalization API' `normalization` operation. It contains map structure where key is 
-name of normalization (used to call it over REST API) and value is structure containing normalization definition.
-For now only supported field here is `preprocessors`, which allows to define chain of [preprocessors](https://github.com/searchisko/structured-content-tools) 
+Searchisko 'Normalization API' `normalization` operation. It contains JSON object structure where key is 
+name of normalization (used to call it over REST API) and value is structure containing the normalization definition.
+Definition MUST contain these fields:
+
+* `description` - contains description of normalization for users. Is returned from "Normalization REST API" discovery method. 
+* `preprocessors` - contains chain of [preprocessors](https://github.com/searchisko/structured-content-tools) 
 used to perform given normalization when called over REST API. 
 
 Data passed to this preprocessor chain contain `input_id` field, which contains identifier passed over REST API to perform normalization for.
@@ -18,6 +21,7 @@ Example:
 ````
 {
   "contributor_id_by_username" : {
+    "description" : "This normalization takes username as input value, and returns contributor code",
     "preprocessors" : [
       { 
         "name"     : "username to Contributor code mapper",
@@ -36,6 +40,7 @@ Example:
     ]
   },
   "contributor_profile_by_email" : {
+    "description" : "This normalization takes email address as input value, and returns contributor code and basic contributor profile informations (full name, profile URL, thumbnail image URL)",
     "preprocessors" : [
       { 
         "name"     : "email to Contributor code mapper",

@@ -1,5 +1,6 @@
 {
   "contributor_profile_by_jbossorg_username" : {
+    "description" : "This normalization takes jboss.org username as input value, and returns contributor code and basic contributor profile informations (full name, profile URL, thumbnail image URL, info about other accounts like twitter etc.)",
     "preprocessors" : [
       { 
         "name"     : "username to Contributor code mapper",
@@ -40,6 +41,7 @@
     ]
   },
   "contributor_profile_by_email" : {
+    "description" : "This normalization takes email address as input value, and returns contributor code and basic contributor profile informations (full name, profile URL, thumbnail image URL, info about other accounts like twitter etc.)",
     "preprocessors" : [
       { 
         "name"     : "email to Contributor code mapper",
@@ -80,6 +82,7 @@
     ]
   },
   "contributor_profile_by_github_username" : {
+    "description" : "This normalization takes github.com username as input value, and returns contributor code and basic contributor profile informations (full name, profile URL, thumbnail image URL, info about other accounts like twitter etc.)",
     "preprocessors" : [
       { 
         "name"     : "username to Contributor code mapper",
@@ -120,6 +123,7 @@
     ]
   },  
   "contributor_profile_by_vimeo_username" : {
+    "description" : "This normalization takes Vimeo username as input value, and returns contributor code and basic contributor profile informations (full name, profile URL, thumbnail image URL, info about other accounts like twitter etc.)",
     "preprocessors" : [
       { 
         "name"     : "username to Contributor code mapper",
@@ -160,6 +164,7 @@
     ]
   },  
   "contributor_profile_by_jbossdeveloper_quickstart_author" : {
+    "description" : "This normalization takes full name of JBoss Developer Quickstart author as input value, and returns contributor code and basic contributor profile informations (full name, profile URL, thumbnail image URL, info about other accounts like twitter etc.). It uses 'Contributor.type_specific_code.jbossdeveloper_quickstart_author' config field to resolve ambiguities.",
     "preprocessors" : [
       { 
         "name"     : "author name to Contributor code mapper",

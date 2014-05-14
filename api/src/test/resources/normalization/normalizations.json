@@ -1,5 +1,6 @@
 {
   "test_normalization" : {
+    "description" : "description 1",
     "preprocessors" : [
       { 
         "name"     : "username to Contributor code mapper",

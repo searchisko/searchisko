@@ -38,6 +38,31 @@ public class NormalizationRestServiceTest {
 	private static final String TEST_NORM_NAME = "test_normalization";
 
 	@Test
+	public void availableNormalizations() {
+		NormalizationRestService tested = new NormalizationRestService();
+		tested.configService = Mockito.mock(ConfigService.class);
+
+		// case - config file not found
+		{
+			Mockito.when(tested.configService.get(ConfigService.CFGNAME_NORMALIZATIONS)).thenReturn(null);
+			Map<String, Object> ret = tested.availableNormalizations();
+			Assert.assertEquals(0, ret.size());
+		}
+
+		// case - ok
+		{
+			Mockito.when(tested.configService.get(ConfigService.CFGNAME_NORMALIZATIONS)).thenReturn(
+					TestUtils.loadJSONFromClasspathFile("/normalization/normalizations.json"));
+			Map<String, Object> ret = tested.availableNormalizations();
+			Assert.assertEquals(2, ret.size());
+			Assert.assertEquals("description 1", ret.get("test_normalization"));
+			Assert.assertEquals("", ret.get("test_normalization_bad"));
+
+		}
+
+	}
+
+	@Test
 	public void normalizeOne_permissions() throws Exception {
 		TestUtils.assertPermissionProvider(NormalizationRestService.class, "normalizeOne", String.class, String.class);
 	}

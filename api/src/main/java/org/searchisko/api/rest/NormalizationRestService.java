@@ -47,6 +47,8 @@ public class NormalizationRestService extends RestServiceBase {
 
 	/** Configuration Key for preprocessors setting **/
 	public static final String CFG_PREPROCESSORS = "preprocessors";
+	/** Configuration Key for preprocessors setting **/
+	public static final String CFG_DESCRIPTION = "description";
 
 	/** Normalization output structure key */
 	public static final String OUTKEY_WARNINGS = "warnings";
@@ -58,6 +60,33 @@ public class NormalizationRestService extends RestServiceBase {
 
 	@Inject
 	protected ConfigService configService;
+
+	/**
+	 * Get names and descriptions of all available normalizations.
+	 */
+	@SuppressWarnings("unchecked")
+	@GET
+	@Path("/")
+	@Produces(MediaType.APPLICATION_JSON)
+	public Map<String, Object> availableNormalizations() {
+
+		Map<String, Object> normalizations = configService.get(ConfigService.CFGNAME_NORMALIZATIONS);
+
+		Map<String, Object> ret = new HashMap<>();
+
+		if (normalizations != null) {
+			for (String normalizationName : normalizations.keySet()) {
+				Object o = normalizations.get(normalizationName);
+				if (o instanceof Map) {
+					String descr = ((Map<String, String>) o).get(CFG_DESCRIPTION);
+					if (descr == null)
+						descr = "";
+					ret.put(normalizationName, descr);
+				}
+			}
+		}
+		return ret;
+	}
 
 	/**
 	 * Run normalization of defined type for one input id

@@ -1059,17 +1059,34 @@ This part of API allows *content providers* to run normalizations defined in Sea
 These normalizations can use Searchisko internal data (like Projects and Contributor configurations) commonly available for normalizations performed during Content Push only.
 --
 
+Get informations about all available normalizations. 
+Available normalizations are configured by Searchisko [normalizations](https://github.com/searchisko/searchisko/blob/master/documentation/rest-api/management/config_normalizations.md) config file.
+
+##### Response content
+
+The response contains a JSON object with all available normalizations, where key is name of the normalization, and value is description for the normalization.
+
+```
+{
+  "normalizationName1" : "Description of normalization 1",
+  "normalizationName2" : "Description of normalization 2",
+  ... other normalizations 
+}
+```
+
+GET /rest/normalization
+< 200
+< Content-Type: application/json
+{
+  "normalizationName1" : "Description of normalization 1",
+  "normalizationName2" : "Description of normalization 2"
+}
+
 Perform given normalization for one input values.
 
 ##### Request parameters
 
-* `normalizationName` name of normalization to perform. Available normalizations are configured by Searchisko [normalizations](https://github.com/searchisko/searchisko/blob/master/documentation/rest-api/management/config_normalizations.md) config file. 
-  [Normalizations available for DCP](https://github.com/searchisko/searchisko/blob/master/configuration/data/config/normalizations.json) are:
-  * `contributor_profile_by_jbossorg_username`
-  * `contributor_profile_by_email`
-  * `contributor_profile_by_github_username`
-  * `contributor_profile_by_vimeo_username`
-  * `contributor_profile_by_jbossdeveloper_quickstart_author` 
+* `normalizationName` name of normalization to perform.  
 * `value` input value we want to run normalization for (meaning depends on normalization configuration).
 
 ##### Response content
@@ -1082,7 +1099,7 @@ depend on configuration for given normalization.
 {
   "input_id" : "{value}",
   "warnings" : [],
-  ... other fields 
+  ... other fields provided by normalization
 }
 ```
 
