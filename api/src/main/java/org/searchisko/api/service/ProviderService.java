@@ -347,10 +347,10 @@ public class ProviderService implements EntityService {
 			return context.warnings;
 		} catch (IllegalArgumentException e) {
 			throw new SettingsException("Bad configuration of some 'input_preprocessors' for sys_content_type=" + typeName
-					+ ". Contact administrators please. Cause: " + e.getMessage(), e);
+					+ ". Cause: " + e.getMessage(), e);
 		} catch (ClassCastException e) {
 			throw new SettingsException("Bad configuration structure of some 'input_preprocessors' for sys_content_type="
-					+ typeName + ". Contact administrators please. Cause: " + e.getMessage(), e);
+					+ typeName + ". Cause: " + e.getMessage(), e);
 		}
 	}
 
@@ -404,7 +404,7 @@ public class ProviderService implements EntityService {
 			return null;
 		} catch (ClassCastException e) {
 			throw new SettingsException("Incorrect configuration for provider '" + providerDef.get(NAME)
-					+ "' when trying to find sys_provider_type=" + typeName + ". Contact administrators please.");
+					+ "' when trying to find sys_provider_type=" + typeName + ".");
 		}
 	}
 
@@ -423,7 +423,7 @@ public class ProviderService implements EntityService {
 			return types;
 		} catch (ClassCastException e) {
 			throw new SettingsException("Incorrect configuration for provider '" + providerDef.get(NAME)
-					+ "' when trying to retrieve all sys_provider_type configurations. Contact administrators please.");
+					+ "' when trying to retrieve all sys_provider_type configurations.");
 		}
 	}
 
@@ -440,7 +440,7 @@ public class ProviderService implements EntityService {
 			return (List<Map<String, Object>>) typeDef.get(INPUT_PREPROCESSORS);
 		} catch (ClassCastException e) {
 			throw new SettingsException("Incorrect configuration of 'input_preprocessors' for sys_provider_type=" + typeName
-					+ ". Contact administrators please.");
+					+ ".");
 		}
 	}
 
@@ -471,12 +471,12 @@ public class ProviderService implements EntityService {
 
 			if (ret == null || ret.trim().isEmpty())
 				throw new SettingsException("Incorrect configuration of 'index.name' for sys_provider_type='" + typeName
-						+ "'. SearchBackend index name is not defined. Contact administrators please.");
+						+ "'. SearchBackend index name is not defined.");
 			return ret;
 
 		} catch (ClassCastException e) {
 			throw new SettingsException("Incorrect structure of 'index' configuration for sys_provider_type='" + typeName
-					+ "'. Contact administrators please.");
+					+ "'.");
 		}
 	}
 
@@ -506,7 +506,7 @@ public class ProviderService implements EntityService {
 		try {
 			if (typeDef.get(INDEX) == null) {
 				throw new SettingsException("Missing 'index' section in configuration for sys_provider_type='" + typeName
-						+ "'. Contact administrators please.");
+						+ "'.");
 			}
 			Object val = ((Map<String, Object>) typeDef.get(INDEX)).get(SEARCH_INDICES);
 			if (val == null) {
@@ -518,13 +518,12 @@ public class ProviderService implements EntityService {
 					return (String[]) ((List<String>) val).toArray(new String[((List<String>) val).size()]);
 				} else {
 					throw new SettingsException("Incorrect configuration of 'index." + SEARCH_INDICES
-							+ "' for sys_provider_type='" + typeName
-							+ "'. Value must be string or array of strings. Contact administrators please.");
+							+ "' for sys_provider_type='" + typeName + "'. Value must be string or array of strings.");
 				}
 			}
 		} catch (ClassCastException e) {
 			throw new SettingsException("Incorrect structure of 'index' configuration for sys_provider_type='" + typeName
-					+ "'. Contact administrators please.");
+					+ "'.");
 		}
 	}
 
@@ -558,12 +557,12 @@ public class ProviderService implements EntityService {
 
 			if (ret == null || ret.trim().isEmpty())
 				throw new SettingsException("Incorrect configuration of 'index.type' for sys_provider_type='" + typeName
-						+ "'. SearchBackend index type is not defined. Contact administrators please.");
+						+ "'. SearchBackend index type is not defined.");
 			return ret;
 
 		} catch (ClassCastException e) {
 			throw new SettingsException("Incorrect structure of 'index' configuration for sys_provider_type='" + typeName
-					+ "'. Contact administrators please.");
+					+ "'.");
 		}
 	}
 
@@ -592,8 +591,7 @@ public class ProviderService implements EntityService {
 			ret = typeDef.get(SYS_TYPE).toString();
 
 		if (ret == null || ret.trim().isEmpty())
-			throw new SettingsException("sys_type is not defined correctly for sys_provider_type=" + typeName
-					+ ". Contact administrators please.");
+			throw new SettingsException("sys_type is not defined correctly for sys_provider_type=" + typeName + ".");
 
 		return ret;
 	}
@@ -611,8 +609,7 @@ public class ProviderService implements EntityService {
 		try {
 			return (Map<String, Object>) typeDef.get(INDEXER);
 		} catch (ClassCastException e) {
-			throw new SettingsException("Incorrect configuration of 'indexer' for sys_provider_type=" + typeName
-					+ ". Contact administrators please.");
+			throw new SettingsException("Incorrect configuration of 'indexer' for sys_provider_type=" + typeName + ".");
 		}
 	}
 
@@ -631,7 +628,7 @@ public class ProviderService implements EntityService {
 
 		if (ret == null || ret.trim().isEmpty())
 			throw new SettingsException("sys_content_content-type is not defined correctly for sys_provider_type=" + typeName
-					+ ". Contact administrators please.");
+					+ ".");
 
 		return ret;
 	}

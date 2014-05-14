@@ -143,8 +143,8 @@ public class NormalizationRestService extends RestServiceBase {
 			return StructuredContentPreprocessorFactory.createPreprocessors(
 					extractPreprocessors(normalizationDef, normalizationName), searchClientService.getClient());
 		} catch (IllegalArgumentException | ClassCastException e) {
-			throw new SettingsException("Bad configuration for normalization '" + normalizationName
-					+ "'. Contact administrators please. Cause: " + e.getMessage(), e);
+			throw new SettingsException("Bad configuration for normalization '" + normalizationName + "'. Cause: "
+					+ e.getMessage(), e);
 		}
 
 	}
@@ -190,7 +190,7 @@ public class NormalizationRestService extends RestServiceBase {
 			return (List<Map<String, Object>>) normalizationDef.get(CFG_PREPROCESSORS);
 		} catch (ClassCastException e) {
 			throw new SettingsException("Incorrect configuration of 'preprocessors' for normalization '" + normalizationName
-					+ "'. Contact administrators please.");
+					+ "'.");
 		}
 	}
 

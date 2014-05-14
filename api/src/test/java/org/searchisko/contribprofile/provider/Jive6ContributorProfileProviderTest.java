@@ -13,6 +13,7 @@ import java.util.Map;
 import java.util.logging.Logger;
 
 import org.apache.commons.io.IOUtils;
+import org.elasticsearch.common.settings.SettingsException;
 import org.junit.Assert;
 import org.junit.Test;
 import org.searchisko.api.ContentObjectFields;
@@ -80,6 +81,14 @@ public class Jive6ContributorProfileProviderTest {
 		TestUtils.assertJsonContent(
 				TestUtils.loadJSONFromClasspathFile("/org/searchisko/contribprofile/provider/Jive6ProfileDataConverted.json"),
 				contributorProfile);
+	}
+
+	@Test(expected = SettingsException.class)
+	public void mapRawJsonData_emptyEmail() throws Exception {
+		Jive6ContributorProfileProvider provider = getTested();
+
+		InputStream is = Jive6ContributorProfileProviderTest.class.getResourceAsStream("Jive6ProfileData_emptyEmail.json");
+		provider.mapRawJsonData(IOUtils.toByteArray(is));
 	}
 
 	@Test

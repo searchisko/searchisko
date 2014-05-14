@@ -31,6 +31,7 @@ import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.util.EntityUtils;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.type.TypeReference;
+import org.elasticsearch.common.settings.SettingsException;
 import org.searchisko.api.ContentObjectFields;
 import org.searchisko.api.model.AppConfiguration;
 import org.searchisko.api.service.ContributorProfileService;
@@ -136,8 +137,14 @@ public class Jive6ContributorProfileProvider implements ContributorProfileProvid
 
 		Map<String, Object> profileData = mapProfileData(map, jiveObject);
 
+		String primaryEmail = SearchUtils.trimToNull(getPrimaryEmail(emailsObject));
+		if (primaryEmail == null) {
+			throw new SettingsException(
+					"Jive Contributor Profile primary email is missing, probably due incorrect permissions in Jive.");
+		}
+
 		ContributorProfile profile = new ContributorProfile((String) profileData.get(ContentObjectFields.SYS_ID),
-				(String) nameObject.get("formatted"), getPrimaryEmail(emailsObject), getEmails(emailsObject), typeSpecificCodes);
+				(String) nameObject.get("formatted"), primaryEmail, getEmails(emailsObject), typeSpecificCodes);
 
 		profile.setProfileData(profileData);
 

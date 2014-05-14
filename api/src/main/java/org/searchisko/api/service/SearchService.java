@@ -235,7 +235,7 @@ public class SearchService {
 				}
 			} catch (ClassCastException e) {
 				throw new SettingsException("Incorrect configuration of 'type' section for sys_provider="
-						+ providerCfg.get(ProviderService.NAME) + ". Contact administrators please.");
+						+ providerCfg.get(ProviderService.NAME) + ".");
 			}
 		}
 		return indexNames;
@@ -298,7 +298,7 @@ public class SearchService {
 				}
 			} else {
 				throw new SettingsException("Fulltext search highlight requested but not configured by configuration document "
-						+ ConfigService.CFGNAME_SEARCH_FULLTEXT_HIGHLIGHT_FIELDS + ". Contact administrators please.");
+						+ ConfigService.CFGNAME_SEARCH_FULLTEXT_HIGHLIGHT_FIELDS + ".");
 			}
 		}
 	}
@@ -318,12 +318,11 @@ public class SearchService {
 			} catch (Exception e) {
 				throw new SettingsException("Missing or incorrect configuration of fulltext search highlight field '"
 						+ fieldName + "' parameter '" + paramName + "' in configuration document "
-						+ ConfigService.CFGNAME_SEARCH_FULLTEXT_HIGHLIGHT_FIELDS + ". Contact administrators please.");
+						+ ConfigService.CFGNAME_SEARCH_FULLTEXT_HIGHLIGHT_FIELDS + ".");
 			}
 		} catch (ClassCastException e) {
 			throw new SettingsException("Incorrect configuration of fulltext search highlight field '" + fieldName
-					+ "' in configuration document " + ConfigService.CFGNAME_SEARCH_FULLTEXT_HIGHLIGHT_FIELDS
-					+ ". Contact administrators please.");
+					+ "' in configuration document " + ConfigService.CFGNAME_SEARCH_FULLTEXT_HIGHLIGHT_FIELDS + ".");
 		}
 	}
 
@@ -555,7 +554,7 @@ public class SearchService {
 					srb.addField((String) o);
 				} else {
 					throw new SettingsException(ConfigService.CFGNAME_SEARCH_RESPONSE_FIELDS
-							+ " configuration document is invalid. Contact administrators please.");
+							+ " configuration document is invalid.");
 				}
 			}
 		}
