@@ -10,6 +10,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.annotation.security.RolesAllowed;
 import javax.ejb.ObjectNotFoundException;
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
@@ -26,8 +27,8 @@ import javax.ws.rs.core.UriInfo;
 import org.elasticsearch.common.settings.SettingsException;
 import org.jboss.elasticsearch.tools.content.StructuredContentPreprocessor;
 import org.jboss.elasticsearch.tools.content.StructuredContentPreprocessorFactory;
-import org.searchisko.api.annotations.security.ProviderAllowed;
 import org.searchisko.api.rest.exception.RequiredFieldException;
+import org.searchisko.api.security.Role;
 import org.searchisko.api.service.ConfigService;
 import org.searchisko.api.service.SearchClientService;
 import org.searchisko.api.util.PreprocessChainContextImpl;
@@ -40,7 +41,7 @@ import org.searchisko.api.util.SearchUtils;
  */
 @RequestScoped
 @Path("/normalization")
-@ProviderAllowed
+@RolesAllowed({Role.ADMIN, Role.PROVIDER})
 public class NormalizationRestService extends RestServiceBase {
 
 	public static final String INKEY_ID = "id";
