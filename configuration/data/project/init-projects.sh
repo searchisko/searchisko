@@ -1,6 +1,6 @@
 #!/bin/bash
 
-## This script uses system REST API to push projects data
+## This script uses Searchisko REST API to push projects data
 ##
 ## You can use first commandline parameter to change base URL of system API call (/v1/rest/... is appended automatically to this base URL)
 ## You can use second commandline parameter to change system username
