@@ -40,9 +40,9 @@ public class ContributorRestServiceTest {
         return DeploymentHelpers.createDeployment();
     }
 
-    private final String restVersion = DeploymentHelpers.DEFAULT_REST_VERSION;
+    private static final String restVersion = DeploymentHelpers.DEFAULT_REST_VERSION;
 
-	protected final String CONTRIBUTOR_REST_API = restVersion + "contributor/{id}";
+	public static final String CONTRIBUTOR_REST_API = restVersion + "contributor/{id}";
 
 	private static String contributorId;
 
@@ -134,6 +134,21 @@ public class ContributorRestServiceTest {
                 get(new URL(context, restVersion + "contributor/search").toExternalForm());
     }
 
+	public static String createContributor(URL context, Map<String, Object> data) throws MalformedURLException {
+		return given().
+				contentType(ContentType.JSON).
+				pathParam("id", "").
+				auth().basic(DeploymentHelpers.DEFAULT_PROVIDER_NAME, DeploymentHelpers.DEFAULT_PROVIDER_PASSWORD).
+				body(data).
+				expect().
+				contentType(ContentType.JSON).
+				statusCode(200).
+				body("id", is(not(empty()))).
+				when().
+				post(new URL(context, CONTRIBUTOR_REST_API).toExternalForm()).
+				andReturn().body().jsonPath().get("id");
+	}
+
     @Test @InSequence(1)
     public void assertPostWorksAuthenticated(@ArquillianResource URL context) throws MalformedURLException {
         final Map<String, Object> typeSpecificCode = new HashMap<>();
@@ -148,17 +163,7 @@ public class ContributorRestServiceTest {
         params.put("email", "jporter@redhat.com");
         params.put("type_specific_code", typeSpecificCode);
 
-        contributorId = given().
-                contentType(ContentType.JSON).
-                auth().basic("jbossorg", "jbossorgjbossorg").
-                body(params).
-        expect().
-                contentType(ContentType.JSON).
-                statusCode(200).
-                body("id", is(not(empty()))).
-        when().
-                post(new URL(context, restVersion + "contributor").toExternalForm()).
-                andReturn().body().jsonPath().get("id");
+        contributorId = createContributor(context, params);
     }
 
     @Test @InSequence(2)

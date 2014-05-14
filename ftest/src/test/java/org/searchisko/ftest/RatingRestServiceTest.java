@@ -11,7 +11,6 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.junit.InSequence;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -23,7 +22,6 @@ import java.util.Map;
 
 import static com.jayway.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.*;
-import static org.hamcrest.Matchers.not;
 
 /**
  * Integration test for /rating REST API.
@@ -102,47 +100,75 @@ public class RatingRestServiceTest {
 		ContentRestServiceTest.createOrUpdateContent(context, provider1, TYPE1, contentId, content);
 	}
 
-	String contribUsername = "contributor1";
-
-	String contribPassword = "contributor1Password";
-
+	@Test
+	@InSequence(3)
+	public void assertRefreshES() throws MalformedURLException {
+		DeploymentHelpers.refreshES();
+	}
 
 	@Test
-	@InSequence(10) @Ignore("No HTTP Basic Auth for Contributor")
+	@InSequence(5)
+	public void assertCreateContributor() throws MalformedURLException {
+		final Map<String, Object> typeSpecificCode = new HashMap<>();
+		typeSpecificCode.put("jbossorg_username", contribUsername);
+
+		String contributorCode = "TEST <test@test.com>";
+
+		final Map<String, Object> params = new HashMap<>();
+		params.put("code", contributorCode);
+		params.put("email", "test@test.com");
+		params.put("type_specific_code", typeSpecificCode);
+		ContributorRestServiceTest.createContributor(context, params);
+	}
+
+
+	String contribUsername = "contributor1";
+
+	String contribPassword = "password1";
+
+	final String idToRate = TYPE1 + "-" + contentId;
+
+	@Test
+	@InSequence(11)
 	public void assertRate() throws MalformedURLException {
-		given().contentType(ContentType.JSON)
-				.auth().preemptive().basic(contribUsername, contribPassword)
-				.pathParam("id", contentId)
-				.expect().statusCode(200)
-				.log().ifError()
-				.when().get(new URL(context, RATING_REST_API).toExternalForm());
+		Map<String, Object> rating = new HashMap<>();
+		rating.put("rating", 4);
 
 		given().contentType(ContentType.JSON)
-				.pathParam("id", contentId)
-				.auth().basic(contribUsername, contribPassword)
+				.auth().preemptive().basic(contribUsername, contribPassword)
+				.pathParam("id", idToRate)
+				.body(rating)
+				.expect().statusCode(200)
+				.log().ifError()
+				.contentType(ContentType.JSON)
+				.body("sys_rating_avg", is(new Float(4.0)))
+				.body("sys_rating_num", is(1))
+				.when().post(new URL(context, RATING_REST_API).toExternalForm());
+
+		given().contentType(ContentType.JSON)
+				.pathParam("id", idToRate)
+				.auth().preemptive().basic(contribUsername, contribPassword)
 				.expect()
 				.log().ifError()
 				.statusCode(200)
 				.contentType(ContentType.JSON)
-				.body("rating", is(1))
+				.body("rating", is(4))
 				.when().get(new URL(context, RATING_REST_API).toExternalForm());
 	}
 
 	@Test
-	@InSequence(20) @Ignore("No HTTP Basic Auth for Contributor")
+	@InSequence(20)
 	public void assertGetAll() throws MalformedURLException {
 		given().contentType(ContentType.JSON)
 				.pathParam("id", "")
-				.queryParam("id", contentId)
+				.queryParam("id", idToRate)
 				.auth().preemptive().basic(contribUsername, contribPassword)
 				.expect()
 				.log().ifError()
 				.statusCode(200)
 				.contentType(ContentType.JSON)
-				.body(contentId + ".rating", is("1"))
+				.body(idToRate + ".rating", is(4))
 				.when().get(new URL(context, RATING_REST_API).toExternalForm());
 	}
-
-	//TODO: FTEST: RatingRestServiceTest: Fake CAS JAAS module by additional HTTP Basic Login Module which authenticate contributor
 
 }

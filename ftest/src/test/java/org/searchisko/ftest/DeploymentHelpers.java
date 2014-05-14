@@ -55,7 +55,7 @@ public class DeploymentHelpers {
 
 	public static final ProviderModel DEFAULT_PROVIDER = new ProviderModel(DEFAULT_PROVIDER_NAME, DEFAULT_PROVIDER_PASSWORD);
 
-	public static final String SECURITY_DOMAIN = "SearchiskoSecurityDomain";
+	public static final String SECURITY_DOMAIN = "SearchiskoSecurityDomainFTEST";
 
 	public static Properties appProperties;
 
@@ -135,6 +135,8 @@ public class DeploymentHelpers {
 				.addPackages(true, "org.searchisko.api")
 				.addPackages(true, "org.searchisko.contribprofile")
 				.addPackages(true, "org.searchisko.persistence")
+				.addAsResource("searchisko-ftest-users.properties")
+				.addAsResource("searchisko-ftest-roles.properties")
 				.addAsResource("systeminfo.properties")
 				.addAsResource("app.properties")
 				.addAsResource("search_timeouts.properties")

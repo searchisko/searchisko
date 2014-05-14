@@ -9,6 +9,7 @@ import org.searchisko.api.rest.exception.NotAuthenticatedException;
 import org.searchisko.api.rest.exception.NotAuthorizedException;
 import org.searchisko.api.security.AuthenticatedUserType;
 import org.searchisko.api.security.Role;
+import org.searchisko.api.security.jaas.ContributorPrincipal;
 import org.searchisko.api.service.ContributorProfileService;
 import org.searchisko.api.util.SearchUtils;
 
@@ -141,7 +142,7 @@ public class AuthenticationUtilService {
 
 	protected String mapPrincipalToContributorCodeType(Principal principal) {
 		// CAS uses own principal so we can distinguish authentication source based on it
-		if (principal instanceof org.jasig.cas.client.jaas.AssertionPrincipal) {
+		if (principal instanceof ContributorPrincipal || principal instanceof org.jasig.cas.client.jaas.AssertionPrincipal) {
 			return ContributorProfileService.FIELD_TSC_JBOSSORG_USERNAME;
 		} else {
 			throw new UnsupportedOperationException("Unsupported Principal Type: " + principal);
