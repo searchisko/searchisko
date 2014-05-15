@@ -32,6 +32,7 @@ as an inspiration. You will have your own content.
 + [webpage](content/webpage.md) web page
 + [video](content/video.md) metadata about video available for project
 + [mailing_list_message](content/mailing_list_message.md) mbox message from project's mailing list
++ [addon](content/addon.md) description of some Addon or Plugin for the project
 + [solution](content/solution.md) description of some problem solution from knowledgebase
 
 Other data types considered in the future:

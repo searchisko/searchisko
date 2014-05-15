@@ -1,0 +1,10 @@
+{
+  "jbossforge_addon" : {
+    "_all" : { "enabled" : false },
+    "properties" : {
+      "author"        : { "type": "string", "store" : "no", "index" : "not_analyzed" },
+      "sys_license"   : { "type": "string", "store" : "no", "index" : "not_analyzed" },
+			"sys_url_doc"   : { "type": "string", "store" : "no", "index" : "not_analyzed" }
+    }
+  }
+}
