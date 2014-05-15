@@ -578,8 +578,10 @@ PUT /rest/search/{search_result_uuid}/{hit_id}?{session_id}
 
 
 --
-Suggestions API - Query
+Suggestions API - query
 It can return suggestions for given user query such as *query completion*, *did you mean*, ... etc.
+
+*Implementation not provided yet.*
 
 Returned JSON contains two high-level objects:
 
@@ -621,7 +623,7 @@ It can then contain one or more additional sections (like `suggestions`, `filter
 #### Model
 
 The `model` represents possible "actions" that are relevant to the individual `option`s in the `view` part.
-This means both `view` and `model` parts have the same highlevel structure and each `option`
+This means both `view` and `model` parts have the same high-level structure and each `option`
 in the `view` part has the corresponding "action" in the `model` part.
 
 ##### Example
@@ -767,13 +769,25 @@ GET /rest/suggestions/query_string?query=Hiberna
 }
 
 --
-Suggestions API - Project
-It can return suggestions of project names for given user query.
+Suggestions API - project name
+Can suggest project names based on user query.
 --
 
-Get suggestions for project name.
+Get suggestions for project name. The response contains two response parts:
 
-GET /rest/suggestions/project?{query,size}
+* the first one contains documents matching the query using [ngrams](http://www.elasticsearch.org/guide/en/elasticsearch/reference/0.90/analysis-ngram-tokenfilter.html#analysis-ngram-tokenfilter) and [edgengram](http://www.elasticsearch.org/guide/en/elasticsearch/reference/0.90/analysis-edgengram-tokenfilter.html#analysis-edgengram-tokenfilter) token filters (i.e. exact substring match)
+* the second contains documents matching the query using [fuzzy like this query](http://www.elasticsearch.org/guide/en/elasticsearch/reference/0.90/query-dsl-flt-query.html#query-dsl-flt-query)
+
+The recommendation is that clients should look for good suggestion candidates in the first response (they should be more relevant then the second response).
+The second response should be used for "Did you mean?" scenario or as a fallback if the first response is empty.
+
+##### Request parameters
+
+* `query` is mandatory parameter and is used to generate suggestions.
+* `size` of returned result array. Default is 5. Note are two arrays returned in the response. Max value is 100.
+* `field` you can use this param multiple times to specify which [fields](http://www.elasticsearch.org/guide/en/elasticsearch/reference/0.90/search-request-fields.html) from search index will be returned in results. Fields `sys_project` and `sys_project_name` are always returned as a part of response. Using `field` parameter you can define additional fields to return. If you want complete documents use `_source` value for this param. Be careful about performance impact of this param, consult DCP administrators if necessary!
+
+GET /rest/suggestions/project?{query,size,field}
 < 200
 < Content-Type: application/json
 < Access-Control-Allow-Origin: *

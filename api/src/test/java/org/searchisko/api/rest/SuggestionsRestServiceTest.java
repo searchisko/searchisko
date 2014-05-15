@@ -6,6 +6,8 @@
 package org.searchisko.api.rest;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Logger;
 
 import org.elasticsearch.action.search.MultiSearchRequest;
@@ -32,14 +34,32 @@ public class SuggestionsRestServiceTest {
 		tested.log = Logger.getLogger("testlogger");
 
 		SearchRequestBuilder srbMock = new SearchRequestBuilder(null);
-		srbMock = tested.getProjectSearchNGramRequestBuilder(srbMock, "JBoss", 5);
+		srbMock = tested.getProjectSearchNGramRequestBuilder(srbMock, "JBoss", 5, null);
 
 		TestUtils.assertJsonContentFromClasspathFile("/suggestions/project_suggestions_ngram.json", srbMock.toString());
 
 		srbMock = new SearchRequestBuilder(null);
-		srbMock = tested.getProjectSearchFuzzyRequestBuilder(srbMock, "JBoss", 5);
+		List<String> customFields = new ArrayList<>();
+		customFields.add("archived");
+		customFields.add("license");
+		customFields.add("projectName");
+		srbMock = tested.getProjectSearchNGramRequestBuilder(srbMock, "JBoss", 5, customFields);
+
+		TestUtils.assertJsonContentFromClasspathFile("/suggestions/project_suggestions_ngram_with_custom_fields.json", srbMock.toString());
+
+		srbMock = new SearchRequestBuilder(null);
+		srbMock = tested.getProjectSearchFuzzyRequestBuilder(srbMock, "JBoss", 5, null);
 
 		TestUtils.assertJsonContentFromClasspathFile("/suggestions/project_suggestions_fuzzy.json", srbMock.toString());
+
+		srbMock = new SearchRequestBuilder(null);
+		customFields = new ArrayList<>();
+		customFields.add("archived");
+		customFields.add("license");
+		customFields.add("projectName");
+		srbMock = tested.getProjectSearchFuzzyRequestBuilder(srbMock, "JBoss", 5, customFields);
+
+		TestUtils.assertJsonContentFromClasspathFile("/suggestions/project_suggestions_fuzzy_with_custom_fields.json", srbMock.toString());
 	}
 
 	@Test
@@ -53,8 +73,8 @@ public class SuggestionsRestServiceTest {
 		SearchRequestBuilder srbFuzzy = new SearchRequestBuilder(null);
 
 		msrb = tested.getProjectMultiSearchRequestBuilder(msrb,
-				tested.getProjectSearchNGramRequestBuilder(srbNGram, "JBoss", 5),
-				tested.getProjectSearchFuzzyRequestBuilder(srbFuzzy, "JBoss", 5));
+				tested.getProjectSearchNGramRequestBuilder(srbNGram, "JBoss", 5, null),
+				tested.getProjectSearchFuzzyRequestBuilder(srbFuzzy, "JBoss", 5, null));
 
 		MultiSearchRequest msr = msrb.request();
 

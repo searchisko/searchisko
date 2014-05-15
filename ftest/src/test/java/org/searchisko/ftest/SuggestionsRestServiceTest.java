@@ -22,17 +22,18 @@ import static com.jayway.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.notNullValue;
 
 /**
- * Integration test for /sugggestions REST API.
+ * Integration test for /suggestions REST API.
  * <p/>
  * http://docs.jbossorg.apiary.io/#suggestionsapiquery
  *
  * @author Libor Krzyzanek
+ * @author Lukas Vlcek
  * @see org.searchisko.api.rest.SuggestionsRestService
  */
 @RunWith(Arquillian.class)
 public class SuggestionsRestServiceTest {
 
-	public static final String SUGGESTIONS_REST_API = DeploymentHelpers.DEFAULT_REST_VERSION + "suggestions/{apitype}?query={query}";
+	public static final String SUGGESTIONS_REST_API = DeploymentHelpers.DEFAULT_REST_VERSION + "suggestions/{apitype}";
 
 	@Deployment(testable = false)
 	public static WebArchive createDeployment() throws IOException {
@@ -48,7 +49,7 @@ public class SuggestionsRestServiceTest {
 	public void assertSuggestionsQuery() throws MalformedURLException {
 		given().contentType(ContentType.JSON)
 				.pathParam("apitype", "query_string")
-				.pathParam("query", "Hiberna")
+				.queryParam("query", "Hiberna")
 				.expect()
 //				.log().ifError()
 				.statusCode(500)
@@ -61,7 +62,7 @@ public class SuggestionsRestServiceTest {
 	public void assertSuggestionsProject() throws MalformedURLException {
 		given().contentType(ContentType.JSON)
 				.pathParam("apitype", "project")
-				.pathParam("query", "gin")
+				.queryParam("query", "gin")
 				.expect()
 				.log().ifError()
 				.statusCode(200)
@@ -70,4 +71,32 @@ public class SuggestionsRestServiceTest {
 				.when().get(new URL(context, SUGGESTIONS_REST_API).toExternalForm());
 	}
 
+	@Test
+	@InSequence(30)
+	public void projectNameSuggestionShouldFailIfQueryMissing() throws MalformedURLException {
+		given().contentType(ContentType.JSON)
+				.pathParam("apitype", "project")
+				.expect()
+				.log().ifError()
+				.statusCode(400)
+				.when().get(new URL(context, SUGGESTIONS_REST_API).toExternalForm());
+	}
+
+	@Test
+	@InSequence(40)
+	public void projectNameSuggestionWithCustomFields() throws MalformedURLException {
+		// TODO: we need to prepare data into Elasticsearch and test the output of the query
+		given().contentType(ContentType.JSON)
+				.pathParam("apitype", "project")
+				.queryParam("query","gin")
+				.queryParam("field","archived")
+				.queryParam("field","license")
+				.queryParam("field","projectName")
+				.expect()
+				.log().ifError()
+				.statusCode(200)
+				.contentType(ContentType.JSON)
+				.body("uuid", notNullValue())
+				.when().get(new URL(context, SUGGESTIONS_REST_API).toExternalForm());
+	}
 }

@@ -1,0 +1,28 @@
+{
+    "size" : 5,
+    "query" : {
+        "flt" : {
+            "fields" : [ "sys_project_name", "sys_project_name.ngram" ],
+            "like_text" : "JBoss",
+            "max_query_terms" : 10,
+            "analyzer" : "whitespace_lowercase"
+        }
+    },
+    "fields" : [ "sys_project", "sys_project_name", "archived", "license", "projectName" ],
+    "highlight" : {
+        "fields" : {
+            "sys_project_name" : {
+                "fragment_size" : 1,
+                "number_of_fragments" : 0
+            },
+            "sys_project_name.ngram" : {
+                "fragment_size" : 1,
+                "number_of_fragments" : 0
+            },
+            "sys_project_name.edgengram" : {
+                "fragment_size" : 1,
+                "number_of_fragments" : 0
+            }
+        }
+    }
+}
