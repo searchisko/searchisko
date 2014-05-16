@@ -2,6 +2,7 @@
   "name": "jbossforge",
   "description" : "Provider used by Forge Team to push content. Contact is George Gastaldi.",
   "contact_email" : "ggastald@redhat.com",
+  "pwd_hash": "70f69ab5e08875ec1fdec009cacf435e561053d6",
   "type": {
     "jbossforge_addon" : {
       "description": "Informations about Forge Addon - https://issues.jboss.org/browse/ORG-2026",
