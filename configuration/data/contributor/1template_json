@@ -1,9 +1,11 @@
 {
   "code" : "",
   "email" : [""],
+  "name"  : "",
   "type_specific_code" : {
     "jbossorg_username" : "",
     "jbossorg_blog" : [""],
-    "github_username" : ""
+    "github_username" : "",
+    "vimeo_username" : ""
   }
 }
