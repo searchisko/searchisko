@@ -7,7 +7,7 @@
     "jbossorg_sbs" : ["2314"],
     "jbossorg_mailing_list": "",
     "jbossorg_project_info": "",
-    "jbossdeveloper_website_code": "brms",
+    "jbossdeveloper_website_code": ["brms","Red Hat JBoss BRMS","JBoss BRMS","JBoss Enterprise BRMS"],
     "product" : true
   }
 }

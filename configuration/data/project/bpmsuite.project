@@ -7,7 +7,7 @@
     "jbossorg_sbs" : [""],
     "jbossorg_mailing_list": "",
     "jbossorg_project_info": "",
-    "jbossdeveloper_website_code": "bpmsuite",
+    "jbossdeveloper_website_code": ["bpmsuite","Red Hat JBoss BPM Suite","JBoss BPM Suite"],
     "product" : true
   }
 }

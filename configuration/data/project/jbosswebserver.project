@@ -7,7 +7,7 @@
     "jbossorg_sbs" : [""],
     "jbossorg_mailing_list": "",
     "jbossorg_project_info": "",
-    "jbossdeveloper_website_code": "webserver",
+    "jbossdeveloper_website_code": ["jbosswebserver","webserver","Red Hat JBoss Web Server", "JBoss Web Server","JBoss Enterprise Web Server", "EWS", "ews"],
     "product" : true
   }
 }

@@ -7,7 +7,7 @@
     "jbossorg_sbs" : ["2317"],
     "jbossorg_mailing_list": "",
     "jbossorg_project_info": "",
-    "jbossdeveloper_website_code": ["datagrid","jdg"],
+    "jbossdeveloper_website_code": ["datagrid","jdg","Red Hat JBoss Data Grid","JBoss Data Grid"],
     "product" : true
   }
 }

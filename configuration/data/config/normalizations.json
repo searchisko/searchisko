@@ -204,5 +204,27 @@
         } 
       }
     ]
+  },
+  "project_by_jbossdeveloper_product_code" : {
+    "description" : "This normalization takes product name/code as input value, and returns DCP project code and project name",
+    "preprocessors" : [
+      { 
+        "name"     : "Project mapper",
+        "class"    : "org.jboss.elasticsearch.tools.content.ESLookupValuePreprocessor",
+        "settings" : {
+          "index_name"       : "sys_projects",
+          "index_type"       : "project",
+          "source_field"     : "input_id",
+          "idx_search_field": "jbossdeveloper_website_code",
+          "result_mapping"   : [{
+	            "idx_result_field" : "code",
+	            "target_field"     : "project_code"
+	          },{
+	            "idx_result_field" : "name",
+	            "target_field"     : "project_name"
+	        }]
+        } 
+      }
+    ]
   }  
 }

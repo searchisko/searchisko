@@ -7,7 +7,7 @@
     "jbossorg_sbs" : ["2306"],
     "jbossorg_mailing_list": "",
     "jbossorg_project_info": "",
-    "jbossdeveloper_website_code" : "fsw",
+    "jbossdeveloper_website_code" : ["fsw","Red Hat JBoss Fuse Service Works","JBoss Fuse Service Works","JBoss Enterprise SOA Platform"],
     "product" : true
   }
 }

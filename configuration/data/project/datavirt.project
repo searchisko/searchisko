@@ -7,7 +7,7 @@
     "jbossorg_sbs" : ["2316"],
     "jbossorg_mailing_list": "",
     "jbossorg_project_info": "",
-    "jbossdeveloper_website_code": "datavirt",
+    "jbossdeveloper_website_code": ["datavirt","Red Hat JBoss Data Virtualization","JBoss Data Virtualization","JBoss Enterprise Data Services Platform"],
     "product" : true
   }
 }

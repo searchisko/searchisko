@@ -7,7 +7,7 @@
     "jbossorg_sbs" : ["2301"],
     "jbossorg_mailing_list": "",
     "jbossorg_project_info": "",
-    "jbossdeveloper_website_code" : "fuse",
+    "jbossdeveloper_website_code" : ["fuse","Red Hat JBoss Fuse","JBoss Fuse","Fuse Enterprise ESB"],
     "product" : true
   }
 }

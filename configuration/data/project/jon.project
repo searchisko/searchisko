@@ -7,7 +7,7 @@
     "jbossorg_sbs" : [""],
     "jbossorg_mailing_list": "",
     "jbossorg_project_info": "",
-    "jbossdeveloper_website_code" : ["operationsnetwork","jon"],
+    "jbossdeveloper_website_code" : ["operationsnetwork","jon","Red Hat JBoss Operations Network","JBoss Operations Network","JBoss ON"],
     "product" : true
   }
 }
