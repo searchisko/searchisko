@@ -22,10 +22,7 @@ import org.jasig.cas.client.jaas.AssertionPrincipal;
 import org.jasig.cas.client.util.AbstractCasFilter;
 import org.jasig.cas.client.util.CommonUtils;
 
-import javax.servlet.FilterChain;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
+import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
@@ -39,12 +36,12 @@ import java.util.logging.Logger;
  * This component should be compatible with any servlet container that supports the Servlet 3.0/JEE6 specification.
  * <p>
  * The filter executes when it receives a CAS ticket and expects the
- * {@link CasLoginModule} JAAS module to perform the CAS
+ * {@link org.jasig.cas.client.jaas.CasLoginModule} JAAS module to perform the CAS
  * ticket validation in order to produce an {@link org.jasig.cas.client.jaas.AssertionPrincipal} from which
  * the CAS assertion is obtained and inserted into the session to enable SSO.
  * <p>
  * If a <code>service</code> init-param is specified for this filter, it supersedes
- * the service defined for the {@link CasLoginModule}.
+ * the service defined for the {@link org.jasig.cas.client.jaas.CasLoginModule}.
  *
  * @author  Daniel Fisher
  * @author  Marvin S. Addison
@@ -55,6 +52,22 @@ public final class CasServlet3AuthenticationFilter extends AbstractCasFilter {
 	//TODO: Upgrade CAS client to 3.3 and use org.jasig.cas.client.jaas.Servlet3AuthenticationFilter instead of this copy
 
 	protected final Logger logger = Logger.getLogger(CasServlet3AuthenticationFilter.class.getName());
+
+	/**
+	 * Specify whether the filter should redirect the user agent after a
+	 * successful validation to remove the ticket parameter from the query
+	 * string.
+	 * @see org.jasig.cas.client.validation.AbstractTicketValidationFilter#redirectAfterValidation
+	 */
+	private boolean redirectAfterValidation = true;
+
+	@Override
+	protected void initInternal(FilterConfig filterConfig) throws ServletException {
+		setRedirectAfterValidation(parseBoolean(getPropertyFromInitParams(filterConfig, "redirectAfterValidation", "true")));
+		log.trace("Setting redirectAfterValidation parameter: " + this.redirectAfterValidation);
+
+		super.initInternal(filterConfig);
+	}
 
 	public void doFilter(final ServletRequest servletRequest, final ServletResponse servletResponse,
             final FilterChain chain) throws IOException, ServletException {
@@ -72,6 +85,12 @@ public final class CasServlet3AuthenticationFilter extends AbstractCasFilter {
                     final AssertionPrincipal principal = (AssertionPrincipal) request.getUserPrincipal();
 					logger.log(Level.FINE, "Installing CAS assertion into session.");
                     request.getSession().setAttribute(CONST_CAS_ASSERTION, principal.getAssertion());
+
+					if (this.redirectAfterValidation) {
+						logger.log(Level.FINE, "Redirecting after successful ticket validation.");
+						response.sendRedirect(constructServiceUrl(request, response));
+						return;
+					}
                 } else {
 					logger.log(Level.FINE, "Aborting -- principal is not of type AssertionPrincipal");
                     throw new GeneralSecurityException("JAAS authentication did not produce CAS AssertionPrincipal.");
@@ -91,4 +110,12 @@ public final class CasServlet3AuthenticationFilter extends AbstractCasFilter {
         }
         chain.doFilter(request, response);
     }
+
+	public boolean isRedirectAfterValidation() {
+		return redirectAfterValidation;
+	}
+
+	public void setRedirectAfterValidation(boolean redirectAfterValidation) {
+		this.redirectAfterValidation = redirectAfterValidation;
+	}
 }
