@@ -213,6 +213,9 @@ public class Jive6ContributorProfileProvider implements ContributorProfileProvid
 				case "Facebook Username":
 					getAccountObject(accounts, "facebook.com", p.get(JIVE_PROFILE_VALUE_KEY));
 					break;
+				case "LinkedIn Username":
+					getAccountObject(accounts, "linkedin.com", p.get(JIVE_PROFILE_VALUE_KEY));
+					break;
 				}
 			}
 		} else {

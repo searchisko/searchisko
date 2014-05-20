@@ -60,6 +60,9 @@ throw 'allowIllegalResourceCall is false.';
       "value" : "lkrzyzanek-twitter",
       "jive_label" : "Twitter Username"
     }, {
+      "value" : "lkrzyzanek-linkedin",
+      "jive_label" : "LinkedIn Username"
+    }, {
       "value" : "lkrzyzanek-facebook",
       "jive_label" : "Facebook Username"
     } ],
