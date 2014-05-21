@@ -2,8 +2,9 @@
 
 This document contains high-level release notes. More details can be found in [milestones](https://github.com/searchisko/searchisko/issues/milestones) on GitHub.
 
-## 1.0.3
+## 1.1.0
 
+- Security improved to use standard JAAS role based access control [#76](https://github.com/searchisko/searchisko/issues/76)
 - ['Normalization API'](http://docs.jbossorg.apiary.io/#normalizationapi) added [#90](https://github.com/searchisko/searchisko/issues/90)
 - ['Content Indexers API'](http://docs.jbossorg.apiary.io/#contentindexersapi) extended by `_stop` and `_restart` operations. `_status`, `_stop` and `_restart` can be used for one indexer or all indexer at all also. [#91](https://github.com/searchisko/searchisko/issues/91)
 - `Jive6ContributorProfileProvider` improved to process LinkedIn username [#100](https://github.com/searchisko/searchisko/issues/100)
