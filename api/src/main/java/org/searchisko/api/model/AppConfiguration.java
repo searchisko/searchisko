@@ -18,7 +18,7 @@ public class AppConfiguration implements Serializable {
 
 	public enum ClientType {
 		TRANSPORT, EMBEDDED
-	};
+	}
 
 	private ClientType clientType;
 

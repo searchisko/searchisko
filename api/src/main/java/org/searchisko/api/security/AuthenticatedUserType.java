@@ -10,6 +10,6 @@ public enum AuthenticatedUserType {
 
 	PROVIDER,
 
-	CONTRIBUTOR;
+	CONTRIBUTOR
 
 }

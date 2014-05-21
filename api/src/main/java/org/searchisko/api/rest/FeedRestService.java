@@ -249,7 +249,7 @@ public class FeedRestService extends RestServiceBase {
 
 	protected List<Object> getHitListFieldValue(SearchHit hit, String fieldName) {
 		if (hit.getFields().containsKey(fieldName))
-			return (List<Object>) hit.getFields().get(fieldName).getValues();
+			return hit.getFields().get(fieldName).getValues();
 		else
 			return null;
 	}
