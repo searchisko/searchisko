@@ -5,6 +5,11 @@
  */
 package org.searchisko.api.util;
 
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.StringWriter;
+import java.util.logging.Logger;
+
 import javax.ejb.Singleton;
 import javax.enterprise.context.ContextNotActiveException;
 import javax.enterprise.context.RequestScoped;
@@ -14,10 +19,6 @@ import javax.faces.context.FacesContext;
 import javax.inject.Named;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.StringWriter;
-import java.util.logging.Logger;
 
 /**
  * This class uses CDI to alias Java EE resources, such as the persistence context, to CDI beans
@@ -26,16 +27,18 @@ import java.util.logging.Logger;
  * Examples injection on a managed bean field:
  * </p>
  * <p/>
+ * 
  * <pre>
  * &#064;Inject
  * private Logger log;
  * </pre>
  * <p/>
+ * 
  * <pre>
  * &#064;Inject
  * private EntityManager em;
  * </pre>
- *
+ * 
  * @author Libor Krzyzanek
  */
 @Singleton
@@ -43,7 +46,6 @@ public class Resources {
 
 	@Produces
 	@PersistenceContext
-	@SuppressWarnings("unused")
 	private static EntityManager em;
 
 	@Produces
@@ -64,7 +66,7 @@ public class Resources {
 
 	/**
 	 * Read file from classpath into String. UTF-8 encoding expected.
-	 *
+	 * 
 	 * @param filePath in classpath to read data from.
 	 * @return file content.
 	 * @throws IOException
