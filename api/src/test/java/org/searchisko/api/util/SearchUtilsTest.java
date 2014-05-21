@@ -5,16 +5,20 @@
  */
 package org.searchisko.api.util;
 
+import java.io.IOException;
+import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.codehaus.jackson.JsonParseException;
 import org.codehaus.jackson.map.JsonMappingException;
 import org.elasticsearch.common.joda.time.LocalDateTime;
 import org.junit.Assert;
 import org.junit.Test;
 import org.searchisko.api.testtools.TestUtils;
-
-import java.io.IOException;
-import java.text.ParseException;
-import java.util.*;
 
 /**
  * Unit test for {@link SearchUtils}.
@@ -57,8 +61,10 @@ public class SearchUtilsTest {
 	@Test
 	public void isDateBefore() {
 		Assert.assertTrue(SearchUtils.isDateAfter(new Date(), 1));
-		Assert.assertFalse(SearchUtils.isDateAfter(SearchUtils.dateFromISOString("2013-02-20T20:00:10.123+0100", false), 10));
-		Assert.assertTrue(SearchUtils.isDateAfter(SearchUtils.dateFromISOString("2100-02-20T20:00:10.123+0100", false), 10));
+		Assert
+				.assertFalse(SearchUtils.isDateAfter(SearchUtils.dateFromISOString("2013-02-20T20:00:10.123+0100", false), 10));
+		Assert
+				.assertTrue(SearchUtils.isDateAfter(SearchUtils.dateFromISOString("2100-02-20T20:00:10.123+0100", false), 10));
 		LocalDateTime now = new LocalDateTime();
 		Assert.assertTrue(SearchUtils.isDateAfter(now.minusMinutes(9).toDate(), 10));
 
@@ -78,8 +84,8 @@ public class SearchUtilsTest {
 	}
 
 	@Test
-	public void isBlank() {
-		Assert.assertTrue(SearchUtils.isBlank(null));
+	public void isBlank_String() {
+		Assert.assertTrue(SearchUtils.isBlank((String) null));
 		Assert.assertTrue(SearchUtils.isBlank(""));
 		Assert.assertTrue(SearchUtils.isBlank(" "));
 		Assert.assertTrue(SearchUtils.isBlank("  "));
@@ -89,6 +95,40 @@ public class SearchUtilsTest {
 		Assert.assertFalse(SearchUtils.isBlank("Z"));
 		Assert.assertFalse(SearchUtils.isBlank("1"));
 		Assert.assertFalse(SearchUtils.isBlank("-"));
+	}
+
+	@Test
+	public void isBlank_Object() {
+
+		Assert.assertTrue(SearchUtils.isBlank((Object) null));
+		Assert.assertFalse(SearchUtils.isBlank(new Object()));
+
+		// String handling
+		Assert.assertTrue(SearchUtils.isBlank((Object) ""));
+		Assert.assertTrue(SearchUtils.isBlank((Object) " "));
+		Assert.assertTrue(SearchUtils.isBlank((Object) "  "));
+		Assert.assertTrue(SearchUtils.isBlank((Object) "   \t"));
+
+		Assert.assertFalse(SearchUtils.isBlank((Object) "a"));
+		Assert.assertFalse(SearchUtils.isBlank((Object) "Z"));
+		Assert.assertFalse(SearchUtils.isBlank((Object) "1"));
+		Assert.assertFalse(SearchUtils.isBlank((Object) "-"));
+
+		// Collections handling
+		{
+			List<String> l = new ArrayList<>();
+			Assert.assertTrue(SearchUtils.isBlank(l));
+			l.add("a");
+			Assert.assertFalse(SearchUtils.isBlank(l));
+		}
+
+		{
+			Map<String, String> l = new HashMap<>();
+			Assert.assertTrue(SearchUtils.isBlank(l));
+			l.put("a", "b");
+			Assert.assertFalse(SearchUtils.isBlank(l));
+		}
+
 	}
 
 	@Test

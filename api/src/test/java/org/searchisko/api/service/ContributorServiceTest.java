@@ -1258,14 +1258,14 @@ public class ContributorServiceTest extends ESRealClientTestBase {
 					"{\"code\":\"test4\",\"email\":[\"no@no.org\",\"you@test.org\"]"
 							+ ", \"type_specific_code\" : {\"code_type1\":\"ct1_3\",\"code_type2\":[\"ct2_3_1\",\"test_3_2\"]}" + "}");
 			indexInsertDocument(ContributorService.SEARCH_INDEX_NAME, ContributorService.SEARCH_INDEX_TYPE, "50",
-					"{\"code\":\"test5\",\"email\":[\"no@test.org\"]"
+					"{\"code\":\"test5\",\"email\":[\"no@test.org\",\"\"]"
 							+ ", \"type_specific_code\" : {\"code_type1\":\"ct1_3\",\"code_type2\":[\"ct2_3_1\",\"test_3_2\"]}" + "}");
 			indexFlushAndRefresh(ContributorService.SEARCH_INDEX_NAME);
 
 			Set<String> toRenormalizeContributorIds = new HashSet<>();
 			Map<String, Object> contributorEntityContent = new HashMap<>();
 			contributorEntityContent.put(ContributorService.FIELD_EMAIL,
-					TestUtils.createListOfStrings("me@test.org", "you@test.org"));
+					TestUtils.createListOfStrings("me@test.org", "you@test.org", ""));
 			tested.patchEmailUniqueness(toRenormalizeContributorIds, ID_10, contributorEntityContent);
 			Assert.assertEquals(3, toRenormalizeContributorIds.size());
 			Assert.assertTrue(toRenormalizeContributorIds.contains("test2"));
@@ -1289,7 +1289,7 @@ public class ContributorServiceTest extends ESRealClientTestBase {
 			TestUtils.assertJsonContent("{\"code\":\"test4\",\"email\":[\"no@no.org\"]"
 					+ ", \"type_specific_code\" : {\"code_type1\":\"ct1_3\",\"code_type2\":[\"ct2_3_1\",\"test_3_2\"]}" + "}",
 					indexGetDocument(ContributorService.SEARCH_INDEX_NAME, ContributorService.SEARCH_INDEX_TYPE, ID_40));
-			TestUtils.assertJsonContent("{\"code\":\"test5\",\"email\":[\"no@test.org\"]"
+			TestUtils.assertJsonContent("{\"code\":\"test5\",\"email\":[\"no@test.org\",\"\"]"
 					+ ", \"type_specific_code\" : {\"code_type1\":\"ct1_3\",\"code_type2\":[\"ct2_3_1\",\"test_3_2\"]}" + "}",
 					indexGetDocument(ContributorService.SEARCH_INDEX_NAME, ContributorService.SEARCH_INDEX_TYPE, "50"));
 
@@ -1327,9 +1327,12 @@ public class ContributorServiceTest extends ESRealClientTestBase {
 			indexInsertDocument(ContributorService.SEARCH_INDEX_NAME, ContributorService.SEARCH_INDEX_TYPE, ID_40,
 					"{\"code\":\"test4\",\"email\":[\"no@no.org\",\"you@test.org\"]"
 							+ ", \"type_specific_code\" : {\"code_type1\":\"ct1_3\",\"code_type2\":[\"ct2_3_1\",\"test_3_2\"]}" + "}");
-			indexInsertDocument(ContributorService.SEARCH_INDEX_NAME, ContributorService.SEARCH_INDEX_TYPE, "50",
+			indexInsertDocument(
+					ContributorService.SEARCH_INDEX_NAME,
+					ContributorService.SEARCH_INDEX_TYPE,
+					"50",
 					"{\"code\":\"test5\",\"email\":[\"no@test.org\"]"
-							+ ", \"type_specific_code\" : {\"code_type1\":\"ct1_3\",\"code_type2\":[\"ct2_3_1\",\"test_3_2_3\"]}"
+							+ ", \"type_specific_code\" : {\"code_type1\":\"ct1_3\",\"code_type2\":[\"ct2_3_1\",\"test_3_2_3\",\"\"]}"
 							+ "}");
 			indexFlushAndRefresh(ContributorService.SEARCH_INDEX_NAME);
 
@@ -1337,7 +1340,7 @@ public class ContributorServiceTest extends ESRealClientTestBase {
 			Map<String, Object> contributorEntityContent = new HashMap<>();
 			Map<String, Object> tsc = new HashMap<>();
 			tsc.put(CODE_NAME_1, "test");
-			tsc.put(CODE_NAME_2, TestUtils.createListOfStrings("test_3_2"));
+			tsc.put(CODE_NAME_2, TestUtils.createListOfStrings("test_3_2", ""));
 			contributorEntityContent.put(ContributorService.FIELD_TYPE_SPECIFIC_CODE, tsc);
 
 			tested.patchTypeSpecificCodeUniqueness(toRenormalizeContributorIds, ID_10, contributorEntityContent);
@@ -1368,8 +1371,8 @@ public class ContributorServiceTest extends ESRealClientTestBase {
 					+ ", \"type_specific_code\" : {\"code_type1\":\"ct1_3\",\"code_type2\":[\"ct2_3_1\"]}" + "}",
 					indexGetDocument(ContributorService.SEARCH_INDEX_NAME, ContributorService.SEARCH_INDEX_TYPE, ID_40));
 			TestUtils.assertJsonContent("{\"code\":\"test5\",\"email\":[\"no@test.org\"]"
-					+ ", \"type_specific_code\" : {\"code_type1\":\"ct1_3\",\"code_type2\":[\"ct2_3_1\",\"test_3_2_3\"]}" + "}",
-					indexGetDocument(ContributorService.SEARCH_INDEX_NAME, ContributorService.SEARCH_INDEX_TYPE, "50"));
+					+ ", \"type_specific_code\" : {\"code_type1\":\"ct1_3\",\"code_type2\":[\"ct2_3_1\",\"test_3_2_3\",\"\"]}"
+					+ "}", indexGetDocument(ContributorService.SEARCH_INDEX_NAME, ContributorService.SEARCH_INDEX_TYPE, "50"));
 
 		} finally {
 			indexDelete(ContributorService.SEARCH_INDEX_NAME);

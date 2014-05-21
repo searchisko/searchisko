@@ -586,6 +586,8 @@ public class ContributorService implements SearchableEntityService {
 			List<String> emails = (List<String>) contributorEntityContent.get(FIELD_EMAIL);
 			if (emails != null && !emails.isEmpty()) {
 				for (String email : emails) {
+					if (SearchUtils.isBlank(email))
+						continue;
 					searchClientService.performIndexFlushAndRefreshBlocking(SEARCH_INDEX_NAME);
 					SearchResponse sr = findByEmail(email);
 					if (sr != null) {
@@ -643,6 +645,8 @@ public class ContributorService implements SearchableEntityService {
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	private void patchTypeSpecificCodeUniqueness(Set<String> toRenormalizeContributorIds, String contributorEntityId,
 			String codeName, Object codeValue) {
+		if (SearchUtils.isBlank(codeValue))
+			return;
 		searchClientService.performIndexFlushAndRefreshBlocking(SEARCH_INDEX_NAME);
 		SearchResponse sr = findByTypeSpecificCode(codeName, codeValue.toString());
 		if (sr != null) {
