@@ -5,26 +5,34 @@
  */
 package org.searchisko.api.rest;
 
-import org.searchisko.api.rest.exception.RequiredFieldException;
-import org.searchisko.api.security.Role;
-import org.searchisko.api.service.ProviderService;
-import org.searchisko.api.service.SecurityService;
+import java.util.Map;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.security.RolesAllowed;
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
-import javax.ws.rs.*;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.SecurityContext;
-import java.util.Map;
+
+import org.searchisko.api.rest.exception.RequiredFieldException;
+import org.searchisko.api.rest.security.AuthenticationUtilService;
+import org.searchisko.api.security.Role;
+import org.searchisko.api.service.ProviderService;
+import org.searchisko.api.service.SecurityService;
 
 /**
  * Provider REST API
- *
+ * 
  * @author Libor Krzyzanek
  * @author Vlastimil Elias (velias at redhat dot com)
  */
@@ -42,12 +50,15 @@ public class ProviderRestService extends RestEntityServiceBase {
 	@Context
 	protected SecurityContext securityContext;
 
+	@Inject
+	protected AuthenticationUtilService authenticationUtilService;
+
 	@PostConstruct
 	public void init() {
 		setEntityService(providerService);
 	}
 
-	protected static final String[] FIELDS_TO_REMOVE = new String[]{ProviderService.PASSWORD_HASH};
+	protected static final String[] FIELDS_TO_REMOVE = new String[] { ProviderService.PASSWORD_HASH };
 
 	@GET
 	@Path("/")
@@ -59,7 +70,7 @@ public class ProviderRestService extends RestEntityServiceBase {
 	@GET
 	@Path("/{id}")
 	@Produces(MediaType.APPLICATION_JSON)
-	@RolesAllowed({Role.ADMIN, Role.PROVIDER})
+	@RolesAllowed({ Role.ADMIN, Role.PROVIDER })
 	@Override
 	public Object get(@PathParam("id") String id) {
 
@@ -67,18 +78,15 @@ public class ProviderRestService extends RestEntityServiceBase {
 			throw new RequiredFieldException("id");
 		}
 
-		// check Provider name. Only provider with same name or superprovider has access.
-		String provider = securityContext.getUserPrincipal().getName();
-
 		Map<String, Object> entity = entityService.get(id);
 
 		if (entity == null)
 			return Response.status(Status.NOT_FOUND).build();
 
-		if (!(provider.equals(entity.get(ProviderService.NAME)) || securityContext
-				.isUserInRole(Role.ADMIN))) {
-			return Response.status(Status.FORBIDDEN).build();
-		}
+		String usernameOfProviderWeChange = entity.get(ProviderService.NAME).toString();
+
+		authenticationUtilService.checkProviderManagementPermission(securityContext, usernameOfProviderWeChange);
+
 		return ESDataOnlyResponse.removeFields(entity, FIELDS_TO_REMOVE);
 	}
 
@@ -127,7 +135,7 @@ public class ProviderRestService extends RestEntityServiceBase {
 
 	@POST
 	@Path("/{id}/password")
-	@RolesAllowed({Role.ADMIN, Role.PROVIDER})
+	@RolesAllowed({ Role.ADMIN, Role.PROVIDER })
 	public Object changePassword(@PathParam("id") String id, String pwd) {
 
 		if (id == null || id.isEmpty()) {
@@ -138,20 +146,16 @@ public class ProviderRestService extends RestEntityServiceBase {
 			throw new RequiredFieldException("pwd");
 		}
 
-		// check Provider name. Only provider with same name or superprovider has access.
-		String provider = securityContext.getUserPrincipal().getName();
-
 		Map<String, Object> entity = entityService.get(id);
 
 		if (entity == null)
 			return Response.status(Status.NOT_FOUND).build();
 
-		String username = entity.get(ProviderService.NAME).toString();
-		if (!(provider.equals(entity.get(ProviderService.NAME)) || securityContext
-				.isUserInRole(Role.ADMIN))) {
-			return Response.status(Status.FORBIDDEN).build();
-		}
-		entity.put(ProviderService.PASSWORD_HASH, securityService.createPwdHash(username, pwd.trim()));
+		String usernameOfProviderWeChange = entity.get(ProviderService.NAME).toString();
+
+		authenticationUtilService.checkProviderManagementPermission(securityContext, usernameOfProviderWeChange);
+
+		entity.put(ProviderService.PASSWORD_HASH, securityService.createPwdHash(usernameOfProviderWeChange, pwd.trim()));
 		entityService.update(id, entity);
 
 		return Response.ok().build();
