@@ -193,9 +193,6 @@
         </profile>
         <profile>
             <id>integration-tests</id>
-            <properties>
-                <es.client.embedded.data.path>${user.home}/.dcp_data</es.client.embedded.data.path>
-            </properties>
             <modules>
                 <module>ftest</module>
             </modules>
