@@ -3,23 +3,23 @@
         "_timestamp"  : { "enabled" : true },
         "_all" : {"enabled" : false},
         "properties" : {
-            "code"  : {"type" : "string", "analyzer" : "keyword"},
-            "email" : {"type" : "string", "analyzer" : "keyword"},
+            "code"  : {"type" : "string", "analyzer" : "keyword_lowercase"},
+            "email" : {"type" : "string", "analyzer" : "keyword_lowercase"},
             "name"	: {
 							  "type"   : "multi_field",
 							  "fields" : {
-							      "name"     : { "type": "string", "analyzer": "keyword" },
+							      "name"     : { "type": "string", "analyzer": "keyword_lowercase" },
 								    "fulltext" : { "type": "string", "index": "analyzed" }
 							  }
 						},
             "type_specific_code" : {
                 "type" : "object",            
                 "properties" : {
-		              "jbossorg_username" : {"type" : "string", "analyzer" : "keyword"},
-		              "github_username"   : {"type" : "string", "analyzer" : "keyword"},
-		              "jbossorg_blog"     : {"type" : "string", "analyzer" : "keyword"},
-		              "vimeo_username"    : {"type" : "string", "analyzer" : "keyword"},
-		              "jbossdeveloper_quickstart_author" : {"type" : "string", "analyzer" : "keyword"}
+		              "jbossorg_username" : {"type" : "string", "analyzer" : "keyword_lowercase"},
+		              "github_username"   : {"type" : "string", "analyzer" : "keyword_lowercase"},
+		              "jbossorg_blog"     : {"type" : "string", "analyzer" : "keyword_lowercase"},
+		              "vimeo_username"    : {"type" : "string", "analyzer" : "keyword_lowercase"},
+		              "jbossdeveloper_quickstart_author" : {"type" : "string", "analyzer" : "keyword_lowercase"}
 	               }
              }
          }
