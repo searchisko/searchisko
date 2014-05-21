@@ -11,7 +11,6 @@ import org.mockito.Mockito;
 import org.searchisko.api.rest.exception.NotAuthenticatedException;
 import org.searchisko.api.rest.security.AuthenticationUtilService;
 import org.searchisko.api.security.AuthenticatedUserType;
-import org.searchisko.api.testtools.TestUtils;
 
 import javax.ws.rs.core.SecurityContext;
 import java.util.Map;
@@ -23,11 +22,6 @@ import java.util.logging.Logger;
  * @author Vlastimil Elias (velias at redhat dot com)
  */
 public class AuthStatusRestServiceTest {
-
-	@Test
-	public void authStatus_permissions() throws Exception {
-		TestUtils.assertPermissionContributorOptional(AuthStatusRestService.class, "authStatus");
-	}
 
 	@Test
 	public void authStatus_notAuthenticated() {

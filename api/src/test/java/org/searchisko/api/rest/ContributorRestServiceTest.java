@@ -5,14 +5,6 @@
  */
 package org.searchisko.api.rest;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import javax.ejb.ObjectNotFoundException;
-import javax.ws.rs.core.Response.Status;
-import javax.ws.rs.core.StreamingOutput;
-import javax.ws.rs.core.UriInfo;
-
 import org.elasticsearch.action.search.SearchResponse;
 import org.jboss.resteasy.spi.BadRequestException;
 import org.junit.Assert;
@@ -21,6 +13,12 @@ import org.mockito.Mockito;
 import org.searchisko.api.rest.exception.RequiredFieldException;
 import org.searchisko.api.service.ContributorService;
 import org.searchisko.api.testtools.TestUtils;
+
+import javax.ejb.ObjectNotFoundException;
+import javax.ws.rs.core.Response.Status;
+import javax.ws.rs.core.StreamingOutput;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Unit test for {@link ContributorRestService}.
@@ -218,43 +216,6 @@ public class ContributorRestServiceTest {
 		Mockito.when(tested.contributorService.mergeContributors(Mockito.anyString(), Mockito.anyString())).thenThrow(
 				new ObjectNotFoundException());
 		tested.mergeContributors("id", "id2");
-	}
-
-	@Test
-	public void codeChange_permissions() throws Exception {
-		TestUtils.assertPermissionSuperProvider(ContributorRestService.class, "codeChange", String.class, String.class);
-	}
-
-	@Test
-	public void mergeContributors_permissions() throws Exception {
-		TestUtils.assertPermissionSuperProvider(ContributorRestService.class, "mergeContributors", String.class,
-				String.class);
-	}
-
-	@Test
-	public void search_permissions() throws Exception {
-		TestUtils.assertPermissionSuperProvider(ContributorRestService.class, "search", UriInfo.class);
-	}
-
-	@Test
-	public void getAll_permissions() {
-		TestUtils.assertPermissionSuperProvider(ContributorRestService.class, "getAll", Integer.class, Integer.class);
-	}
-
-	@Test
-	public void get_permissions() {
-		TestUtils.assertPermissionSuperProvider(ContributorRestService.class, "get", String.class);
-	}
-
-	@Test
-	public void create_permissions() {
-		TestUtils.assertPermissionSuperProvider(ContributorRestService.class, "create", String.class, Map.class);
-		TestUtils.assertPermissionSuperProvider(ContributorRestService.class, "create", Map.class);
-	}
-
-	@Test
-	public void delete_permissions() {
-		TestUtils.assertPermissionSuperProvider(ContributorRestService.class, "delete", String.class);
 	}
 
 	private ContributorRestService getTested() {

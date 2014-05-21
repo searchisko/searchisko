@@ -5,17 +5,7 @@
  */
 package org.searchisko.api.rest;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.logging.Logger;
-
-import javax.enterprise.event.Event;
-import javax.ws.rs.core.Response;
-
+import org.elasticsearch.common.settings.SettingsException;
 import org.hamcrest.CustomMatcher;
 import org.junit.Assert;
 import org.junit.Test;
@@ -28,8 +18,8 @@ import org.searchisko.api.rest.exception.BadFieldException;
 import org.searchisko.api.rest.exception.NotAuthenticatedException;
 import org.searchisko.api.rest.exception.NotAuthorizedException;
 import org.searchisko.api.rest.exception.RequiredFieldException;
-import org.searchisko.api.security.AuthenticatedUserType;
 import org.searchisko.api.rest.security.AuthenticationUtilService;
+import org.searchisko.api.security.AuthenticatedUserType;
 import org.searchisko.api.service.ProviderService;
 import org.searchisko.api.service.ProviderService.ProviderContentTypeInfo;
 import org.searchisko.api.service.ProviderServiceTest;
@@ -37,17 +27,14 @@ import org.searchisko.api.testtools.ESRealClientTestBase;
 import org.searchisko.api.testtools.TestUtils;
 import org.searchisko.persistence.service.ContentPersistenceService;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import javax.enterprise.event.Event;
+import javax.ws.rs.core.Response;
+import java.io.IOException;
+import java.util.*;
+import java.util.logging.Logger;
 
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.reset;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
-import static org.mockito.Mockito.verifyZeroInteractions;
-import static org.mockito.Mockito.when;
-
+import static org.junit.Assert.*;
+import static org.mockito.Mockito.*;
 import static org.searchisko.api.testtools.TestUtils.assertResponseStatus;
 import static org.searchisko.api.testtools.TestUtils.assetStreamingOutputContent;
 
@@ -223,11 +210,6 @@ public class ContentRestServiceTest extends ESRealClientTestBase {
 		content.put("test", "test");
 		content.put(ContentObjectFields.SYS_CONTENT, "some content");
 		getTested(false).pushContent(TYPE_INVALID_CONTENT_TYPE, "1", content);
-	}
-
-	@Test
-	public void pushContent_permissions() throws Exception {
-		TestUtils.assertPermissionProvider(ContentRestService.class, "pushContent", String.class, String.class, Map.class);
 	}
 
 	@Test(expected = NotAuthorizedException.class)
@@ -477,11 +459,6 @@ public class ContentRestServiceTest extends ESRealClientTestBase {
 		}
 	}
 
-	@Test
-	public void pushContentBulk_permissions() throws Exception {
-		TestUtils.assertPermissionProvider(ContentRestService.class, "pushContentBulk", String.class, Map.class);
-	}
-
 	@Test(expected = NotAuthorizedException.class)
 	public void pushContentBulk_noPermission() throws Exception {
 		ContentRestService tested = getTested(false);
@@ -728,12 +705,6 @@ public class ContentRestServiceTest extends ESRealClientTestBase {
 		});
 	}
 
-	@Test
-	public void deleteContent_permissions() throws Exception {
-		TestUtils.assertPermissionProvider(ContentRestService.class, "deleteContent", String.class, String.class,
-				String.class);
-	}
-
 	@Test(expected = RequiredFieldException.class)
 	public void deleteContent_ParamValidation_1() throws Exception {
 		getTested(false).deleteContent(null, "1", null);
@@ -873,11 +844,6 @@ public class ContentRestServiceTest extends ESRealClientTestBase {
 		content.put("id", new Object());
 		TestUtils
 				.assertResponseStatus(getTested(false).deleteContentBulk(TYPE_KNOWN, content), Response.Status.BAD_REQUEST);
-	}
-
-	@Test
-	public void deleteContentBulk_permissions() throws Exception {
-		TestUtils.assertPermissionProvider(ContentRestService.class, "deleteContentBulk", String.class, Map.class);
 	}
 
 	@Test(expected = NotAuthorizedException.class)
@@ -1020,26 +986,23 @@ public class ContentRestServiceTest extends ESRealClientTestBase {
 
 	}
 
-	@Test
-	public void getAllContent_permissions() throws IOException, InterruptedException {
-		TestUtils.assertPermissionGuest(ContentRestService.class, "getAllContent", String.class, Integer.class,
-				Integer.class, String.class);
-	}
-
 	@Test(expected = RequiredFieldException.class)
 	public void getAllContent_ParamValidation_1() throws IOException, InterruptedException {
 		getTested(false).getAllContent(null, null, null, null);
 	}
 
+	@Test(expected = RequiredFieldException.class)
 	public void getAllContent_ParamValidation_2() throws IOException, InterruptedException {
 		getTested(false).getAllContent("", null, null, null);
 	}
 
+	@Test(expected = BadFieldException.class)
 	public void getAllContent_ParamValidation_UnknownType() throws IOException, InterruptedException {
 		// case - type is unknown
 		getTested(false).getAllContent(TYPE_UNKNOWN, null, null, null);
 	}
 
+	@Test(expected = SettingsException.class)
 	public void getAllContent_ParamValidation_TypeConfigInvalid() throws IOException, InterruptedException {
 
 		// case - type configuration is invalid (do not contains index name and type)
@@ -1100,11 +1063,6 @@ public class ContentRestServiceTest extends ESRealClientTestBase {
 			indexDelete(INDEX_NAME);
 			finalizeESClientForUnitTest();
 		}
-	}
-
-	@Test
-	public void getContent_permissions() {
-		TestUtils.assertPermissionGuest(ContentRestService.class, "getContent", String.class, String.class);
 	}
 
 	@Test(expected = RequiredFieldException.class)

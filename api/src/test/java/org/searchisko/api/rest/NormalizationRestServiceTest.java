@@ -5,16 +5,6 @@
  */
 package org.searchisko.api.rest;
 
-import java.net.URI;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import javax.ejb.ObjectNotFoundException;
-import javax.ws.rs.core.Response.Status;
-import javax.ws.rs.core.UriInfo;
-
 import org.elasticsearch.client.Client;
 import org.elasticsearch.common.settings.SettingsException;
 import org.jboss.elasticsearch.tools.content.StructuredContentPreprocessor;
@@ -27,6 +17,15 @@ import org.searchisko.api.service.ConfigService;
 import org.searchisko.api.service.SearchClientService;
 import org.searchisko.api.testtools.TestUtils;
 import org.searchisko.api.testtools.WarningMockPreprocessor;
+
+import javax.ejb.ObjectNotFoundException;
+import javax.ws.rs.core.Response.Status;
+import javax.ws.rs.core.UriInfo;
+import java.net.URI;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Unit test for {@link NormalizationRestService}
@@ -60,11 +59,6 @@ public class NormalizationRestServiceTest {
 
 		}
 
-	}
-
-	@Test
-	public void normalizeOne_permissions() throws Exception {
-		TestUtils.assertPermissionProvider(NormalizationRestService.class, "normalizeOne", String.class, String.class);
 	}
 
 	@Test
@@ -104,11 +98,6 @@ public class NormalizationRestServiceTest {
 
 		Assert.assertEquals(ret, tested.normalizeOne(TEST_NORM_NAME, "myid"));
 
-	}
-
-	@Test
-	public void normalizeBulk_permissions() throws Exception {
-		TestUtils.assertPermissionProvider(NormalizationRestService.class, "normalizeBulk", String.class, UriInfo.class);
 	}
 
 	@SuppressWarnings({ "unchecked", "rawtypes" })

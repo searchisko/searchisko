@@ -5,16 +5,6 @@
  */
 package org.searchisko.api.rest;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.logging.Logger;
-
-import javax.ejb.ObjectNotFoundException;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
-
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -25,12 +15,21 @@ import org.searchisko.api.rest.exception.BadFieldException;
 import org.searchisko.api.rest.exception.NotAuthenticatedException;
 import org.searchisko.api.rest.exception.NotAuthorizedException;
 import org.searchisko.api.rest.exception.RequiredFieldException;
-import org.searchisko.api.security.AuthenticatedUserType;
 import org.searchisko.api.rest.security.AuthenticationUtilService;
+import org.searchisko.api.security.AuthenticatedUserType;
 import org.searchisko.api.service.ProviderService;
 import org.searchisko.api.service.ProviderService.ProviderContentTypeInfo;
 import org.searchisko.api.service.ProviderServiceTest;
 import org.searchisko.api.testtools.TestUtils;
+
+import javax.ejb.ObjectNotFoundException;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.logging.Logger;
 
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -253,7 +252,6 @@ public class IndexerRestServiceTest {
 
 	}
 
-	@SuppressWarnings("unchecked")
 	@Test
 	public void getStatus() throws ObjectNotFoundException {
 		IndexerRestService tested = Mockito.mock(IndexerRestService.class);
@@ -266,7 +264,7 @@ public class IndexerRestServiceTest {
 		// case - ObjectNotFoundException from handler
 		try {
 			Mockito.when(tested.getStatus(Mockito.anyString())).thenCallRealMethod();
-			Mockito.when(tested.extractIndexerName(Mockito.anyMap(), Mockito.anyString())).thenCallRealMethod();
+			Mockito.when(tested.extractIndexerName(Mockito.anyMapOf(String.class, Object.class), Mockito.anyString())).thenCallRealMethod();
 			Mockito.when(tested.getIndexerConfigurationWithManagePermissionCheck("my_type")).thenReturn(ic);
 
 			IndexerHandler ihMock = Mockito.mock(IndexerHandler.class);
@@ -282,7 +280,7 @@ public class IndexerRestServiceTest {
 		// case - status returned
 		Mockito.reset(tested);
 		Mockito.when(tested.getStatus(Mockito.anyString())).thenCallRealMethod();
-		Mockito.when(tested.extractIndexerName(Mockito.anyMap(), Mockito.anyString())).thenCallRealMethod();
+		Mockito.when(tested.extractIndexerName(Mockito.anyMapOf(String.class, Object.class), Mockito.anyString())).thenCallRealMethod();
 		Mockito.when(tested.getIndexerConfigurationWithManagePermissionCheck("my_type")).thenReturn(ic);
 		IndexerHandler ihMock = Mockito.mock(IndexerHandler.class);
 		Mockito.when(ihMock.getStatus(INDEXER_NAME)).thenReturn("sys info");
@@ -294,7 +292,7 @@ public class IndexerRestServiceTest {
 		try {
 			Mockito.reset(tested);
 			Mockito.when(tested.getStatus(Mockito.anyString())).thenCallRealMethod();
-			Mockito.when(tested.extractIndexerName(Mockito.anyMap(), Mockito.anyString())).thenCallRealMethod();
+			Mockito.when(tested.extractIndexerName(Mockito.anyMapOf(String.class, Object.class), Mockito.anyString())).thenCallRealMethod();
 			Mockito.when(tested.getIndexerConfigurationWithManagePermissionCheck("my_type")).thenThrow(
 					new NotAuthorizedException("no perm"));
 			tested.getStatus("my_type");

@@ -46,11 +46,6 @@ public class RatingRestServiceTest {
 	private static final String MOCK_CONTENT_ID_3 = "jb-456";
 	private static final String MOCK_CONTRIB_ID = "test <test@test.org>";
 
-	@Test
-	public void getRating_permissions() throws Exception {
-		TestUtils.assertPermissionContributor(RatingRestService.class, "getRating", String.class);
-	}
-
 	@Test(expected = RequiredFieldException.class)
 	public void getRating_invalidParam_1() {
 		RatingRestService tested = getTested();
@@ -178,11 +173,6 @@ public class RatingRestServiceTest {
 			assertRatingJSON((Map<String, Object>) aret.get(MOCK_CONTENT_ID_1), 3);
 			assertRatingJSON((Map<String, Object>) aret.get(MOCK_CONTENT_ID_2), 5);
 		}
-	}
-
-	@Test
-	public void postRating_permissions() throws Exception {
-		TestUtils.assertPermissionContributor(RatingRestService.class, "postRating", String.class, Map.class);
 	}
 
 	@Test(expected = RequiredFieldException.class)
