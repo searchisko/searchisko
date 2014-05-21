@@ -39,13 +39,13 @@ public class ContributorCasLoginModule extends CasLoginModule {
 	@Override
 	public void initialize(Subject subject, CallbackHandler handler, Map<String, ?> state, Map<String, ?> options) {
 		try {
-			CdiHelper.programmaticInjection(this);
+			CdiHelper.programmaticInjection(ContributorCasLoginModule.class, this);
 		} catch (NamingException e) {
 			throw new RuntimeException("Cannot initialize Login module", e);
 		}
 		log.log(Level.FINE, "Initializing JAAS ContributorCasLoginModule");
 
-		HashMap<String, Object> ops = new HashMap(options);
+		HashMap<String, Object> ops = new HashMap<>(options);
 
 		String casServerUrl = appConfigurationService.getAppConfiguration().getCasConfig().getServerUrl();
 		ops.put("casServerUrlPrefix", casServerUrl);

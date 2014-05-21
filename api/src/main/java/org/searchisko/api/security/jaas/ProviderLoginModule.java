@@ -39,12 +39,12 @@ public class ProviderLoginModule extends UsernamePasswordLoginModule {
 	@Override
 	public void initialize(Subject subject, CallbackHandler callbackHandler, Map<String, ?> sharedState, Map<String, ?> options) {
 		try {
-			CdiHelper.programmaticInjection(this);
+			CdiHelper.programmaticInjection(ProviderLoginModule.class, this);
 		} catch (NamingException e) {
 			throw new RuntimeException("Cannot initialize Login module", e);
 		}
 		log.log(Level.FINE, "Initializing JAAS ProviderLoginModule");
-		HashMap<String, Object> ops = new HashMap(options);
+		HashMap<String, Object> ops = new HashMap<>(options);
 
 		// see org.jboss.security.auth.spi.AbstractServerLoginModule#PRINCIPAL_CLASS
 		ops.put("principalClass", ProviderPrincipal.class.getCanonicalName());

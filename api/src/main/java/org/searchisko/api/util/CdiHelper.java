@@ -28,45 +28,39 @@ public class CdiHelper {
 	 * @throws NamingException
 	 */
 	public static DataSource getDefaultDataSource(EntityManager em) throws NamingException {
-// Doesn't work because of https://hibernate.atlassian.net/browse/HHH-8121
+// 		Doesn't work because of https://hibernate.atlassian.net/browse/HHH-8121
 //		EntityManagerFactory emFactory = em.getEntityManagerFactory();
 //		Object ds = emFactory.getProperties().get("javax.persistence.jtaDataSource");
 //		InitialContext initialContext = new InitialContext();
 //		Object lookup = initialContext.lookup(ds.toString());
 //		return (DataSource) lookup;
 
-// TODO: Find better way how to get DataSource from JPA without using hard coded JNDI name or casting to JPA implementation
+// 		TODO: Find better way how to get DataSource from JPA without using hard coded JNDI name or casting to JPA implementation
 		SessionFactoryImpl factory = (SessionFactoryImpl) em.unwrap(Session.class).getSessionFactory(); // or directly cast the sessionFactory
-		DatasourceConnectionProviderImpl provider = (DatasourceConnectionProviderImpl)factory.getConnectionProvider();
+		DatasourceConnectionProviderImpl provider = (DatasourceConnectionProviderImpl) factory.getConnectionProvider();
 		return provider.getDataSource();
 	}
 
 	/**
-	 * Programatically inject dependencies to desired bean.
-	 * It's shortcut for programmaticInjection(injectionObject.getClass(), injectionObject);
-	 *
-	 * @param injectionObject
-	 * @throws NamingException
-	 */
-	public static void programmaticInjection(Object injectionObject) throws NamingException {
-		programmaticInjection(injectionObject.getClass(), injectionObject);
-	}
-
-	/**
-	 * Programaticaly inject dependencies. Inspired by https://community.jboss.org/thread/196807
+	 * Manually inject dependencies. Inspired by https://community.jboss.org/thread/196807
 	 *
 	 * @param clazz
 	 * @param injectionObject
 	 * @throws NamingException
 	 */
-	public static void programmaticInjection(Class clazz, Object injectionObject) throws NamingException {
+	public static <T> T programmaticInjection(Class<T> clazz, T injectionObject) throws NamingException {
 		InitialContext initialContext = new InitialContext();
 		Object lookup = initialContext.lookup("java:comp/BeanManager");
 		BeanManager beanManager = (BeanManager) lookup;
-		AnnotatedType annotatedType = beanManager.createAnnotatedType(clazz);
-		InjectionTarget injectionTarget = beanManager.createInjectionTarget(annotatedType);
-		CreationalContext creationalContext = beanManager.createCreationalContext(null);
+
+		AnnotatedType<T> annotatedType = beanManager.createAnnotatedType(clazz);
+		InjectionTarget<T> injectionTarget = beanManager.createInjectionTarget(annotatedType);
+		CreationalContext<T> creationalContext = beanManager.createCreationalContext(null);
 		injectionTarget.inject(injectionObject, creationalContext);
+
+		injectionTarget.postConstruct(injectionObject); //call the @PostConstruct method
 		creationalContext.release();
+
+		return injectionObject;
 	}
 }

@@ -62,6 +62,7 @@ public class HttpBasicChallengeInterceptor extends SecurityInterceptor {
 		return response;
 	}
 
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@Override
 	public ServerResponse preProcess(HttpRequest request, ResourceMethod resourceMethod) throws Failure, WebApplicationException {
 		// Retrieve again all annotations
