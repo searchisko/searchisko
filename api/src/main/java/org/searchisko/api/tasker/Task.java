@@ -9,9 +9,11 @@ import java.io.InterruptedIOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.elasticsearch.indices.IndexMissingException;
+
 /**
  * Abstract base class for task implementation. Main task work is done inside {@link #performTask()} method.
- *
+ * 
  * @author Vlastimil Elias (velias at redhat dot com)
  */
 public abstract class Task extends Thread {
@@ -30,7 +32,7 @@ public abstract class Task extends Thread {
 
 	/**
 	 * Called from {@link TaskManager} before task execution is started.
-	 *
+	 * 
 	 * @param taskId id of task
 	 * @param context callback
 	 */
@@ -44,7 +46,7 @@ public abstract class Task extends Thread {
 	/**
 	 * Implement your long running task here. Do not forget to check {@link #isCanceledOrInterrupted()} and return from
 	 * method immediately.
-	 *
+	 * 
 	 * @throws RuntimeException runtime exception is treated as system error, so task is marked as
 	 *           {@link TaskStatus#FAILOVER} and run again later
 	 * @throws Exception checked permission is treated as permanent error, so task is marked as
@@ -66,6 +68,8 @@ public abstract class Task extends Thread {
 			}
 		} catch (InterruptedException | InterruptedIOException e) {
 			writeStatus(TaskStatus.FAILOVER, "Task execution was interrupted");
+		} catch (IndexMissingException e) {
+			writeStatus(TaskStatus.FINISHED_ERROR, "ERROR: Task finished due missing search index: " + e.getMessage());
 		} catch (RuntimeException e) {
 			String msg = "Task execution interrupted due " + e.getClass().getName() + ": " + e.getMessage();
 			if (e instanceof NullPointerException) {
@@ -86,7 +90,7 @@ public abstract class Task extends Thread {
 
 	/**
 	 * Write new row into task log.
-	 *
+	 * 
 	 * @param message
 	 */
 	protected void writeTaskLog(String message) {
@@ -96,7 +100,7 @@ public abstract class Task extends Thread {
 	/**
 	 * Check if task is cancelled or interrupted. Use this check in {@link #performTask()} implementation to finish long
 	 * running task if this method returns true!
-	 *
+	 * 
 	 * @return true if task interruption/cancel is requested.
 	 */
 	public boolean isCanceledOrInterrupted() {
@@ -107,7 +111,7 @@ public abstract class Task extends Thread {
 	 * Used from {@link TaskManager} to request cancellation for this task. You have to use
 	 * {@link #isCanceledOrInterrupted()} in your {@link #performTask()} implementation to allow correct task
 	 * cancellation!
-	 *
+	 * 
 	 * @param canceled
 	 */
 	public void setCanceled(boolean canceled) {

@@ -7,6 +7,8 @@ package org.searchisko.api.tasker;
 
 import java.io.InterruptedIOException;
 
+import org.elasticsearch.index.Index;
+import org.elasticsearch.indices.IndexMissingException;
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -51,6 +53,19 @@ public class TaskTest {
 			tested.run();
 			Mockito.verify(tested.context).changeTaskStatus(TASK_ID, TaskStatus.FAILOVER,
 					"ERROR: Task execution interrupted due java.lang.RuntimeException: my runtime exception message");
+		}
+
+		// case - index missing exception
+		{
+			Task tested = getTested(new Answer<Boolean>() {
+				@Override
+				public Boolean answer(InvocationOnMock invocation) throws Throwable {
+					throw new IndexMissingException(new Index("my_index"));
+				}
+			});
+			tested.run();
+			Mockito.verify(tested.context).changeTaskStatus(TASK_ID, TaskStatus.FINISHED_ERROR,
+					"ERROR: Task finished due missing search index: [my_index] missing");
 		}
 
 		// case - null pointer exception
