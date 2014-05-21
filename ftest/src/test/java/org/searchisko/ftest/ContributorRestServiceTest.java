@@ -13,6 +13,7 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.junit.InSequence;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.junit.AfterClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -40,7 +41,13 @@ public class ContributorRestServiceTest {
         return DeploymentHelpers.createDeployment();
     }
 
-    private static final String restVersion = DeploymentHelpers.DEFAULT_REST_VERSION;
+	@AfterClass
+	public static void cleanAfterTest() throws IOException {
+		DeploymentHelpers.removeSearchiskoDataDir();
+	}
+
+
+	private static final String restVersion = DeploymentHelpers.DEFAULT_REST_VERSION;
 
 	public static final String CONTRIBUTOR_REST_API = restVersion + "contributor/{id}";
 

@@ -6,6 +6,7 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.junit.InSequence;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.junit.AfterClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -28,14 +29,22 @@ import static org.hamcrest.Matchers.nullValue;
 @RunWith(Arquillian.class)
 public class AuthStatusRestServiceTest {
 
+	@ArquillianResource
+	protected URL context;
+
 	@Deployment(testable = false)
 	public static WebArchive createDeployment() throws IOException {
 		return DeploymentHelpers.createDeploymentMinimalWebXML();
 	}
 
+	@AfterClass
+	public static void cleanAfterTest() throws IOException {
+		DeploymentHelpers.removeSearchiskoDataDir();
+	}
+
 	@Test
 	@InSequence(0)
-	public void assertSSOServiceNotAvailable(@ArquillianResource URL context) throws MalformedURLException {
+	public void assertSSOServiceNotAvailable() throws MalformedURLException {
 		given().
 				contentType(ContentType.JSON).
 				expect().
