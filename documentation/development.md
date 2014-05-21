@@ -62,7 +62,7 @@ used to build for different target environments (the `localhost` profile is acti
 ### Authentication and Authorization
 Searchisko is secured by JAAS framework and application server needs to be configured.
 Two modules are prepared for Provider authentication and CAS integration for Contributor authentication.
-Just copy this security domain definition into `standalone.xml`:
+Just copy this security domain definition into `<subsystem xmlns="urn:jboss:domain:security:1.2"><security-domains>` section of `standalone.xml`:
 
 	<security-domain name="SearchiskoSecurityDomain">
 		<authentication>
