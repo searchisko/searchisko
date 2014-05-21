@@ -13,13 +13,13 @@ import java.util.Map;
  */
 public class ProviderModel {
 
-	protected String name;
+	public String name;
 
-	protected String password;
+	public String password;
 
-	protected String passwordHash;
+	public String passwordHash;
 
-	protected Map<String, Object> contentTypes = new HashMap<>();
+	public Map<String, Object> contentTypes = new HashMap<>();
 
 	public ProviderModel(String name, String password) {
 		this.name = name;

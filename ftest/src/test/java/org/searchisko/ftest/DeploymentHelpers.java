@@ -70,7 +70,7 @@ public class DeploymentHelpers {
 		}
 	}
 
-	protected static void removeSearchiskoDataDir() throws IOException {
+	public static void removeSearchiskoDataDir() throws IOException {
 		String d = appProperties.getProperty("es.client.embedded.data.path");
 		log.log(Level.INFO, "Deleting searchisko data dir: {0}", d);
 		FileUtils.deleteDirectory(new File(d));
