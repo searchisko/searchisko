@@ -34,6 +34,8 @@ It's needed to add security domain `SearchiskoSecurityDomainFTEST` into the `$JB
 
 Note: Security domain name is intentionally different because functional tests uses HTTP Basic authentication to authenticate contributors.
 
+See [JBoss EAP 6.2 standalone.xml example](§) how it can looks like
+
 Running tests
 -------------
 
