@@ -8,6 +8,8 @@ package org.searchisko.api.testtools;
 import java.io.File;
 import java.io.IOException;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.apache.commons.io.FileUtils;
 import org.elasticsearch.action.admin.cluster.health.ClusterHealthRequest;
@@ -62,6 +64,8 @@ public abstract class ESRealClientTestBase {
 
 	private File tempFolder;
 
+	protected Logger log = Logger.getLogger(ESRealClientTestBase.class.getName());
+
 	/**
 	 * Prepare SearchClientService against in-memory EC cluster for unit test. Do not forgot to call
 	 * {@link #finalizeESClientForUnitTest()} at the end of test!
@@ -91,8 +95,11 @@ public abstract class ESRealClientTestBase {
 			// This is to ensure that your node will never join existing cluster on the network.
 
 			// path.data location
-			tempFolder = new File("tmp");
+			// parent folder is system's defined tmp dir instead of actual directory where test runs
+			String parent = System.getProperty("java.io.tmpdir");
+			tempFolder = new File(parent, "tmp");
 			String tempFolderName = tempFolder.getCanonicalPath();
+			log.log(Level.INFO, "Temporary folder for ES JUnit Client: {0}", tempFolderName);
 
 			if (tempFolder.exists()) {
 				FileUtils.deleteDirectory(tempFolder);
