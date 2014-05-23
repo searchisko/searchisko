@@ -9,6 +9,7 @@ package org.searchisko.api.audit;
 import javax.ejb.Stateless;
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.servlet.http.HttpServletRequest;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.security.Principal;
@@ -31,13 +32,14 @@ public class AuditService {
 
 	public static final Level DEFAULT_AUDIT_LOG_LEVEL = Level.INFO;
 
-	public static final Level DEFAULT_AUDIT_LOG_LEVEL_DATA = Level.INFO;
-
 	@Inject
 	protected Logger log;
 
 	@Inject
 	protected Principal principal;
+
+	@Inject
+	private HttpServletRequest httpRequest;
 
 	/**
 	 * Do the audit logic
@@ -47,7 +49,12 @@ public class AuditService {
 	public void auditMethod(Method method, Object[] parameters) {
 		Object id = getAnnotatedParamValue(method, parameters, AuditId.class);
 		Object content = getAnnotatedParamValue(method, parameters, AuditContent.class);
-		auditToLog(method, id, content);
+
+		String path = null;
+		if (httpRequest != null) {
+			path = httpRequest.getRequestURI();
+		}
+		auditToLog(method, path, id, content);
 	}
 
 	/**
@@ -79,29 +86,23 @@ public class AuditService {
 	 * @param id
 	 * @param content
 	 */
-	private void auditToLog(Method method, Object id, Object content) {
+	private void auditToLog(Method method, String path, Object id, Object content) {
 
 		// TODO: AUDIT: Move Audit Logger to separate bean and allows other implementations
 
 		Level logLevel = DEFAULT_AUDIT_LOG_LEVEL;
-		Level logForData = DEFAULT_AUDIT_LOG_LEVEL_DATA;
 
 		if (log.isLoggable(logLevel)) {
 			log.log(logLevel,
-					"Audit ''{0}'',  Id: {2}, Caller: {1}",
-					new Object[]{method.toString(), id, principal});
-		}
-		if (log.isLoggable(logForData)) {
-			log.log(logLevel,
-					"Audit data: ''{0}''",
-					content);
+					"path: ''{0}'', user: ''{1}'', id: ''{2}'', content: ''{3}''",
+					new Object[]{path, principal, id, content});
 		}
 
-		// Logs as audited class
+		// Logs as audited class on FINE level
 		Logger targetClassLogger = getTargetLogger(method);
-		if (targetClassLogger.isLoggable(logLevel)) {
+		if (targetClassLogger.isLoggable(Level.FINE)) {
 			targetClassLogger.log(logLevel,
-					"Executing method ''{0}'' by {1}",
+					"Executing method: ''{0}'', by: {1}",
 					new Object[]{method.getName(), principal});
 		}
 	}
