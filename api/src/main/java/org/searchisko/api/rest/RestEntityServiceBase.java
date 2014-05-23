@@ -5,19 +5,13 @@
  */
 package org.searchisko.api.rest;
 
-import java.util.Map;
-
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
+import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.util.Map;
 
+import org.searchisko.api.audit.annotation.AuditContent;
+import org.searchisko.api.audit.annotation.AuditId;
 import org.searchisko.api.rest.exception.RequiredFieldException;
 import org.searchisko.api.util.SearchUtils;
 import org.searchisko.persistence.service.EntityService;
@@ -52,7 +46,7 @@ public class RestEntityServiceBase extends RestServiceBase {
 	@GET
 	@Path("/{id}")
 	@Produces(MediaType.APPLICATION_JSON)
-	public Object get(@PathParam("id") String id) {
+	public Object get(@PathParam("id") @AuditId String id) {
 
 		if ((id = SearchUtils.trimToNull(id)) == null) {
 			throw new RequiredFieldException("id");
@@ -78,7 +72,7 @@ public class RestEntityServiceBase extends RestServiceBase {
 	@Path("/")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	public Object create(Map<String, Object> data) {
+	public Object create(@AuditContent Map<String, Object> data) {
 		String id = entityService.create(data);
 		return createResponseWithId(id);
 	}
@@ -87,7 +81,7 @@ public class RestEntityServiceBase extends RestServiceBase {
 	@Path("/{id}")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	public Object create(@PathParam("id") String id, Map<String, Object> data) {
+	public Object create(@PathParam("id") @AuditId String id, @AuditContent Map<String, Object> data) {
 
 		if ((id = SearchUtils.trimToNull(id)) == null) {
 			throw new RequiredFieldException("id");
@@ -99,7 +93,7 @@ public class RestEntityServiceBase extends RestServiceBase {
 
 	@DELETE
 	@Path("/{id}")
-	public Object delete(@PathParam("id") String id) {
+	public Object delete(@PathParam("id") @AuditId String id) {
 		if ((id = SearchUtils.trimToNull(id)) == null) {
 			throw new RequiredFieldException("id");
 		}
