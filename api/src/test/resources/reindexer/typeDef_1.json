@@ -11,10 +11,8 @@
           }
         },{
           "name"     : "test with source bases",
-          "class"    : "org.jboss.elasticsearch.tools.content.ESLookupValuePreprocessor",
+          "class"    : "org.searchisko.tools.content.ContributorMappingPreprocessor",
           "settings" : {
-              "index_name"       : "sys_contributors",
-              "index_type"       : "contributor",
               "source_field"     : "email_address",
               "idx_search_field" : "email",
               "result_mapping"   : [{
