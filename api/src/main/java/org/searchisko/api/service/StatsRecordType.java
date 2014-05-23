@@ -12,7 +12,14 @@ package org.searchisko.api.service;
  */
 public enum StatsRecordType {
 
-	SEARCH, FEED, SEARCH_HIT_USED;
+	SEARCH,
+	FEED,
+	SEARCH_HIT_USED,
+
+	/**
+	 * Statistic for Audit log
+	 */
+	AUDIT;
 
 	/**
 	 * Get value representing this type to be stored into search index.
