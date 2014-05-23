@@ -21,7 +21,7 @@ import org.searchisko.api.audit.annotation.Audit;
 import org.searchisko.api.audit.annotation.AuditContent;
 import org.searchisko.api.audit.annotation.AuditId;
 import org.searchisko.api.rest.exception.RequiredFieldException;
-import org.searchisko.api.rest.security.AuthenticationUtilService;
+import org.searchisko.api.service.AuthenticationUtilService;
 import org.searchisko.api.security.Role;
 import org.searchisko.api.service.ProviderService;
 import org.searchisko.api.service.SecurityService;
@@ -81,7 +81,7 @@ public class ProviderRestService extends RestEntityServiceBase {
 
 		String usernameOfProviderWeChange = entity.get(ProviderService.NAME).toString();
 
-		authenticationUtilService.checkProviderManagementPermission(securityContext, usernameOfProviderWeChange);
+		authenticationUtilService.checkProviderManagementPermission(usernameOfProviderWeChange);
 
 		return ESDataOnlyResponse.removeFields(entity, FIELDS_TO_REMOVE);
 	}
@@ -152,7 +152,7 @@ public class ProviderRestService extends RestEntityServiceBase {
 
 		String usernameOfProviderWeChange = entity.get(ProviderService.NAME).toString();
 
-		authenticationUtilService.checkProviderManagementPermission(securityContext, usernameOfProviderWeChange);
+		authenticationUtilService.checkProviderManagementPermission(usernameOfProviderWeChange);
 
 		entity.put(ProviderService.PASSWORD_HASH, securityService.createPwdHash(usernameOfProviderWeChange, pwd.trim()));
 		entityService.update(id, entity);

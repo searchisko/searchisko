@@ -5,11 +5,19 @@
  */
 package org.searchisko.api.rest;
 
+import javax.enterprise.context.RequestScoped;
+import javax.inject.Inject;
+import javax.ws.rs.*;
+import javax.ws.rs.core.*;
+import javax.ws.rs.core.Response.Status;
+import java.util.*;
+import java.util.logging.Logger;
+
 import org.elasticsearch.action.get.GetResponse;
 import org.searchisko.api.ContentObjectFields;
 import org.searchisko.api.rest.exception.NotAuthorizedException;
 import org.searchisko.api.rest.exception.RequiredFieldException;
-import org.searchisko.api.rest.security.AuthenticationUtilService;
+import org.searchisko.api.service.AuthenticationUtilService;
 import org.searchisko.api.security.Role;
 import org.searchisko.api.service.ProviderService;
 import org.searchisko.api.service.ProviderService.ProviderContentTypeInfo;
@@ -19,14 +27,6 @@ import org.searchisko.api.util.SearchUtils;
 import org.searchisko.persistence.jpa.model.Rating;
 import org.searchisko.persistence.service.RatingPersistenceService;
 import org.searchisko.persistence.service.RatingPersistenceService.RatingStats;
-
-import javax.enterprise.context.RequestScoped;
-import javax.inject.Inject;
-import javax.ws.rs.*;
-import javax.ws.rs.core.*;
-import javax.ws.rs.core.Response.Status;
-import java.util.*;
-import java.util.logging.Logger;
 
 /**
  * REST API endpoint for 'Personalized Content Rating API'.
@@ -87,7 +87,7 @@ public class RatingRestService extends RestServiceBase {
 			throw new RequiredFieldException(QUERY_PARAM_ID);
 		}
 
-		String currentContributorId = authenticationUtilService.getAuthenticatedContributor(securityContext, false);
+		String currentContributorId = authenticationUtilService.getAuthenticatedContributor(false);
 		if (currentContributorId != null) {
 			List<Rating> rl = ratingPersistenceService.getRatings(currentContributorId, contentSysId);
 			if (rl != null && !rl.isEmpty()) {
@@ -122,7 +122,7 @@ public class RatingRestService extends RestServiceBase {
 
 		Map<String, Object> ret = new HashMap<>();
 
-		String currentContributorId = authenticationUtilService.getAuthenticatedContributor(securityContext, false);
+		String currentContributorId = authenticationUtilService.getAuthenticatedContributor(false);
 		if (currentContributorId == null || uriInfo == null) {
 			return ret;
 		}
@@ -159,7 +159,7 @@ public class RatingRestService extends RestServiceBase {
 	public Object postRating(@PathParam(QUERY_PARAM_ID) String contentSysId, Map<String, Object> requestContent) {
 		checkIfUserAuthenticated();
 
-		String currentContributorId = authenticationUtilService.getAuthenticatedContributor(securityContext, true);
+		String currentContributorId = authenticationUtilService.getAuthenticatedContributor(true);
 
 		contentSysId = SearchUtils.trimToNull(contentSysId);
 

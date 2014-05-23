@@ -3,23 +3,23 @@
  * Copyright 2012 Red Hat Inc. and/or its affiliates and other contributors
  * as indicated by the @authors tag. All rights reserved.
  */
-package org.searchisko.api.rest.security;
+package org.searchisko.api.service;
+
+import javax.enterprise.context.RequestScoped;
+import javax.inject.Inject;
+import javax.inject.Named;
+import javax.servlet.http.HttpServletRequest;
+import java.security.Principal;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.searchisko.api.rest.exception.NotAuthenticatedException;
 import org.searchisko.api.rest.exception.NotAuthorizedException;
 import org.searchisko.api.security.AuthenticatedUserType;
 import org.searchisko.api.security.Role;
 import org.searchisko.api.security.jaas.ContributorPrincipal;
-import org.searchisko.api.service.ContributorProfileService;
+import org.searchisko.api.security.jaas.ProviderPrincipal;
 import org.searchisko.api.util.SearchUtils;
-
-import javax.enterprise.context.RequestScoped;
-import javax.inject.Inject;
-import javax.inject.Named;
-import javax.ws.rs.core.SecurityContext;
-import java.security.Principal;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * Authentication utility service. Use it in your RestServices if you need info about currently logged in user! Also
@@ -32,13 +32,14 @@ import java.util.logging.Logger;
 @RequestScoped
 public class AuthenticationUtilService {
 
-	//TODO: Move to services package
-
 	@Inject
 	protected Logger log;
 
 	@Inject
 	protected ContributorProfileService contributorProfileService;
+
+	@Inject
+	private HttpServletRequest httpRequest;
 
 	/**
 	 * request scoped cache.
@@ -53,29 +54,28 @@ public class AuthenticationUtilService {
 	 * @throws NotAuthenticatedException if Provider is not authenticated. Use role PROVIDER to your
 	 *                                   REST service to prevent this exception.
 	 */
-	public String getAuthenticatedProvider(SecurityContext securityContext) throws NotAuthenticatedException {
-		if (!isAuthenticatedUserOfType(securityContext, AuthenticatedUserType.PROVIDER)) {
+	public String getAuthenticatedProvider() throws NotAuthenticatedException {
+		if (!isAuthenticatedUserOfType(AuthenticatedUserType.PROVIDER)) {
 			throw new NotAuthenticatedException(AuthenticatedUserType.PROVIDER);
 		}
-		return securityContext.getUserPrincipal().getName();
+		return httpRequest.getUserPrincipal().getName();
 	}
 
 	/**
 	 * Check if logged in user has management permission for passed in provider.
 	 *
-	 * @param securityContext to look for currently logged in user in
-	 * @param providerName    to check permission for
+	 * @param providerName to check permission for
 	 * @throws NotAuthorizedException if user has not the permission
 	 */
-	public void checkProviderManagementPermission(SecurityContext securityContext, String providerName)
-			throws NotAuthorizedException {
-		if (log.isLoggable(Level.FINE))
-			log.fine("Going to check ProviderManage permission for provider " + providerName + " and securityContext "
-					+ securityContext);
-		if (securityContext != null
+	public void checkProviderManagementPermission(String providerName) throws NotAuthorizedException {
+		if (log.isLoggable(Level.FINE)) {
+			log.log(Level.FINE, "Going to check ProviderManage permission for provider {0} and principal {1}",
+					new Object[]{providerName, httpRequest.getUserPrincipal()});
+		}
+		if (httpRequest.getUserPrincipal() != null
 				&& providerName != null
-				&& (securityContext.isUserInRole(Role.ADMIN) || providerName
-				.equalsIgnoreCase(getAuthenticatedProvider(securityContext)))) {
+				&& (httpRequest.isUserInRole(Role.ADMIN) || providerName
+				.equalsIgnoreCase(getAuthenticatedProvider()))) {
 			return;
 		}
 		throw new NotAuthorizedException("management permission for content provider " + providerName);
@@ -94,11 +94,10 @@ public class AuthenticationUtilService {
 	 *                                   security interceptor is correctly implemented and configured for this class and
 	 *                                   {@link org.searchisko.api.security.Role#CONTRIBUTOR} is applied.
 	 */
-	public String getAuthenticatedContributor(SecurityContext securityContext, boolean forceCreate)
-			throws NotAuthenticatedException {
+	public String getAuthenticatedContributor(boolean forceCreate) throws NotAuthenticatedException {
 		log.log(Level.FINEST, "Get Authenticated Contributor, forceCreate: {0}", forceCreate);
 
-		if (!isAuthenticatedUserOfType(securityContext, AuthenticatedUserType.CONTRIBUTOR)) {
+		if (!isAuthenticatedUserOfType(AuthenticatedUserType.CONTRIBUTOR)) {
 			log.fine("User is not authenticated");
 			cachedContributorId = null;
 			throw new NotAuthenticatedException(AuthenticatedUserType.CONTRIBUTOR);
@@ -109,7 +108,7 @@ public class AuthenticationUtilService {
 			return cachedContributorId;
 		}
 
-		Principal user = securityContext.getUserPrincipal();
+		Principal user = httpRequest.getUserPrincipal();
 
 		String cid = SearchUtils.trimToNull(contributorProfileService.getContributorId(
 				mapPrincipalToContributorCodeType(user), user.getName(), forceCreate
@@ -125,14 +124,14 @@ public class AuthenticationUtilService {
 	 * Force update of currently logged in contributor profile. No any exception is thrown. Should be called after
 	 * contributor authentication.
 	 */
-	public void updateAuthenticatedContributorProfile(SecurityContext securityContext) {
-		if (isAuthenticatedUserOfType(securityContext, AuthenticatedUserType.CONTRIBUTOR)) {
+	public void updateAuthenticatedContributorProfile() {
+		if (isAuthenticatedUserOfType(AuthenticatedUserType.CONTRIBUTOR)) {
 			try {
-				String uname = SearchUtils.trimToNull(securityContext.getUserPrincipal().getName());
-				if (uname != null) {
+				String username = SearchUtils.trimToNull(httpRequest.getUserPrincipal().getName());
+				if (username != null) {
 					// TODO CONTRIBUTOR_PROFILE we should consider to run update in another thread not to block caller
 					contributorProfileService.createOrUpdateProfile(
-							mapPrincipalToContributorCodeType(securityContext.getUserPrincipal()), uname, false);
+							mapPrincipalToContributorCodeType(httpRequest.getUserPrincipal()), username, false);
 				}
 			} catch (Exception e) {
 				log.log(Level.WARNING, "Contributor profile update failed: " + e.getMessage(), e);
@@ -141,11 +140,33 @@ public class AuthenticationUtilService {
 	}
 
 	protected String mapPrincipalToContributorCodeType(Principal principal) {
-		// CAS uses own principal so we can distinguish authentication source based on it
-		if (principal instanceof ContributorPrincipal || principal instanceof org.jasig.cas.client.jaas.AssertionPrincipal) {
+		if (principal == null) {
+			throw new NotAuthenticatedException(AuthenticatedUserType.CONTRIBUTOR);
+		}
+		if (AuthenticatedUserType.CONTRIBUTOR.equals(getUserType(principal))) {
 			return ContributorProfileService.FIELD_TSC_JBOSSORG_USERNAME;
 		} else {
 			throw new UnsupportedOperationException("Unsupported Principal Type: " + principal);
+		}
+	}
+
+	/**
+	 * Get user type for give principal
+	 *
+	 * @param principal
+	 * @return user type or null if unknown
+	 */
+	public AuthenticatedUserType getUserType(Principal principal) {
+		if (principal == null) {
+			return null;
+		}
+		// CAS uses own principal so we can distinguish authentication source based on it
+		if (principal instanceof ContributorPrincipal || principal instanceof org.jasig.cas.client.jaas.AssertionPrincipal) {
+			return AuthenticatedUserType.CONTRIBUTOR;
+		} else if (principal instanceof ProviderPrincipal) {
+			return AuthenticatedUserType.PROVIDER;
+		} else {
+			return null;
 		}
 	}
 
@@ -155,19 +176,19 @@ public class AuthenticationUtilService {
 	 * @param userType to check
 	 * @return true if user of given type is authenticated.
 	 */
-	public boolean isAuthenticatedUserOfType(SecurityContext securityContext, AuthenticatedUserType userType) {
+	public boolean isAuthenticatedUserOfType(AuthenticatedUserType userType) {
 		if (log.isLoggable(Level.FINEST)) {
-			log.log(Level.FINEST, "Security Context: {0}, role to check: {1}",
-					new Object[]{securityContext, userType});
+			log.log(Level.FINEST, "Principal: {0}, role to check: {1}",
+					new Object[]{httpRequest.getUserPrincipal(), userType});
 		}
-		if (securityContext == null) {
+		if (httpRequest.getUserPrincipal() == null) {
 			return false;
 		}
 		switch (userType) {
 			case PROVIDER:
-				return securityContext.isUserInRole(Role.PROVIDER);
+				return httpRequest.isUserInRole(Role.PROVIDER);
 			case CONTRIBUTOR:
-				return securityContext.isUserInRole(Role.CONTRIBUTOR);
+				return httpRequest.isUserInRole(Role.CONTRIBUTOR);
 		}
 		return false;
 	}

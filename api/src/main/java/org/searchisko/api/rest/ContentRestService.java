@@ -5,6 +5,20 @@
  */
 package org.searchisko.api.rest;
 
+import javax.annotation.security.PermitAll;
+import javax.annotation.security.RolesAllowed;
+import javax.enterprise.context.RequestScoped;
+import javax.enterprise.event.Event;
+import javax.inject.Inject;
+import javax.ws.rs.*;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
+import javax.ws.rs.core.SecurityContext;
+import java.util.*;
+import java.util.logging.Level;
+
 import org.elasticsearch.action.bulk.BulkItemResponse;
 import org.elasticsearch.action.bulk.BulkRequestBuilder;
 import org.elasticsearch.action.bulk.BulkResponse;
@@ -24,27 +38,13 @@ import org.searchisko.api.events.ContentStoredEvent;
 import org.searchisko.api.rest.exception.BadFieldException;
 import org.searchisko.api.rest.exception.NotAuthorizedException;
 import org.searchisko.api.rest.exception.RequiredFieldException;
-import org.searchisko.api.rest.security.AuthenticationUtilService;
+import org.searchisko.api.service.AuthenticationUtilService;
 import org.searchisko.api.security.Role;
 import org.searchisko.api.service.ProviderService;
 import org.searchisko.api.service.ProviderService.ProviderContentTypeInfo;
 import org.searchisko.api.service.SearchClientService;
 import org.searchisko.api.util.SearchUtils;
 import org.searchisko.persistence.service.ContentPersistenceService;
-
-import javax.annotation.security.PermitAll;
-import javax.annotation.security.RolesAllowed;
-import javax.enterprise.context.RequestScoped;
-import javax.enterprise.event.Event;
-import javax.inject.Inject;
-import javax.ws.rs.*;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
-import javax.ws.rs.core.SecurityContext;
-import java.util.*;
-import java.util.logging.Level;
 
 /**
  * REST API for Content related operations.
@@ -388,7 +388,7 @@ public class ContentRestService extends RestServiceBase {
 		if (typeInfo == null) {
 			throw new BadFieldException("type", "content type not found");
 		}
-		authenticationUtilService.checkProviderManagementPermission(securityContext, typeInfo.getProviderName());
+		authenticationUtilService.checkProviderManagementPermission(typeInfo.getProviderName());
 		return typeInfo;
 	}
 

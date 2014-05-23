@@ -5,6 +5,15 @@
  */
 package org.searchisko.api.rest;
 
+import javax.ejb.ObjectNotFoundException;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.logging.Logger;
+
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -15,21 +24,12 @@ import org.searchisko.api.rest.exception.BadFieldException;
 import org.searchisko.api.rest.exception.NotAuthenticatedException;
 import org.searchisko.api.rest.exception.NotAuthorizedException;
 import org.searchisko.api.rest.exception.RequiredFieldException;
-import org.searchisko.api.rest.security.AuthenticationUtilService;
+import org.searchisko.api.service.AuthenticationUtilService;
 import org.searchisko.api.security.AuthenticatedUserType;
 import org.searchisko.api.service.ProviderService;
 import org.searchisko.api.service.ProviderService.ProviderContentTypeInfo;
 import org.searchisko.api.service.ProviderServiceTest;
 import org.searchisko.api.testtools.TestUtils;
-
-import javax.ejb.ObjectNotFoundException;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.logging.Logger;
 
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -85,7 +85,7 @@ public class IndexerRestServiceTest {
 			Assert.fail("ObjectNotFoundException expected");
 		} catch (ObjectNotFoundException e) {
 			// OK
-			verify(tested.authenticationUtilService).checkProviderManagementPermission(tested.securityContext,
+			verify(tested.authenticationUtilService).checkProviderManagementPermission(
 					ProviderServiceTest.TEST_PROVIDER_NAME);
 		}
 
@@ -94,14 +94,14 @@ public class IndexerRestServiceTest {
 			Mockito.reset(tested.authenticationUtilService);
 			Map<String, Object> ret = tested.getIndexerConfigurationWithManagePermissionCheck(TYPE_KNOWN_WITH_INDEXER);
 			Assert.assertNotNull(ret);
-			verify(tested.authenticationUtilService).checkProviderManagementPermission(tested.securityContext,
+			verify(tested.authenticationUtilService).checkProviderManagementPermission(
 					ProviderServiceTest.TEST_PROVIDER_NAME);
 		}
 
 		// known type, provider has no permission
 		try {
 			Mockito.doThrow(new NotAuthorizedException("no perm")).when(tested.authenticationUtilService)
-					.checkProviderManagementPermission(tested.securityContext, ProviderServiceTest.TEST_PROVIDER_NAME);
+					.checkProviderManagementPermission(ProviderServiceTest.TEST_PROVIDER_NAME);
 			tested.getIndexerConfigurationWithManagePermissionCheck(TYPE_KNOWN_WITH_INDEXER);
 			Assert.fail("NotAuthorizedException expected");
 		} catch (NotAuthorizedException e) {
@@ -112,7 +112,7 @@ public class IndexerRestServiceTest {
 		try {
 			Mockito.doThrow(new NotAuthenticatedException(AuthenticatedUserType.PROVIDER))
 					.when(tested.authenticationUtilService)
-					.checkProviderManagementPermission(tested.securityContext, ProviderServiceTest.TEST_PROVIDER_NAME);
+					.checkProviderManagementPermission(ProviderServiceTest.TEST_PROVIDER_NAME);
 			tested.getIndexerConfigurationWithManagePermissionCheck(TYPE_KNOWN_WITH_INDEXER);
 			Assert.fail("NotAuthenticatedException expected");
 		} catch (NotAuthenticatedException e) {
@@ -142,7 +142,7 @@ public class IndexerRestServiceTest {
 			Mockito.when(tested.providerService.getAll()).thenReturn(allProviders);
 
 			Mockito.doThrow(new NotAuthorizedException("no perm")).when(tested.authenticationUtilService)
-					.checkProviderManagementPermission(tested.securityContext, TEST_PROVIDER_NAME_UNAUTH);
+					.checkProviderManagementPermission(TEST_PROVIDER_NAME_UNAUTH);
 
 			List<ProviderContentTypeInfo> ret = tested.getAllIndexerConfigurationsWithManagePermissionCheck();
 			Assert.assertNotNull(ret);
@@ -152,9 +152,9 @@ public class IndexerRestServiceTest {
 			Assert.assertEquals(ProviderServiceTest.TEST_PROVIDER_NAME, ret.get(1).getProviderName());
 			Assert.assertEquals("jbossorg_type_3", ret.get(1).getTypeName());
 
-			verify(tested.authenticationUtilService).checkProviderManagementPermission(tested.securityContext,
+			verify(tested.authenticationUtilService).checkProviderManagementPermission(
 					ProviderServiceTest.TEST_PROVIDER_NAME);
-			verify(tested.authenticationUtilService).checkProviderManagementPermission(tested.securityContext,
+			verify(tested.authenticationUtilService).checkProviderManagementPermission(
 					TEST_PROVIDER_NAME_UNAUTH);
 		}
 
@@ -365,7 +365,7 @@ public class IndexerRestServiceTest {
 		tested.esRiverRemoteIndexerHandler = Mockito.mock(EsRiverRemoteIndexerHandler.class);
 
 		tested.authenticationUtilService = Mockito.mock(AuthenticationUtilService.class);
-		when(tested.authenticationUtilService.getAuthenticatedProvider(null)).thenReturn(
+		when(tested.authenticationUtilService.getAuthenticatedProvider()).thenReturn(
 				ProviderServiceTest.TEST_PROVIDER_NAME);
 
 		tested.providerService = Mockito.mock(ProviderService.class);

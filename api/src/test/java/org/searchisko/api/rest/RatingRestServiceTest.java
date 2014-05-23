@@ -5,23 +5,6 @@
  */
 package org.searchisko.api.rest;
 
-import org.elasticsearch.action.get.GetResponse;
-import org.jboss.resteasy.specimpl.MultivaluedMapImpl;
-import org.junit.Assert;
-import org.junit.Test;
-import org.mockito.Mockito;
-import org.searchisko.api.ContentObjectFields;
-import org.searchisko.api.rest.exception.RequiredFieldException;
-import org.searchisko.api.rest.security.AuthenticationUtilService;
-import org.searchisko.api.service.ProviderService;
-import org.searchisko.api.service.ProviderServiceTest;
-import org.searchisko.api.service.SearchClientService;
-import org.searchisko.api.service.SearchIndexMissingException;
-import org.searchisko.api.testtools.TestUtils;
-import org.searchisko.persistence.jpa.model.Rating;
-import org.searchisko.persistence.service.RatingPersistenceService;
-import org.searchisko.persistence.service.RatingPersistenceService.RatingStats;
-
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.SecurityContext;
@@ -31,6 +14,23 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
+
+import org.elasticsearch.action.get.GetResponse;
+import org.jboss.resteasy.specimpl.MultivaluedMapImpl;
+import org.junit.Assert;
+import org.junit.Test;
+import org.mockito.Mockito;
+import org.searchisko.api.ContentObjectFields;
+import org.searchisko.api.rest.exception.RequiredFieldException;
+import org.searchisko.api.service.AuthenticationUtilService;
+import org.searchisko.api.service.ProviderService;
+import org.searchisko.api.service.ProviderServiceTest;
+import org.searchisko.api.service.SearchClientService;
+import org.searchisko.api.service.SearchIndexMissingException;
+import org.searchisko.api.testtools.TestUtils;
+import org.searchisko.persistence.jpa.model.Rating;
+import org.searchisko.persistence.service.RatingPersistenceService;
+import org.searchisko.persistence.service.RatingPersistenceService.RatingStats;
 
 /**
  * Unit test for {@link RatingRestService}
@@ -331,7 +331,7 @@ public class RatingRestServiceTest {
 		tested.searchClientService = Mockito.mock(SearchClientService.class);
 		tested.authenticationUtilService = Mockito.mock(AuthenticationUtilService.class);
 		Mockito.when(
-				tested.authenticationUtilService.getAuthenticatedContributor(Mockito.any(SecurityContext.class),
+				tested.authenticationUtilService.getAuthenticatedContributor(
 						Mockito.anyBoolean())).thenReturn(MOCK_CONTRIB_ID);
 		// Pretend authenticated
 		tested.securityContext = Mockito.mock(SecurityContext.class);

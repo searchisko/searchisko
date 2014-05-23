@@ -5,6 +5,12 @@
  */
 package org.searchisko.api.rest;
 
+import javax.enterprise.event.Event;
+import javax.ws.rs.core.Response;
+import java.io.IOException;
+import java.util.*;
+import java.util.logging.Logger;
+
 import org.elasticsearch.common.settings.SettingsException;
 import org.hamcrest.CustomMatcher;
 import org.junit.Assert;
@@ -18,7 +24,7 @@ import org.searchisko.api.rest.exception.BadFieldException;
 import org.searchisko.api.rest.exception.NotAuthenticatedException;
 import org.searchisko.api.rest.exception.NotAuthorizedException;
 import org.searchisko.api.rest.exception.RequiredFieldException;
-import org.searchisko.api.rest.security.AuthenticationUtilService;
+import org.searchisko.api.service.AuthenticationUtilService;
 import org.searchisko.api.security.AuthenticatedUserType;
 import org.searchisko.api.service.ProviderService;
 import org.searchisko.api.service.ProviderService.ProviderContentTypeInfo;
@@ -26,12 +32,6 @@ import org.searchisko.api.service.ProviderServiceTest;
 import org.searchisko.api.testtools.ESRealClientTestBase;
 import org.searchisko.api.testtools.TestUtils;
 import org.searchisko.persistence.service.ContentPersistenceService;
-
-import javax.enterprise.event.Event;
-import javax.ws.rs.core.Response;
-import java.io.IOException;
-import java.util.*;
-import java.util.logging.Logger;
 
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
@@ -92,14 +92,14 @@ public class ContentRestServiceTest extends ESRealClientTestBase {
 			Assert.assertNotNull(ret);
 			Assert.assertEquals(TYPE_KNOWN, ret.getTypeName());
 			Assert.assertEquals(ProviderServiceTest.TEST_PROVIDER_NAME, ret.getProviderName());
-			verify(tested.authenticationUtilService).checkProviderManagementPermission(tested.securityContext,
+			verify(tested.authenticationUtilService).checkProviderManagementPermission(
 					ProviderServiceTest.TEST_PROVIDER_NAME);
 		}
 
 		// known type, provider has no permission
 		try {
 			Mockito.doThrow(new NotAuthorizedException("no perm")).when(tested.authenticationUtilService)
-					.checkProviderManagementPermission(tested.securityContext, ProviderServiceTest.TEST_PROVIDER_NAME);
+					.checkProviderManagementPermission(ProviderServiceTest.TEST_PROVIDER_NAME);
 			tested.getTypeInfoWithManagePermissionCheck(TYPE_KNOWN);
 			Assert.fail("NotAuthorizedException expected");
 		} catch (NotAuthorizedException e) {
@@ -110,7 +110,7 @@ public class ContentRestServiceTest extends ESRealClientTestBase {
 		try {
 			Mockito.doThrow(new NotAuthenticatedException(AuthenticatedUserType.PROVIDER))
 					.when(tested.authenticationUtilService)
-					.checkProviderManagementPermission(tested.securityContext, ProviderServiceTest.TEST_PROVIDER_NAME);
+					.checkProviderManagementPermission(ProviderServiceTest.TEST_PROVIDER_NAME);
 			tested.getTypeInfoWithManagePermissionCheck(TYPE_KNOWN);
 			Assert.fail("NotAuthenticatedException expected");
 		} catch (NotAuthenticatedException e) {
@@ -218,7 +218,7 @@ public class ContentRestServiceTest extends ESRealClientTestBase {
 		Map<String, Object> content = new HashMap<String, Object>();
 		content.put("test", "testvalue");
 		Mockito.doThrow(new NotAuthorizedException("no perm")).when(tested.authenticationUtilService)
-				.checkProviderManagementPermission(tested.securityContext, ProviderServiceTest.TEST_PROVIDER_NAME);
+				.checkProviderManagementPermission(ProviderServiceTest.TEST_PROVIDER_NAME);
 		tested.pushContent(TYPE_KNOWN, "1", content);
 	}
 
@@ -467,7 +467,7 @@ public class ContentRestServiceTest extends ESRealClientTestBase {
 		contentItem.put("title", "aaa");
 		content.put("1", contentItem);
 		Mockito.doThrow(new NotAuthorizedException("no perm")).when(tested.authenticationUtilService)
-				.checkProviderManagementPermission(tested.securityContext, ProviderServiceTest.TEST_PROVIDER_NAME);
+				.checkProviderManagementPermission(ProviderServiceTest.TEST_PROVIDER_NAME);
 		tested.pushContentBulk(TYPE_KNOWN, content);
 	}
 
@@ -743,7 +743,7 @@ public class ContentRestServiceTest extends ESRealClientTestBase {
 		Map<String, Object> content = new HashMap<String, Object>();
 		content.put("test", "testvalue");
 		Mockito.doThrow(new NotAuthorizedException("no perm")).when(tested.authenticationUtilService)
-				.checkProviderManagementPermission(tested.securityContext, ProviderServiceTest.TEST_PROVIDER_NAME);
+				.checkProviderManagementPermission(ProviderServiceTest.TEST_PROVIDER_NAME);
 		tested.deleteContent(TYPE_KNOWN, "1", null);
 	}
 
@@ -852,7 +852,7 @@ public class ContentRestServiceTest extends ESRealClientTestBase {
 		Map<String, Object> content = new HashMap<String, Object>();
 		content.put("id", new ArrayList<String>());
 		Mockito.doThrow(new NotAuthorizedException("no perm")).when(tested.authenticationUtilService)
-				.checkProviderManagementPermission(tested.securityContext, ProviderServiceTest.TEST_PROVIDER_NAME);
+				.checkProviderManagementPermission(ProviderServiceTest.TEST_PROVIDER_NAME);
 		tested.deleteContentBulk(TYPE_KNOWN, content);
 	}
 
@@ -1153,7 +1153,7 @@ public class ContentRestServiceTest extends ESRealClientTestBase {
 		tested.eventContentStored = mock(Event.class);
 		tested.eventBeforeIndexed = mock(Event.class);
 
-		when(tested.authenticationUtilService.getAuthenticatedProvider(null)).thenReturn(
+		when(tested.authenticationUtilService.getAuthenticatedProvider()).thenReturn(
 				ProviderServiceTest.TEST_PROVIDER_NAME);
 
 		return tested;

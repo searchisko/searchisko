@@ -5,19 +5,6 @@
  */
 package org.searchisko.api.rest;
 
-import org.searchisko.api.indexer.EsRiverJiraIndexerHandler;
-import org.searchisko.api.indexer.EsRiverRemoteIndexerHandler;
-import org.searchisko.api.indexer.IndexerHandler;
-import org.searchisko.api.rest.exception.BadFieldException;
-import org.searchisko.api.rest.exception.NotAuthenticatedException;
-import org.searchisko.api.rest.exception.NotAuthorizedException;
-import org.searchisko.api.rest.exception.RequiredFieldException;
-import org.searchisko.api.rest.security.AuthenticationUtilService;
-import org.searchisko.api.security.Role;
-import org.searchisko.api.service.ProviderService;
-import org.searchisko.api.service.ProviderService.ProviderContentTypeInfo;
-import org.searchisko.api.util.SearchUtils;
-
 import javax.annotation.security.RolesAllowed;
 import javax.ejb.ObjectNotFoundException;
 import javax.enterprise.context.RequestScoped;
@@ -31,6 +18,19 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import org.searchisko.api.indexer.EsRiverJiraIndexerHandler;
+import org.searchisko.api.indexer.EsRiverRemoteIndexerHandler;
+import org.searchisko.api.indexer.IndexerHandler;
+import org.searchisko.api.rest.exception.BadFieldException;
+import org.searchisko.api.rest.exception.NotAuthenticatedException;
+import org.searchisko.api.rest.exception.NotAuthorizedException;
+import org.searchisko.api.rest.exception.RequiredFieldException;
+import org.searchisko.api.service.AuthenticationUtilService;
+import org.searchisko.api.security.Role;
+import org.searchisko.api.service.ProviderService;
+import org.searchisko.api.service.ProviderService.ProviderContentTypeInfo;
+import org.searchisko.api.util.SearchUtils;
 
 /**
  * REST API for Indexer related operations.
@@ -265,7 +265,7 @@ public class IndexerRestService extends RestServiceBase {
 	 * @throws ObjectNotFoundException   if indexer configuration is not found for given content type
 	 * @throws NotAuthorizedException    if user is not authorized
 	 * @throws NotAuthenticatedException if user is not authenticated
-	 * @see AuthenticationUtilService#checkProviderManagementPermission(SecurityContext, String)
+	 * @see AuthenticationUtilService#checkProviderManagementPermission(String)
 	 */
 	protected Map<String, Object> getIndexerConfigurationWithManagePermissionCheck(String contentType)
 			throws ObjectNotFoundException {
@@ -277,7 +277,7 @@ public class IndexerRestService extends RestServiceBase {
 		if (typeInfo == null) {
 			throw new BadFieldException("type", "content type not found");
 		}
-		authenticationUtilService.checkProviderManagementPermission(securityContext, typeInfo.getProviderName());
+		authenticationUtilService.checkProviderManagementPermission(typeInfo.getProviderName());
 
 		Map<String, Object> ic = ProviderService.extractIndexerConfiguration(typeInfo.getTypeDef(), contentType);
 		if (ic == null) {
@@ -290,7 +290,7 @@ public class IndexerRestService extends RestServiceBase {
 	 * Get configuration of all indexers from all content types user has permission to manage (provider permission check).
 	 * 
 	 * @return list of type infos with indexers, never null.
-	 * @see AuthenticationUtilService#checkProviderManagementPermission(SecurityContext, String)
+	 * @see AuthenticationUtilService#checkProviderManagementPermission(String)
 	 */
 	protected List<ProviderContentTypeInfo> getAllIndexerConfigurationsWithManagePermissionCheck() {
 		List<ProviderContentTypeInfo> ret = new ArrayList<>();
@@ -301,7 +301,7 @@ public class IndexerRestService extends RestServiceBase {
 			for (Map<String, Object> providerDef : allProviders) {
 				String providerName = (String) providerDef.get(ProviderService.NAME);
 				try {
-					authenticationUtilService.checkProviderManagementPermission(securityContext, providerName);
+					authenticationUtilService.checkProviderManagementPermission(providerName);
 
 					Map<String, Map<String, Object>> allCt = ProviderService.extractAllContentTypes(providerDef);
 					if (allCt != null) {
