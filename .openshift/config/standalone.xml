@@ -87,7 +87,7 @@
 			<logger category="jacorb.config">
 				<level name="ERROR" />
 			</logger>
-			<logger category="org.searchisko.api.audit" use-parent-handlers="false">
+			<logger category="org.searchisko.api.audit.handler.AuditHandlerLogging" use-parent-handlers="false">
 				<level name="INFO" />
 				<handlers>
 					<handler name="AUDIT-FILE" />
