@@ -15,6 +15,8 @@ import java.security.Principal;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.searchisko.api.security.AuthenticatedUserType;
+
 /**
  * Simple implementation of {@link AuditHandler} which logs audit information to {@link java.util.logging.Logger}
  *
@@ -36,13 +38,17 @@ public class AuditHandlerLogging implements AuditHandler {
 	protected Logger log;
 
 	@Override
-	public void handle(Method method, String path, Principal principal, Object content, Object id) {
+	public void handle(Method method, String path, Principal principal, AuthenticatedUserType userType, Object content, Object id) {
 		Level logLevel = DEFAULT_AUDIT_LOG_LEVEL;
 
 		if (log.isLoggable(logLevel)) {
-			log.log(logLevel,
-					"path: ''{0}'', user: ''{1}'', id: ''{2}'', content: ''{3}''",
-					new Object[]{path, principal, id, content});
+			Object[] params = new Object[]{
+					path != null ? path : "",
+					principal != null ? principal.getName() : "",
+					userType != null ? userType : "",
+					id != null ? id : "",
+					content != null ? content : ""};
+			log.log(logLevel, "path: ''{0}'', username: ''{1}'', userType: ''{2}'', id: ''{3}'', content: ''{4}''", params);
 		}
 
 		// Logs as audited class on FINE level

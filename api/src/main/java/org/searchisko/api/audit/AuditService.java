@@ -14,11 +14,12 @@ import javax.inject.Named;
 import javax.servlet.http.HttpServletRequest;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
-import java.security.Principal;
 
 import org.searchisko.api.audit.annotation.AuditContent;
 import org.searchisko.api.audit.annotation.AuditId;
 import org.searchisko.api.audit.handler.AuditHandler;
+import org.searchisko.api.security.AuthenticatedUserType;
+import org.searchisko.api.service.AuthenticationUtilService;
 
 /**
  * Business logic for Audit Facility
@@ -30,14 +31,14 @@ import org.searchisko.api.audit.handler.AuditHandler;
 public class AuditService {
 
 	@Inject
-	protected Principal principal;
-
-	@Inject
 	private HttpServletRequest httpRequest;
 
 	@Inject
 	@Any
 	Instance<AuditHandler> auditHandlers;
+
+	@Inject
+	private AuthenticationUtilService authenticationUtilService;
 
 	/**
 	 * Do the audit logic
@@ -53,8 +54,9 @@ public class AuditService {
 		if (httpRequest != null) {
 			path = httpRequest.getRequestURI();
 		}
+		AuthenticatedUserType userType = authenticationUtilService.getUserType(httpRequest.getUserPrincipal());
 		for (AuditHandler handler : auditHandlers) {
-			handler.handle(method, path, principal, content, id);
+			handler.handle(method, path, httpRequest.getUserPrincipal(), userType, content, id);
 		}
 	}
 

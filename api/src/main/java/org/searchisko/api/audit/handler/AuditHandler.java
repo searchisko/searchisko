@@ -9,6 +9,8 @@ package org.searchisko.api.audit.handler;
 import java.lang.reflect.Method;
 import java.security.Principal;
 
+import org.searchisko.api.security.AuthenticatedUserType;
+
 /**
  * Base interface for Audit Handler. Any CDI implementation of this interface is processed in {@link org.searchisko.api.audit.AuditService}
  *
@@ -21,10 +23,11 @@ public interface AuditHandler {
 	 *
 	 * @param method    Audited Java method
 	 * @param path      Audited URL
-	 * @param principal
-	 * @param content   Content
-	 * @param id        Content ID
+	 * @param principal Logged in user, can be null
+	 * @param userType  User type, can be null
+	 * @param content   Content, can be null
+	 * @param id        Content ID, can be null
 	 */
-	public void handle(Method method, String path, Principal principal, Object content, Object id);
+	public void handle(Method method, String path, Principal principal, AuthenticatedUserType userType, Object content, Object id);
 
 }

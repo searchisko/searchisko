@@ -151,10 +151,11 @@ public class AuthenticationUtilService {
 	}
 
 	/**
-	 * Get user type for give principal
+	 * Get user type for give principal.
 	 *
-	 * @param principal
+	 * @param principal avoid using proxy of principal like object taken from @Inject Principal way.
 	 * @return user type or null if unknown
+	 * @see javax.servlet.http.HttpServletRequest#getUserPrincipal()
 	 */
 	public AuthenticatedUserType getUserType(Principal principal) {
 		if (principal == null) {
