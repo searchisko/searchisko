@@ -63,7 +63,7 @@
 				<rotate-size value="10m" />
 				<max-backup-index value="10" />
 			</size-rotating-file-handler>
-			<size-rotating-file-handler name="AUDIT-FILE">
+			<size-rotating-file-handler name="AUDIT-FILE" autoflush="true">
 				<formatter>
 					<pattern-formatter pattern="%d{yyyy/MM/dd HH:mm:ss,SSS} %s%E%n" />
 				</formatter>

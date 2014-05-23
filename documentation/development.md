@@ -82,6 +82,38 @@ Just copy this security domain definition into `<subsystem xmlns="urn:jboss:doma
 		</authentication>
 	</security-domain>
 
+See how is Openshift configured in [Configuration](/.openshift/conf/standalone.xml) for instance.
+
+
+### Audit Log
+Audit log is handled via Java Logging facitility and thus can be tuned in AS logging configuration.
+In JBoss AS it's wise to not mix audit logs with system logging and it can be achieved by logging configuration like this
+(all within `<subsystem xmlns="urn:jboss:domain:logging:1.3">` subsystem):
+
+Add logging size rotation handler handler:
+
+	<size-rotating-file-handler name="AUDIT-FILE" autoflush="false">
+		<formatter>
+			<pattern-formatter pattern="%d{yyyy/MM/dd HH:mm:ss,SSS} %s%E%n" />
+		</formatter>
+		<file relative-to="jboss.server.log.dir" path="searchisko-audit.log" />
+		<rotate-size value="20m" />
+		<!-- <max-backup-index value="5" /> -->
+		<append value="true" />
+	</size-rotating-file-handler>
+
+See [JBoss AS Documentation](https://docs.jboss.org/author/display/AS71/Logging+Configuration#LoggingConfiguration-sizerotatingfilehandler) for more details.
+
+Point `org.searchisko.api.audit.handler.AuditHandlerLogging` implementation to this handler
+
+	<logger category="org.searchisko.api.audit.handler.AuditHandlerLogging" use-parent-handlers="false">
+		<level name="INFO" />
+		<handlers>
+			<handler name="AUDIT-FILE" />
+		</handlers>
+	</logger>
+
+See how is Openshift configured in [Configuration](/.openshift/conf/standalone.xml) for instance.
 
 #### localhost development
 

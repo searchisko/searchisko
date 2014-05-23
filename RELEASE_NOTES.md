@@ -9,7 +9,8 @@ This document contains high-level release notes. More details can be found in [m
 - ['Content Indexers API'](http://docs.jbossorg.apiary.io/#contentindexersapi) extended by `_stop` and `_restart` operations. `_status`, `_stop` and `_restart` can be used for one indexer or all indexer at all also. [#91](https://github.com/searchisko/searchisko/issues/91)
 - `Jive6ContributorProfileProvider` improved to process LinkedIn username [#100](https://github.com/searchisko/searchisko/issues/100)
 - Updated `elasticsearch-river-remote`, `elasticsearch-river-jira` and `structured-content-tools` to latest versions
-- created ProjectMappingPreprocessor and ContributorMappingPerprocessor to ease content provider and normalizations configuration [#103](https://github.com/searchisko/searchisko/issues/103) 
+- Created ProjectMappingPreprocessor and ContributorMappingPerprocessor to ease content provider and normalizations configuration [#103](https://github.com/searchisko/searchisko/issues/103) 
+- Added Audit Log [#104](https://github.com/searchisko/searchisko/issues/104) 
 
 ## 1.0.2
 

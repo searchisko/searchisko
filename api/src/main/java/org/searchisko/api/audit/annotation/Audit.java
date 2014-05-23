@@ -14,7 +14,10 @@ import static java.lang.annotation.ElementType.TYPE;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 /**
- * Entry point for auditing.
+ * Entry point for auditing. Use this annotation for marking method or class to be auditable.
+ * <br/>
+ * Use Annotations {@link org.searchisko.api.audit.annotation.AuditId} for marking method's parameter to be content id
+ * and {@link org.searchisko.api.audit.annotation.AuditContent} for marking parameter as content.
  *
  * @author Libor Krzyzanek
  */

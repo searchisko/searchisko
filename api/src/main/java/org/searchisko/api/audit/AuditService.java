@@ -7,17 +7,18 @@
 package org.searchisko.api.audit;
 
 import javax.ejb.Stateless;
+import javax.enterprise.inject.Any;
+import javax.enterprise.inject.Instance;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.servlet.http.HttpServletRequest;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.security.Principal;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import org.searchisko.api.audit.annotation.AuditContent;
 import org.searchisko.api.audit.annotation.AuditId;
+import org.searchisko.api.audit.handler.AuditHandler;
 
 /**
  * Business logic for Audit Facility
@@ -28,23 +29,21 @@ import org.searchisko.api.audit.annotation.AuditId;
 @Stateless
 public class AuditService {
 
-	public static final String TARGET_LOGGER_CLASS_SUFFIX = ".Audit";
-
-	public static final Level DEFAULT_AUDIT_LOG_LEVEL = Level.INFO;
-
-	@Inject
-	protected Logger log;
-
 	@Inject
 	protected Principal principal;
 
 	@Inject
 	private HttpServletRequest httpRequest;
 
+	@Inject
+	@Any
+	Instance<AuditHandler> auditHandlers;
+
 	/**
 	 * Do the audit logic
 	 *
 	 * @param method
+	 * @param parameters method's parameters
 	 */
 	public void auditMethod(Method method, Object[] parameters) {
 		Object id = getAnnotatedParamValue(method, parameters, AuditId.class);
@@ -54,7 +53,9 @@ public class AuditService {
 		if (httpRequest != null) {
 			path = httpRequest.getRequestURI();
 		}
-		auditToLog(method, path, id, content);
+		for (AuditHandler handler : auditHandlers) {
+			handler.handle(method, path, principal, content, id);
+		}
 	}
 
 	/**
@@ -78,44 +79,5 @@ public class AuditService {
 		}
 		return null;
 	}
-
-	/**
-	 * Write audit information to the logging system
-	 *
-	 * @param method
-	 * @param id
-	 * @param content
-	 */
-	private void auditToLog(Method method, String path, Object id, Object content) {
-
-		// TODO: AUDIT: Move Audit Logger to separate bean and allows other implementations
-
-		Level logLevel = DEFAULT_AUDIT_LOG_LEVEL;
-
-		if (log.isLoggable(logLevel)) {
-			log.log(logLevel,
-					"path: ''{0}'', user: ''{1}'', id: ''{2}'', content: ''{3}''",
-					new Object[]{path, principal, id, content});
-		}
-
-		// Logs as audited class on FINE level
-		Logger targetClassLogger = getTargetLogger(method);
-		if (targetClassLogger.isLoggable(Level.FINE)) {
-			targetClassLogger.log(logLevel,
-					"Executing method: ''{0}'', by: {1}",
-					new Object[]{method.getName(), principal});
-		}
-	}
-
-	/**
-	 * Get logger for audited method
-	 *
-	 * @param method
-	 * @return
-	 */
-	protected Logger getTargetLogger(Method method) {
-		return Logger.getLogger(method.getClass().getName() + TARGET_LOGGER_CLASS_SUFFIX);
-	}
-
 
 }
