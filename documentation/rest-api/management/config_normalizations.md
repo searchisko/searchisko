@@ -10,7 +10,9 @@ Definition MUST contain these fields:
 
 * `description` - contains description of normalization for users. Is returned from "Normalization REST API" discovery method. 
 * `preprocessors` - contains chain of [preprocessors](https://github.com/searchisko/structured-content-tools) 
-used to perform given normalization when called over REST API. 
+  used to perform given normalization when called over REST API. We have few [Searchisko specific 
+  preprocessors](https://github.com/searchisko/searchisko/tree/master/api/src/main/java/org/searchisko/tools/content) also to 
+  ease configurations for Project and Contributor mappings etc.
 
 Data passed to this preprocessor chain contain `input_id` field, which contains identifier passed over REST API to perform normalization for.
 Everything preprocessors add to the data is returned in REST API response for given normalization. 

@@ -20,7 +20,10 @@ Content provider configuration fields:
  * `sys_content_content-type` - MIME identifier of content type stored in the `sys_content` field if it is used. Eg. `text/plain`, `text/html`, `text/x-markdown`. Fulltext search analyzer for `sys_content` field must be set correctly in ElasticSearch mapping regarding this type (eg. use of html stripping etc.).
  * `search_all_excluded` - optional, if `true` then documents with this type are excluded from searchings targeted to all documents (so can be searched only by explicit requests for this type)
  * `persist` - optional, if `true` then documents with this type are stored into Searchisko persistent store during push. Search index can be rebuilt from this persistent store. Used for content which is hard or expensive to obtain again in the future.
- * `input_preprocessors` - array of preprocessors applied on content of this type while pushed over 'Content Manipulation API'. Typically used to normalize values into other `sys_` fields as `sys_project`, `sys_contributors`, `sys_activity_dates` etc. [structured-content-tools](https://github.com/jbossorg/structured-content-tools) framework is used here.
+ * `input_preprocessors` - array of preprocessors applied on content of this type while pushed over 'Content Manipulation API'. 
+   Typically used to normalize values into other `sys_` fields as `sys_project`, `sys_contributors`, `sys_activity_dates` etc. [structured-content-tools](https://github.com/jbossorg/structured-content-tools) framework is used here. 
+   We have few [Searchisko specific preprocessors](https://github.com/searchisko/searchisko/tree/master/api/src/main/java/org/searchisko/tools/content) also to 
+   ease configurations for Project and Contributor mappings etc.
  * `index/name` - name of search index in Searchisko internal Elasticsearch cluster content of this type is stored into during push.  
  * `index/type` - type for mapping in Searchisko internal Elasticsearch cluster content of this type is stored into.
  * `index/search_indices` - array with names of search indices in Searchisko internal Elasticsearch cluster used during searching for this content type. Optional, name from `index/name` field is used for search if this field is not defined.

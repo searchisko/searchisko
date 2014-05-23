@@ -4,21 +4,10 @@
       "input_preprocessors": [
         {
           "name": "test one source field",
-          "class": "org.jboss.elasticsearch.tools.content.ESLookupValuePreprocessor",
+          "class": "org.searchisko.tools.content.ProjectMappingPreprocessor",
           "settings": {
-            "index_name"       : "sys_projects",
-            "index_type"       : "project",
             "source_field"     : "project_key",
-            "idx_search_field" : "type_specific_code.jbossorg_jira",
-            "result_mapping"   : [{
-		            "idx_result_field" : "code",
-		            "target_field"     : "sys_project"
-	            },{
-		            "idx_result_field" : "name",
-		            "target_field"     : "sys_project_name",
-		            "value_default"    : "{project_name}"
-	            }
-            ]
+            "idx_search_field" : "type_specific_code.jbossorg_jira"
           }
         },{
           "name"     : "test with source bases",

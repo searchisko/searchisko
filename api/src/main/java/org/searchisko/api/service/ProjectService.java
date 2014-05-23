@@ -39,6 +39,11 @@ public class ProjectService implements SearchableEntityService {
 	public static final String FIELD_CODE = "code";
 
 	/**
+	 * Field in project definition with project name
+	 */
+	public static final String FIELD_NAME = "name";
+
+	/**
 	 * Field in project definition containing Map structure with other unique identifiers used to map pushed data to the
 	 * project. Key in the Map structure marks type of identifier (eg. jbossorg_jira, jbossorg_project_info), value in
 	 * structure is identifier or array of identifiers itself used during mapping.
@@ -47,8 +52,13 @@ public class ProjectService implements SearchableEntityService {
 	 */
 	public static final String FIELD_TYPE_SPECIFIC_CODE = "type_specific_code";
 
+	/**
+	 * Name of ES search index where projects are stored.
+	 */
 	public static final String SEARCH_INDEX_NAME = "sys_projects";
-
+	/**
+	 * Name of ES search index type under which projects are stored.
+	 */
 	public static final String SEARCH_INDEX_TYPE = "project";
 
 	@Inject
