@@ -10,7 +10,8 @@ This document contains high-level release notes. More details can be found in [m
 - `Jive6ContributorProfileProvider` improved to process LinkedIn username [#100](https://github.com/searchisko/searchisko/issues/100)
 - Updated `elasticsearch-river-remote`, `elasticsearch-river-jira` and `structured-content-tools` to latest versions
 - Created ProjectMappingPreprocessor and ContributorMappingPerprocessor to ease content provider and normalizations configuration [#103](https://github.com/searchisko/searchisko/issues/103) 
-- Added Audit Log [#104](https://github.com/searchisko/searchisko/issues/104) 
+- Added Audit Log [#104](https://github.com/searchisko/searchisko/issues/104)
+- Added access to full Elasticsearch REST API for authenticated administrators [#98](https://github.com/searchisko/searchisko/issues/98)  
 
 ## 1.0.2
 
