@@ -38,17 +38,18 @@ public class AuditHandlerLogging implements AuditHandler {
 	protected Logger log;
 
 	@Override
-	public void handle(Method method, String path, Principal principal, AuthenticatedUserType userType, Object content, Object id) {
+	public void handle(Method method, String operation, String path, Principal principal, AuthenticatedUserType userType, Object content, Object id) {
 		Level logLevel = DEFAULT_AUDIT_LOG_LEVEL;
 
 		if (log.isLoggable(logLevel)) {
 			Object[] params = new Object[]{
+					operation != null ? operation : "",
 					path != null ? path : "",
 					principal != null ? principal.getName() : "",
 					userType != null ? userType : "",
 					id != null ? id : "",
 					content != null ? content : ""};
-			log.log(logLevel, "path: ''{0}'', username: ''{1}'', userType: ''{2}'', id: ''{3}'', content: ''{4}''", params);
+			log.log(logLevel, "operation: ''{0}'', path: ''{1}'', username: ''{2}'', userType: ''{3}'', id: ''{4}'', content: ''{5}''", params);
 		}
 
 		// Logs as audited class on FINE level

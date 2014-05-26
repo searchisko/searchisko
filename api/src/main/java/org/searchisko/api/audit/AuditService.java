@@ -51,12 +51,14 @@ public class AuditService {
 		Object content = getAnnotatedParamValue(method, parameters, AuditContent.class);
 
 		String path = null;
+		String operation = null;
 		if (httpRequest != null) {
 			path = httpRequest.getRequestURI();
+			operation = httpRequest.getMethod();
 		}
 		AuthenticatedUserType userType = authenticationUtilService.getUserType(httpRequest.getUserPrincipal());
 		for (AuditHandler handler : auditHandlers) {
-			handler.handle(method, path, httpRequest.getUserPrincipal(), userType, content, id);
+			handler.handle(method, operation, path, httpRequest.getUserPrincipal(), userType, content, id);
 		}
 	}
 

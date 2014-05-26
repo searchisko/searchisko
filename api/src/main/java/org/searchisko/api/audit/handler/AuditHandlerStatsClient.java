@@ -38,11 +38,12 @@ public class AuditHandlerStatsClient implements AuditHandler {
 	protected StatsClientService statsClientService;
 
 	@Override
-	public void handle(Method method, String path, Principal principal, AuthenticatedUserType userType, Object content, Object id) {
+	public void handle(Method method, String operation, String path, Principal principal, AuthenticatedUserType userType, Object content, Object id) {
 		log.log(Level.FINE, "Write audit to stats client");
 
 		long now = System.currentTimeMillis();
 		Map<String, Object> data = new HashMap<>();
+		data.put("operation", operation);
 		data.put("path", path);
 		data.put("username", principal != null ? principal.getName() : null);
 		data.put("user_type", userType);
