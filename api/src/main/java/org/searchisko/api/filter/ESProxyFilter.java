@@ -49,16 +49,16 @@ import org.searchisko.api.util.SearchUtils;
 
 /**
  * This is a filter that allows to call internal ES instances for authenticated and authorized users. You can use
- * <code>useStatsClient</code> init param with any value to handle stats ES client, search client is used otherwise.
+ * <code>useStatsClient</code> init param with any nonempty value to handle stats ES client, search client is used
+ * otherwise.
  * <p>
- * Inspired by <a href="https://github.com/mitre/HTTP-Proxy-Servlet">Smiley's HTTP Proxy Servlet</a>
+ * Inspired by <a href="https://github.com/mitre/HTTP-Proxy-Servlet">Smiley's HTTP Proxy Servlet</a>, thanks.
  * 
  * @author Vlastimil Elias (velias at redhat dot com)
  */
 public class ESProxyFilter implements Filter {
 
-	// TODO #98 documentation
-	// TODO #98 functional test
+	protected static final String CFG_USE_STATS_CLIENT = "useStatsClient";
 
 	@Inject
 	protected Logger log;
@@ -85,6 +85,10 @@ public class ESProxyFilter implements Filter {
 
 	protected URI getEsNodeURI() throws ServletException {
 		Client client = getElasticsearchClientService().getClient();
+
+		if (client == null)
+			throw new ServletException("Elasticsearch client for " + (useStatsClient ? "stats" : "search")
+					+ " cluster is not available");
 
 		NodesInfoResponse nir = client.admin().cluster().nodesInfo(new NodesInfoRequest().http(true)).actionGet();
 
@@ -119,7 +123,7 @@ public class ESProxyFilter implements Filter {
 
 	@Override
 	public void init(FilterConfig filterConfig) throws ServletException {
-		useStatsClient = !SearchUtils.isBlank(filterConfig.getInitParameter("useStatsClient"));
+		useStatsClient = !SearchUtils.isBlank(filterConfig.getInitParameter(CFG_USE_STATS_CLIENT));
 		proxyClient = new SystemDefaultHttpClient(null);
 	}
 
@@ -127,6 +131,7 @@ public class ESProxyFilter implements Filter {
 	public void destroy() {
 		if (proxyClient != null) {
 			proxyClient.getConnectionManager().shutdown();
+			proxyClient = null;
 		}
 	}
 
@@ -218,8 +223,12 @@ public class ESProxyFilter implements Filter {
 		if (!SearchUtils.isBlank(path)) {
 			// remove first 5 path elements as they are from Searchisko REST API URL. Only rest is for ES
 			String[] pe = path.split("/");
+			int matchcount = 5;
 			for (int i = 0; i < pe.length; i++) {
-				if (i > 5) {
+				if ("sys".equals(pe[i])) {
+					matchcount = i + 2;
+				}
+				if (i > matchcount) {
 					uri.append("/");
 					uri.append(pe[i]);
 				}
