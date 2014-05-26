@@ -5,9 +5,6 @@
  */
 package org.searchisko.api.rest;
 
-import org.searchisko.api.security.Role;
-import org.searchisko.api.service.SystemInfoService;
-
 import javax.annotation.security.PermitAll;
 import javax.annotation.security.RolesAllowed;
 import javax.enterprise.context.RequestScoped;
@@ -21,6 +18,10 @@ import javax.ws.rs.core.SecurityContext;
 import java.io.IOException;
 import java.util.Map;
 
+import org.searchisko.api.audit.annotation.Audit;
+import org.searchisko.api.security.Role;
+import org.searchisko.api.service.SystemInfoService;
+
 /**
  * System related REST service
  *
@@ -29,6 +30,7 @@ import java.util.Map;
 @Path("/sys")
 @RequestScoped
 @RolesAllowed(Role.PROVIDER)
+@Audit
 public class SystemRestService {
 
 	@Context

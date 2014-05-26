@@ -32,6 +32,8 @@ import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.indices.IndexMissingException;
 import org.elasticsearch.search.sort.SortOrder;
 import org.searchisko.api.ContentObjectFields;
+import org.searchisko.api.audit.annotation.Audit;
+import org.searchisko.api.audit.annotation.AuditId;
 import org.searchisko.api.events.ContentBeforeIndexedEvent;
 import org.searchisko.api.events.ContentDeletedEvent;
 import org.searchisko.api.events.ContentStoredEvent;
@@ -397,7 +399,8 @@ public class ContentRestService extends RestServiceBase {
 	 */
 	@DELETE
 	@Path("/{contentId}")
-	public Object deleteContent(@PathParam("type") String type, @PathParam("contentId") String contentId,
+	@Audit
+	public Object deleteContent(@PathParam("type") String type, @PathParam("contentId") @AuditId String contentId,
 			@QueryParam("ignore_missing") String ignoreMissing) {
 
 		// validation

@@ -5,12 +5,6 @@
  */
 package org.searchisko.api.rest;
 
-import org.elasticsearch.action.search.SearchResponse;
-import org.searchisko.api.rest.exception.RequiredFieldException;
-import org.searchisko.api.security.Role;
-import org.searchisko.api.service.ContributorService;
-import org.searchisko.api.util.SearchUtils;
-
 import javax.annotation.PostConstruct;
 import javax.annotation.security.RolesAllowed;
 import javax.ejb.ObjectNotFoundException;
@@ -21,6 +15,15 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
+
+import org.elasticsearch.action.search.SearchResponse;
+import org.searchisko.api.audit.annotation.Audit;
+import org.searchisko.api.audit.annotation.AuditContent;
+import org.searchisko.api.audit.annotation.AuditId;
+import org.searchisko.api.rest.exception.RequiredFieldException;
+import org.searchisko.api.security.Role;
+import org.searchisko.api.service.ContributorService;
+import org.searchisko.api.util.SearchUtils;
 
 /**
  * Contributor REST API
@@ -80,7 +83,8 @@ public class ContributorRestService extends RestEntityServiceBase {
 	@POST
 	@Path("/{id}/code/{code}")
 	@Produces(MediaType.APPLICATION_JSON)
-	public Object codeChange(@PathParam("id") String id, @PathParam("code") String code) throws ObjectNotFoundException {
+	@Audit
+	public Object codeChange(@PathParam("id") @AuditId String id, @AuditContent @PathParam("code") String code) throws ObjectNotFoundException {
 		if ((id = SearchUtils.trimToNull(id)) == null) {
 			throw new RequiredFieldException("id");
 		}
@@ -94,7 +98,8 @@ public class ContributorRestService extends RestEntityServiceBase {
 	@POST
 	@Path("/{idFrom}/mergeTo/{idTo}")
 	@Produces(MediaType.APPLICATION_JSON)
-	public Object mergeContributors(@PathParam("idFrom") String idFrom, @PathParam("idTo") String idTo)
+	@Audit
+	public Object mergeContributors(@PathParam("idFrom") @AuditId String idFrom, @AuditContent @PathParam("idTo") String idTo)
 			throws ObjectNotFoundException {
 		if ((idFrom = SearchUtils.trimToNull(idFrom)) == null) {
 			throw new RequiredFieldException("idFrom");

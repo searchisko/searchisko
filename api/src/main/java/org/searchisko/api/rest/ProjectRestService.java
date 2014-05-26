@@ -5,12 +5,6 @@
  */
 package org.searchisko.api.rest;
 
-import org.elasticsearch.action.search.SearchResponse;
-import org.searchisko.api.rest.exception.RequiredFieldException;
-import org.searchisko.api.security.Role;
-import org.searchisko.api.service.ProjectService;
-import org.searchisko.api.util.SearchUtils;
-
 import javax.annotation.PostConstruct;
 import javax.annotation.security.PermitAll;
 import javax.annotation.security.RolesAllowed;
@@ -22,6 +16,15 @@ import javax.ws.rs.core.*;
 import javax.ws.rs.core.Response.Status;
 import java.security.Principal;
 import java.util.Map;
+
+import org.elasticsearch.action.search.SearchResponse;
+import org.searchisko.api.audit.annotation.Audit;
+import org.searchisko.api.audit.annotation.AuditContent;
+import org.searchisko.api.audit.annotation.AuditId;
+import org.searchisko.api.rest.exception.RequiredFieldException;
+import org.searchisko.api.security.Role;
+import org.searchisko.api.service.ProjectService;
+import org.searchisko.api.util.SearchUtils;
 
 /**
  * Project REST API
@@ -87,7 +90,8 @@ public class ProjectRestService extends RestEntityServiceBase {
 	@Path("/")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	public Object create(Map<String, Object> data) {
+	@Audit
+	public Object create(@AuditContent Map<String, Object> data) {
 		String codeFromData = (String) data.get(ProjectService.FIELD_CODE);
 		if (codeFromData == null || codeFromData.isEmpty())
 			return Response.status(Status.BAD_REQUEST)
@@ -99,7 +103,8 @@ public class ProjectRestService extends RestEntityServiceBase {
 	@Path("/{id}")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	public Object create(@PathParam("id") String id, Map<String, Object> data) {
+	@Audit
+	public Object create(@PathParam("id") @AuditId String id, @AuditContent Map<String, Object> data) {
 
 		if (id == null || id.isEmpty()) {
 			throw new RequiredFieldException("id");

@@ -19,6 +19,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.searchisko.api.audit.annotation.Audit;
+import org.searchisko.api.audit.annotation.AuditId;
 import org.searchisko.api.indexer.EsRiverJiraIndexerHandler;
 import org.searchisko.api.indexer.EsRiverRemoteIndexerHandler;
 import org.searchisko.api.indexer.IndexerHandler;
@@ -41,6 +43,7 @@ import org.searchisko.api.util.SearchUtils;
 @Path("/indexer")
 @Produces(MediaType.APPLICATION_JSON)
 @RolesAllowed({Role.ADMIN, Role.PROVIDER})
+@Audit
 public class IndexerRestService extends RestServiceBase {
 
 	public static final String INDEXER_TYPE_ES_RIVER_REMOTE = "elasticsearch-river-remote";
@@ -68,7 +71,7 @@ public class IndexerRestService extends RestServiceBase {
 	 */
 	@POST
 	@Path("/{type}/_force_reindex")
-	public Response forceReindex(@PathParam("type") String type) throws ObjectNotFoundException {
+	public Response forceReindex(@PathParam("type") @AuditId String type) throws ObjectNotFoundException {
 
 		Map<String, Object> ic = getIndexerConfigurationWithManagePermissionCheck(type);
 
@@ -122,7 +125,7 @@ public class IndexerRestService extends RestServiceBase {
 	 */
 	@POST
 	@Path("/{type}/_stop")
-	public Response stop(@PathParam("type") String type) throws ObjectNotFoundException {
+	public Response stop(@PathParam("type") @AuditId String type) throws ObjectNotFoundException {
 
 		Map<String, Object> ic = getIndexerConfigurationWithManagePermissionCheck(type);
 
@@ -175,7 +178,7 @@ public class IndexerRestService extends RestServiceBase {
 	 */
 	@POST
 	@Path("/{type}/_restart")
-	public Response restart(@PathParam("type") String type) throws ObjectNotFoundException {
+	public Response restart(@PathParam("type") @AuditId String type) throws ObjectNotFoundException {
 
 		Map<String, Object> ic = getIndexerConfigurationWithManagePermissionCheck(type);
 
@@ -227,7 +230,7 @@ public class IndexerRestService extends RestServiceBase {
 	 */
 	@GET
 	@Path("/{type}/_status")
-	public Object getStatus(@PathParam("type") String type) throws ObjectNotFoundException {
+	public Object getStatus(@PathParam("type") @AuditId String type) throws ObjectNotFoundException {
 
 		Map<String, Object> ic = getIndexerConfigurationWithManagePermissionCheck(type);
 
