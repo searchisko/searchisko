@@ -6,7 +6,6 @@
 
 package org.searchisko.api.audit.annotation;
 
-import javax.interceptor.InterceptorBinding;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
