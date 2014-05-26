@@ -12,6 +12,7 @@ import java.util.Map;
 
 import org.searchisko.api.audit.annotation.AuditContent;
 import org.searchisko.api.audit.annotation.AuditId;
+import org.searchisko.api.audit.annotation.AuditIgnore;
 import org.searchisko.api.rest.exception.RequiredFieldException;
 import org.searchisko.api.util.SearchUtils;
 import org.searchisko.persistence.service.EntityService;
@@ -39,6 +40,7 @@ public class RestEntityServiceBase extends RestServiceBase {
 	@GET
 	@Path("/")
 	@Produces(MediaType.APPLICATION_JSON)
+	@AuditIgnore
 	public Object getAll(@QueryParam("from") Integer from, @QueryParam("size") Integer size) {
 		return entityService.getAll(from, size, null);
 	}
@@ -46,6 +48,7 @@ public class RestEntityServiceBase extends RestServiceBase {
 	@GET
 	@Path("/{id}")
 	@Produces(MediaType.APPLICATION_JSON)
+	@AuditIgnore
 	public Object get(@PathParam("id") @AuditId String id) {
 
 		if ((id = SearchUtils.trimToNull(id)) == null) {

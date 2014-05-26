@@ -33,6 +33,7 @@ import org.elasticsearch.indices.IndexMissingException;
 import org.elasticsearch.search.sort.SortOrder;
 import org.searchisko.api.ContentObjectFields;
 import org.searchisko.api.audit.annotation.Audit;
+import org.searchisko.api.audit.annotation.AuditContent;
 import org.searchisko.api.audit.annotation.AuditId;
 import org.searchisko.api.events.ContentBeforeIndexedEvent;
 import org.searchisko.api.events.ContentDeletedEvent;
@@ -442,7 +443,8 @@ public class ContentRestService extends RestServiceBase {
 	@Path("/")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	public Object deleteContentBulk(@PathParam("type") String type, Map<String, Object> content) {
+	@Audit
+	public Object deleteContentBulk(@PathParam("type") String type, @AuditContent Map<String, Object> content) {
 
 		ProviderContentTypeInfo typeInfo = getTypeInfoWithManagePermissionCheck(type);
 

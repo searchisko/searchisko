@@ -21,6 +21,7 @@ import java.util.Map;
 
 import org.searchisko.api.audit.annotation.Audit;
 import org.searchisko.api.audit.annotation.AuditId;
+import org.searchisko.api.audit.annotation.AuditIgnore;
 import org.searchisko.api.indexer.EsRiverJiraIndexerHandler;
 import org.searchisko.api.indexer.EsRiverRemoteIndexerHandler;
 import org.searchisko.api.indexer.IndexerHandler;
@@ -201,6 +202,7 @@ public class IndexerRestService extends RestServiceBase {
 	 */
 	@POST
 	@Path("/_all/_status")
+	@AuditIgnore
 	public Map<String, Object> statusAll() throws ObjectNotFoundException {
 
 		Map<String, Object> ret = new HashMap<>();
@@ -230,7 +232,8 @@ public class IndexerRestService extends RestServiceBase {
 	 */
 	@GET
 	@Path("/{type}/_status")
-	public Object getStatus(@PathParam("type") @AuditId String type) throws ObjectNotFoundException {
+	@AuditIgnore
+	public Object getStatus(@PathParam("type") String type) throws ObjectNotFoundException {
 
 		Map<String, Object> ic = getIndexerConfigurationWithManagePermissionCheck(type);
 

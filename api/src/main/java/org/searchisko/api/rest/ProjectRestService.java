@@ -21,6 +21,7 @@ import org.elasticsearch.action.search.SearchResponse;
 import org.searchisko.api.audit.annotation.Audit;
 import org.searchisko.api.audit.annotation.AuditContent;
 import org.searchisko.api.audit.annotation.AuditId;
+import org.searchisko.api.audit.annotation.AuditIgnore;
 import org.searchisko.api.rest.exception.RequiredFieldException;
 import org.searchisko.api.security.Role;
 import org.searchisko.api.service.ProjectService;
@@ -34,6 +35,7 @@ import org.searchisko.api.util.SearchUtils;
 @RequestScoped
 @Path("/project")
 @RolesAllowed(Role.ADMIN)
+@Audit
 public class ProjectRestService extends RestEntityServiceBase {
 
 	protected final String[] fieldsToRemove = new String[]{"type_specific_code"};
@@ -62,6 +64,7 @@ public class ProjectRestService extends RestEntityServiceBase {
 	@Produces(MediaType.APPLICATION_JSON)
 	@Override
 	@PermitAll
+	@AuditIgnore
 	public Object getAll(@QueryParam("from") Integer from, @QueryParam("size") Integer size) {
 		Principal principal = securityContext.getUserPrincipal();
 
@@ -77,6 +80,7 @@ public class ProjectRestService extends RestEntityServiceBase {
 	@Produces(MediaType.APPLICATION_JSON)
 	@Override
 	@PermitAll
+	@AuditIgnore
 	public Object get(@PathParam("id") String id) {
 		Principal principal = securityContext.getUserPrincipal();
 		if (principal == null) {
@@ -90,7 +94,6 @@ public class ProjectRestService extends RestEntityServiceBase {
 	@Path("/")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	@Audit
 	public Object create(@AuditContent Map<String, Object> data) {
 		String codeFromData = (String) data.get(ProjectService.FIELD_CODE);
 		if (codeFromData == null || codeFromData.isEmpty())
@@ -103,7 +106,6 @@ public class ProjectRestService extends RestEntityServiceBase {
 	@Path("/{id}")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	@Audit
 	public Object create(@PathParam("id") @AuditId String id, @AuditContent Map<String, Object> data) {
 
 		if (id == null || id.isEmpty()) {
@@ -127,6 +129,7 @@ public class ProjectRestService extends RestEntityServiceBase {
 	@GET
 	@Path("/search")
 	@Produces(MediaType.APPLICATION_JSON)
+	@AuditIgnore
 	public Object search(@Context UriInfo uriInfo) {
 
 		if (uriInfo == null || uriInfo.getQueryParameters().isEmpty() || uriInfo.getQueryParameters().size() > 1) {

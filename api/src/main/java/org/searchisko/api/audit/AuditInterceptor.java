@@ -11,7 +11,11 @@ import javax.interceptor.AroundInvoke;
 import javax.interceptor.Interceptor;
 import javax.interceptor.InvocationContext;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import org.searchisko.api.audit.annotation.Audit;
+import org.searchisko.api.audit.annotation.AuditIgnore;
 
 /**
  * Interceptor handling {@link org.searchisko.api.audit.annotation.Audit} annotation
@@ -25,9 +29,24 @@ public class AuditInterceptor {
 	@Inject
 	private AuditService auditService;
 
+	@Inject
+	protected Logger log;
+
 	@AroundInvoke
 	public Object aroundInvoke(InvocationContext ic) throws Exception {
-		auditService.auditMethod(ic.getMethod(), ic.getParameters());
+		AuditIgnore ignored = ic.getMethod().getAnnotation(AuditIgnore.class);
+		Audit auditOnMethod = ic.getMethod().getAnnotation(Audit.class);
+
+		boolean audit = true;
+		if (ignored != null && auditOnMethod == null) {
+			audit = false;
+			log.log(Level.FINEST, "Skip audit because of @AuditIgnore");
+		}
+
+		if (audit) {
+			auditService.auditMethod(ic.getMethod(), ic.getParameters());
+		}
+
 		return ic.proceed();
 	}
 

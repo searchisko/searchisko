@@ -20,6 +20,7 @@ import java.util.Map;
 import org.searchisko.api.audit.annotation.Audit;
 import org.searchisko.api.audit.annotation.AuditContent;
 import org.searchisko.api.audit.annotation.AuditId;
+import org.searchisko.api.audit.annotation.AuditIgnore;
 import org.searchisko.api.rest.exception.RequiredFieldException;
 import org.searchisko.api.service.AuthenticationUtilService;
 import org.searchisko.api.security.Role;
@@ -35,6 +36,7 @@ import org.searchisko.api.service.SecurityService;
 @RequestScoped
 @Path("/provider")
 @RolesAllowed(Role.ADMIN)
+@Audit
 public class ProviderRestService extends RestEntityServiceBase {
 
 	@Inject
@@ -59,6 +61,7 @@ public class ProviderRestService extends RestEntityServiceBase {
 	@GET
 	@Path("/")
 	@Produces(MediaType.APPLICATION_JSON)
+	@AuditIgnore
 	public Object getAll(@QueryParam("from") Integer from, @QueryParam("size") Integer size) {
 		return entityService.getAll(from, size, FIELDS_TO_REMOVE);
 	}
@@ -68,6 +71,7 @@ public class ProviderRestService extends RestEntityServiceBase {
 	@Produces(MediaType.APPLICATION_JSON)
 	@RolesAllowed({ Role.ADMIN, Role.PROVIDER })
 	@Override
+	@AuditIgnore
 	public Object get(@PathParam("id") String id) {
 
 		if (id == null || id.isEmpty()) {
@@ -90,8 +94,7 @@ public class ProviderRestService extends RestEntityServiceBase {
 	@Path("/")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	@Audit
-	public Object create(@AuditId Map<String, Object> data) {
+	public Object create(@AuditContent Map<String, Object> data) {
 		String nameFromData = (String) data.get(ProviderService.NAME);
 		if (nameFromData == null || nameFromData.isEmpty())
 			return Response.status(Status.BAD_REQUEST).entity("Required data field '" + ProviderService.NAME + "' not set")
@@ -103,7 +106,6 @@ public class ProviderRestService extends RestEntityServiceBase {
 	@Path("/{id}")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	@Audit
 	public Object create(@PathParam("id") @AuditId String id, @AuditContent Map<String, Object> data) {
 
 		if (id == null || id.isEmpty()) {
@@ -134,7 +136,6 @@ public class ProviderRestService extends RestEntityServiceBase {
 	@POST
 	@Path("/{id}/password")
 	@RolesAllowed({ Role.ADMIN, Role.PROVIDER })
-	@Audit
 	public Object changePassword(@PathParam("id")  @AuditId String id, String pwd) {
 
 		if (id == null || id.isEmpty()) {

@@ -5,6 +5,10 @@
  */
 package org.searchisko.ftest.rest;
 
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
+
 import com.jayway.restassured.http.ContentType;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
@@ -15,10 +19,6 @@ import org.junit.AfterClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.searchisko.ftest.DeploymentHelpers;
-
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
 
 import static com.jayway.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.*;
@@ -134,7 +134,6 @@ public class TaskRestServiceTest {
 				.body("id", is(not(empty())))
 				.when().post(new URL(context, TASKS_REST_API + "/task/reindex_contributor").toExternalForm())
 				.andReturn().body().jsonPath().get("id");
-		System.out.println("id:" + taskID);
 	}
 
 	@Test

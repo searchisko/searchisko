@@ -5,13 +5,6 @@
  */
 package org.searchisko.api.rest;
 
-import org.searchisko.api.security.Role;
-import org.searchisko.api.service.TaskService;
-import org.searchisko.api.tasker.TaskConfigurationException;
-import org.searchisko.api.tasker.TaskStatus;
-import org.searchisko.api.tasker.TaskStatusInfo;
-import org.searchisko.api.tasker.UnsupportedTaskException;
-
 import javax.annotation.security.RolesAllowed;
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
@@ -23,6 +16,17 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.searchisko.api.audit.annotation.Audit;
+import org.searchisko.api.audit.annotation.AuditContent;
+import org.searchisko.api.audit.annotation.AuditId;
+import org.searchisko.api.audit.annotation.AuditIgnore;
+import org.searchisko.api.security.Role;
+import org.searchisko.api.service.TaskService;
+import org.searchisko.api.tasker.TaskConfigurationException;
+import org.searchisko.api.tasker.TaskStatus;
+import org.searchisko.api.tasker.TaskStatusInfo;
+import org.searchisko.api.tasker.UnsupportedTaskException;
+
 /**
  * Long running Tasks execution related REST API.
  *
@@ -31,6 +35,7 @@ import java.util.Map;
 @RequestScoped
 @Path("/tasks")
 @RolesAllowed(Role.ADMIN)
+@Audit
 public class TaskRestService extends RestServiceBase {
 
 	@Inject
@@ -39,6 +44,7 @@ public class TaskRestService extends RestServiceBase {
 	@GET
 	@Path("/type")
 	@Produces(MediaType.APPLICATION_JSON)
+	@AuditIgnore
 	public Object getTypes() {
 		return taskService.getTaskManager().listSupportedTaskTypes();
 	}
@@ -46,6 +52,7 @@ public class TaskRestService extends RestServiceBase {
 	@GET
 	@Path("/task")
 	@Produces(MediaType.APPLICATION_JSON)
+	@AuditIgnore
 	public Object getTasks(@QueryParam("taskType") String taskType, @QueryParam("taskStatus") String[] taskStatus,
 						   @QueryParam("from") Integer from, @QueryParam("size") Integer size) {
 
@@ -65,6 +72,7 @@ public class TaskRestService extends RestServiceBase {
 	@GET
 	@Path("/task/{taskId}")
 	@Produces(MediaType.APPLICATION_JSON)
+	@AuditIgnore
 	public Object getTask(@PathParam("taskId") String taskId) {
 		TaskStatusInfo tsi = taskService.getTaskManager().getTaskStatusInfo(taskId);
 		return tsi != null ? tsi : Response.status(Status.NOT_FOUND).build();
@@ -74,7 +82,7 @@ public class TaskRestService extends RestServiceBase {
 	@Path("/task/{taskType}")
 	@Produces(MediaType.APPLICATION_JSON)
 	@Consumes(MediaType.APPLICATION_JSON)
-	public Object createTask(@PathParam("taskType") String taskType, Map<String, Object> content) {
+	public Object createTask(@PathParam("taskType") @AuditId String taskType, @AuditContent Map<String, Object> content) {
 		try {
 			String id = taskService.getTaskManager().createTask(taskType, content);
 			return createResponseWithId(id);
@@ -89,7 +97,7 @@ public class TaskRestService extends RestServiceBase {
 	@DELETE
 	@Path("/task/{taskId}")
 	@Produces(MediaType.APPLICATION_JSON)
-	public Object cancelTask(@PathParam("taskId") String id) {
+	public Object cancelTask(@PathParam("taskId") @AuditId String id) {
 		boolean ret = taskService.getTaskManager().cancelTask(id);
 		return Response.ok(ret ? "Task canceled" : "Task not canceled").build();
 	}
