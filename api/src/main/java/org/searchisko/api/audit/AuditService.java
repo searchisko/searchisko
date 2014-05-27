@@ -53,7 +53,7 @@ public class AuditService {
 		String path = null;
 		String operation = null;
 		if (httpRequest != null) {
-			path = httpRequest.getRequestURI();
+			path = httpRequest.getRequestURI().substring(httpRequest.getContextPath().length());
 			operation = httpRequest.getMethod();
 		}
 		AuthenticatedUserType userType = authenticationUtilService.getUserType(httpRequest.getUserPrincipal());
