@@ -5,14 +5,13 @@
  */
 package org.searchisko.api.model;
 
-import java.io.IOException;
-import java.util.Properties;
-
 import javax.annotation.PostConstruct;
 import javax.ejb.Singleton;
 import javax.ejb.Startup;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Named;
+import java.io.IOException;
+import java.util.Properties;
 
 import org.searchisko.api.util.SearchUtils;
 
@@ -34,6 +33,8 @@ public class StatsConfiguration {
 	protected boolean enabled;
 
 	protected boolean useSearchCluster;
+
+	protected boolean async;
 
 	protected Properties settingsProps = null;
 
@@ -73,6 +74,14 @@ public class StatsConfiguration {
 		return useSearchCluster;
 	}
 
+	public boolean isAsync() {
+		return async;
+	}
+
+	public void setAsync(boolean async) {
+		this.async = async;
+	}
+
 	public Properties getSettingsProps() {
 		return settingsProps;
 	}
@@ -82,6 +91,7 @@ public class StatsConfiguration {
 		settingsProps = SearchUtils.loadProperties(FILE);
 		enabled = Boolean.parseBoolean(settingsProps.getProperty("stats.enabled", "true"));
 		useSearchCluster = Boolean.parseBoolean(settingsProps.getProperty("stats.useSearchCluster", "true"));
+		async = Boolean.parseBoolean(settingsProps.getProperty("stats.async", "true"));
 	}
 
 }

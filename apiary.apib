@@ -1890,6 +1890,77 @@ GET /rest/sys/info
 }
 
 
+Get system audit log. 'Searchisko administrator' authentication required.
+
+##### Request parameters
+
+* `operation` HTTP operation e.g. `GET`, `POST`
+* `path` HTTP Path of audited action
+* `username` username who performed an action
+* `usertype` type of user can `be PROVIDER` or `CONTRIBUTOR`
+* `id` id of audited content
+* `from` index of the first content object returned in the results array. The default value is 0 (start from begin of list).
+* `size` of returned results array. Default is 10.
+
+##### Response content
+
+The response contains a JSON structure with overall number of the contributor definitions in `total` field, and an array of the audit entries data in `hits` field.
+The content of the array depends on `from` and `size` request parameters.
+Each record in the array contains `id` field with unique id for other REST operations, and `data` field with full auditlog entry:
+
+
+```
+{
+  "total": "1",
+  "hits": [
+    {
+      "id": "unique id in Searchisko",
+      "data": {
+        // auditlog object
+      }
+    }
+  ]
+}
+```
+
+
+GET /rest/sys/auditlog{?operation,path,username,usertype,id,from,size}
+< 200
+< Content-Type: application/json
+{
+    "total": 2,
+    "hits": [
+        {
+            "id": "LPuQw4_mSemX8RFfoeqkpg",
+            "data": {
+                "id": null,
+                "content": null,
+                "operation": "GET",
+                "username": null,
+                "user_type": null,
+                "path": "/v1/rest/sys/info",
+                "type": "audit",
+                "date": "2014-05-27T12:13:38.258Z"
+            }
+        },
+        {
+            "id": "32k5WtccR--dN8UJJQ9qtg",
+            "data": {
+                "id": null,
+                "content": null,
+                "operation": "GET",
+                "username": "jbossorg",
+                "user_type": "PROVIDER",
+                "path": "/v1/rest/sys/info",
+                "type": "audit",
+                "date": "2014-05-27T12:14:01.646Z"
+            }
+        }
+    ]
+}
+
+
+
 Elasticsearch "Search" cluster [full REST API](http://www.elasticsearch.org/guide/). 
 
 GET /rest/sys/es/search/*

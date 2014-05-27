@@ -5,14 +5,6 @@
  */
 package org.searchisko.api.service;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.ejb.Singleton;
@@ -20,6 +12,9 @@ import javax.ejb.Startup;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
+import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.elasticsearch.ElasticSearchException;
 import org.elasticsearch.action.ActionListener;
@@ -32,10 +27,8 @@ import org.elasticsearch.client.Requests;
 import org.elasticsearch.common.joda.time.format.DateTimeFormatter;
 import org.elasticsearch.common.joda.time.format.ISODateTimeFormat;
 import org.elasticsearch.common.unit.TimeValue;
-import org.elasticsearch.index.query.AndFilterBuilder;
-import org.elasticsearch.index.query.FilteredQueryBuilder;
-import org.elasticsearch.index.query.QueryBuilders;
-import org.elasticsearch.index.query.TermsFilterBuilder;
+import org.elasticsearch.index.query.*;
+import org.elasticsearch.indices.IndexMissingException;
 import org.elasticsearch.search.SearchHit;
 import org.searchisko.api.model.AppConfiguration.ClientType;
 import org.searchisko.api.model.QuerySettings;
@@ -45,9 +38,8 @@ import org.searchisko.api.util.SearchUtils;
 
 /**
  * Service for Elasticsearch StatsClient
- * 
+ *
  * @author Libor Krzyzanek
- * 
  */
 @Named
 @ApplicationScoped
@@ -129,16 +121,64 @@ public class StatsClientService extends ElasticsearchClientService {
 		}
 	}
 
+
+	/**
+	 * Default maximal size of response.
+	 */
+	public static final int RESPONSE_MAX_SIZE = 50;
+
+	/**
+	 * Search over statistics
+	 *
+	 * @param type          type of stats record. Cannot be null
+	 * @param filterBuilder filter, can be null
+	 * @param from
+	 * @param size
+	 * @return
+	 * @throws SearchIndexMissingException
+	 */
+	public SearchResponse performSearch(StatsRecordType type, FilterBuilder filterBuilder, Integer from, Integer size) throws SearchIndexMissingException {
+		if (type == null) {
+			throw new IllegalArgumentException("type");
+		}
+		try {
+			SearchRequestBuilder srb = getClient().prepareSearch(type.getSearchIndexName()).setTypes(type.getSearchIndexType());
+
+			if (filterBuilder != null) {
+				srb.setQuery(QueryBuilders.constantScoreQuery(filterBuilder));
+			} else {
+				srb.setQuery(QueryBuilders.matchAllQuery());
+			}
+
+			if (from != null && from >= 0) {
+				srb.setFrom(from);
+			}
+
+			if (size != null && size >= 0) {
+				srb.setSize(size > RESPONSE_MAX_SIZE ? RESPONSE_MAX_SIZE : size);
+			}
+
+			log.log(Level.FINE, "Stats search query: {0}", srb);
+
+			return srb.execute().actionGet();
+
+		} catch (IndexMissingException e) {
+			log.log(Level.WARNING, e.getMessage());
+			throw new SearchIndexMissingException(e);
+		}
+
+	}
+
 	/**
 	 * Write ES search statistics record about unsuccessful search.
-	 * 
-	 * @param type of search performed - mandatory
-	 * @param ex exception from search attempt - mandatory
-	 * @param dateInMillis timestamp when search was performed
+	 *
+	 * @param type          of search performed - mandatory
+	 * @param ex            exception from search attempt - mandatory
+	 * @param dateInMillis  timestamp when search was performed
 	 * @param querySettings client query settings
 	 */
 	public void writeStatisticsRecord(StatsRecordType type, ElasticSearchException ex, long dateInMillis,
-			QuerySettings querySettings) {
+									  QuerySettings querySettings) {
 
 		if (!statsConfiguration.enabled()) {
 			return;
@@ -158,15 +198,15 @@ public class StatsClientService extends ElasticsearchClientService {
 
 	/**
 	 * Write ES search statistics record about successful search.
-	 * 
-	 * @param type of search performed
-	 * @param responseUuid UUID of response (also returned over search REST API)
-	 * @param resp response from search attempt
-	 * @param dateInMillis timestamp when search was performed
+	 *
+	 * @param type          of search performed
+	 * @param responseUuid  UUID of response (also returned over search REST API)
+	 * @param resp          response from search attempt
+	 * @param dateInMillis  timestamp when search was performed
 	 * @param querySettings performed
 	 */
 	public void writeStatisticsRecord(StatsRecordType type, String responseUuid, SearchResponse resp, long dateInMillis,
-			QuerySettings querySettings) {
+									  QuerySettings querySettings) {
 
 		if (!statsConfiguration.enabled()) {
 			return;
@@ -209,10 +249,10 @@ public class StatsClientService extends ElasticsearchClientService {
 
 	/**
 	 * Write ES statistics record - general code.
-	 * 
-	 * @param type of record
+	 *
+	 * @param type         of record
 	 * @param dateInMillis timestamp when operation was performed
-	 * @param source fields to be written into statistics record.
+	 * @param source       fields to be written into statistics record.
 	 */
 	public void writeStatisticsRecord(StatsRecordType type, long dateInMillis, Map<String, Object> source) {
 
@@ -228,8 +268,14 @@ public class StatsClientService extends ElasticsearchClientService {
 		try {
 			IndexRequest ir = Requests.indexRequest().index(type.getSearchIndexName()).type(type.getSearchIndexType())
 					.timeout(TimeValue.timeValueSeconds(timeout.stats())).source(source);
-			// async call, if it fails -> just log
-			client.index(ir, statsLogListener);
+			if (statsConfiguration.isAsync()) {
+				// async call, if it fails -> just log
+				client.index(ir, statsLogListener);
+			} else {
+				// sync call and log it
+				IndexResponse response = client.index(ir).actionGet();
+				statsLogListener.onResponse(response);
+			}
 		} catch (Throwable e) {
 			log.log(Level.FINEST, "Error writing into stats server: " + e.getMessage(), e);
 		}
@@ -237,10 +283,10 @@ public class StatsClientService extends ElasticsearchClientService {
 
 	/**
 	 * Check if some statistics record exists for specified conditions.
-	 * 
-	 * @param type of record we are looking for
+	 *
+	 * @param type       of record we are looking for
 	 * @param conditions for lookup. Key is a name of field to filter over, Value is a value to filter for using term
-	 *          condition.
+	 *                   condition.
 	 * @return true if at least one record matching conditions exits
 	 */
 	public boolean checkStatisticsRecordExists(StatsRecordType type, Map<String, Object> conditions) {
@@ -303,7 +349,7 @@ public class StatsClientService extends ElasticsearchClientService {
 	protected void addFilters(Map<String, Object> source, QuerySettings.Filters filters) {
 		if (filters != null) {
 			for (String key : filters.getFilterCandidatesKeys()) {
-				source.put("filter."+key, filters.getFilterCandidateValues(key));
+				source.put("filter." + key, filters.getFilterCandidateValues(key));
 			}
 		}
 	}
