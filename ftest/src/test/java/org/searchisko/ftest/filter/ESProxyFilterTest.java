@@ -10,12 +10,12 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashMap;
 
+import com.jayway.restassured.http.ContentType;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.junit.InSequence;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.AfterClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.searchisko.api.filter.ESProxyFilter;
@@ -23,13 +23,8 @@ import org.searchisko.ftest.DeploymentHelpers;
 import org.searchisko.ftest.ProviderModel;
 import org.searchisko.ftest.rest.ProviderRestServiceTest;
 
-import com.jayway.restassured.http.ContentType;
-
 import static com.jayway.restassured.RestAssured.given;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.not;
-import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.*;
 
 /**
  * Integration test for /sys/es/search and /sys/es/stats access to full Elasticsearch REST API.
@@ -52,11 +47,6 @@ public class ESProxyFilterTest {
 	@Deployment(testable = false)
 	public static WebArchive createDeployment() throws IOException {
 		return DeploymentHelpers.createDeployment();
-	}
-
-	@AfterClass
-	public static void cleanAfterTest() throws IOException {
-		DeploymentHelpers.removeSearchiskoDataDir();
 	}
 
 	@Test

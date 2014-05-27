@@ -15,7 +15,6 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.junit.InSequence;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.AfterClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.searchisko.ftest.DeploymentHelpers;
@@ -38,11 +37,6 @@ public class TaskRestServiceTest {
 	@Deployment(testable = false)
 	public static WebArchive createDeployment() throws IOException {
 		return DeploymentHelpers.createDeployment();
-	}
-
-	@AfterClass
-	public static void cleanAfterTest() throws IOException {
-		DeploymentHelpers.removeSearchiskoDataDir();
 	}
 
 	@ArquillianResource

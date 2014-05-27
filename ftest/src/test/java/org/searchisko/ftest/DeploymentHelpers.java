@@ -69,7 +69,7 @@ public class DeploymentHelpers {
 		}
 	}
 
-	public static void removeSearchiskoDataDir() throws IOException {
+	protected static void removeSearchiskoDataDir() throws IOException {
 		String d = appProperties.getProperty("es.client.embedded.data.path");
 		log.log(Level.INFO, "Deleting searchisko data dir: {0}", d);
 		FileUtils.deleteDirectory(new File(d));
@@ -91,14 +91,12 @@ public class DeploymentHelpers {
 	@Deployment(testable = false)
 	public static WebArchive createDeployment() throws IOException {
 		log.log(Level.INFO, "Creating default deployment");
-		removeSearchiskoDataDir();
 		return createWar();
 	}
 
 	@Deployment(testable = false)
 	public static WebArchive createDeploymentMinimalWebXML() throws IOException {
 		log.log(Level.INFO, "Creating default deployment");
-		removeSearchiskoDataDir();
 
 		WebArchive war = createWar();
 		war.setWebXML("webapp/WEB-INF/web-minimal.xml");
