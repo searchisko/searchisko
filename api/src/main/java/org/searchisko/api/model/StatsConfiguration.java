@@ -17,10 +17,9 @@ import org.searchisko.api.util.SearchUtils;
 
 /**
  * Configuration for statistics client
- * 
+ *
  * @author Libor Krzyzanek
  * @author Vlastimil Elias (velias at redhat dot com)
- * 
  */
 @Named
 @ApplicationScoped
@@ -47,23 +46,27 @@ public class StatsConfiguration {
 
 	/**
 	 * Constructor.
-	 * 
+	 *
 	 * @param enabled to set
 	 */
 	public StatsConfiguration(boolean enabled) {
 		super();
 		this.enabled = enabled;
+		this.async = true;
 	}
 
 	/**
 	 * Constructor.
-	 * 
-	 * @param enabled to set
+	 *
+	 * @param enabled          to set
+	 * @param useSearchCluster to set
+	 * @param async            to set
 	 */
-	public StatsConfiguration(boolean enabled, boolean useSearchCluster) {
+	public StatsConfiguration(boolean enabled, boolean useSearchCluster, boolean async) {
 		super();
 		this.enabled = enabled;
 		this.useSearchCluster = useSearchCluster;
+		this.async = async;
 	}
 
 	public boolean enabled() {

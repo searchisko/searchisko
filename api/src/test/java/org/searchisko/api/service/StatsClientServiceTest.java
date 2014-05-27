@@ -5,6 +5,12 @@
  */
 package org.searchisko.api.service;
 
+import java.io.IOException;
+import java.text.ParseException;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.logging.Logger;
+
 import org.apache.lucene.document.DateTools;
 import org.elasticsearch.ElasticSearchException;
 import org.elasticsearch.action.ActionListener;
@@ -30,12 +36,6 @@ import org.searchisko.api.model.AppConfiguration.ClientType;
 import org.searchisko.api.model.QuerySettings.Filters;
 import org.searchisko.api.testtools.TestUtils;
 
-import java.io.IOException;
-import java.text.ParseException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.logging.Logger;
-
 /**
  * Unit test for {@link StatsClientService}
  *
@@ -58,7 +58,7 @@ public class StatsClientServiceTest {
 		tested.appConfigurationService = acs;
 		tested.log = Logger.getLogger("testlogger");
 
-		tested.statsConfiguration = new StatsConfiguration(true, false);
+		tested.statsConfiguration = new StatsConfiguration(true, false, true);
 
 		try {
 			tested.init();
@@ -76,7 +76,7 @@ public class StatsClientServiceTest {
 	public void init_useSearchCluster() throws Exception {
 		StatsClientService tested = new StatsClientService();
 		tested.log = Logger.getLogger("testlogger");
-		tested.statsConfiguration = new StatsConfiguration(true, true);
+		tested.statsConfiguration = new StatsConfiguration(true, true, true);
 		Client mockClient = Mockito.mock(Client.class);
 		tested.searchClientService = Mockito.mock(SearchClientService.class);
 		Mockito.when(tested.searchClientService.getClient()).thenReturn(mockClient);
@@ -104,7 +104,7 @@ public class StatsClientServiceTest {
 		// no initialization is performed if statistics are disabled
 		StatsClientService tested = new StatsClientService();
 		tested.log = Logger.getLogger("testlogger");
-		tested.statsConfiguration = new StatsConfiguration(false, true);
+		tested.statsConfiguration = new StatsConfiguration(false, true, true);
 		Client mockClient = Mockito.mock(Client.class);
 		tested.searchClientService = Mockito.mock(SearchClientService.class);
 		Mockito.when(tested.searchClientService.getClient()).thenReturn(mockClient);
