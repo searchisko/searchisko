@@ -6,6 +6,6 @@
     "jbossorg_jira": [""],
     "jbossorg_sbs" : ["2247"],
     "jbossorg_mailing_list": "",
-    "jbossorg_project_info": "hibernate_subprojects_ogm"
+    "jbossorg_project_info": ["hibernate_subprojects_ogm", "hibernateOgm"]
   }
 }
