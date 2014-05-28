@@ -30,6 +30,8 @@ import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.index.query.*;
 import org.elasticsearch.indices.IndexMissingException;
 import org.elasticsearch.search.SearchHit;
+import org.elasticsearch.search.sort.SortOrder;
+import org.searchisko.api.StatsObjectFields;
 import org.searchisko.api.model.AppConfiguration.ClientType;
 import org.searchisko.api.model.QuerySettings;
 import org.searchisko.api.model.StatsConfiguration;
@@ -121,12 +123,6 @@ public class StatsClientService extends ElasticsearchClientService {
 		}
 	}
 
-
-	/**
-	 * Default maximal size of response.
-	 */
-	public static final int RESPONSE_MAX_SIZE = 50;
-
 	/**
 	 * Search over statistics
 	 *
@@ -134,10 +130,16 @@ public class StatsClientService extends ElasticsearchClientService {
 	 * @param filterBuilder filter, can be null
 	 * @param from
 	 * @param size
+	 * @param sort          asc or desc
 	 * @return
 	 * @throws SearchIndexMissingException
 	 */
-	public SearchResponse performSearch(StatsRecordType type, FilterBuilder filterBuilder, Integer from, Integer size) throws SearchIndexMissingException {
+	public SearchResponse performSearch(
+			StatsRecordType type,
+			FilterBuilder filterBuilder,
+			Integer from,
+			Integer size,
+			String sort) throws SearchIndexMissingException {
 		if (type == null) {
 			throw new IllegalArgumentException("type");
 		}
@@ -155,7 +157,14 @@ public class StatsClientService extends ElasticsearchClientService {
 			}
 
 			if (size != null && size >= 0) {
-				srb.setSize(size > RESPONSE_MAX_SIZE ? RESPONSE_MAX_SIZE : size);
+				srb.setSize(size);
+			}
+			if (sort != null) {
+				if (SortOrder.ASC.name().equalsIgnoreCase(sort)) {
+					srb.addSort(StatsObjectFields.DATE, SortOrder.ASC);
+				} else if (SortOrder.DESC.name().equalsIgnoreCase(sort)) {
+					srb.addSort(StatsObjectFields.DATE, SortOrder.DESC);
+				}
 			}
 
 			log.log(Level.FINE, "Stats search query: {0}", srb);

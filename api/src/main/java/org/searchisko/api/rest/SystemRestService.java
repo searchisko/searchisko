@@ -69,7 +69,8 @@ public class SystemRestService {
 			@QueryParam("usertype") String usertype,
 			@QueryParam("id") String id,
 			@QueryParam("from") Integer from,
-			@QueryParam("size") Integer size) throws IOException {
+			@QueryParam("size") Integer size,
+			@QueryParam("sort") String sort) throws IOException {
 
 
 		BoolFilterBuilder filterBuilder = FilterBuilders.boolFilter();
@@ -101,7 +102,7 @@ public class SystemRestService {
 		}
 
 		try {
-			SearchResponse response = statsClientService.performSearch(StatsRecordType.AUDIT, filterBuilder, from, size);
+			SearchResponse response = statsClientService.performSearch(StatsRecordType.AUDIT, filterBuilder, from, size, sort);
 			return new ESDataOnlyResponse(response);
 		} catch (SearchIndexMissingException e) {
 			return null;

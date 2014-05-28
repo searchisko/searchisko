@@ -1901,6 +1901,7 @@ Get system audit log. 'Searchisko administrator' authentication required.
 * `id` id of audited content
 * `from` index of the first content object returned in the results array. The default value is 0 (start from begin of list).
 * `size` of returned results array. Default is 10.
+* `sort` you can use 'asc' or 'desc' value to sort results by date when audit entry has been written (`date` field).
 
 ##### Response content
 
@@ -1924,7 +1925,7 @@ Each record in the array contains `id` field with unique id for other REST opera
 ```
 
 
-GET /rest/sys/auditlog{?operation,path,username,usertype,id,from,size}
+GET /rest/sys/auditlog{?operation,path,username,usertype,id,from,size,sort}
 < 200
 < Content-Type: application/json
 {

@@ -133,6 +133,34 @@ public class SystemRestServiceTest {
 				.when().get(new URL(context, SYSTEM_REST_API).toExternalForm());
 	}
 
+	@Test
+	@InSequence(110)
+	public void assertAuditSort() throws MalformedURLException {
+		given().pathParam("operation", OPERATION_AUDITLOG).contentType(ContentType.JSON)
+				.queryParam("sort", "desc")
+				.auth().basic(DeploymentHelpers.DEFAULT_PROVIDER_NAME, DeploymentHelpers.DEFAULT_PROVIDER_PASSWORD)
+				.expect().statusCode(200)
+				.log().ifError()
+				.contentType(ContentType.JSON)
+				.body("total", is(2))
+				.body("hits[0].data.username", is(DeploymentHelpers.DEFAULT_PROVIDER_NAME))
+				.body("hits[1].data.username", nullValue())
+				.when().get(new URL(context, SYSTEM_REST_API).toExternalForm());
+
+		given().pathParam("operation", OPERATION_AUDITLOG).contentType(ContentType.JSON)
+				.queryParam("sort", "asc")
+				.auth().basic(DeploymentHelpers.DEFAULT_PROVIDER_NAME, DeploymentHelpers.DEFAULT_PROVIDER_PASSWORD)
+				.expect().statusCode(200)
+				.log().ifError()
+				.contentType(ContentType.JSON)
+				.body("total", is(2))
+				.body("hits[0].data.username", nullValue())
+				.body("hits[1].data.username", is(DeploymentHelpers.DEFAULT_PROVIDER_NAME))
+				.when().get(new URL(context, SYSTEM_REST_API).toExternalForm());
+
+	}
+
+
 	public static final ProviderModel provider1 = new ProviderModel("provider1", "Password1");
 
 	@Test
