@@ -1,7 +1,7 @@
 {
     "type" : "remote",
     "remote" : {
-        "urlGetDocuments"       : "http://www-beta.jboss.org/rht_solutions.json",
+        "urlGetDocuments"       : "http://www.jboss.org/rht_solutions.json",
         "simpleGetDocuments"    : "true",
         "urlGetDocumentDetailsField":"url",
         "spacesIndexed"					: "MAIN",

@@ -2,7 +2,7 @@
     "type" : "remote",
     "remote" : {
         "remoteClientClass"     : "org.jboss.elasticsearch.river.remote.GetSitemapHtmlClient",
-        "urlGetSitemap"         : "http://www-stg.jboss.org/sitemap.xml",
+        "urlGetSitemap"         : "http://www.jboss.org/sitemap.xml",
         "timeout"               : "10s",
         "spacesIndexed"         : "MAIN",
         "simpleGetDocuments"    : true,
