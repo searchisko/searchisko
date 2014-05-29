@@ -185,7 +185,11 @@ After the Searchisko is deployed it's necessary to initialize it. Next initializ
    - Searchisko configurations
    - projects
    - contributors
-5. Initialize ElasticSearch rivers if any used to collect data 
+5. Update Contributor profiles by executing `update_contributor_profile` task, e.g.:
+
+	curl -X POST -H "Content-Type: application/json" --user jbossorg:jbossorgjbossorg https://your_openshift_aplication_url/v1/rest/tasks/task/update_contributor_profile -d '{"contributor_type_specific_code_type" : "jbossorg_username"}'
+
+6. Initialize ElasticSearch rivers if any used to collect data
 
 Configuration used for jboss.org Searchisko instance is stored in
 [`/configuration`](/configuration) folder of this repo. You can use it as
