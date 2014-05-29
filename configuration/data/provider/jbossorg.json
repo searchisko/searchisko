@@ -62,7 +62,14 @@
 				"value_default"    : "{sys_contributors}"
               }]
           }
-        }
+		  },{
+          	"name"     : "Clean sys_contributors from empty string",
+     		"class"    : "org.jboss.elasticsearch.tools.content.ScriptingPreprocessor",
+     		"settings" : {
+         		"script_engine_name"  : "JavaScript",
+         		"script"  : "if (data.get('sys_contributors')=='') { data.put('sys_contributors', null); }"
+     		}
+ 		  }
       ],
       "index": {
         "name": "data_jbossorg_blog",
