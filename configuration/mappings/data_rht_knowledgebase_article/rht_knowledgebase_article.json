@@ -4,7 +4,8 @@
         "properties" : {
             "space_key" : {"type" : "string", "analyzer" : "keyword"},
             "source"    : {"type" : "string", "analyzer" : "keyword"},
-            "tags" : {"type" : "string", "index" : "no"}
+            "tags"      : {"type" : "string", "index" : "no"},
+            "product"   : {"type" : "string", "analyzer" : "keyword_lowercase"}
         }
     }
 }

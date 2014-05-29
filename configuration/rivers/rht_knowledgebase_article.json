@@ -22,6 +22,8 @@
             "sys_updated"           : {"remote_field" : "prep_updated"},
             "sys_content_provider"  : {"remote_field" : "prep_content_provider"},
             "sys_content_type"      : {"remote_field" : "prep_content_type"},
+            "sys_project"           : {"remote_field" : "prep_project"},
+            "sys_project_name"      : {"remote_field" : "prep_project_name"},
             "sys_activity_dates"    : {"remote_field" : "prep_activity_dates"},
             "sys_last_activity_date": {"remote_field" : "prep_last_activity_date"},
             "sys_url_view"			    : {"remote_field" : "detail.view_uri"},
@@ -31,6 +33,7 @@
             "sys_content"           : {"remote_field" : "detail.body"},
             "sys_content_content-type" : {"remote_field" : "prep_content_content-type"},
             "sys_content_plaintext" : {"remote_field" : "prep_content_plaintext"},
+            "product"               : {"remote_field" : "product"},
             "tags"                  : {"remote_field" : "detail.categories.category"},
             "sys_tags"              : {"remote_field" : "detail.categories.category"}
         },
@@ -90,6 +93,23 @@
                 "settings" : {
                     "source_field" : "prep_activity_dates",
                     "target_field" : "prep_last_activity_date"
+                } 
+            },{ 
+                "name"     : "Projects mapper",
+                "class"    : "org.jboss.elasticsearch.tools.content.ESLookupValuePreprocessor",
+                "settings" : {
+                    "index_name"       : "sys_projects",
+                    "index_type"       : "project",
+                    "source_field"     : "product",
+                    "idx_search_field" : "jbossdeveloper_website_code",
+                    "result_mapping"   : [{
+		                    "idx_result_field" : "code",
+		                    "target_field"     : "prep_project"
+	                    },{
+						            "idx_result_field" : "name",
+						            "target_field"     : "prep_project_name"
+					            }
+                    ]
                 } 
             }
         ]

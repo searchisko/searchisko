@@ -8,7 +8,8 @@
             "issue"       : {"type" : "string", "index" : "no", "include_in_all" : true},
             "environment" : {"type" : "string", "index" : "no", "include_in_all" : true},
             "resolution"  : {"type" : "string", "index" : "no", "include_in_all" : true},
-            "root_cause"  : {"type" : "string", "index" : "no", "include_in_all" : true}
+            "root_cause"  : {"type" : "string", "index" : "no", "include_in_all" : true},
+            "product"     : {"type" : "string", "analyzer" : "keyword_lowercase"}
         }
     }
 }
