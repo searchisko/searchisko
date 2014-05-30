@@ -1,7 +1,5 @@
 package org.searchisko.api.filter;
 
-import org.apache.commons.codec.binary.Base64;
-
 import javax.inject.Inject;
 import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
@@ -12,9 +10,11 @@ import java.util.Enumeration;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.apache.commons.codec.binary.Base64;
+
 /**
  * Filter consuming HTTP Basic Authentication and if present then requires login.
- * HTTP Basic Challenge is handled on REST layer in ProviderHttpBasicAuthInterceptor
+ * HTTP Basic Challenge is handled on REST layer in ProviderHttpBasicAuthInterceptor or on Filter/Servlet level
  *
  * @author Libor Krzyzanek
  * @see javax.servlet.http.HttpServletRequest#login(String, String)
@@ -66,6 +66,7 @@ public class BasicAuthenticationFilter implements Filter {
 				} catch (final ServletException e) {
 					log.log(Level.FINE, "Custom authentication failed.", e);
 					response.sendError(HttpServletResponse.SC_FORBIDDEN, e.getMessage());
+					return;
 				}
 			}
 		}

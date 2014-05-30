@@ -3,14 +3,87 @@
 		 xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd"
 		 version="3.0">
 
-	<!-- Minimal WEB.XML-->
+	<!-- Minimal WEB.XML - Only CAS configuration is removed from regular web.xml -->
 
 	<display-name>Searchisko : API</display-name>
 	<description>The main Searchisko API</description>
 
+	<session-config>
+		<session-timeout>30</session-timeout>
+		<cookie-config>
+			<!-- Define if cookies should be transported only via secured connection -->
+			<secure>false</secure>
+		</cookie-config>
+	</session-config>
+
+	<security-constraint>
+		<web-resource-collection>
+			<web-resource-name>REST api</web-resource-name>
+			<url-pattern>/v1/rest/*</url-pattern>
+		</web-resource-collection>
+		<user-data-constraint>
+			<transport-guarantee>NONE</transport-guarantee>
+		</user-data-constraint>
+	</security-constraint>
+
+	<!-- RestEasy Security activator -->
+	<!-- see https://docs.jboss.org/resteasy/2.0.0.GA/userguide/html/Securing_JAX-RS_and_RESTeasy.html -->
 	<context-param>
 		<param-name>resteasy.role.based.security</param-name>
 		<param-value>true</param-value>
 	</context-param>
+
+	<!-- ###### CORS handling filter ###### -->
+	<filter>
+		<filter-name>CORS Filter</filter-name>
+		<filter-class>org.searchisko.api.filter.CORSWithCredentialsFilter</filter-class>
+	</filter>
+
+	<!-- ###### HTTP Basic Authentication Consumer ###### -->
+	<filter>
+		<filter-name>Basic Authentication Consumer Filter</filter-name>
+		<filter-class>org.searchisko.api.filter.BasicAuthenticationFilter</filter-class>
+	</filter>
+
+	<!-- ###### CAS SSO begin ###### -->
+	<!-- ###### CAS SSO end ###### -->
+
+	<!-- ###### ES proxy handling filter ###### -->
+	<filter>
+		<filter-name>Search ES Filter</filter-name>
+		<filter-class>org.searchisko.api.filter.ESProxyFilter</filter-class>
+	</filter>
+	<filter>
+		<filter-name>Stats ES Filter</filter-name>
+		<filter-class>org.searchisko.api.filter.ESProxyFilter</filter-class>
+		<init-param>
+			<param-name>useStatsClient</param-name>
+			<param-value>true</param-value>
+		</init-param>
+	</filter>
+
+
+	<!-- Filter Mappings -->
+	<filter-mapping>
+		<filter-name>Basic Authentication Consumer Filter</filter-name>
+		<url-pattern>/*</url-pattern>
+	</filter-mapping>
+	<filter-mapping>
+		<filter-name>CORS Filter</filter-name>
+		<url-pattern>/v1/rest/*</url-pattern>
+	</filter-mapping>
+
+	<filter-mapping>
+		<filter-name>Search ES Filter</filter-name>
+		<url-pattern>/v1/rest/sys/es/search/*</url-pattern>
+	</filter-mapping>
+	<filter-mapping>
+		<filter-name>Stats ES Filter</filter-name>
+		<url-pattern>/v1/rest/sys/es/stats/*</url-pattern>
+	</filter-mapping>
+
+	<welcome-file-list>
+		<welcome-file>index.html</welcome-file>
+	</welcome-file-list>
 
 </web-app>

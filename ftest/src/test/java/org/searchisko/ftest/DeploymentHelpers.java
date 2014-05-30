@@ -17,9 +17,7 @@
 
 package org.searchisko.ftest;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashMap;
@@ -29,6 +27,7 @@ import java.util.logging.Logger;
 
 import com.jayway.restassured.http.ContentType;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
@@ -36,6 +35,7 @@ import org.jboss.shrinkwrap.api.asset.FilteredStringAsset;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.jboss.shrinkwrap.resolver.api.maven.Maven;
+import org.searchisko.ftest.rest.SystemRestServiceTest;
 
 import static com.jayway.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.is;
@@ -104,20 +104,30 @@ public class DeploymentHelpers {
 		return war;
 	}
 
+	private static String projectRootPath = null;
 
-	protected static WebArchive createWar() throws IOException {
-		// /api/pom.xml determined dynamically allowing running single test in IDE
-		String rootPath = DeploymentHelpers.class.getResource("/").getFile();
-		log.log(Level.FINEST, "Root Path for test classes: {0}", rootPath);
 
-		final File[] runtimeDeps;
-		final String projectRootPath;
-		try {
+	public static String getProjectRootPaht() {
+		if (projectRootPath == null) {
+			String rootPath = DeploymentHelpers.class.getResource("/").getFile();
 			// Root Path is /searchisko/ftest/target/test-classes/
 			File projectRoot = new File(rootPath).getParentFile().getParentFile().getParentFile();
 			log.log(Level.FINE, "Project Root: {0}", rootPath);
 			projectRootPath = projectRoot.getAbsolutePath();
-			File apiPom = new File(projectRootPath + "/api/pom.xml");
+			log.log(Level.FINEST, "Root Path for test classes: {0}", projectRootPath);
+		}
+		return projectRootPath;
+	}
+
+	public static File getProjectFile(String relativePath) {
+		return new File(getProjectRootPaht() + relativePath);
+	}
+
+	protected static WebArchive createWar() throws IOException {
+		final File[] runtimeDeps;
+		try {
+			// /api/pom.xml determined dynamically allowing running single test in IDE
+			File apiPom = new File(getProjectRootPaht() + "/api/pom.xml");
 
 			runtimeDeps = Maven.resolver().loadPomFromFile(apiPom).importRuntimeDependencies().resolve()
 					.withTransitivity().asFile();
@@ -172,5 +182,33 @@ public class DeploymentHelpers {
 				.contentType(ContentType.JSON)
 				.body("ok", is(true))
 				.when().post(url);
+	}
+
+	public static void initIndexTemplates(URL context) throws IOException {
+		initIndexTemplate(context, "defaults");
+		initIndexTemplate(context, "data_defaults");
+		initIndexTemplate(context, "stats_defaults");
+	}
+
+	public static void initIndexTemplate(URL context, String templateName) throws IOException {
+		final String relativePath = "/configuration/index_templates/" + templateName + ".json";
+
+		log.log(Level.INFO, "Init index template {0} via context {1}", new Object[]{relativePath, context});
+		File file = getProjectFile(relativePath);
+		InputStream is = new FileInputStream(file);
+		byte[] data = IOUtils.toByteArray(is);
+		is.close();
+
+		given().contentType(ContentType.JSON)
+				.pathParam("operation", SystemRestServiceTest.OPERATION_ES)
+				.auth().basic(DEFAULT_PROVIDER_NAME, DEFAULT_PROVIDER_PASSWORD)
+				.body(data)
+				.expect()
+				.log().ifError()
+				.statusCode(200)
+				.contentType(ContentType.JSON)
+				.body("ok", is(true))
+				.body("acknowledged", is(true))
+				.when().put(new URL(context, SystemRestServiceTest.SYSTEM_REST_API + "/search/_template/" + templateName).toExternalForm());
 	}
 }

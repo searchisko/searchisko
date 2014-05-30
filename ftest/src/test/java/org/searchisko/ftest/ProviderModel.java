@@ -1,10 +1,10 @@
 package org.searchisko.ftest;
 
-import org.apache.commons.codec.digest.DigestUtils;
-import org.searchisko.api.service.ProviderService;
-
 import java.util.HashMap;
 import java.util.Map;
+
+import org.apache.commons.codec.digest.DigestUtils;
+import org.searchisko.api.service.ProviderService;
 
 /**
  * Simple Model for Provider
@@ -28,9 +28,16 @@ public class ProviderModel {
 	}
 
 	public void addContentType(String contentType, String sysType, boolean persist) {
+		addContentType(contentType, sysType, persist, null);
+	}
+
+	public void addContentType(String contentType, String sysType, boolean persist, String contentContentType) {
 		Map<String, Object> data = new HashMap<>();
 		data.put(ProviderService.SYS_TYPE, sysType);
 		data.put(ProviderService.PERSIST, persist);
+		if (contentContentType != null) {
+			data.put(ProviderService.SYS_CONTENT_CONTENT_TYPE, contentContentType);
+		}
 
 		Map<String, Object> index = new HashMap<>();
 		index.put("name", "data_" + contentType);

@@ -42,6 +42,8 @@ public class SystemRestServiceTest {
 
 	public static final String OPERATION_AUDITLOG = "auditlog";
 
+	public static final String OPERATION_ES = "es";
+
 	protected static Logger log = Logger.getLogger(SystemRestServiceTest.class.getName());
 
 
