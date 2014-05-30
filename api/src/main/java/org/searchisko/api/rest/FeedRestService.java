@@ -5,10 +5,34 @@
  */
 package org.searchisko.api.rest;
 
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.Date;
+import java.util.List;
+import java.util.UUID;
+
+import javax.annotation.security.PermitAll;
+import javax.enterprise.context.RequestScoped;
+import javax.inject.Inject;
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.MultivaluedMap;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriInfo;
+
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.indices.IndexMissingException;
 import org.elasticsearch.search.SearchHit;
-import org.jboss.resteasy.plugins.providers.atom.*;
+import org.jboss.resteasy.plugins.providers.atom.Category;
+import org.jboss.resteasy.plugins.providers.atom.Content;
+import org.jboss.resteasy.plugins.providers.atom.Entry;
+import org.jboss.resteasy.plugins.providers.atom.Feed;
+import org.jboss.resteasy.plugins.providers.atom.Generator;
+import org.jboss.resteasy.plugins.providers.atom.Link;
+import org.jboss.resteasy.plugins.providers.atom.Person;
 import org.searchisko.api.ContentObjectFields;
 import org.searchisko.api.model.QuerySettings;
 import org.searchisko.api.model.QuerySettings.Filters;
@@ -20,19 +44,6 @@ import org.searchisko.api.service.StatsRecordType;
 import org.searchisko.api.service.SystemInfoService;
 import org.searchisko.api.util.QuerySettingsParser;
 import org.searchisko.api.util.SearchUtils;
-
-import javax.annotation.security.PermitAll;
-import javax.enterprise.context.RequestScoped;
-import javax.inject.Inject;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.*;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.Date;
-import java.util.List;
-import java.util.UUID;
 
 /**
  * Feed REST API.
@@ -155,7 +166,8 @@ public class FeedRestService extends RestServiceBase {
 				if (contentValue != null) {
 					Content content = new Content();
 					try {
-						content.setType(MediaType.valueOf(getHitStringFieldValue(hit, ContentObjectFields.SYS_CONTENT_TYPE)));
+						content.setType(MediaType
+								.valueOf(getHitStringFieldValue(hit, ContentObjectFields.SYS_CONTENT_CONTENT_TYPE)));
 					} catch (IllegalArgumentException e) {
 						content.setType(MediaType.TEXT_PLAIN_TYPE);
 					}

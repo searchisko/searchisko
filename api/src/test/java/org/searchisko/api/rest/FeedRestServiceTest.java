@@ -5,6 +5,18 @@
  */
 package org.searchisko.api.rest;
 
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.logging.Logger;
+
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.MultivaluedMap;
+import javax.ws.rs.core.Response.Status;
+import javax.ws.rs.core.UriInfo;
+
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.indices.IndexMissingException;
 import org.elasticsearch.search.SearchHit;
@@ -30,17 +42,6 @@ import org.searchisko.api.testtools.TestUtils;
 import org.searchisko.api.util.QuerySettingsParser;
 import org.searchisko.api.util.SearchUtils;
 
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.MultivaluedMap;
-import javax.ws.rs.core.Response.Status;
-import javax.ws.rs.core.UriInfo;
-import java.io.IOException;
-import java.net.URISyntaxException;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.logging.Logger;
-
 /**
  * Unit test for {@link FeedRestService}
  * 
@@ -57,7 +58,6 @@ public class FeedRestServiceTest {
 	final static private String ACTIVITY_DATE_INTERVAL_KEY = "activity_date_interval";
 	final static private String ACTIVITY_DATE_FROM_KEY = "activity_date_from";
 	final static private String ACTIVITY_DATE_TO_KEY = "activity_date_to";
-
 
 	@Test
 	public void patchQuerySettings() {
@@ -108,11 +108,11 @@ public class FeedRestServiceTest {
 			qs.setFrom(50);
 			qs.setSize(150);
 			Filters f = qs.getFiltersInit();
-			f.acknowledgeUrlFilterCandidate(ACTIVITY_DATE_FROM_KEY,"12l");
-			f.acknowledgeUrlFilterCandidate(ACTIVITY_DATE_TO_KEY,"20l");
-			f.acknowledgeUrlFilterCandidate(ACTIVITY_DATE_INTERVAL_KEY,PastIntervalValue.TEST.toString());
-			f.acknowledgeUrlFilterCandidate(CONTENT_TYPE_KEY,"ct");
-			f.acknowledgeUrlFilterCandidate(SYS_CONTENT_PROVIDER,"cp");
+			f.acknowledgeUrlFilterCandidate(ACTIVITY_DATE_FROM_KEY, "12l");
+			f.acknowledgeUrlFilterCandidate(ACTIVITY_DATE_TO_KEY, "20l");
+			f.acknowledgeUrlFilterCandidate(ACTIVITY_DATE_INTERVAL_KEY, PastIntervalValue.TEST.toString());
+			f.acknowledgeUrlFilterCandidate(CONTENT_TYPE_KEY, "ct");
+			f.acknowledgeUrlFilterCandidate(SYS_CONTENT_PROVIDER, "cp");
 
 			tested.patchQuerySettings(qs);
 
@@ -208,7 +208,7 @@ public class FeedRestServiceTest {
 			MultivaluedMap<String, String> qp = new MultivaluedMapImpl<String, String>();
 			Mockito.when(uriInfo.getQueryParameters()).thenReturn(qp);
 			QuerySettings qs = new QuerySettings();
-			qs.getFiltersInit().acknowledgeUrlFilterCandidate(PROJECTS_KEY,"as7");
+			qs.getFiltersInit().acknowledgeUrlFilterCandidate(PROJECTS_KEY, "as7");
 			Mockito.when(tested.querySettingsParser.parseUriParams(qp)).thenReturn(qs);
 
 			// hit 1 - only sys_description, no sys_content
@@ -224,7 +224,8 @@ public class FeedRestServiceTest {
 			putSearchHitField(fields, ContentObjectFields.SYS_CONTRIBUTORS, "John Doe <j@d.com>", "My Dear <my@de.org>");
 			putSearchHitField(fields, ContentObjectFields.SYS_TAGS, "tag1", "tag2");
 
-			// hit 2 - both sys_description and sys_content (with valid sys_content_type), invalid and empty date fields, no
+			// hit 2 - both sys_description and sys_content (with valid sys_content_content-type), invalid and empty date
+			// fields, no
 			// contributors nor tags
 			SearchHit hit2 = Mockito.mock(SearchHit.class);
 			Mockito.when(hit2.getId()).thenReturn("hit2");
@@ -233,17 +234,17 @@ public class FeedRestServiceTest {
 			putSearchHitField(fields2, ContentObjectFields.SYS_TITLE, "My title 2");
 			putSearchHitField(fields2, ContentObjectFields.SYS_DESCRIPTION, "My description 2");
 			putSearchHitField(fields2, ContentObjectFields.SYS_CONTENT, "My content 2");
-			putSearchHitField(fields2, ContentObjectFields.SYS_CONTENT_TYPE, "text/html");
+			putSearchHitField(fields2, ContentObjectFields.SYS_CONTENT_CONTENT_TYPE, "text/html");
 			putSearchHitField(fields2, ContentObjectFields.SYS_CREATED, "invaliddate");
 
-			// hit 3 - sys_content (with invalid sys_content_type)
+			// hit 3 - sys_content (with invalid sys_content_content-type)
 			SearchHit hit3 = Mockito.mock(SearchHit.class);
 			Mockito.when(hit3.getId()).thenReturn("hit3");
 			Map<String, SearchHitField> fields3 = new HashMap<String, SearchHitField>();
 			Mockito.when(hit3.getFields()).thenReturn(fields3);
 			putSearchHitField(fields3, ContentObjectFields.SYS_TITLE, "My title 3");
 			putSearchHitField(fields3, ContentObjectFields.SYS_CONTENT, "My content 3");
-			putSearchHitField(fields3, ContentObjectFields.SYS_CONTENT_TYPE, "bleble");
+			putSearchHitField(fields3, ContentObjectFields.SYS_CONTENT_CONTENT_TYPE, "bleble");
 
 			SearchHit[] ha = new SearchHit[] { hit1, hit2, hit3 };
 			prepareSearchResponseMocks(tested, qs, ha);
@@ -419,7 +420,7 @@ public class FeedRestServiceTest {
 		// case - string param
 		{
 			QuerySettings querySettings = new QuerySettings();
-			querySettings.getFiltersInit().acknowledgeUrlFilterCandidate(CONTENT_TYPE_KEY,"content_type");
+			querySettings.getFiltersInit().acknowledgeUrlFilterCandidate(CONTENT_TYPE_KEY, "content_type");
 			Assert.assertEquals("Feed content for criteria type=[content_type]", tested.constructFeedTitle(querySettings)
 					.toString());
 		}
