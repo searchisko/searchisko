@@ -12,6 +12,8 @@ This document contains high-level release notes. More details can be found in [m
 - Created ProjectMappingPreprocessor and ContributorMappingPerprocessor to ease content provider and normalizations configuration [#103](https://github.com/searchisko/searchisko/issues/103) 
 - Added Audit Log [#104](https://github.com/searchisko/searchisko/issues/104)
 - Added access to full Elasticsearch REST API for authenticated administrators [#98](https://github.com/searchisko/searchisko/issues/98)  
+- Project Name suggestion API accepts list of fields to return [#93](https://github.com/searchisko/searchisko/issues/93)
+- Project Info documents can be search on value of `archived` field [#94](https://github.com/searchisko/searchisko/issues/94)
 
 ## 1.0.2
 
