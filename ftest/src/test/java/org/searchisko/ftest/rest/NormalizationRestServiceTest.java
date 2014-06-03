@@ -34,7 +34,9 @@ import static org.hamcrest.Matchers.not;
 @RunWith(Arquillian.class)
 public class NormalizationRestServiceTest {
 
-	public static final String NORMALIZATION_REST_API = DeploymentHelpers.DEFAULT_REST_VERSION + "normalization/{normalizationName}/{id}";
+	public static final String NORMALIZATION_REST_API_BASE = DeploymentHelpers.DEFAULT_REST_VERSION + "normalization/{normalizationName}/";
+
+	public static final String NORMALIZATION_REST_API = NORMALIZATION_REST_API_BASE + "{id}";
 
 	@Deployment(testable = false)
 	public static WebArchive createDeployment() throws IOException {
@@ -52,10 +54,9 @@ public class NormalizationRestServiceTest {
 		// GET /indexer/{normalizationName}/
 		given().contentType(ContentType.JSON)
 				.pathParam("normalizationName", "bad-name")
-				.pathParam("id", "")
 				.expect().statusCode(expStatus)
 				.log().ifStatusCodeMatches(is(not(expStatus)))
-				.when().get(new URL(context, NORMALIZATION_REST_API).toExternalForm());
+				.when().get(new URL(context, NORMALIZATION_REST_API_BASE).toExternalForm());
 
 		// GET /indexer/{normalizationName}/{id}
 		given().contentType(ContentType.JSON)

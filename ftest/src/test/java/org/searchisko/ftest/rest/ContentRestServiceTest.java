@@ -38,7 +38,9 @@ import static org.hamcrest.Matchers.*;
 @RunWith(Arquillian.class)
 public class ContentRestServiceTest {
 
-	public static final String CONTENT_REST_API = DeploymentHelpers.DEFAULT_REST_VERSION + "content/{type}/{contentId}";
+	public static final String CONTENT_REST_API_BASE = DeploymentHelpers.DEFAULT_REST_VERSION + "content/{type}/";
+
+	public static final String CONTENT_REST_API = CONTENT_REST_API_BASE + "{contentId}";
 
 	public static final String TYPE1 = "provider1_blog";
 
@@ -76,16 +78,16 @@ public class ContentRestServiceTest {
 				.when().post(new URL(context, CONTENT_REST_API).toExternalForm());
 
 		// POST /content/type/
-		given().pathParam("type", TYPE1).pathParam("contentId", "").contentType(ContentType.JSON)
+		given().pathParam("type", TYPE1).contentType(ContentType.JSON)
 				.body("{}")
 				.expect().statusCode(expStatus).log().ifStatusCodeMatches(is(not(expStatus)))
-				.when().post(new URL(context, CONTENT_REST_API).toExternalForm());
+				.when().post(new URL(context, CONTENT_REST_API_BASE).toExternalForm());
 
 		// DELETE /content/type/
-		given().pathParam("type", TYPE1).pathParam("contentId", "").contentType(ContentType.JSON)
+		given().pathParam("type", TYPE1).contentType(ContentType.JSON)
 				.body("{}")
 				.expect().statusCode(expStatus).log().ifStatusCodeMatches(is(not(expStatus)))
-				.when().delete(new URL(context, CONTENT_REST_API).toExternalForm());
+				.when().delete(new URL(context, CONTENT_REST_API_BASE).toExternalForm());
 
 		// DELETE /content/type/id
 		given().pathParam("type", TYPE1).pathParam("contentId", "id").contentType(ContentType.JSON)
@@ -157,14 +159,14 @@ public class ContentRestServiceTest {
 	@Test
 	@InSequence(12)
 	public void assertGetAll() throws MalformedURLException {
-		given().pathParam("type", TYPE1).pathParam("contentId", "").contentType(ContentType.JSON)
+		given().pathParam("type", TYPE1).contentType(ContentType.JSON)
 				.expect()
 				.statusCode(200)
 				.contentType(ContentType.JSON)
 				.log().ifError()
 				.body("total", is(1))
 				.body("hits[0].id", is(contentId))
-				.when().get(new URL(context, CONTENT_REST_API).toExternalForm());
+				.when().get(new URL(context, CONTENT_REST_API_BASE).toExternalForm());
 	}
 
 	@Test
@@ -179,18 +181,18 @@ public class ContentRestServiceTest {
 	@InSequence(20)
 	public void assertDeleteSecurity() throws MalformedURLException {
 		// provider 2 cannot delete content from provider 1
-		given().pathParam("type", TYPE1).pathParam("contentId", "").contentType(ContentType.JSON)
+		given().pathParam("type", TYPE1).contentType(ContentType.JSON)
 				.auth().basic(provider2.name, provider2.password)
 				.body("{\"id\":[\"" + contentId + "\"]}")
 				.expect()
 				.statusCode(403)
 				.contentType(ContentType.JSON)
 				.log().ifStatusCodeMatches(is(not(403)))
-				.when().delete(new URL(context, CONTENT_REST_API).toExternalForm());
+				.when().delete(new URL(context, CONTENT_REST_API_BASE).toExternalForm());
 	}
 
 	public static void deleteContent(URL context, ProviderModel provider, String contentType, String contentId) throws MalformedURLException {
-		given().pathParam("type", contentType).pathParam("contentId", "").contentType(ContentType.JSON)
+		given().pathParam("type", contentType).contentType(ContentType.JSON)
 				.auth().basic(provider.name, provider.password)
 				.body("{\"id\":[\"" + contentId + "\"]}")
 				.expect()
@@ -198,7 +200,7 @@ public class ContentRestServiceTest {
 				.contentType(ContentType.JSON)
 				.body(contentId, is("ok"))
 				.log().ifError()
-				.when().delete(new URL(context, CONTENT_REST_API).toExternalForm());
+				.when().delete(new URL(context, CONTENT_REST_API_BASE).toExternalForm());
 
 		given().pathParam("type", contentType).pathParam("contentId", contentId).contentType(ContentType.JSON)
 				.expect()

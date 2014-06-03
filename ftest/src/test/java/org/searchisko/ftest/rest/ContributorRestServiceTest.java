@@ -41,9 +41,9 @@ public class ContributorRestServiceTest {
         return DeploymentHelpers.createDeployment();
     }
 
-	private static final String restVersion = DeploymentHelpers.DEFAULT_REST_VERSION;
+	public static final String CONTRIBUTOR_REST_API_BASE = DeploymentHelpers.DEFAULT_REST_VERSION + "contributor/";
 
-	public static final String CONTRIBUTOR_REST_API = restVersion + "contributor/{id}";
+	public static final String CONTRIBUTOR_REST_API = CONTRIBUTOR_REST_API_BASE + "{id}";
 
 	private static String contributorId;
 
@@ -56,10 +56,9 @@ public class ContributorRestServiceTest {
 
 		// GET /contributor/
 		given().contentType(ContentType.JSON)
-				.pathParam("id", "")
 				.expect().statusCode(expStatus)
 				.log().ifStatusCodeMatches(is(not(expStatus)))
-				.when().get(new URL(context, CONTRIBUTOR_REST_API).toExternalForm());
+				.when().get(new URL(context, CONTRIBUTOR_REST_API_BASE).toExternalForm());
 
 
 		// GET /contributor/some-id
@@ -71,18 +70,16 @@ public class ContributorRestServiceTest {
 
 		// GET /contributor/search
 		given().contentType(ContentType.JSON)
-				.pathParam("id", "")
 				.expect().statusCode(expStatus)
 				.log().ifStatusCodeMatches(is(not(expStatus)))
-				.when().get(new URL(context, CONTRIBUTOR_REST_API + "search").toExternalForm());
+				.when().get(new URL(context, CONTRIBUTOR_REST_API_BASE + "search").toExternalForm());
 
 		// POST /contributor/
 		given().contentType(ContentType.JSON)
-				.pathParam("id", "")
 				.body("{}")
 				.expect().statusCode(expStatus)
 				.log().ifStatusCodeMatches(is(not(expStatus)))
-				.when().post(new URL(context, CONTRIBUTOR_REST_API).toExternalForm());
+				.when().post(new URL(context, CONTRIBUTOR_REST_API_BASE).toExternalForm());
 
 		// POST /contributor/some-id
 		given().contentType(ContentType.JSON)
@@ -132,13 +129,12 @@ public class ContributorRestServiceTest {
                 body("total", is(0)).
                 body("hits", is(empty())).
         when().
-                get(new URL(context, restVersion + "contributor/search").toExternalForm());
+                get(new URL(context, CONTRIBUTOR_REST_API_BASE + "search").toExternalForm());
     }
 
 	public static String createContributor(URL context, Map<String, Object> data) throws MalformedURLException {
 		return given().
 				contentType(ContentType.JSON).
-				pathParam("id", "").
 				auth().basic(DeploymentHelpers.DEFAULT_PROVIDER_NAME, DeploymentHelpers.DEFAULT_PROVIDER_PASSWORD).
 				body(data).
 				expect().
@@ -146,7 +142,7 @@ public class ContributorRestServiceTest {
 				statusCode(200).
 				body("id", is(not(empty()))).
 				when().
-				post(new URL(context, CONTRIBUTOR_REST_API).toExternalForm()).
+				post(new URL(context, CONTRIBUTOR_REST_API_BASE).toExternalForm()).
 				andReturn().body().jsonPath().get("id");
 	}
 
@@ -180,7 +176,7 @@ public class ContributorRestServiceTest {
         expect().
                 statusCode(401).
         when().
-                post(new URL(context, restVersion + "contributor").toExternalForm());
+                post(new URL(context, CONTRIBUTOR_REST_API_BASE).toExternalForm());
     }
 
     @Test @InSequence(3)
@@ -196,7 +192,7 @@ public class ContributorRestServiceTest {
                 body("code", is(contributorCode)).
                 body("type_specific_code.github_username", is("LightGuard")).
         when().
-                get(new URL(context, restVersion + "contributor/{id}").toExternalForm());
+                get(new URL(context, CONTRIBUTOR_REST_API).toExternalForm());
     }
 
     @Test @InSequence(4)
@@ -206,7 +202,7 @@ public class ContributorRestServiceTest {
         expect().
                 statusCode(401).
         when().
-                get(new URL(context, restVersion + "contributor/{id}").toExternalForm());
+                get(new URL(context, CONTRIBUTOR_REST_API).toExternalForm());
     }
 
     @Test @InSequence(5)
@@ -215,7 +211,7 @@ public class ContributorRestServiceTest {
         expect().
                 statusCode(401).
         when().
-                get(new URL(context, restVersion + "contributor/").toExternalForm());
+                get(new URL(context, CONTRIBUTOR_REST_API_BASE).toExternalForm());
     }
 
     @Test @InSequence(6)
@@ -239,7 +235,7 @@ public class ContributorRestServiceTest {
 				contentType(ContentType.JSON).
 				body("id", is(contributorId)).
         when().
-                post(new URL(context, restVersion + "contributor/{id}").toExternalForm());
+                post(new URL(context, CONTRIBUTOR_REST_API).toExternalForm());
     }
 
 	@Test
@@ -264,7 +260,7 @@ public class ContributorRestServiceTest {
 				body("hits[0].data.name", is("Jason Porter")).
 				body("hits[0].data.type_specific_code.jbossorg_blog", hasItem("seam.Jason Porter")).
         when().
-                get(new URL(context, restVersion + "contributor/").toExternalForm());
+                get(new URL(context, CONTRIBUTOR_REST_API_BASE).toExternalForm());
     }
 
 	@Test @InSequence(20)
@@ -287,7 +283,7 @@ public class ContributorRestServiceTest {
 				log().ifError().
 				spec(responseSpec).
 				when().
-				get(new URL(context, restVersion + "contributor/search").toExternalForm());
+				get(new URL(context, CONTRIBUTOR_REST_API_BASE + "search").toExternalForm());
 
 		given().
 				parameters("email", "jporter@redhat.com").
@@ -296,7 +292,7 @@ public class ContributorRestServiceTest {
 				log().ifError().
 				spec(responseSpec).
 				when().
-				get(new URL(context, restVersion + "contributor/search").toExternalForm());
+				get(new URL(context, CONTRIBUTOR_REST_API_BASE + "search").toExternalForm());
 		// Can be tested when .fulltext is present in mapping
 //		given().
 //				parameters("name", "jason").
@@ -320,7 +316,7 @@ public class ContributorRestServiceTest {
 				contentType(ContentType.JSON).
 				body("total", is(0)).
 				when().
-				get(new URL(context, restVersion + "contributor/search").toExternalForm());
+				get(new URL(context, CONTRIBUTOR_REST_API_BASE + "search").toExternalForm());
 
 		given().
 				parameters("email", "bad-email").
@@ -331,7 +327,7 @@ public class ContributorRestServiceTest {
 				contentType(ContentType.JSON).
 				body("total", is(0)).
 				when().
-				get(new URL(context, restVersion + "contributor/search").toExternalForm());
+				get(new URL(context, CONTRIBUTOR_REST_API_BASE + "search").toExternalForm());
 
 		given().
 				parameters("name", "bad-name").
@@ -342,7 +338,7 @@ public class ContributorRestServiceTest {
 				contentType(ContentType.JSON).
 				body("total", is(0)).
 				when().
-				get(new URL(context, restVersion + "contributor/search").toExternalForm());
+				get(new URL(context, CONTRIBUTOR_REST_API_BASE + "search").toExternalForm());
 
 	}
 

@@ -36,7 +36,9 @@ import static org.hamcrest.Matchers.*;
 @RunWith(Arquillian.class)
 public class RatingRestServiceTest {
 
-	public static final String RATING_REST_API = DeploymentHelpers.DEFAULT_REST_VERSION + "rating/{id}";
+	public static final String RATING_REST_API_BASE = DeploymentHelpers.DEFAULT_REST_VERSION + "rating/";
+
+	public static final String RATING_REST_API = RATING_REST_API_BASE + "{id}";
 
 	@Deployment(testable = false)
 	public static WebArchive createDeployment() throws IOException {
@@ -54,13 +56,12 @@ public class RatingRestServiceTest {
 
 		// GET /rating
 		given().contentType(ContentType.JSON)
-				.pathParam("id", "")
 				.expect()
 				.log().ifStatusCodeMatches(is(not(expStatus)))
 				.statusCode(expStatus)
 				.header("WWW-Authenticate", nullValue())
 				.body(is("Required authorization {0}."))
-				.when().get(new URL(context, RATING_REST_API).toExternalForm());
+				.when().get(new URL(context, RATING_REST_API_BASE).toExternalForm());
 
 		// GET /rating/bad-id
 		given().contentType(ContentType.JSON)
@@ -162,7 +163,6 @@ public class RatingRestServiceTest {
 	@InSequence(20)
 	public void assertGetAll() throws MalformedURLException {
 		given().contentType(ContentType.JSON)
-				.pathParam("id", "")
 				.queryParam("id", idToRate)
 				.auth().preemptive().basic(contribUsername, contribPassword)
 				.expect()
@@ -170,7 +170,7 @@ public class RatingRestServiceTest {
 				.statusCode(200)
 				.contentType(ContentType.JSON)
 				.body(idToRate + ".rating", is(4))
-				.when().get(new URL(context, RATING_REST_API).toExternalForm());
+				.when().get(new URL(context, RATING_REST_API_BASE).toExternalForm());
 	}
 
 }

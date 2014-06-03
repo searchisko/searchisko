@@ -37,7 +37,9 @@ public class ProviderRestServiceTest {
 
 	protected static Logger log = Logger.getLogger(ProviderRestServiceTest.class.getName());
 
-	public static final String PROVIDER_REST_API = DeploymentHelpers.DEFAULT_REST_VERSION + "provider/{id}";
+	public static final String PROVIDER_REST_API_BASE = DeploymentHelpers.DEFAULT_REST_VERSION + "provider/";
+
+	public static final String PROVIDER_REST_API = PROVIDER_REST_API_BASE + "{id}";
 
 	public static final ProviderModel provider1 = new ProviderModel("provider1", "Password1");
 
@@ -53,9 +55,9 @@ public class ProviderRestServiceTest {
 	public void assertNotAuthenticated(@ArquillianResource URL context) throws MalformedURLException {
 		int expStatus = 401;
 		// TEST: GET /provider
-		given().pathParam("id", "").contentType(ContentType.JSON)
+		given().contentType(ContentType.JSON)
 				.expect().statusCode(expStatus).log().ifStatusCodeMatches(is(not(expStatus)))
-				.when().get(new URL(context, PROVIDER_REST_API).toExternalForm());
+				.when().get(new URL(context, PROVIDER_REST_API_BASE).toExternalForm());
 
 		// TEST: GET /provider/jbossorg
 		given().pathParam("id", DeploymentHelpers.DEFAULT_PROVIDER_NAME).contentType(ContentType.JSON)
@@ -66,7 +68,7 @@ public class ProviderRestServiceTest {
 		given().contentType(ContentType.JSON)
 				.body("")
 				.expect().statusCode(expStatus).log().ifStatusCodeMatches(is(not(expStatus)))
-				.when().post(new URL(context, PROVIDER_REST_API).toExternalForm());
+				.when().post(new URL(context, PROVIDER_REST_API_BASE).toExternalForm());
 
 		// TEST: POST /provider/test
 		given().pathParam("id", "test").contentType(ContentType.JSON)
@@ -84,7 +86,7 @@ public class ProviderRestServiceTest {
 	@Test
 	@InSequence(10)
 	public void assertGetAllProviders(@ArquillianResource URL context) throws MalformedURLException {
-		given().pathParam("id", "").contentType(ContentType.JSON)
+		given().contentType(ContentType.JSON)
 				.auth().basic(DeploymentHelpers.DEFAULT_PROVIDER_NAME, DeploymentHelpers.DEFAULT_PROVIDER_PASSWORD)
 				.expect()
 				.log().ifError()
@@ -93,7 +95,7 @@ public class ProviderRestServiceTest {
 				.body("hits[0].data.name", is("jbossorg"))
 				.body("hits[0].data.super_provider", is(true))
 				.body("hits[0].data." + ProviderService.PASSWORD_HASH, nullValue())
-				.when().get(new URL(context, PROVIDER_REST_API).toExternalForm());
+				.when().get(new URL(context, PROVIDER_REST_API_BASE).toExternalForm());
 	}
 
 	@Test
@@ -122,12 +124,12 @@ public class ProviderRestServiceTest {
 	@InSequence(20)
 	public void assertValidateNewProvider(@ArquillianResource URL context) throws MalformedURLException {
 		// TEST: Missing params in body
-		given().pathParam("id", "").contentType(ContentType.JSON)
+		given().contentType(ContentType.JSON)
 				.body("")
 				.auth().basic(DeploymentHelpers.DEFAULT_PROVIDER_NAME, DeploymentHelpers.DEFAULT_PROVIDER_PASSWORD)
 				.expect()
 				.statusCode(400)
-				.when().post(new URL(context, PROVIDER_REST_API).toExternalForm());
+				.when().post(new URL(context, PROVIDER_REST_API_BASE).toExternalForm());
 	}
 
 	/**
@@ -291,13 +293,13 @@ public class ProviderRestServiceTest {
 	@Test
 	@InSequence(41)
 	public void assertGetAllProvidersWithNewlyCreated(@ArquillianResource URL context) throws MalformedURLException {
-		given().pathParam("id", "").contentType(ContentType.JSON)
+		given().contentType(ContentType.JSON)
 				.auth().basic(DeploymentHelpers.DEFAULT_PROVIDER_NAME, DeploymentHelpers.DEFAULT_PROVIDER_PASSWORD)
 				.expect()
 				.log().ifError()
 				.statusCode(200)
 				.body("total", is(3))
-				.when().get(new URL(context, PROVIDER_REST_API).toExternalForm());
+				.when().get(new URL(context, PROVIDER_REST_API_BASE).toExternalForm());
 	}
 
 

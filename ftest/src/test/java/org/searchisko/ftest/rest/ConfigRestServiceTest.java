@@ -33,7 +33,9 @@ import static org.hamcrest.Matchers.*;
 @RunWith(Arquillian.class)
 public class ConfigRestServiceTest {
 
-	public static final String CONFIG_REST_API = DeploymentHelpers.DEFAULT_REST_VERSION + "config/{id}";
+	public static final String CONFIG_REST_API_BASE = DeploymentHelpers.DEFAULT_REST_VERSION + "config/";
+
+	public static final String CONFIG_REST_API = CONFIG_REST_API_BASE + "{id}";
 
 	@Deployment(testable = false)
 	public static WebArchive createDeployment() throws IOException {
@@ -51,10 +53,9 @@ public class ConfigRestServiceTest {
 
 		// GET /config
 		given().contentType(ContentType.JSON)
-				.pathParam("id", "")
 				.expect().statusCode(expStatus)
 				.log().ifStatusCodeMatches(is(not(expStatus)))
-				.when().get(new URL(context, CONFIG_REST_API).toExternalForm());
+				.when().get(new URL(context, CONFIG_REST_API_BASE).toExternalForm());
 
 		// GET /config/some-id
 		given().contentType(ContentType.JSON)
@@ -84,13 +85,12 @@ public class ConfigRestServiceTest {
 	public void assertGetDefaultAll() throws MalformedURLException {
 		given().contentType(ContentType.JSON)
 				.auth().basic(DeploymentHelpers.DEFAULT_PROVIDER_NAME, DeploymentHelpers.DEFAULT_PROVIDER_PASSWORD)
-				.pathParam("id", "")
 				.expect()
 				.log().ifError()
 				.statusCode(200)
 				.contentType(ContentType.JSON)
 				.body("total", is(0))
-				.when().get(new URL(context, CONFIG_REST_API).toExternalForm());
+				.when().get(new URL(context, CONFIG_REST_API_BASE).toExternalForm());
 	}
 
 	protected static final String configId = "search_fulltext_query_fields";
@@ -143,14 +143,13 @@ public class ConfigRestServiceTest {
 	public void assertGetCreatedAll() throws MalformedURLException {
 		given().contentType(ContentType.JSON)
 				.auth().basic(DeploymentHelpers.DEFAULT_PROVIDER_NAME, DeploymentHelpers.DEFAULT_PROVIDER_PASSWORD)
-				.pathParam("id", "")
 				.expect()
 				.log().ifError()
 				.statusCode(200)
 				.contentType(ContentType.JSON)
 				.body("total", is(1))
 				.body("hits[0].id", is(configId))
-				.when().get(new URL(context, CONFIG_REST_API).toExternalForm());
+				.when().get(new URL(context, CONFIG_REST_API_BASE).toExternalForm());
 	}
 
 	@Test
