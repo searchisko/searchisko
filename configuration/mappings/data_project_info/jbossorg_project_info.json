@@ -29,7 +29,7 @@
             "license" : {"type" : "string", "index" : "no"},
             "subProjects" : {"type" : "string", "index" : "no"},
             "specialIcon" : {"type" : "string", "index" : "no"},
-            "archived" : {"type" : "string", "index" : "no"},
+            "archived" : {"type" : "string", "analyzer" : "keyword_lowercase"},
             "excludeInProjectMatrix" : {"type" : "string", "index" : "no"},
             "buildLink" : {"type" : "string", "index" : "no"},
             "hudsonLink" : {"type" : "string", "index" : "no"},
