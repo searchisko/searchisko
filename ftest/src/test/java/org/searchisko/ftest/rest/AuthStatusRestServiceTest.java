@@ -43,7 +43,7 @@ public class AuthStatusRestServiceTest {
 		given().
 				contentType(ContentType.JSON).
 				expect().
-				log().ifError().
+				log().ifValidationFails().
 				contentType(ContentType.JSON).
 				statusCode(200).
 				header("WWW-Authenticate", nullValue()).

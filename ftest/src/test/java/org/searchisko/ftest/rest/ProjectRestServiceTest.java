@@ -50,20 +50,20 @@ public class ProjectRestServiceTest {
 		// GET /project
 		given().contentType(ContentType.JSON)
 				.expect().statusCode(expStatus)
-				.log().ifStatusCodeMatches(is(not(expStatus)))
+				.log().ifValidationFails()
 				.when().get(new URL(context, PROJECT_REST_API + "/search").toExternalForm());
 
 		// POST /project
 		given().contentType(ContentType.JSON)
 				.body("{}")
 				.expect().statusCode(expStatus)
-				.log().ifStatusCodeMatches(is(not(expStatus)))
+				.log().ifValidationFails()
 				.when().post(new URL(context, PROJECT_REST_API).toExternalForm());
 
 		// DELETE /project/projectcode
 		given().contentType(ContentType.JSON)
 				.expect().statusCode(expStatus)
-				.log().ifStatusCodeMatches(is(not(expStatus)))
+				.log().ifValidationFails()
 				.when().delete(new URL(context, PROJECT_REST_API + "/projectcode").toExternalForm());
 	}
 
@@ -73,7 +73,7 @@ public class ProjectRestServiceTest {
 		// GET /project
 		given().contentType(ContentType.JSON)
 				.expect().statusCode(200)
-				.log().ifError()
+				.log().ifValidationFails()
 				.body("total", is(0))
 				.when().get(new URL(context, PROJECT_REST_API).toExternalForm());
 	}
@@ -97,7 +97,7 @@ public class ProjectRestServiceTest {
 				.auth().basic(DeploymentHelpers.DEFAULT_PROVIDER_NAME, DeploymentHelpers.DEFAULT_PROVIDER_PASSWORD)
 				.body(data)
 				.expect().statusCode(200)
-				.log().ifError()
+				.log().ifValidationFails()
 				.body("id", is("jbosstools"))
 				.when().post(new URL(context, PROJECT_REST_API).toExternalForm());
 
@@ -114,7 +114,7 @@ public class ProjectRestServiceTest {
 	public void assertGetCreatedProject() throws MalformedURLException {
 		given().contentType(ContentType.JSON)
 				.expect().statusCode(200)
-				.log().ifError()
+				.log().ifValidationFails()
 				.body("code", is("jbosstools"))
 				.body("name", is("JBoss Tools"))
 				.body("type_specific_code", nullValue())
@@ -127,7 +127,7 @@ public class ProjectRestServiceTest {
 		given().contentType(ContentType.JSON)
 				.auth().preemptive().basic(DeploymentHelpers.DEFAULT_PROVIDER_NAME, DeploymentHelpers.DEFAULT_PROVIDER_PASSWORD)
 				.expect().statusCode(200)
-				.log().ifError()
+				.log().ifValidationFails()
 				.body("code", is("jbosstools"))
 				.body("name", is("JBoss Tools"))
 				.body("type_specific_code.jbossorg_blog[0]", is("jbosstools"))
@@ -142,7 +142,7 @@ public class ProjectRestServiceTest {
 				.auth().basic(DeploymentHelpers.DEFAULT_PROVIDER_NAME, DeploymentHelpers.DEFAULT_PROVIDER_PASSWORD)
 				.param("jbossorg_jira", "JBIDE")
 				.expect().statusCode(200)
-				.log().ifError()
+				.log().ifValidationFails()
 				.body("total", is(1))
 				.body("hits[0].id", is("jbosstools"))
 				.when().get(new URL(context, PROJECT_REST_API + "/search").toExternalForm());
@@ -151,7 +151,7 @@ public class ProjectRestServiceTest {
 				.auth().basic(DeploymentHelpers.DEFAULT_PROVIDER_NAME, DeploymentHelpers.DEFAULT_PROVIDER_PASSWORD)
 				.param("code", "jbosstools")
 				.expect().statusCode(200)
-				.log().ifError()
+				.log().ifValidationFails()
 				.body("total", is(1))
 				.body("hits[0].id", is("jbosstools"))
 				.when().get(new URL(context, PROJECT_REST_API + "/search").toExternalForm());
@@ -164,7 +164,7 @@ public class ProjectRestServiceTest {
 		given().contentType(ContentType.JSON)
 				.auth().basic(DeploymentHelpers.DEFAULT_PROVIDER_NAME, DeploymentHelpers.DEFAULT_PROVIDER_PASSWORD)
 				.expect().statusCode(200)
-				.log().ifError()
+				.log().ifValidationFails()
 				.when().delete(new URL(context, PROJECT_REST_API + "/jbosstools").toExternalForm());
 	}
 }

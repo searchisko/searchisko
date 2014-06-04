@@ -74,25 +74,25 @@ public class ContentRestServiceTest {
 		// POST /content/type/id
 		given().pathParam("type", TYPE1).pathParam("contentId", "id").contentType(ContentType.JSON)
 				.body("{}")
-				.expect().statusCode(expStatus).log().ifStatusCodeMatches(is(not(expStatus)))
+				.expect().statusCode(expStatus).log().ifValidationFails()
 				.when().post(new URL(context, CONTENT_REST_API).toExternalForm());
 
 		// POST /content/type/
 		given().pathParam("type", TYPE1).contentType(ContentType.JSON)
 				.body("{}")
-				.expect().statusCode(expStatus).log().ifStatusCodeMatches(is(not(expStatus)))
+				.expect().statusCode(expStatus).log().ifValidationFails()
 				.when().post(new URL(context, CONTENT_REST_API_BASE).toExternalForm());
 
 		// DELETE /content/type/
 		given().pathParam("type", TYPE1).contentType(ContentType.JSON)
 				.body("{}")
-				.expect().statusCode(expStatus).log().ifStatusCodeMatches(is(not(expStatus)))
+				.expect().statusCode(expStatus).log().ifValidationFails()
 				.when().delete(new URL(context, CONTENT_REST_API_BASE).toExternalForm());
 
 		// DELETE /content/type/id
 		given().pathParam("type", TYPE1).pathParam("contentId", "id").contentType(ContentType.JSON)
 				.body("{}")
-				.expect().statusCode(expStatus).log().ifStatusCodeMatches(is(not(expStatus)))
+				.expect().statusCode(expStatus).log().ifValidationFails()
 				.when().delete(new URL(context, CONTENT_REST_API).toExternalForm());
 
 	}
@@ -127,7 +127,7 @@ public class ContentRestServiceTest {
 				.expect()
 				.statusCode(200)
 				.contentType(ContentType.JSON)
-				.log().ifError()
+				.log().ifValidationFails()
 				.body("status", isOneOf("insert", "update"))
 				.body("message", isOneOf("Content inserted successfully.", "Content updated successfully."))
 				.when().post(new URL(context, CONTENT_REST_API).toExternalForm());
@@ -136,7 +136,7 @@ public class ContentRestServiceTest {
 				.expect()
 				.statusCode(200)
 				.contentType(ContentType.JSON)
-				.log().ifError()
+				.log().ifValidationFails()
 				.body("sys_id", is(TYPE1 + "-" + contentId))
 				.body("sys_content_id", is(contentId))
 				.when().get(new URL(context, CONTENT_REST_API).toExternalForm());
@@ -163,7 +163,7 @@ public class ContentRestServiceTest {
 				.expect()
 				.statusCode(200)
 				.contentType(ContentType.JSON)
-				.log().ifError()
+				.log().ifValidationFails()
 				.body("total", is(1))
 				.body("hits[0].id", is(contentId))
 				.when().get(new URL(context, CONTENT_REST_API_BASE).toExternalForm());
@@ -199,7 +199,7 @@ public class ContentRestServiceTest {
 				.statusCode(200)
 				.contentType(ContentType.JSON)
 				.body(contentId, is("ok"))
-				.log().ifError()
+				.log().ifValidationFails()
 				.when().delete(new URL(context, CONTENT_REST_API_BASE).toExternalForm());
 
 		given().pathParam("type", contentType).pathParam("contentId", contentId).contentType(ContentType.JSON)

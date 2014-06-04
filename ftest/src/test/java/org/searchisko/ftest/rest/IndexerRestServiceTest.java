@@ -59,7 +59,7 @@ public class IndexerRestServiceTest {
 					.pathParam("type", type)
 					.pathParam("operation", "_status")
 					.expect().statusCode(expStatus)
-					.log().ifStatusCodeMatches(is(not(expStatus)))
+					.log().ifValidationFails()
 					.when().get(new URL(context, INDEXER_REST_API).toExternalForm());
 
 			// POST /indexer/{type}/_stop
@@ -76,7 +76,7 @@ public class IndexerRestServiceTest {
 					.pathParam("type", type)
 					.pathParam("operation", "_restart")
 					.expect().statusCode(expStatus)
-					.log().ifStatusCodeMatches(is(not(expStatus)))
+					.log().ifValidationFails()
 					.when().post(new URL(context, INDEXER_REST_API).toExternalForm());
 
 
@@ -86,7 +86,7 @@ public class IndexerRestServiceTest {
 						.pathParam("type", type)
 						.pathParam("operation", "_force_reindex")
 						.expect().statusCode(expStatus)
-						.log().ifStatusCodeMatches(is(not(expStatus)))
+						.log().ifValidationFails()
 						.when().post(new URL(context, INDEXER_REST_API).toExternalForm());
 			}
 		}

@@ -54,7 +54,7 @@ public class ConfigRestServiceTest {
 		// GET /config
 		given().contentType(ContentType.JSON)
 				.expect().statusCode(expStatus)
-				.log().ifStatusCodeMatches(is(not(expStatus)))
+				.log().ifValidationFails()
 				.when().get(new URL(context, CONFIG_REST_API_BASE).toExternalForm());
 
 		// GET /config/some-id
@@ -69,7 +69,7 @@ public class ConfigRestServiceTest {
 				.pathParam("id", "some-id")
 				.body("{}")
 				.expect().statusCode(expStatus)
-				.log().ifStatusCodeMatches(is(not(expStatus)))
+				.log().ifValidationFails()
 				.when().post(new URL(context, CONFIG_REST_API).toExternalForm());
 
 		// DELETE /config/some-id
@@ -86,7 +86,7 @@ public class ConfigRestServiceTest {
 		given().contentType(ContentType.JSON)
 				.auth().basic(DeploymentHelpers.DEFAULT_PROVIDER_NAME, DeploymentHelpers.DEFAULT_PROVIDER_PASSWORD)
 				.expect()
-				.log().ifError()
+				.log().ifValidationFails()
 				.statusCode(200)
 				.contentType(ContentType.JSON)
 				.body("total", is(0))
@@ -111,7 +111,7 @@ public class ConfigRestServiceTest {
 				.pathParam("id", configId)
 				.body(data)
 				.expect()
-				.log().ifError()
+				.log().ifValidationFails()
 				.statusCode(200)
 				.contentType(ContentType.JSON)
 				.body("id", is(configId))
@@ -131,7 +131,7 @@ public class ConfigRestServiceTest {
 				.auth().basic(DeploymentHelpers.DEFAULT_PROVIDER_NAME, DeploymentHelpers.DEFAULT_PROVIDER_PASSWORD)
 				.pathParam("id", configId)
 				.expect()
-				.log().ifError()
+				.log().ifValidationFails()
 				.statusCode(200)
 				.contentType(ContentType.JSON)
 				.body("sys_description", notNullValue())
@@ -144,7 +144,7 @@ public class ConfigRestServiceTest {
 		given().contentType(ContentType.JSON)
 				.auth().basic(DeploymentHelpers.DEFAULT_PROVIDER_NAME, DeploymentHelpers.DEFAULT_PROVIDER_PASSWORD)
 				.expect()
-				.log().ifError()
+				.log().ifValidationFails()
 				.statusCode(200)
 				.contentType(ContentType.JSON)
 				.body("total", is(1))
@@ -159,7 +159,7 @@ public class ConfigRestServiceTest {
 				.auth().basic(DeploymentHelpers.DEFAULT_PROVIDER_NAME, DeploymentHelpers.DEFAULT_PROVIDER_PASSWORD)
 				.pathParam("id", configId)
 				.expect()
-				.log().ifError()
+				.log().ifValidationFails()
 				.statusCode(200)
 				.when().delete(new URL(context, CONFIG_REST_API).toExternalForm());
 	}

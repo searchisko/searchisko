@@ -57,7 +57,7 @@ public class RatingRestServiceTest {
 		// GET /rating
 		given().contentType(ContentType.JSON)
 				.expect()
-				.log().ifStatusCodeMatches(is(not(expStatus)))
+				.log().ifValidationFails()
 				.statusCode(expStatus)
 				.header("WWW-Authenticate", nullValue())
 				.body(is("Required authorization {0}."))
@@ -68,7 +68,7 @@ public class RatingRestServiceTest {
 				.pathParam("id", "bad-id")
 				.expect().statusCode(expStatus)
 				.header("WWW-Authenticate", nullValue())
-				.log().ifStatusCodeMatches(is(not(expStatus)))
+				.log().ifValidationFails()
 				.when().get(new URL(context, RATING_REST_API).toExternalForm());
 
 		// POST /rating/bad-id
@@ -76,7 +76,7 @@ public class RatingRestServiceTest {
 				.pathParam("id", "bad-id")
 				.expect().statusCode(expStatus)
 				.header("WWW-Authenticate", nullValue())
-				.log().ifStatusCodeMatches(is(not(expStatus)))
+				.log().ifValidationFails()
 				.when().get(new URL(context, RATING_REST_API).toExternalForm());
 
 	}
@@ -142,7 +142,7 @@ public class RatingRestServiceTest {
 				.pathParam("id", idToRate)
 				.body(rating)
 				.expect().statusCode(200)
-				.log().ifError()
+				.log().ifValidationFails()
 				.contentType(ContentType.JSON)
 				.body("sys_rating_avg", is(new Float(4.0)))
 				.body("sys_rating_num", is(1))
@@ -152,7 +152,7 @@ public class RatingRestServiceTest {
 				.pathParam("id", idToRate)
 				.auth().preemptive().basic(contribUsername, contribPassword)
 				.expect()
-				.log().ifError()
+				.log().ifValidationFails()
 				.statusCode(200)
 				.contentType(ContentType.JSON)
 				.body("rating", is(4))
@@ -166,7 +166,7 @@ public class RatingRestServiceTest {
 				.queryParam("id", idToRate)
 				.auth().preemptive().basic(contribUsername, contribPassword)
 				.expect()
-				.log().ifError()
+				.log().ifValidationFails()
 				.statusCode(200)
 				.contentType(ContentType.JSON)
 				.body(idToRate + ".rating", is(4))

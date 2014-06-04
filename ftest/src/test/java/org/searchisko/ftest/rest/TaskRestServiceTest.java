@@ -50,32 +50,32 @@ public class TaskRestServiceTest {
 		// GET /tasks/type
 		given().contentType(ContentType.JSON)
 				.expect().statusCode(expStatus)
-				.log().ifStatusCodeMatches(is(not(expStatus)))
+				.log().ifValidationFails()
 				.when().get(new URL(context, TASKS_REST_API + "/type").toExternalForm());
 
 		// GET /tasks/task
 		given().contentType(ContentType.JSON)
 				.expect().statusCode(expStatus)
-				.log().ifStatusCodeMatches(is(not(expStatus)))
+				.log().ifValidationFails()
 				.when().get(new URL(context, TASKS_REST_API + "/task").toExternalForm());
 
 		// GET /tasks/taskId
 		given().contentType(ContentType.JSON)
 				.expect().statusCode(expStatus)
-				.log().ifStatusCodeMatches(is(not(expStatus)))
+				.log().ifValidationFails()
 				.when().get(new URL(context, TASKS_REST_API + "/task/id").toExternalForm());
 
 		// POST /tasks/taskType e.g. reindex_from_persistence
 		given().contentType(ContentType.JSON)
 				.body("{\"sys_content_type\" : \"jbossorg_blog\"}")
 				.expect().statusCode(expStatus)
-				.log().ifStatusCodeMatches(is(not(expStatus)))
+				.log().ifValidationFails()
 				.when().post(new URL(context, TASKS_REST_API + "/task/reindex_from_persistence").toExternalForm());
 
 		// DELETE /tasks/task/id e.g. reindex_from_persistence
 		given().contentType(ContentType.JSON)
 				.expect().statusCode(expStatus)
-				.log().ifStatusCodeMatches(is(not(expStatus)))
+				.log().ifValidationFails()
 				.when().delete(new URL(context, TASKS_REST_API + "/task/id").toExternalForm());
 	}
 
@@ -86,7 +86,7 @@ public class TaskRestServiceTest {
 		given().contentType(ContentType.JSON)
 				.auth().basic(DeploymentHelpers.DEFAULT_PROVIDER_NAME, DeploymentHelpers.DEFAULT_PROVIDER_PASSWORD)
 				.expect().statusCode(200)
-				.log().ifError()
+				.log().ifValidationFails()
 				.body("", containsInAnyOrder(
 						"reindex_from_persistence",
 						"renormalize_by_content_type",
@@ -108,7 +108,7 @@ public class TaskRestServiceTest {
 		given().contentType(ContentType.JSON)
 				.auth().basic(DeploymentHelpers.DEFAULT_PROVIDER_NAME, DeploymentHelpers.DEFAULT_PROVIDER_PASSWORD)
 				.expect().statusCode(200)
-				.log().ifError()
+				.log().ifValidationFails()
 				.body("size()", equalTo(0))
 				.when().get(new URL(context, TASKS_REST_API + "/task").toExternalForm());
 	}
@@ -123,7 +123,7 @@ public class TaskRestServiceTest {
 				.auth().basic(DeploymentHelpers.DEFAULT_PROVIDER_NAME, DeploymentHelpers.DEFAULT_PROVIDER_PASSWORD)
 				.body("{}")
 				.expect().statusCode(200)
-				.log().ifError()
+				.log().ifValidationFails()
 				.contentType(ContentType.JSON)
 				.body("id", is(not(empty())))
 				.when().post(new URL(context, TASKS_REST_API + "/task/reindex_contributor").toExternalForm())
@@ -137,7 +137,7 @@ public class TaskRestServiceTest {
 				.pathParam("id", taskID)
 				.auth().basic(DeploymentHelpers.DEFAULT_PROVIDER_NAME, DeploymentHelpers.DEFAULT_PROVIDER_PASSWORD)
 				.expect().statusCode(200)
-				.log().ifError()
+				.log().ifValidationFails()
 				.body("id", is(taskID))
 				.body("taskType", is("reindex_contributor"))
 				.body("runCount", isA(Integer.class))
@@ -154,7 +154,7 @@ public class TaskRestServiceTest {
 				.pathParam("id", taskID)
 				.auth().basic(DeploymentHelpers.DEFAULT_PROVIDER_NAME, DeploymentHelpers.DEFAULT_PROVIDER_PASSWORD)
 				.expect().statusCode(200)
-				.log().ifError()
+				.log().ifValidationFails()
 				.when().delete(new URL(context, TASKS_REST_API + "/task/{id}").toExternalForm());
 	}
 

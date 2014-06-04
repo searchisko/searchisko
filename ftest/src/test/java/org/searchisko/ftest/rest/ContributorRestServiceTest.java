@@ -124,7 +124,7 @@ public class ContributorRestServiceTest {
 				auth().basic("jbossorg", "jbossorgjbossorg").
                 param("email", "no-email@redhat.com").
         expect().
-                log().ifError().
+                log().ifValidationFails().
                 statusCode(200).
                 body("total", is(0)).
                 body("hits", is(empty())).
@@ -185,7 +185,7 @@ public class ContributorRestServiceTest {
                 pathParam("id", contributorId).
                 auth().basic("jbossorg", "jbossorgjbossorg").
         expect().
-                log().ifError().
+                log().ifValidationFails().
                 statusCode(200).
                 contentType(ContentType.JSON).
                 body("email", is("jporter@redhat.com")).
@@ -252,7 +252,7 @@ public class ContributorRestServiceTest {
                 auth().basic("jbossorg", "jbossorgjbossorg").
         expect().
                 statusCode(200).
-				log().ifError().
+				log().ifValidationFails().
                 contentType(ContentType.JSON).
                 body("total", is(1)).
                 body("hits[0].id", is(contributorId)).
@@ -280,7 +280,7 @@ public class ContributorRestServiceTest {
 				parameters("code", contributorCode).
 				auth().basic(DeploymentHelpers.DEFAULT_PROVIDER_NAME, DeploymentHelpers.DEFAULT_PROVIDER_PASSWORD).
 				expect().
-				log().ifError().
+				log().ifValidationFails().
 				spec(responseSpec).
 				when().
 				get(new URL(context, CONTRIBUTOR_REST_API_BASE + "search").toExternalForm());
@@ -289,7 +289,7 @@ public class ContributorRestServiceTest {
 				parameters("email", "jporter@redhat.com").
 				auth().basic(DeploymentHelpers.DEFAULT_PROVIDER_NAME, DeploymentHelpers.DEFAULT_PROVIDER_PASSWORD).
 				expect().
-				log().ifError().
+				log().ifValidationFails().
 				spec(responseSpec).
 				when().
 				get(new URL(context, CONTRIBUTOR_REST_API_BASE + "search").toExternalForm());
@@ -298,7 +298,7 @@ public class ContributorRestServiceTest {
 //				parameters("name", "jason").
 //				auth().basic(DeploymentHelpers.DEFAULT_PROVIDER_NAME, DeploymentHelpers.DEFAULT_PROVIDER_PASSWORD).
 //				expect().
-//				log().ifError().
+//				log().ifValidationFails().
 //				spec(responseSpec).
 //				when().
 //				get(new URL(context, restVersion + "contributor/search").toExternalForm());
@@ -312,7 +312,7 @@ public class ContributorRestServiceTest {
 				auth().basic(DeploymentHelpers.DEFAULT_PROVIDER_NAME, DeploymentHelpers.DEFAULT_PROVIDER_PASSWORD).
 				expect().
 				statusCode(200).
-				log().ifError().
+				log().ifValidationFails().
 				contentType(ContentType.JSON).
 				body("total", is(0)).
 				when().
@@ -323,7 +323,7 @@ public class ContributorRestServiceTest {
 				auth().basic(DeploymentHelpers.DEFAULT_PROVIDER_NAME, DeploymentHelpers.DEFAULT_PROVIDER_PASSWORD).
 				expect().
 				statusCode(200).
-				log().ifError().
+				log().ifValidationFails().
 				contentType(ContentType.JSON).
 				body("total", is(0)).
 				when().
@@ -334,7 +334,7 @@ public class ContributorRestServiceTest {
 				auth().basic(DeploymentHelpers.DEFAULT_PROVIDER_NAME, DeploymentHelpers.DEFAULT_PROVIDER_PASSWORD).
 				expect().
 				statusCode(200).
-				log().ifError().
+				log().ifValidationFails().
 				contentType(ContentType.JSON).
 				body("total", is(0)).
 				when().

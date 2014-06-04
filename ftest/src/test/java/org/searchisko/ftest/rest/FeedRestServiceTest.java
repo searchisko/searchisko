@@ -51,7 +51,7 @@ public class FeedRestServiceTest {
 	public void assertGetAllEmpty() throws MalformedURLException {
 		given().contentType(ContentType.JSON)
 				.expect()
-				.log().ifError()
+				.log().ifValidationFails()
 				.statusCode(200)
 				.contentType("application/atom+xml")
 				.when().get(new URL(context, FEED_REST_API).toExternalForm());
@@ -92,7 +92,7 @@ public class FeedRestServiceTest {
 		// After library upgrade use https://code.google.com/p/rest-assured/wiki/Usage#Example_2_-_XML
 		given().contentType(ContentType.XML)
 				.expect()
-				.log().ifError()
+				.log().ifValidationFails()
 				.statusCode(200)
 				.contentType("application/atom+xml")
 				.body(containsString("<atom:content type=\"" + FEED_CONTENT_TYPE + "\">"))

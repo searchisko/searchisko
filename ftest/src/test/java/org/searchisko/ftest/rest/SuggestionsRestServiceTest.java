@@ -51,7 +51,7 @@ public class SuggestionsRestServiceTest {
 				.pathParam("apitype", "query_string")
 				.queryParam("query", "Hiberna")
 				.expect()
-//				.log().ifError()
+				.log().ifValidationFails()
 				.statusCode(500)
 				.when().get(new URL(context, SUGGESTIONS_REST_API).toExternalForm());
 	}
@@ -63,7 +63,7 @@ public class SuggestionsRestServiceTest {
 				.pathParam("apitype", "project")
 				.queryParam("query", "gin")
 				.expect()
-				.log().ifError()
+				.log().ifValidationFails()
 				.statusCode(200)
 				.contentType(ContentType.JSON)
 				.body("uuid", notNullValue())
@@ -76,7 +76,7 @@ public class SuggestionsRestServiceTest {
 		given().contentType(ContentType.JSON)
 				.pathParam("apitype", "project")
 				.expect()
-				.log().ifError()
+				.log().ifValidationFails()
 				.statusCode(400)
 				.when().get(new URL(context, SUGGESTIONS_REST_API).toExternalForm());
 	}
@@ -92,7 +92,7 @@ public class SuggestionsRestServiceTest {
 				.queryParam("field","license")
 				.queryParam("field","projectName")
 				.expect()
-				.log().ifError()
+				.log().ifValidationFails()
 				.statusCode(200)
 				.contentType(ContentType.JSON)
 				.body("uuid", notNullValue())

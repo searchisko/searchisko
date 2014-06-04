@@ -20,8 +20,6 @@ import org.junit.runner.RunWith;
 import org.searchisko.ftest.DeploymentHelpers;
 
 import static com.jayway.restassured.RestAssured.given;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.not;
 
 /**
  * Integration test for /normalization REST API.
@@ -55,7 +53,7 @@ public class NormalizationRestServiceTest {
 		given().contentType(ContentType.JSON)
 				.pathParam("normalizationName", "bad-name")
 				.expect().statusCode(expStatus)
-				.log().ifStatusCodeMatches(is(not(expStatus)))
+				.log().ifValidationFails()
 				.when().get(new URL(context, NORMALIZATION_REST_API_BASE).toExternalForm());
 
 		// GET /indexer/{normalizationName}/{id}
@@ -63,7 +61,7 @@ public class NormalizationRestServiceTest {
 				.pathParam("normalizationName", "bad-name")
 				.pathParam("id", "bad-id")
 				.expect().statusCode(expStatus)
-				.log().ifStatusCodeMatches(is(not(expStatus)))
+				.log().ifValidationFails()
 				.when().get(new URL(context, NORMALIZATION_REST_API).toExternalForm());
 	}
 
