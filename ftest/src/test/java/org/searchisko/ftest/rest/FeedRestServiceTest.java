@@ -23,7 +23,7 @@ import org.searchisko.ftest.DeploymentHelpers;
 import org.searchisko.ftest.ProviderModel;
 
 import static com.jayway.restassured.RestAssured.given;
-import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.is;
 
 
 /**
@@ -89,13 +89,14 @@ public class FeedRestServiceTest {
 	@Test
 	@InSequence(31)
 	public void assertGetDataFeed() throws MalformedURLException {
-		// After library upgrade use https://code.google.com/p/rest-assured/wiki/Usage#Example_2_-_XML
 		given().contentType(ContentType.XML)
 				.expect()
 				.log().ifValidationFails()
 				.statusCode(200)
 				.contentType("application/atom+xml")
-				.body(containsString("<atom:content type=\"" + FEED_CONTENT_TYPE + "\">"))
+				.body("feed.entry.content.@type", is(FEED_CONTENT_TYPE))
+				.body("feed.entry.content.text()", is("content"))
+				.body("feed.entry.summary.text()", is("desc"))
 				.when().get(new URL(context, FEED_REST_API).toExternalForm());
 	}
 
