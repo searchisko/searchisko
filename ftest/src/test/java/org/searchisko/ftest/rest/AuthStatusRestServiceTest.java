@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 
-import com.jayway.restassured.http.ContentType;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.junit.InSequence;
@@ -14,9 +13,9 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.searchisko.ftest.DeploymentHelpers;
 
-import static com.jayway.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
+import static org.searchisko.ftest.rest.RestTestHelpers.givenJsonAndLogIfFails;
 
 /**
  * Integration test for /auth/status REST API.
@@ -40,15 +39,11 @@ public class AuthStatusRestServiceTest {
 	@Test
 	@InSequence(0)
 	public void assertSSOServiceNotAvailable() throws MalformedURLException {
-		given().
-				contentType(ContentType.JSON).
-				expect().
-				log().ifValidationFails().
-				contentType(ContentType.JSON).
+		givenJsonAndLogIfFails().
+				when().get(new URL(context, DeploymentHelpers.DEFAULT_REST_VERSION + "auth/status").toExternalForm()).
+				then().
 				statusCode(200).
 				header("WWW-Authenticate", nullValue()).
-				body("authenticated", is(false)).
-				when().
-				get(new URL(context, DeploymentHelpers.DEFAULT_REST_VERSION + "auth/status").toExternalForm());
+				body("authenticated", is(false));
 	}
 }
