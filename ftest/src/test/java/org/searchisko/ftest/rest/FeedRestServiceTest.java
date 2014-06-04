@@ -91,9 +91,10 @@ public class FeedRestServiceTest {
 	public void assertGetDataFeed() throws MalformedURLException {
 		given().contentType(ContentType.XML)
 				.expect()
-				.log().ifValidationFails()
+				.log().all()
 				.statusCode(200)
 				.contentType("application/atom+xml")
+				.body("feed.entry.author.name.text()", is("unknown"))
 				.body("feed.entry.content.@type", is(FEED_CONTENT_TYPE))
 				.body("feed.entry.content.text()", is("content"))
 				.body("feed.entry.summary.text()", is("desc"))
