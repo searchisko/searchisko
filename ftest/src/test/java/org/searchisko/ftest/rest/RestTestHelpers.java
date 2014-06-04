@@ -18,6 +18,14 @@ import org.searchisko.ftest.DeploymentHelpers;
  */
 public class RestTestHelpers {
 
+	private static void defaultSettings() {
+		RestAssured.enableLoggingOfRequestAndResponseIfValidationFails();
+	}
+
+	static {
+		defaultSettings();
+	}
+
 	/**
 	 * Helper method to get RequestSpecification with defined: <br/>
 	 * 1. Log both requests and response if validation fails
@@ -26,6 +34,7 @@ public class RestTestHelpers {
 	 * @see com.jayway.restassured.RestAssured#enableLoggingOfRequestAndResponseIfValidationFails()
 	 */
 	public static RequestSpecification givenLogIfFails() {
+		RestAssured.reset();
 		RestAssured.enableLoggingOfRequestAndResponseIfValidationFails();
 		return RestAssured.given();
 	}
@@ -37,14 +46,9 @@ public class RestTestHelpers {
 	 * 2. Log both requests and response if validation fails
 	 *
 	 * @return
-	 * @see com.jayway.restassured.RestAssured#enableLoggingOfRequestAndResponseIfValidationFails()
-	 * @see com.jayway.restassured.RestAssured#requestContentType(com.jayway.restassured.http.ContentType)
-	 * @see com.jayway.restassured.RestAssured#responseContentType(com.jayway.restassured.http.ContentType)
 	 */
 	public static RequestSpecification givenJsonAndLogIfFails() {
-		RestAssured.requestContentType(ContentType.JSON);
-		RestAssured.responseContentType(ContentType.JSON);
-		return givenLogIfFails();
+		return givenLogIfFails().request().contentType(ContentType.JSON);
 	}
 
 	/**
