@@ -1,0 +1,11 @@
+{
+  "code": "liveoak",
+  "name": "LiveOak",
+  "type_specific_code" : {
+    "jbossorg_blog": [],
+    "jbossorg_jira": ["LIVEOAK"],
+    "jbossorg_sbs" : [],
+    "jbossorg_mailing_list": "",
+    "jbossorg_project_info": "liveoak"
+  }
+}
