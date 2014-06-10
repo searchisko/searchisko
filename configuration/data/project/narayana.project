@@ -2,10 +2,10 @@
   "code": "narayana",
   "name": "Narayana",
   "type_specific_code" : {
-    "jbossorg_blog": [""],
-    "jbossorg_jira": [""],
-    "jbossorg_sbs" : [],
-    "jbossorg_mailing_list": "",
+    "jbossorg_blog": ["transactions"],
+    "jbossorg_jira": ["JBTM"],
+    "jbossorg_sbs" : ["2040","2041"],
+    "jbossorg_mailing_list": ["jbossts"],
     "jbossorg_project_info": "narayana"
   }
 }
