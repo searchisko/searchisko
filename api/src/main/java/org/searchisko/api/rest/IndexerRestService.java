@@ -5,19 +5,24 @@
  */
 package org.searchisko.api.rest;
 
-import javax.annotation.security.RolesAllowed;
-import javax.ejb.ObjectNotFoundException;
-import javax.enterprise.context.RequestScoped;
-import javax.inject.Inject;
-import javax.ws.rs.*;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.SecurityContext;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import javax.annotation.security.RolesAllowed;
+import javax.ejb.ObjectNotFoundException;
+import javax.enterprise.context.RequestScoped;
+import javax.inject.Inject;
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.SecurityContext;
 
 import org.searchisko.api.audit.annotation.Audit;
 import org.searchisko.api.audit.annotation.AuditId;
@@ -29,21 +34,21 @@ import org.searchisko.api.rest.exception.BadFieldException;
 import org.searchisko.api.rest.exception.NotAuthenticatedException;
 import org.searchisko.api.rest.exception.NotAuthorizedException;
 import org.searchisko.api.rest.exception.RequiredFieldException;
-import org.searchisko.api.service.AuthenticationUtilService;
 import org.searchisko.api.security.Role;
+import org.searchisko.api.service.AuthenticationUtilService;
 import org.searchisko.api.service.ProviderService;
 import org.searchisko.api.service.ProviderService.ProviderContentTypeInfo;
 import org.searchisko.api.util.SearchUtils;
 
 /**
  * REST API for Indexer related operations.
- *
+ * 
  * @author Vlastimil Elias (velias at redhat dot com)
  */
 @RequestScoped
 @Path("/indexer")
 @Produces(MediaType.APPLICATION_JSON)
-@RolesAllowed({Role.ADMIN, Role.PROVIDER})
+@RolesAllowed({ Role.ADMIN, Role.PROVIDER })
 @Audit
 public class IndexerRestService extends RestServiceBase {
 
@@ -67,7 +72,7 @@ public class IndexerRestService extends RestServiceBase {
 
 	/**
 	 * Force reindex for given content type using Searchisko internal indexer.
-	 *
+	 * 
 	 * @throws ObjectNotFoundException
 	 */
 	@POST
@@ -84,8 +89,7 @@ public class IndexerRestService extends RestServiceBase {
 		} catch (ObjectNotFoundException e) {
 			throw new ObjectNotFoundException(
 					"Indexer name or type is not configured correctly because indexer instance has not found for content type "
-							+ type
-			);
+							+ type);
 		}
 	}
 
@@ -200,7 +204,7 @@ public class IndexerRestService extends RestServiceBase {
 	 * 
 	 * @throws ObjectNotFoundException
 	 */
-	@POST
+	@GET
 	@Path("/_all/_status")
 	@AuditIgnore
 	public Map<String, Object> statusAll() throws ObjectNotFoundException {
@@ -227,7 +231,7 @@ public class IndexerRestService extends RestServiceBase {
 
 	/**
 	 * Get status information of indexer for given content type using Searchisko internal indexer.
-	 *
+	 * 
 	 * @throws ObjectNotFoundException
 	 */
 	@GET
@@ -244,14 +248,13 @@ public class IndexerRestService extends RestServiceBase {
 		} catch (ObjectNotFoundException e) {
 			throw new ObjectNotFoundException(
 					"Indexer name or type is not configured correctly because indexer instance has not found for content type "
-							+ type
-			);
+							+ type);
 		}
 	}
 
 	/**
 	 * @param contentType of content we work for - used for error messages
-	 * @param ic          indexer configuration to extract from
+	 * @param ic indexer configuration to extract from
 	 * @return
 	 * @throws ObjectNotFoundException
 	 */
@@ -265,11 +268,11 @@ public class IndexerRestService extends RestServiceBase {
 
 	/**
 	 * Get indexer configuration for given content type with validations and permission check.
-	 *
+	 * 
 	 * @param contentType to get indexer configuration for.
 	 * @return indexer configuration structure, never null.
-	 * @throws ObjectNotFoundException   if indexer configuration is not found for given content type
-	 * @throws NotAuthorizedException    if user is not authorized
+	 * @throws ObjectNotFoundException if indexer configuration is not found for given content type
+	 * @throws NotAuthorizedException if user is not authorized
 	 * @throws NotAuthenticatedException if user is not authenticated
 	 * @see AuthenticationUtilService#checkProviderManagementPermission(String)
 	 */
@@ -330,7 +333,7 @@ public class IndexerRestService extends RestServiceBase {
 
 	/**
 	 * Get indexer handler based on indexer type.
-	 *
+	 * 
 	 * @param indexerType to get handler for
 	 * @param contentType we handle indexer for - used for error messages only
 	 * @return indexer handler, never null.
