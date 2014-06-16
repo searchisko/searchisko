@@ -81,6 +81,11 @@ public class ConfigService implements EntityService {
 	}
 
 	@Override
+	public int deleteAll() {
+		throw new UnsupportedOperationException("Method not implemented.");
+	}
+
+	@Override
 	public ListRequest listRequestInit() {
 		return entityService.listRequestInit();
 	}

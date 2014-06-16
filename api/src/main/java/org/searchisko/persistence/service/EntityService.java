@@ -75,6 +75,13 @@ public interface EntityService {
 	public void delete(String id);
 
 	/**
+	 * Delete all entities.
+	 *
+	 * @return number of deleted records from persistence.
+	 */
+	public int deleteAll();
+
+	/**
 	 * Init list request for whole content of given Entity. Call this first time, then call
 	 * {@link #listRequestNext(ListRequest)} while {@link ListRequest#hasContent()} returns true.
 	 * 

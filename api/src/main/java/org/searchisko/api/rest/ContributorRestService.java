@@ -110,4 +110,11 @@ public class ContributorRestService extends RestEntityServiceBase {
 		}
 		return contributorService.mergeContributors(idFrom, idTo);
 	}
+
+	@DELETE
+	@Path("/_all")
+	public Object deleteAll() {
+		entityService.deleteAll();
+		return Response.ok().build();
+	}
 }

@@ -1443,6 +1443,11 @@ DELETE /rest/project/{code}
 < 200
 
 
+Delete all project configurations.
+DELETE /rest/project/_all
+< 200
+
+
 --
 Management API - contributors
 
@@ -1619,6 +1624,11 @@ POST /rest/contributor/{idFrom}/mergeTo/{idTo}
 
 Delete contributor configuration with given `id`.
 DELETE /rest/contributor/{id}
+< 200
+
+
+Delete all contributors.
+DELETE /rest/contributor/_all
 < 200
 
 

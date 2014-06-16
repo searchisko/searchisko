@@ -316,6 +316,11 @@ public class ProviderService implements EntityService {
 		flushCaches();
 	}
 
+	@Override
+	public int deleteAll() {
+		throw new UnsupportedOperationException("Method not implemented.");
+	}
+
 	/**
 	 * Flush all caches containing data extracted from Provider definitions.
 	 */

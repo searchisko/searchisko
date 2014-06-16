@@ -657,6 +657,43 @@ public class ContributorServiceTest extends ESRealClientTestBase {
 	}
 
 	@Test
+	public void deleteAll() {
+		Client client = prepareESClientForUnitTest();
+		ContributorService tested = getTested(client);
+		try {
+			indexDelete(ContributorService.SEARCH_INDEX_NAME);
+
+			tested.init();
+			reset(tested.entityService);
+
+			indexInsertDocument(ContributorService.SEARCH_INDEX_NAME, ContributorService.SEARCH_INDEX_TYPE, ID_10,
+					"{\"name\":\"test1\",\"idx\":\"1\"}");
+			indexInsertDocument(ContributorService.SEARCH_INDEX_NAME, ContributorService.SEARCH_INDEX_TYPE, ID_20,
+					"{\"name\":\"test2\",\"idx\":\"2\"}");
+			indexInsertDocument(ContributorService.SEARCH_INDEX_NAME, ContributorService.SEARCH_INDEX_TYPE, ID_30,
+					"{\"name\":\"test3\",\"idx\":\"3\"}");
+			indexFlushAndRefresh(ContributorService.SEARCH_INDEX_NAME);
+
+			tested.deleteAll();
+			Mockito.verify(tested.entityService).deleteAll();
+
+			// deleteAll does not fire any events
+			verifyZeroInteractions(tested.eventDelete);
+
+			Assert.assertNull(indexGetDocument(ContributorService.SEARCH_INDEX_NAME, ContributorService.SEARCH_INDEX_TYPE,
+					ID_10));
+			Assert.assertNull(indexGetDocument(ContributorService.SEARCH_INDEX_NAME, ContributorService.SEARCH_INDEX_TYPE,
+					ID_20));
+			Assert.assertNull(indexGetDocument(ContributorService.SEARCH_INDEX_NAME, ContributorService.SEARCH_INDEX_TYPE,
+					ID_30));
+
+		} finally {
+			indexDelete(ContributorService.SEARCH_INDEX_NAME);
+			finalizeESClientForUnitTest();
+		}
+	}
+
+	@Test
 	public void findByCode_findOneByCode() throws Exception {
 		Client client = prepareESClientForUnitTest();
 		ContributorService tested = getTested(client);

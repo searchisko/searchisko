@@ -155,4 +155,11 @@ public class ProjectRestService extends RestEntityServiceBase {
 		return new ESDataOnlyResponse(response);
 	}
 
+	@DELETE
+	@Path("/_all")
+	public Object deleteAll() {
+		entityService.deleteAll();
+		return Response.ok().build();
+	}
+
 }

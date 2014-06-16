@@ -8,6 +8,7 @@ package org.searchisko.api.service;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.ejb.LocalBean;
@@ -119,6 +120,20 @@ public class ProjectService implements SearchableEntityService {
 		} catch (SearchIndexMissingException e) {
 			// OK
 		}
+	}
+
+	@Override
+	public int deleteAll() {
+		int deleted = entityService.deleteAll();
+		try {
+			searchClientService.performDeleteAll(SEARCH_INDEX_NAME, SEARCH_INDEX_TYPE);
+		} catch (SearchIndexMissingException e) {
+			// OK
+		}
+		if (log.isLoggable(Level.FINE)) {
+			log.log(Level.FINE, "Deleted persistent project records: {0}", deleted);
+		}
+		return deleted;
 	}
 
 	/**

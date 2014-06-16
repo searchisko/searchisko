@@ -14,6 +14,7 @@ import java.util.logging.Logger;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityNotFoundException;
+import javax.persistence.Query;
 import javax.persistence.TypedQuery;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
@@ -45,11 +46,14 @@ public class JpaEntityService<T> implements EntityService {
 
 	protected Class<T> entityType;
 
+	protected String deleteAllNamedQuery;
+
 	public JpaEntityService(EntityManager em, ModelToJSONMapConverter<T> converter, Class<T> entityType) {
 		log = Logger.getLogger(this.getClass().getName());
 		this.em = em;
 		this.converter = converter;
 		this.entityType = entityType;
+		this.deleteAllNamedQuery = entityType.getSimpleName() + ".deleteAll";
 	}
 
 	@Override
@@ -170,6 +174,12 @@ public class JpaEntityService<T> implements EntityService {
 		} catch (EntityNotFoundException e) {
 			// OK
 		}
+	}
+
+	@Override
+	public int deleteAll() {
+		Query q = em.createNamedQuery(this.deleteAllNamedQuery);
+		return q.executeUpdate();
 	}
 
 	protected int LIST_PAGE_SIZE = 200;

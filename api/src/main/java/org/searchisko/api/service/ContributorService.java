@@ -331,6 +331,32 @@ public class ContributorService implements SearchableEntityService {
 	}
 
 	/**
+	 * Delete all contributors.
+	 * <p>
+	 * WARNING: No events are fired!
+	 */
+	@Override
+	public int deleteAll() {
+		return this.deleteAllImpl();
+	}
+
+	/**
+	 * A real implementation of delete all, does not fire any event.
+	 */
+	private int deleteAllImpl() {
+		int deleted = entityService.deleteAll();
+		try {
+			searchClientService.performDeleteAll(SEARCH_INDEX_NAME, SEARCH_INDEX_TYPE);
+		} catch (SearchIndexMissingException e) {
+			// OK
+		}
+		if (log.isLoggable(Level.FINE)) {
+			log.log(Level.FINE, "Deleted persistent contributor records: {0}", deleted);
+		}
+		return deleted;
+	}
+
+	/**
 	 * Real implementation of delete, do not fire event.
 	 * 
 	 * @param id of contributor to delete.

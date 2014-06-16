@@ -65,6 +65,12 @@ public class ProjectRestServiceTest {
 				.expect().statusCode(expStatus)
 				.log().ifValidationFails()
 				.when().delete(new URL(context, PROJECT_REST_API + "/projectcode").toExternalForm());
+
+		// DELETE /project/_all
+		given().contentType(ContentType.JSON)
+				.expect().statusCode(expStatus)
+				.log().ifValidationFails()
+				.when().delete(new URL(context, PROJECT_REST_API + "/_all").toExternalForm());
 	}
 
 	@Test
@@ -80,7 +86,7 @@ public class ProjectRestServiceTest {
 
 	@Test
 	@InSequence(20)
-	public void assertCreate() throws MalformedURLException {
+	public void assertCreateJbosstools() throws MalformedURLException {
 		String data = "{\n" +
 				"  \"code\": \"jbosstools\",\n" +
 				"  \"name\": \"JBoss Tools\",\n" +
@@ -89,7 +95,7 @@ public class ProjectRestServiceTest {
 				"    \"jbossorg_blog\": [\"jbosstools\"],\n" +
 				"    \"jbossorg_jira\": [\"JBIDE\"],\n" +
 				"    \"jbossorg_mailing_list\": \"\",\n" +
-				"    \"jbossorg_project_info\": \"/jbosstools\"\n" +
+				"    \"jbossorg_project_info\": \"jbosstools\"\n" +
 				"  }\n" +
 				"}";
 
@@ -101,10 +107,39 @@ public class ProjectRestServiceTest {
 				.body("id", is("jbosstools"))
 				.when().post(new URL(context, PROJECT_REST_API).toExternalForm());
 
+		// Refresh ES to make sure changes take place
+		DeploymentHelpers.refreshES();
 	}
 
 	@Test
 	@InSequence(21)
+	public void assertCreateDrools() throws MalformedURLException {
+		String data = "{\n" +
+				"  \"code\": \"drools\",\n" +
+				"  \"name\": \"Drools\",\n" +
+				"  \"description\" : \"\",\n" +
+				"  \"type_specific_code\" : {\n" +
+				"    \"jbossorg_blog\": [\"\"],\n" +
+				"    \"jbossorg_jira\": [\"\"],\n" +
+				"    \"jbossorg_mailing_list\": \"\",\n" +
+				"    \"jbossorg_project_info\": \"\"\n" +
+				"  }\n" +
+				"}";
+
+		given().contentType(ContentType.JSON)
+				.auth().basic(DeploymentHelpers.DEFAULT_PROVIDER_NAME, DeploymentHelpers.DEFAULT_PROVIDER_PASSWORD)
+				.body(data)
+				.expect().statusCode(200)
+				.log().ifValidationFails()
+				.body("id", is("drools"))
+				.when().post(new URL(context, PROJECT_REST_API).toExternalForm());
+
+		// Refresh ES to make sure changes take place
+		DeploymentHelpers.refreshES();
+	}
+
+	@Test
+	@InSequence(24)
 	public void assertRefreshES() throws MalformedURLException {
 		DeploymentHelpers.refreshES();
 	}
@@ -166,5 +201,51 @@ public class ProjectRestServiceTest {
 				.expect().statusCode(200)
 				.log().ifValidationFails()
 				.when().delete(new URL(context, PROJECT_REST_API + "/jbosstools").toExternalForm());
+
+		// Refresh ES to make sure deletes take place
+		DeploymentHelpers.refreshES();
+	}
+
+	@Test
+	@InSequence(50)
+	public void assertSingleProjectIsLeft() throws MalformedURLException {
+		given().contentType(ContentType.JSON)
+				.expect().statusCode(200)
+				.log().ifValidationFails()
+				.body("total", is(1))
+				.when().get(new URL(context, PROJECT_REST_API).toExternalForm());
+	}
+
+	@Test
+	@InSequence(60)
+	public void assertDeleteAllRemovesAllProjects() throws MalformedURLException {
+
+		// create one more project
+		assertCreateJbosstools();
+
+		// verify we have two projects
+		given().contentType(ContentType.JSON)
+				.expect().statusCode(200)
+				.log().ifValidationFails()
+				.body("total", is(2))
+				.when().get(new URL(context, PROJECT_REST_API).toExternalForm());
+
+		// delete all
+		given().contentType(ContentType.JSON)
+				.auth().basic(DeploymentHelpers.DEFAULT_PROVIDER_NAME, DeploymentHelpers.DEFAULT_PROVIDER_PASSWORD)
+				.expect().statusCode(200)
+				.log().ifValidationFails()
+				.when().delete(new URL(context, PROJECT_REST_API + "/_all").toExternalForm());
+
+		// refresh
+		DeploymentHelpers.refreshES();
+
+		// verify no projects are in the system
+//		given().contentType(ContentType.JSON)
+//				.expect().statusCode(200)
+//				.log().ifValidationFails()
+//				.body("total", is(0))
+//				.when().get(new URL(context, PROJECT_REST_API).toExternalForm());
+
 	}
 }

@@ -216,6 +216,44 @@ public class JpaEntityServiceTest extends JpaTestBase {
 	}
 
 	@Test
+	public void deleteAll() {
+		JpaEntityService<Contributor> tested = new JpaEntityService<Contributor>(em, new ContributorConverter(),
+				Contributor.class);
+		try {
+
+			// case - delete all
+			em.getTransaction().begin();
+			String id1 = "aaa";
+			String val1 = "DDDDFGHDFHD";
+			Contributor c1 = createEntity(id1, val1);
+			em.persist(c1);
+
+			String id2 = "bbbbbb";
+			String val2 = "fgdsafgdsafgsdf";
+			Contributor c2 = createEntity(id2, val2);
+			em.persist(c2);
+			em.getTransaction().commit();
+
+			em.getTransaction().begin();
+			Assert.assertNotNull(em.find(Contributor.class, id1));
+			Assert.assertNotNull(em.find(Contributor.class, id2));
+			tested.deleteAll();
+			em.getTransaction().commit();
+
+			em.getTransaction().begin();
+			em.clear();
+			Assert.assertNull(em.find(Contributor.class, id1));
+			Assert.assertNull(em.find(Contributor.class, id2));
+			em.getTransaction().commit();
+
+		} catch (Exception ex) {
+			ex.printStackTrace();
+			em.getTransaction().rollback();
+			Assert.fail("Exception during testPersistence");
+		}
+	}
+
+	@Test
 	public void getOneAndAllRaw() {
 		JpaEntityService<Contributor> tested = new JpaEntityService<Contributor>(em, new ContributorConverter(),
 				Contributor.class);

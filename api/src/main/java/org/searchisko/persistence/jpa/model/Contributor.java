@@ -10,6 +10,7 @@ import java.io.Serializable;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import javax.persistence.NamedQuery;
 import javax.validation.constraints.NotNull;
 
 /**
@@ -18,6 +19,10 @@ import javax.validation.constraints.NotNull;
  * @author Libor Krzyzanek
  */
 @Entity
+@NamedQuery(
+		name = "Contributor.deleteAll",
+		query = "DELETE FROM Contributor"
+)
 public class Contributor implements Serializable {
 
 	private static final long serialVersionUID = -7804929596679769023L;

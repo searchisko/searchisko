@@ -10,6 +10,7 @@ import java.io.Serializable;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import javax.persistence.NamedQuery;
 import javax.validation.constraints.NotNull;
 
 /**
@@ -19,6 +20,10 @@ import javax.validation.constraints.NotNull;
  *
  */
 @Entity
+@NamedQuery(
+		name = "Project.deleteAll",
+		query = "DELETE FROM Project"
+)
 public class Project implements Serializable {
 
 	private static final long serialVersionUID = -7417065268016465588L;

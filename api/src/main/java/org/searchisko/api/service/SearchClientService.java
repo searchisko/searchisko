@@ -21,11 +21,14 @@ import org.elasticsearch.ElasticSearchException;
 import org.elasticsearch.action.admin.indices.flush.FlushRequest;
 import org.elasticsearch.action.admin.indices.refresh.RefreshRequest;
 import org.elasticsearch.action.delete.DeleteResponse;
+import org.elasticsearch.action.deletebyquery.DeleteByQueryRequest;
+import org.elasticsearch.action.deletebyquery.DeleteByQueryResponse;
 import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.search.SearchType;
+import org.elasticsearch.client.Requests;
 import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.index.query.FilterBuilder;
 import org.elasticsearch.index.query.FilterBuilders;
@@ -201,6 +204,26 @@ public class SearchClientService extends ElasticsearchClientService {
 	public DeleteResponse performDelete(String indexName, String indexType, String id) throws SearchIndexMissingException {
 		try {
 			return getClient().prepareDelete(indexName, indexType, id).execute().actionGet();
+		} catch (IndexMissingException e) {
+			throw new SearchIndexMissingException(e);
+		}
+	}
+
+	/**
+	 * Delete all documents from ES index/type.
+	 *
+	 * @param indexName index name
+	 * @param indexType type name
+	 * @return {@link DeleteByQueryRequest}
+	 * @throws SearchIndexMissingException
+	 */
+	public DeleteByQueryResponse performDeleteAll(String indexName, String indexType) throws SearchIndexMissingException {
+		try {
+			DeleteByQueryResponse r = getClient().deleteByQuery(
+					Requests.deleteByQueryRequest(indexName).types(indexType).query(QueryBuilders.matchAllQuery())
+			).actionGet();
+			performIndexFlushAndRefreshBlocking(indexName);
+			return r;
 		} catch (IndexMissingException e) {
 			throw new SearchIndexMissingException(e);
 		}

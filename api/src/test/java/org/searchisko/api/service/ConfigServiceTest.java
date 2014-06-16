@@ -14,7 +14,9 @@ import java.util.logging.Logger;
 import javax.ws.rs.core.StreamingOutput;
 
 import org.junit.Assert;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.mockito.Mockito;
 import org.searchisko.api.rest.ESDataOnlyResponse;
 import org.searchisko.api.testtools.ESRealClientTestBase;
@@ -27,6 +29,9 @@ import org.searchisko.persistence.service.ListRequest;
  * @author Vlastimil Elias (velias at redhat dot com)
  */
 public class ConfigServiceTest extends ESRealClientTestBase {
+
+	@Rule
+	public ExpectedException thrown= ExpectedException.none();
 
 	private ConfigService getTested() {
 		ConfigService ret = new ConfigService();
@@ -174,6 +179,14 @@ public class ConfigServiceTest extends ESRealClientTestBase {
 		Mockito.reset(tested.entityService);
 		tested.delete("1");
 		Mockito.verify(tested.entityService).delete("1");
+	}
+
+	@Test
+	public void deleteAll() {
+		ConfigService tested = getTested();
+		Mockito.reset(tested.entityService);
+		thrown.expect(UnsupportedOperationException.class);
+		tested.deleteAll();
 	}
 
 	@Test

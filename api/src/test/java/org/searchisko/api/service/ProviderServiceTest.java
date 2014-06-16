@@ -17,7 +17,9 @@ import javax.ws.rs.core.StreamingOutput;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.common.settings.SettingsException;
 import org.junit.Assert;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.mockito.Mockito;
 import org.searchisko.api.cache.IndexNamesCache;
 import org.searchisko.api.cache.ProviderCache;
@@ -34,6 +36,9 @@ import org.searchisko.persistence.service.ListRequest;
  * @author Vlastimil Elias (velias at redhat dot com)
  */
 public class ProviderServiceTest extends ESRealClientTestBase {
+
+	@Rule
+	public ExpectedException thrown= ExpectedException.none();
 
 	public static final String TEST_TYPE_NAME = "mytype";
 	public static final String TEST_PROVIDER_NAME = "jbossorg";
@@ -981,6 +986,13 @@ public class ProviderServiceTest extends ESRealClientTestBase {
 		Assert.assertEquals(0, tested.cacheAllProvidersValidTo);
 		Mockito.verify(tested.entityService).delete("aaa");
 		Mockito.verifyNoMoreInteractions(tested.entityService);
+	}
+
+	@Test
+	public void deleteAll() {
+		ProviderService tested = getTested();
+		thrown.expect(UnsupportedOperationException.class);
+		tested.deleteAll();
 	}
 
 	@Test

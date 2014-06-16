@@ -114,6 +114,13 @@ public class ContributorRestServiceTest {
 				.expect().statusCode(expStatus)
 				.log().ifStatusCodeMatches(is(not(expStatus)))
 				.when().delete(new URL(context, CONTRIBUTOR_REST_API).toExternalForm());
+
+		// DELETE /contributor/_all
+		given().contentType(ContentType.JSON)
+				.pathParam("id", "_all")
+				.expect().statusCode(expStatus)
+				.log().ifStatusCodeMatches(is(not(expStatus)))
+				.when().delete(new URL(context, CONTRIBUTOR_REST_API).toExternalForm());
 	}
 
 

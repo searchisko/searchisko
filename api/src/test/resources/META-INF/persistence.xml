@@ -20,6 +20,9 @@
       <property name="hibernate.hbm2ddl.auto" value="create-drop"/>
       <property name="hibernate.connection.username" value="sa"/>
       <property name="hibernate.connection.password" value=""/>
+      <!--<property name="hibernate.show_sql" value="true"/>-->
+      <!--<property name="hibernate.format_sql" value="true"/>-->
+      <!--<property name="hibernate.use_sql_comments" value="true"/>-->
 		</properties>
 	</persistence-unit>
 </persistence>

@@ -2,6 +2,10 @@
 
 This document contains high-level release notes. More details can be found in [milestones](https://github.com/searchisko/searchisko/issues/milestones) on GitHub.
 
+## 1.1.1 (WIP)
+
+- Allow to delete all `sys_projects` and `sys_contributors` from persistence (expert API for administrators) [#117](https://github.com/searchisko/searchisko/issues/117)
+
 ## 1.1.0
 
 - Security improved to use standard JAAS role based access control [#76](https://github.com/searchisko/searchisko/issues/76)
