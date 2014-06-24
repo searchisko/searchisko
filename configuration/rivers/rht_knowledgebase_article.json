@@ -30,7 +30,7 @@
             "sys_title"             : {"remote_field" : "detail.title"},
             "sys_created"           : {"remote_field" : "updated"},
             "sys_description"       : {"remote_field" : "prep_description"},
-            "sys_content"           : {"remote_field" : "detail.body"},
+            "sys_content"           : {"remote_field" : "detail.body.html"},
             "sys_content_content-type" : {"remote_field" : "prep_content_content-type"},
             "sys_content_plaintext" : {"remote_field" : "prep_content_plaintext"},
             "product"               : {"remote_field" : "product"},
@@ -69,7 +69,7 @@
                 "name"     : "Description HTML stripper",
                 "class"    : "org.jboss.elasticsearch.tools.content.StripHtmlPreprocessor",
                 "settings" : {
-                    "source_field" : "detail.body",
+                    "source_field" : "detail.body.html",
                     "target_field" : "prep_content_plaintext"
                 } 
             },{ 
