@@ -259,7 +259,8 @@ public class ESProxyFilter implements Filter {
 	static {
 		omittedHeaders = new HashSet<>();
 		for (String header : new String[] { "Connection", "Keep-Alive", "Authorization", "Proxy-Authenticate",
-				"Proxy-Authorization", "TE", "Trailers", "Transfer-Encoding", "Upgrade", "Origin" }) {
+				"Proxy-Authorization", "TE", "Trailers", "Transfer-Encoding", "Upgrade", "Origin",
+				"Access-Control-Allow-Origin" }) {
 			omittedHeaders.add(header.toLowerCase());
 		}
 	}

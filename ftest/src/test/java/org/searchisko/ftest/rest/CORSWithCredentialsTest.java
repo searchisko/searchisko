@@ -20,7 +20,6 @@ import org.jboss.arquillian.junit.InSequence;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.searchisko.ftest.DeploymentHelpers;
@@ -120,7 +119,6 @@ public class CORSWithCredentialsTest {
 
 	@Test
 	@InSequence(11)
-	@Ignore("Issue 122")
 	public void assertCORSOnESProxy() throws MalformedURLException {
 		Response response = given().contentType(ContentType.JSON)
 				.header(HEADER_ORIGIN, ORIGIN_VALUE)
