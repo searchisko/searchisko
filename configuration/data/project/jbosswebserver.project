@@ -4,7 +4,7 @@
   "type_specific_code" : {
     "jbossorg_blog": [""],
     "jbossorg_jira": [""],
-    "jbossorg_sbs" : [""],
+    "jbossorg_sbs" : ["2321"],
     "jbossorg_mailing_list": "",
     "jbossorg_project_info": "",
     "jbossdeveloper_website_code": ["jbosswebserver","webserver","Red Hat JBoss Web Server", "JBoss Web Server","JBoss Enterprise Web Server", "EWS", "ews"],
