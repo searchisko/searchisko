@@ -17,7 +17,7 @@ import javax.ejb.Startup;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Named;
 
-import org.elasticsearch.ElasticSearchException;
+import org.elasticsearch.ElasticsearchException;
 import org.elasticsearch.action.admin.indices.flush.FlushRequest;
 import org.elasticsearch.action.admin.indices.refresh.RefreshRequest;
 import org.elasticsearch.action.delete.DeleteResponse;
@@ -84,7 +84,7 @@ public class SearchClientService extends ElasticsearchClientService {
 		try {
 			SearchRequestBuilder searchBuilder = getClient().prepareSearch(indexName).setTypes(indexType).setSize(10);
 
-			searchBuilder.setFilter(FilterBuilders.queryFilter(QueryBuilders.matchQuery(fieldName, fieldValue)));
+			searchBuilder.setPostFilter(FilterBuilders.queryFilter(QueryBuilders.matchQuery(fieldName, fieldValue)));
 			searchBuilder.setQuery(QueryBuilders.matchAllQuery());
 
 			final SearchResponse response = searchBuilder.execute().actionGet();
@@ -114,7 +114,7 @@ public class SearchClientService extends ElasticsearchClientService {
 			SearchRequestBuilder searchBuilder = getClient().prepareSearch(indexName).setTypes(indexType)
 					.setScroll(new TimeValue(ES_SCROLL_KEEPALIVE)).setSearchType(SearchType.SCAN).setSize(10);
 
-			searchBuilder.setFilter(FilterBuilders.notFilter(FilterBuilders.missingFilter(fieldName)));
+			searchBuilder.setPostFilter(FilterBuilders.notFilter(FilterBuilders.missingFilter(fieldName)));
 			searchBuilder.setQuery(QueryBuilders.matchAllQuery());
 			searchBuilder.addSort(sortByField, SortOrder.ASC);
 			final SearchResponse response = searchBuilder.execute().actionGet();
@@ -138,7 +138,7 @@ public class SearchClientService extends ElasticsearchClientService {
 	 * @param id of document to get
 	 * @return ES get response
 	 * @throws SearchIndexMissingException
-	 * @throws ElasticSearchException if something is wrong
+	 * @throws ElasticsearchException if something is wrong
 	 */
 	public GetResponse performGet(String indexName, String indexType, String id) throws SearchIndexMissingException {
 		try {
@@ -168,7 +168,7 @@ public class SearchClientService extends ElasticsearchClientService {
 	 * @param indexType type of ES document to put
 	 * @param content of document to put
 	 * @return ES response object
-	 * @throws ElasticSearchException if something is wrong
+	 * @throws ElasticsearchException if something is wrong
 	 */
 	public IndexResponse performPut(String indexName, String indexType, Map<String, Object> content) {
 		return getClient().prepareIndex(indexName, indexType).setSource(content).execute().actionGet();
@@ -182,7 +182,7 @@ public class SearchClientService extends ElasticsearchClientService {
 	 * @param id of ES document to put
 	 * @param content of document to put
 	 * @return ES response object
-	 * @throws ElasticSearchException if something is wrong
+	 * @throws ElasticsearchException if something is wrong
 	 */
 	public IndexResponse performPut(String indexName, String indexType, String id, Map<String, Object> content) {
 		return getClient().prepareIndex(indexName, indexType, id).setSource(content).execute().actionGet();
@@ -196,7 +196,7 @@ public class SearchClientService extends ElasticsearchClientService {
 	 * @param id of document to delete
 	 * @return {@link DeleteResponse}
 	 * @throws SearchIndexMissingException
-	 * @throws ElasticSearchException if something is wrong
+	 * @throws ElasticsearchException if something is wrong
 	 */
 	public DeleteResponse performDelete(String indexName, String indexType, String id) throws SearchIndexMissingException {
 		try {

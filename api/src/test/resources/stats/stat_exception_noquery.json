@@ -1,10 +1,10 @@
 {
     "status":"INTERNAL_SERVER_ERROR",
     "exception":true,
-    "exception_detailed_message":"org.elasticsearch.ElasticSearchException: Test exception",
+    "exception_detailed_message":"org.elasticsearch.ElasticsearchException: Test exception",
     "query_highlight":false,
     "query_string":"my query",
     "date": "2012-12-21T12:12:12.121Z",
     "type":"search",
-    "exception_most_specific_cause":"org.elasticsearch.ElasticSearchException: Test exception"
+    "exception_most_specific_cause":"org.elasticsearch.ElasticsearchException: Test exception"
 }

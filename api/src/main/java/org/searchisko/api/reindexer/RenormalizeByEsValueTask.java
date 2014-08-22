@@ -46,7 +46,7 @@ public class RenormalizeByEsValueTask extends RenormalizeTaskBase {
 
 	@Override
 	protected void addFilters(SearchRequestBuilder srb) {
-		srb.setFilter(new TermsFilterBuilder(esField, esValues));
+		srb.setPostFilter(new TermsFilterBuilder(esField, esValues));
 	}
 
 }

@@ -37,7 +37,7 @@
     "filter.type":[
 		"jbossorg_jira_issue"
 	],
-    "exception_detailed_message":"org.elasticsearch.ElasticSearchException: Test exception",
+    "exception_detailed_message":"org.elasticsearch.ElasticsearchException: Test exception",
     "query_fields":[
         "_id",
         "_source"
@@ -48,5 +48,5 @@
         "issue",
         "blogpost"
     ],
-    "exception_most_specific_cause":"org.elasticsearch.ElasticSearchException: Test exception"
+    "exception_most_specific_cause":"org.elasticsearch.ElasticsearchException: Test exception"
 }

@@ -180,7 +180,6 @@ public class DeploymentHelpers {
 				.log().ifError()
 				.statusCode(200)
 				.contentType(ContentType.JSON)
-				.body("ok", is(true))
 				.when().post(url);
 	}
 
@@ -207,7 +206,6 @@ public class DeploymentHelpers {
 				.log().ifError()
 				.statusCode(200)
 				.contentType(ContentType.JSON)
-				.body("ok", is(true))
 				.body("acknowledged", is(true))
 				.when().put(new URL(context, SystemRestServiceTest.SYSTEM_REST_API + "/search/_template/" + templateName).toExternalForm());
 	}

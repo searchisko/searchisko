@@ -22,7 +22,7 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 
-import org.elasticsearch.ElasticSearchException;
+import org.elasticsearch.ElasticsearchException;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.common.settings.SettingsException;
@@ -103,7 +103,7 @@ public class SearchService {
 			statsClientService.writeStatisticsRecord(statsRecordType, responseUuid, searchResponse,
 					System.currentTimeMillis(), querySettings);
 			return searchResponse;
-		} catch (ElasticSearchException e) {
+		} catch (ElasticsearchException e) {
 			statsClientService.writeStatisticsRecord(statsRecordType, e, System.currentTimeMillis(), querySettings);
 			throw e;
 		}
@@ -123,7 +123,7 @@ public class SearchService {
 			try {
 				parsedFilterConfigService.prepareFiltersForRequest(querySettings.getFilters());
 			} catch (ReflectiveOperationException e) {
-				throw new ElasticSearchException("Can not prepare filters", e);
+				throw new ElasticsearchException("Can not prepare filters", e);
 			}
 		}
 

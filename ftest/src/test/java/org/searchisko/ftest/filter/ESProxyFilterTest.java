@@ -166,7 +166,7 @@ public class ESProxyFilterTest {
 	public void assertSearchAuthenticated() throws MalformedURLException {
 		given().contentType(ContentType.JSON).auth().preemptive()
 				.basic(DeploymentHelpers.DEFAULT_PROVIDER_NAME, DeploymentHelpers.DEFAULT_PROVIDER_PASSWORD).expect().log()
-				.ifError().statusCode(200).contentType(ContentType.JSON).body("ok", equalTo(true)).body("name", notNullValue())
+				.ifError().statusCode(200).contentType(ContentType.JSON).body("name", notNullValue())
 				.body("status", equalTo(200)).when().get(new URL(context, SEARCH_REST_API).toExternalForm());
 
 		given().auth().preemptive()
@@ -178,7 +178,7 @@ public class ESProxyFilterTest {
 		given().contentType(ContentType.JSON).auth().preemptive()
 				.basic(DeploymentHelpers.DEFAULT_PROVIDER_NAME, DeploymentHelpers.DEFAULT_PROVIDER_PASSWORD)
 				.body(new HashMap<>()).expect().log().ifError().statusCode(200).contentType(ContentType.JSON)
-				.body("ok", equalTo(true)).when().post(new URL(context, SEARCH_REST_API + "/unknownindex").toExternalForm());
+				.when().post(new URL(context, SEARCH_REST_API + "/unknownindex").toExternalForm());
 
 		// and check it exists
 		given().auth().preemptive()
@@ -192,7 +192,7 @@ public class ESProxyFilterTest {
 	public void assertStatsAuthenticated() throws MalformedURLException {
 		given().contentType(ContentType.JSON).auth().preemptive()
 				.basic(DeploymentHelpers.DEFAULT_PROVIDER_NAME, DeploymentHelpers.DEFAULT_PROVIDER_PASSWORD).expect().log()
-				.ifError().statusCode(200).contentType(ContentType.JSON).body("ok", equalTo(true)).body("name", notNullValue())
+				.ifError().statusCode(200).contentType(ContentType.JSON).body("name", notNullValue())
 				.body("status", equalTo(200)).when().get(new URL(context, STATS_REST_API).toExternalForm());
 
 		given().contentType(ContentType.JSON).auth().preemptive()

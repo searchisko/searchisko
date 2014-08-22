@@ -13,6 +13,7 @@ import java.util.logging.Logger;
 import org.elasticsearch.action.search.MultiSearchRequest;
 import org.elasticsearch.action.search.MultiSearchRequestBuilder;
 import org.elasticsearch.action.search.SearchRequestBuilder;
+import org.elasticsearch.client.Client;
 import org.json.JSONException;
 import org.junit.Assert;
 import org.junit.Test;
@@ -30,15 +31,16 @@ public class SuggestionsRestServiceTest {
 	@Test
 	public void handleSuggestionsProject() throws IOException, JSONException {
 		SuggestionsRestService tested = new SuggestionsRestService();
+		Client client  = Mockito.mock(Client.class);
 		tested.searchClientService = Mockito.mock(SearchClientService.class);
 		tested.log = Logger.getLogger("testlogger");
 
-		SearchRequestBuilder srbMock = new SearchRequestBuilder(null);
+		SearchRequestBuilder srbMock = new SearchRequestBuilder(client);
 		srbMock = tested.getProjectSearchNGramRequestBuilder(srbMock, "JBoss", 5, null);
 
 		TestUtils.assertJsonContentFromClasspathFile("/suggestions/project_suggestions_ngram.json", srbMock.toString());
 
-		srbMock = new SearchRequestBuilder(null);
+		srbMock = new SearchRequestBuilder(client);
 		List<String> customFields = new ArrayList<>();
 		customFields.add("archived");
 		customFields.add("license");
@@ -47,12 +49,12 @@ public class SuggestionsRestServiceTest {
 
 		TestUtils.assertJsonContentFromClasspathFile("/suggestions/project_suggestions_ngram_with_custom_fields.json", srbMock.toString());
 
-		srbMock = new SearchRequestBuilder(null);
+		srbMock = new SearchRequestBuilder(client);
 		srbMock = tested.getProjectSearchFuzzyRequestBuilder(srbMock, "JBoss", 5, null);
 
 		TestUtils.assertJsonContentFromClasspathFile("/suggestions/project_suggestions_fuzzy.json", srbMock.toString());
 
-		srbMock = new SearchRequestBuilder(null);
+		srbMock = new SearchRequestBuilder(client);
 		customFields = new ArrayList<>();
 		customFields.add("archived");
 		customFields.add("license");
@@ -65,12 +67,13 @@ public class SuggestionsRestServiceTest {
 	@Test
 	public void testMultiSearchRequestBuilder() throws IOException {
 		SuggestionsRestService tested = new SuggestionsRestService();
+		Client client  = Mockito.mock(Client.class);
 		tested.searchClientService = Mockito.mock(SearchClientService.class);
 		tested.log = Logger.getLogger("testlogger");
 
-		MultiSearchRequestBuilder msrb = new MultiSearchRequestBuilder(null);
-		SearchRequestBuilder srbNGram = new SearchRequestBuilder(null);
-		SearchRequestBuilder srbFuzzy = new SearchRequestBuilder(null);
+		MultiSearchRequestBuilder msrb = new MultiSearchRequestBuilder(client);
+		SearchRequestBuilder srbNGram = new SearchRequestBuilder(client);
+		SearchRequestBuilder srbFuzzy = new SearchRequestBuilder(client);
 
 		msrb = tested.getProjectMultiSearchRequestBuilder(msrb,
 				tested.getProjectSearchNGramRequestBuilder(srbNGram, "JBoss", 5, null),

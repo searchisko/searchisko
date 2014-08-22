@@ -12,7 +12,7 @@ import java.util.Map;
 import java.util.logging.Logger;
 
 import org.apache.lucene.document.DateTools;
-import org.elasticsearch.ElasticSearchException;
+import org.elasticsearch.ElasticsearchException;
 import org.elasticsearch.action.ActionListener;
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.search.SearchResponse;
@@ -131,7 +131,7 @@ public class StatsClientServiceTest {
 		QuerySettings qs = new QuerySettings();
 		qs.setQuery("my query");
 		tested.statsConfiguration = new StatsConfiguration(false);
-		tested.writeStatisticsRecord(StatsRecordType.SEARCH, new ElasticSearchException("Test exception"),
+		tested.writeStatisticsRecord(StatsRecordType.SEARCH, new ElasticsearchException("Test exception"),
 				DateTools.stringToTime("20121221121212121"), qs);
 		Mockito.verifyZeroInteractions(tested.client);
 
@@ -145,7 +145,7 @@ public class StatsClientServiceTest {
 			Mockito.doAnswer(answ).when(tested.client)
 					.index(Mockito.any(IndexRequest.class), Mockito.any(ActionListener.class));
 
-			tested.writeStatisticsRecord(StatsRecordType.SEARCH, new ElasticSearchException("Test exception"),
+			tested.writeStatisticsRecord(StatsRecordType.SEARCH, new ElasticsearchException("Test exception"),
 					DateTools.stringToTime("20121221121212121"), qs);
 
 			Mockito.verify(tested.client).index(Mockito.any(IndexRequest.class), Mockito.any(ActionListener.class));
@@ -181,7 +181,7 @@ public class StatsClientServiceTest {
 			Mockito.doAnswer(answ).when(tested.client)
 					.index(Mockito.any(IndexRequest.class), Mockito.any(ActionListener.class));
 
-			tested.writeStatisticsRecord(StatsRecordType.SEARCH, new ElasticSearchException("Test exception"),
+			tested.writeStatisticsRecord(StatsRecordType.SEARCH, new ElasticsearchException("Test exception"),
 					DateTools.stringToTime("20121221121212121"), qs);
 
 			Mockito.verify(tested.client).index(Mockito.any(IndexRequest.class), Mockito.any(ActionListener.class));
@@ -195,7 +195,7 @@ public class StatsClientServiceTest {
 		Mockito.doThrow(new RuntimeException("testException")).when(tested.client)
 				.index(Mockito.any(IndexRequest.class), Mockito.any(ActionListener.class));
 
-		tested.writeStatisticsRecord(StatsRecordType.SEARCH, new ElasticSearchException("Test exception"),
+		tested.writeStatisticsRecord(StatsRecordType.SEARCH, new ElasticsearchException("Test exception"),
 				DateTools.stringToTime("20121221121212121"), qs);
 
 		Mockito.verify(tested.client).index(Mockito.any(IndexRequest.class), Mockito.any(ActionListener.class));
@@ -240,7 +240,7 @@ public class StatsClientServiceTest {
 		SearchHits hitsMock = Mockito.mock(SearchHits.class);
 		SearchHit[] hitsValues = new SearchHit[5];
 		for (int i = 0; i < hitsValues.length; i++) {
-			hitsValues[i] = new InternalSearchHit(i, "idx" + i, new StringText("type"), null, null);
+			hitsValues[i] = new InternalSearchHit(i, "idx" + i, new StringText("type"), null);
 		}
 		Mockito.when(hitsMock.totalHits()).thenReturn(129l);
 		Mockito.when(hitsMock.maxScore()).thenReturn(29.3f);

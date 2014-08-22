@@ -149,31 +149,11 @@
 		<dependency>
 			<groupId>org.elasticsearch</groupId>
 			<artifactId>elasticsearch</artifactId>
-			<version>${org.elasticsearch.version}</version>
-			<exclusions>
-				<exclusion>
-					<groupId>com.sun.jmx</groupId>
-					<artifactId>jmxri</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>com.sun.jdmk</groupId>
-					<artifactId>jmxtools</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>javax.jms</groupId>
-					<artifactId>jms</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>javax.mail</groupId>
-					<artifactId>mail</artifactId>
-				</exclusion>
-			</exclusions>
 		</dependency>
 
 		<dependency>
 			<groupId>org.jboss.elasticsearch</groupId>
 			<artifactId>structured-content-tools</artifactId>
-			<version>${structured-content-tools.version}</version>
 		</dependency>
 
 		<!-- Needed for JSON parsing. Version is taken from EAP BOMs -->
@@ -215,13 +195,11 @@
 		<dependency>
 			<groupId>org.jboss.elasticsearch</groupId>
 			<artifactId>elasticsearch-river-jira</artifactId>
-			<version>${elasticsearch-river-jira.version}</version>
 			<!-- re-enabled commons-logging otherwise httpclient doesn't work -->
 		</dependency>
 		<dependency>
 			<groupId>org.jboss.elasticsearch</groupId>
 			<artifactId>elasticsearch-river-remote</artifactId>
-			<version>${elasticsearch-river-remote.version}</version>
 		</dependency>
 
 		<dependency>

@@ -16,7 +16,7 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.elasticsearch.ElasticSearchException;
+import org.elasticsearch.ElasticsearchException;
 import org.elasticsearch.action.ActionListener;
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.index.IndexResponse;
@@ -186,7 +186,7 @@ public class StatsClientService extends ElasticsearchClientService {
 	 * @param dateInMillis  timestamp when search was performed
 	 * @param querySettings client query settings
 	 */
-	public void writeStatisticsRecord(StatsRecordType type, ElasticSearchException ex, long dateInMillis,
+	public void writeStatisticsRecord(StatsRecordType type, ElasticsearchException ex, long dateInMillis,
 									  QuerySettings querySettings) {
 
 		if (!statsConfiguration.enabled()) {

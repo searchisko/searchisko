@@ -18,7 +18,6 @@ import java.util.logging.Logger;
 
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.client.Client;
-import org.elasticsearch.client.internal.InternalClient;
 import org.elasticsearch.common.joda.time.DateTime;
 import org.elasticsearch.common.joda.time.format.DateTimeFormatter;
 import org.elasticsearch.common.joda.time.format.ISODateTimeFormat;
@@ -1234,6 +1233,7 @@ public class SearchServiceTest {
 		SearchService tested = new SearchService();
 		tested.log = Logger.getLogger("testlogger");
 
+		Client client  = Mockito.mock(Client.class);
 		tested.configService = Mockito.mock(ConfigService.class);
 		Map<String, Object> cfg = TestUtils.loadJSONFromClasspathFile("/search/search_fulltext_facets_fields.json");
 		Mockito.when(tested.configService.get(ConfigService.CFGNAME_SEARCH_FULLTEXT_FACETS_FIELDS)).thenReturn(cfg);
@@ -1244,7 +1244,7 @@ public class SearchServiceTest {
 
 		// case - no facets requested
 		{
-			SearchRequestBuilder srbMock = new SearchRequestBuilder(null);
+			SearchRequestBuilder srbMock = new SearchRequestBuilder(client);
 			QuerySettings querySettings = new QuerySettings();
 			tested.handleFacetSettings(querySettings, null, srbMock);
 			Assert.assertEquals("{ }", srbMock.toString());
@@ -1252,7 +1252,7 @@ public class SearchServiceTest {
 
 		// case - one facet requested without filters
 		{
-			SearchRequestBuilder srbMock = new SearchRequestBuilder(null);
+			SearchRequestBuilder srbMock = new SearchRequestBuilder(client);
 			QuerySettings querySettings = new QuerySettings();
 			querySettings.addFacet("per_sys_type_counts");
 
@@ -1262,7 +1262,7 @@ public class SearchServiceTest {
 
 		// case - more facets requested without filters
 		{
-			SearchRequestBuilder srbMock = new SearchRequestBuilder(null);
+			SearchRequestBuilder srbMock = new SearchRequestBuilder(client);
 			QuerySettings querySettings = new QuerySettings();
 			querySettings.addFacet("activity_dates_histogram");
 			querySettings.addFacet("per_project_counts");
@@ -1274,7 +1274,7 @@ public class SearchServiceTest {
 
 		// case - more facets requested with more filters
 		{
-			SearchRequestBuilder srbMock = new SearchRequestBuilder(null);
+			SearchRequestBuilder srbMock = new SearchRequestBuilder(client);
 			QuerySettings querySettings = new QuerySettings();
 			Filters filters = new Filters();
 			filters.acknowledgeUrlFilterCandidate("activity_date_from",
@@ -1305,6 +1305,7 @@ public class SearchServiceTest {
 		SearchService tested = new SearchService();
 		tested.log = Logger.getLogger("testlogger");
 
+		Client client  = Mockito.mock(Client.class);
 		ConfigService configService = Mockito.mock(ConfigService.class);
 		Map<String, Object> cfg2 = TestUtils.loadJSONFromClasspathFile("/search/search_fulltext_filter_fields.json");
 		Mockito.when(configService.get(ConfigService.CFGNAME_SEARCH_FULLTEXT_FILTER_FIELDS)).thenReturn(cfg2);
@@ -1319,7 +1320,7 @@ public class SearchServiceTest {
 
 		// case - no contributor filter used, so only one top_contributors facet
 		{
-			SearchRequestBuilder srbMock = new SearchRequestBuilder(null);
+			SearchRequestBuilder srbMock = new SearchRequestBuilder(client);
 			QuerySettings querySettings = new QuerySettings();
 			querySettings.addFacet("top_contributors");
 			Filters filters = new Filters();
@@ -1332,7 +1333,7 @@ public class SearchServiceTest {
 
 		// case - contributor filter used, so two top_contributors facets used
 		{
-			SearchRequestBuilder srbMock = new SearchRequestBuilder(null);
+			SearchRequestBuilder srbMock = new SearchRequestBuilder(client);
 			QuerySettings querySettings = new QuerySettings();
 			querySettings.addFacet("top_contributors");
 			Filters filters = new Filters();
@@ -1352,6 +1353,7 @@ public class SearchServiceTest {
 		SearchService tested = new SearchService();
 		tested.log = Logger.getLogger("testlogger");
 
+		Client client  = Mockito.mock(Client.class);
 		ConfigService configService = Mockito.mock(ConfigService.class);
 		Map<String, Object> cfg2 = TestUtils.loadJSONFromClasspathFile("/search/search_fulltext_filter_fields.json");
 		Mockito.when(configService.get(ConfigService.CFGNAME_SEARCH_FULLTEXT_FILTER_FIELDS)).thenReturn(cfg2);
@@ -1366,7 +1368,7 @@ public class SearchServiceTest {
 
 		// case - no activity dates filter used
 		{
-			SearchRequestBuilder srbMock = new SearchRequestBuilder(null);
+			SearchRequestBuilder srbMock = new SearchRequestBuilder(client);
 			QuerySettings querySettings = new QuerySettings();
 			querySettings.addFacet("activity_dates_histogram");
 			Filters filters = new Filters();
@@ -1380,7 +1382,7 @@ public class SearchServiceTest {
 
 		// case - activity dates interval filter used (so from/to is ignored)
 		{
-			SearchRequestBuilder srbMock = new SearchRequestBuilder(null);
+			SearchRequestBuilder srbMock = new SearchRequestBuilder(client);
 			QuerySettings querySettings = new QuerySettings();
 			querySettings.addFacet("activity_dates_histogram");
 			Filters filters = new Filters();
@@ -1399,7 +1401,7 @@ public class SearchServiceTest {
 
 		// case - activity dates from/to filter used
 		{
-			SearchRequestBuilder srbMock = new SearchRequestBuilder(null);
+			SearchRequestBuilder srbMock = new SearchRequestBuilder(client);
 			QuerySettings querySettings = new QuerySettings();
 			querySettings.addFacet("activity_dates_histogram");
 			Filters filters = new Filters();
@@ -1429,6 +1431,7 @@ public class SearchServiceTest {
 	public void testCompleteElasticsearchQuery() throws IOException, JSONException,
 			ReflectiveOperationException {
 
+		Client client = Mockito.mock(Client.class);
 		ConfigService configService = Mockito.mock(ConfigService.class);
 		Map<String, Object> cfg1 = TestUtils.loadJSONFromClasspathFile("/search/search_fulltext_facets_fields.json");
 		Mockito.when(configService.get(ConfigService.CFGNAME_SEARCH_FULLTEXT_FACETS_FIELDS)).thenReturn(cfg1);
@@ -1450,7 +1453,7 @@ public class SearchServiceTest {
 		tested.parsedFilterConfigService.prepareFiltersForRequest(filters);
 
 		{
-			SearchRequestBuilder srb = new SearchRequestBuilder(null);
+			SearchRequestBuilder srb = new SearchRequestBuilder(client);
 			querySettings.addFacet("activity_dates_histogram");
 			filters.acknowledgeUrlFilterCandidate("activity_date_interval", PastIntervalValue.TEST.toString());
 			filters.acknowledgeUrlFilterCandidate("project", "eap");

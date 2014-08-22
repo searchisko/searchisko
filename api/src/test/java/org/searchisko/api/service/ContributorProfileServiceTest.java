@@ -10,7 +10,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
 
-import org.elasticsearch.ElasticSearchException;
+import org.elasticsearch.ElasticsearchException;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.Client;
 import org.junit.Assert;
@@ -377,7 +377,7 @@ public class ContributorProfileServiceTest extends ESRealClientTestBase {
 		return ret;
 	}
 
-	private void initIndex(Client client) throws ElasticSearchException, IOException {
+	private void initIndex(Client client) throws ElasticsearchException, IOException {
 		client.admin().indices().prepareCreate(ContributorProfileService.SEARCH_INDEX_NAME).execute().actionGet();
 		client
 				.admin()

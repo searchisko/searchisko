@@ -423,13 +423,13 @@ public class ContentRestService extends RestServiceBase {
 		DeleteResponse dr = searchClientService.getClient().prepareDelete(indexName, indexType, sysContentId).execute()
 				.actionGet();
 
-		if (!dr.isNotFound()) {
+		if (dr.isFound()) {
 			ContentDeletedEvent event = new ContentDeletedEvent(sysContentId);
 			log.log(Level.FINE, "Going to fire event {0}", event);
 			eventContentDeleted.fire(event);
 		}
 
-		if (dr.isNotFound() && !Boolean.parseBoolean(ignoreMissing)) {
+		if (!dr.isFound() && !Boolean.parseBoolean(ignoreMissing)) {
 			return Response.status(Status.NOT_FOUND).entity("Content not found to be deleted.").build();
 		} else {
 			return Response.ok("Content deleted successfully.").build();
@@ -490,7 +490,7 @@ public class ContentRestService extends RestServiceBase {
 			String contentId = ids.get(i);
 			if (!bri.isFailed()) {
 				DeleteResponse dr = bri.getResponse();
-				if (!dr.isNotFound()) {
+				if (dr.isFound()) {
 					ContentDeletedEvent event = new ContentDeletedEvent(sysIds.get(i));
 					log.log(Level.FINE, "Going to fire event {0}", event);
 					eventContentDeleted.fire(event);

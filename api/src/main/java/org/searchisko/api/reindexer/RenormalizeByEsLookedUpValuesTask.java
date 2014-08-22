@@ -106,7 +106,7 @@ public class RenormalizeByEsLookedUpValuesTask extends Task {
 								for (String esField : esFields) {
 									searchFilters.add(new TermsFilterBuilder(esField, esValues));
 								}
-								srb.setFilter(new OrFilterBuilder(searchFilters.toArray(new FilterBuilder[searchFilters.size()])));
+								srb.setPostFilter(new OrFilterBuilder(searchFilters.toArray(new FilterBuilder[searchFilters.size()])));
 								srb.setScroll(new TimeValue(ES_SCROLL_KEEPALIVE)).setSearchType(SearchType.SCAN);
 
 								SearchResponse scrollResp = srb.execute().actionGet();
