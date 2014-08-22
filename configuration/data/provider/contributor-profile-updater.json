@@ -1,0 +1,8 @@
+{
+  "name": "contributor-profile-updater",
+  "description" : "Provider used by external scheduler to daily run task to update contributor profiles from jboss.org user profiles, see ORG-2214",
+  "contact_email" : "help@jboss.org",
+  "super_provider": true,
+  "type": {
+   }
+}
