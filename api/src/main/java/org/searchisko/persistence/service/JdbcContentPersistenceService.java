@@ -5,9 +5,19 @@
  */
 package org.searchisko.persistence.service;
 
-import org.searchisko.api.ContentObjectFields;
-import org.searchisko.api.util.CdiHelper;
-import org.searchisko.api.util.SearchUtils;
+import java.io.IOException;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.logging.Logger;
 
 import javax.annotation.PostConstruct;
 import javax.ejb.LocalBean;
@@ -17,15 +27,10 @@ import javax.inject.Named;
 import javax.naming.NamingException;
 import javax.persistence.EntityManager;
 import javax.sql.DataSource;
-import java.io.IOException;
-import java.sql.*;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.logging.Logger;
+
+import org.searchisko.api.ContentObjectFields;
+import org.searchisko.api.util.CdiHelper;
+import org.searchisko.api.util.SearchUtils;
 
 /**
  * JDBC based implementation of {@link ContentPersistenceService}. We use raw JDBC here because we dynamically create
@@ -102,18 +107,21 @@ public class JdbcContentPersistenceService implements ContentPersistenceService 
 			throw new RuntimeException(e);
 		}
 
-		String selectSql = String.format("select json_data from %s where id = ?", tableName);
-		boolean shouldUpdate = executeRecordExistsSql(selectSql, id);
-
-		if (shouldUpdate) {
-			String updateSql = String
-					.format("update %s set json_data=?, sys_content_type=?, updated=? where id=?", tableName);
-			executeNonReturningSql(updateSql, jsonString, sysContentType, updated, id);
-		} else {
-			String insert = String.format("insert into %s (id, json_data, sys_content_type, updated) values (?, ?, ?, ?)",
-					tableName);
-			executeNonReturningSql(insert, id, jsonString, sysContentType, updated);
+		try (final Connection conn = searchiskoDs.getConnection()) {
+			try {
+				executeNonReturningSql(conn,
+						String.format("insert into %s (id, json_data, sys_content_type, updated) values (?, ?, ?, ?)", tableName),
+						id, jsonString, sysContentType, updated);
+			} catch (SQLException e) {
+				// insert failed, so record is in DB already, so we try to upgrade it
+				executeNonReturningSql(conn,
+						String.format("update %s set json_data=?, sys_content_type=?, updated=? where id=?", tableName),
+						jsonString, sysContentType, updated, id);
+			}
+		} catch (SQLException e) {
+			log.severe(String.format("Error while storing content in the DB -- %s", e.getMessage()));
 		}
+
 	}
 
 	@Override
@@ -170,13 +178,19 @@ public class JdbcContentPersistenceService implements ContentPersistenceService 
 	private static final String TABLE_STRUCTURE_DDL = " ( id varchar(200) not null primary key, json_data longtext, sys_content_type varchar(100) not null, updated timestamp )";
 
 	protected void executeNonReturningSql(final String sql, final Object... params) {
-		try (final Connection conn = searchiskoDs.getConnection();
-				final PreparedStatement statement = conn.prepareStatement(sql)) {
-			setParams(statement, params);
-			statement.execute();
+		try (final Connection conn = searchiskoDs.getConnection()) {
+			executeNonReturningSql(conn, sql, params);
 		} catch (SQLException e) {
 			log.severe(String.format("Error executing SQL statement -- %s -- Error -- %s", sql, e.getMessage()));
 			throw new RuntimeException(e);
+		}
+	}
+
+	protected void executeNonReturningSql(final Connection conn, final String sql, final Object... params)
+			throws SQLException {
+		try (final PreparedStatement statement = conn.prepareStatement(sql)) {
+			setParams(statement, params);
+			statement.execute();
 		}
 	}
 
@@ -227,18 +241,6 @@ public class JdbcContentPersistenceService implements ContentPersistenceService 
 			throw new RuntimeException(e);
 		}
 		return 0;
-	}
-
-	protected boolean executeRecordExistsSql(final String sql, final Object... params) {
-		try (Connection conn = searchiskoDs.getConnection(); PreparedStatement statement = conn.prepareStatement(sql)) {
-			setParams(statement, params);
-			try (ResultSet rs = statement.executeQuery()) {
-				return rs.next();
-			}
-		} catch (SQLException e) {
-			log.severe(String.format("Error executing statement -- %s -- Error -- %s", sql, e.getMessage()));
-			throw new RuntimeException(e);
-		}
 	}
 
 	private void setParams(PreparedStatement statement, Object... params) throws SQLException {
