@@ -1,0 +1,11 @@
+{
+  "code": "fabric8",
+  "name": "Fabric8",
+  "type_specific_code" : {
+    "jbossorg_blog": [],
+    "jbossorg_jira": [],
+    "jbossorg_sbs" : [],
+    "jbossorg_mailing_list": [],
+    "jbossorg_project_info": "fabric8"
+  }
+}
