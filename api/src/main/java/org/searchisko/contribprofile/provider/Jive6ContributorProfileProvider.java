@@ -50,6 +50,13 @@ import org.searchisko.contribprofile.model.ContributorProfile;
 @LocalBean
 public class Jive6ContributorProfileProvider implements ContributorProfileProvider {
 
+	protected static final String DOMAIN_JBOSS_ORG = "jboss.org";
+	protected static final String DOMAIN_GOOGLE_COM = "google.com";
+	protected static final String DOMAIN_LINKEDIN_COM = "linkedin.com";
+	protected static final String DOMAIN_FACEBOOK_COM = "facebook.com";
+	protected static final String DOMAIN_GITHUB_COM = "github.com";
+	protected static final String DOMAIN_TWITTER_COM = "twitter.com";
+
 	@Inject
 	protected Logger log;
 
@@ -182,10 +189,11 @@ public class Jive6ContributorProfileProvider implements ContributorProfileProvid
 		profileData.put(ContentObjectFields.SYS_UPDATED, new Date());
 
 		Map<String, Object> resourcesObject = (Map<String, Object>) map.get("resources");
+		String profileUrl = null;
 		try {
-			String profileUrl = ((Map<String, Object>) resourcesObject.get("html")).get("ref").toString();
+			profileUrl = ((Map<String, Object>) resourcesObject.get("html")).get("ref").toString();
 			profileData.put("profileUrl", profileUrl);
-			profileData.put("sys_url_view", profileUrl);
+			profileData.put(ContentObjectFields.SYS_URL_VIEW, profileUrl);
 		} catch (Exception e) {
 			log.log(Level.WARNING, "Cannot get profile URL for username: {0}", username);
 		}
@@ -194,7 +202,7 @@ public class Jive6ContributorProfileProvider implements ContributorProfileProvid
 
 		profileData.put("thumbnailUrl", map.get("thumbnailUrl"));
 
-		List<Map<String, Object>> accounts = new ArrayList<>();
+		Map<String, Map<String, Object>> accounts = new LinkedHashMap<>();
 
 		List<Map<String, Object>> jiveProfile = (List<Map<String, Object>>) jiveObject.get("profile");
 		if (jiveProfile != null) {
@@ -205,42 +213,64 @@ public class Jive6ContributorProfileProvider implements ContributorProfileProvid
 					profileData.put("sys_description", p.get(JIVE_PROFILE_VALUE_KEY));
 					break;
 				case "Twitter Username":
-					getAccountObject(accounts, "twitter.com", p.get(JIVE_PROFILE_VALUE_KEY));
+					storeAccountInfo(accounts, DOMAIN_TWITTER_COM, DCP_PROFILE_ACCOUNT_USERNAME, p.get(JIVE_PROFILE_VALUE_KEY));
+					break;
+				case "Twitter URL":
+					storeAccountInfo(accounts, DOMAIN_TWITTER_COM, DCP_PROFILE_ACCOUNT_LINK, p.get(JIVE_PROFILE_VALUE_KEY));
 					break;
 				case "github Username":
-					getAccountObject(accounts, "github.com", p.get(JIVE_PROFILE_VALUE_KEY));
+					storeAccountInfo(accounts, DOMAIN_GITHUB_COM, DCP_PROFILE_ACCOUNT_USERNAME, p.get(JIVE_PROFILE_VALUE_KEY));
+					break;
+				case "Github Profile":
+					storeAccountInfo(accounts, DOMAIN_GITHUB_COM, DCP_PROFILE_ACCOUNT_LINK, p.get(JIVE_PROFILE_VALUE_KEY));
 					break;
 				case "Facebook Username":
-					getAccountObject(accounts, "facebook.com", p.get(JIVE_PROFILE_VALUE_KEY));
+					storeAccountInfo(accounts, DOMAIN_FACEBOOK_COM, DCP_PROFILE_ACCOUNT_USERNAME, p.get(JIVE_PROFILE_VALUE_KEY));
+					break;
+				case "Facebook Profile":
+					storeAccountInfo(accounts, DOMAIN_FACEBOOK_COM, DCP_PROFILE_ACCOUNT_LINK, p.get(JIVE_PROFILE_VALUE_KEY));
 					break;
 				case "LinkedIn Username":
-					getAccountObject(accounts, "linkedin.com", p.get(JIVE_PROFILE_VALUE_KEY));
+					storeAccountInfo(accounts, DOMAIN_LINKEDIN_COM, DCP_PROFILE_ACCOUNT_USERNAME, p.get(JIVE_PROFILE_VALUE_KEY));
+					break;
+				case "LinkedIn Profile":
+					storeAccountInfo(accounts, DOMAIN_LINKEDIN_COM, DCP_PROFILE_ACCOUNT_LINK, p.get(JIVE_PROFILE_VALUE_KEY));
+					break;
+				case "Google Profile":
+					storeAccountInfo(accounts, DOMAIN_GOOGLE_COM, DCP_PROFILE_ACCOUNT_LINK, p.get(JIVE_PROFILE_VALUE_KEY));
 					break;
 				}
 			}
 		} else {
 			log.log(Level.WARNING, "Missing 'profile' part of data for username: {0}", username);
 		}
-		getAccountObject(accounts, "jboss.org", username);
-		profileData.put("accounts", accounts);
+		storeAccountInfo(accounts, DOMAIN_JBOSS_ORG, DCP_PROFILE_ACCOUNT_USERNAME, username);
+		storeAccountInfo(accounts, DOMAIN_JBOSS_ORG, DCP_PROFILE_ACCOUNT_LINK, profileUrl);
+		if (!accounts.isEmpty()) {
+			profileData.put(DCP_PROFILE_ACCOUNTS, new ArrayList<Map<String, Object>>(accounts.values()));
+		}
 
 		return profileData;
 	}
 
-	protected void getAccountObject(List<Map<String, Object>> accounts, String domainName, Object value) {
+	protected void storeAccountInfo(Map<String, Map<String, Object>> accounts, String domainName, String infoKey,
+			Object infoValue) {
 
-		if (value == null)
+		if (infoValue == null)
 			return;
 
-		String valueString = value.toString();
+		String valueString = infoValue.toString();
 
 		if (SearchUtils.isBlank(valueString))
 			return;
 
-		Map<String, Object> a = new HashMap<>(2);
-		a.put("domain", domainName);
-		a.put("username", valueString);
-		accounts.add(a);
+		Map<String, Object> a = accounts.get(domainName);
+		if (a == null) {
+			a = new HashMap<>(3);
+			a.put(DCP_PROFILE_ACCOUNT_DOMAIN, domainName);
+			accounts.put(domainName, a);
+		}
+		a.put(infoKey, valueString);
 	}
 
 	/**

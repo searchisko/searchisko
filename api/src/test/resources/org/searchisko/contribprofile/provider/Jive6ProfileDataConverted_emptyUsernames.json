@@ -37,7 +37,8 @@
 	"accounts": [
 		{
 		  "domain": "jboss.org",
-		  "username" : "lkrzyzanek"
+		  "username" : "lkrzyzanek",
+		  "link":"https://community.jboss.org/people/lkrzyzanek"
 		}
 	]
 

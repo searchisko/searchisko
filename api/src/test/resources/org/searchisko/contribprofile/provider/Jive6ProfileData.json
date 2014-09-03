@@ -65,6 +65,21 @@ throw 'allowIllegalResourceCall is false.';
     }, {
       "value" : "lkrzyzanek-facebook",
       "jive_label" : "Facebook Username"
+    }, {
+      "value" : "https://plus.google.com/6534683545",
+      "jive_label" : "Google Profile"
+    }, {
+      "value" : "https://www.facebook.com/uname-facebook",
+      "jive_label" : "Facebook Profile"
+    }, {
+      "value" : "https://www.linkedin.com/uname-lin",
+      "jive_label" : "LinkedIn Profile"
+    }, {
+      "value" : "https://www.lithub.com/uname-gh",
+      "jive_label" : "Github Profile"
+    }, {
+      "value" : "https://twitter.com/uname-tw",
+      "jive_label" : "Twitter URL"
     } ],
     "external" : false,
     "visible" : true,

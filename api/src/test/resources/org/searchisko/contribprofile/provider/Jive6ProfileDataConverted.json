@@ -37,23 +37,32 @@
 	"accounts": [
 		{
 			"domain": "github.com",
-			"username": "lkrzyzanek-ght"
+			"username": "lkrzyzanek-ght",
+			"link":"https://www.lithub.com/uname-gh"
 		},
 		{
 			"domain": "twitter.com",
-			"username": "lkrzyzanek-twitter"
+			"username": "lkrzyzanek-twitter",
+			"link" : "https://twitter.com/uname-tw"
 		},
 		{
 		  "domain": "linkedin.com",
-		  "username" : "lkrzyzanek-linkedin"
+		  "username" : "lkrzyzanek-linkedin",
+		  "link" : "https://www.linkedin.com/uname-lin"
 		},
 		{
 			"domain": "facebook.com",
-			"username": "lkrzyzanek-facebook"
+			"username": "lkrzyzanek-facebook",
+			"link" : "https://www.facebook.com/uname-facebook"
+		},
+		{
+		  "domain": "google.com",
+		  "link": "https://plus.google.com/6534683545"
 		},
 		{
 		  "domain": "jboss.org",
-		  "username" : "lkrzyzanek"
+		  "username" : "lkrzyzanek",
+		  "link":"https://community.jboss.org/people/lkrzyzanek"
 		}
 	]
 
