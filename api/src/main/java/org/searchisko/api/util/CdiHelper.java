@@ -42,7 +42,7 @@ public class CdiHelper {
 	}
 
 	/**
-	 * Manually inject dependencies. Inspired by https://community.jboss.org/thread/196807
+	 * Manually inject dependencies. Inspired by https://developer.jboss.org/thread/196807
 	 *
 	 * @param clazz
 	 * @param injectionObject

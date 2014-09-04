@@ -4,7 +4,7 @@ Contributor Profile
 **sys\_type = "contributor_profile"**
 
 This data type stored in Searchisko contains public information about Contributors.
-Data for DCP come from jboss.org user profile managed in Jive - [JBoss Community](https://community.jboss.org).
+Data for DCP come from jboss.org user profile managed in Jive - [JBoss Developer](https://developer.jboss.org).
 
 
 ## Data structure
@@ -40,12 +40,12 @@ Example of contribprofile data structure:
 		"updated": "2013-12-03T13:06:37.972+0000",
 		"sys_updated": "2014-01-20T13:06:37.972+0000",
 
-		"profileUrl": "https://community.jboss.org/people/lkrzyzanek",
-		"sys_url_view": "https://community.jboss.org/people/lkrzyzanek",
+		"profileUrl": "https://developer.jboss.org/people/lkrzyzanek",
+		"sys_url_view": "https://developer.jboss.org/people/lkrzyzanek",
 
 		"timeZone": "Europe/Berlin",
 
-		"thumbnailUrl": "https://community.jboss.org/api/core/v3/people/6100/avatar",
+		"thumbnailUrl": "https://developer.jboss.org/api/core/v3/people/6100/avatar",
 
 
 		"aboutMe": "BIO",
@@ -76,7 +76,7 @@ Description of data fields for the issue record:
 <tbody>
 	<tr><td>sys_type</td><td>Always `contributor_profile`</td></tr>
 	<tr><td>sys_contributors</td><td>Contributor Code mapped to the profile</td></tr>
-	<tr><td>updated</td><td>Timestamp when profile has been updated in Profile Provider (e.g. community.jboss.org)</td></tr>
+	<tr><td>updated</td><td>Timestamp when profile has been updated in Profile Provider (e.g. developer.jboss.org)</td></tr>
 	<tr><td>sys_updated</td><td>Timestamp when ES document has been updated</td></tr>
 	<tr><td>sys_url_view, profileUrl</td><td>URL to Profile page from Profile Provider</td></tr>
 	<tr><td>timeZone</td><td>Timezone defined by Profile Provider for the profile</td></tr>

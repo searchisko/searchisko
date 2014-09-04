@@ -4,7 +4,7 @@ Discussion forum threads related to projects
 **sys\_type = "forumthread"**
 
 This data type stored in Searchisko contains information from project's discussion forums.
-DCP contains data from [JBoss Community Forum](http://community.jboss.org/threads) and other systems used by distinct projects. 
+DCP contains data from [JBoss Developer Forum](http://developer.jboss.org/threads) and other systems used by distinct projects. 
 
 ## Data structure
 
@@ -17,7 +17,7 @@ DCP contains data from [JBoss Community Forum](http://community.jboss.org/thread
 </thead>
 <tbody>
 <tr><td>sys_title</td><td>Load image from outside the web context in JBoss AS 7</td><td>Thread title</td></tr>
-<tr><td>sys_url_view</td><td>https://community.jboss.org/thread/227893</td><td>URL of forum thread view</td></tr>
+<tr><td>sys_url_view</td><td>https://developer.jboss.org/thread/227893</td><td>URL of forum thread view</td></tr>
 <tr><td>sys_description</td><td></td><td>Shorted description created from forum question, containing only clear text</td></tr>
 <tr><td>sys_content</td><td></td><td>Full rendered forum question. May contain HTML tags or some wiki syntax as defined by `sys_content_content-type`.</td></tr>
 <tr><td>sys_created</td><td>2013-01-02T06:18:52.000-0500</td><td>Timestamp when thread was started</td></tr>

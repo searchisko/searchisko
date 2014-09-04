@@ -31,7 +31,7 @@ Let's have the following content in the `some_json_file.json` file:
   "date" : "10-21-2013",
   "subject" : "John's Lorem",
   "content" : "Lorem ipsum dolor sit amet, consectetur adipisicing elit [...]",
-  "sys_url_view" : "https://community.jboss.org/thread/158696"
+  "sys_url_view" : "https://developer.jboss.org/thread/158696"
 }
 ```
 
@@ -48,7 +48,7 @@ When you index such document into Elasticsearch and [_search_](http://www.elasti
     "date" : "10-21-2013",
     "subject" : "John's Lorem",
     "content" : "Lorem ipsum dolor sit amet, consectetur adipisicing elit [...]",
-    "sys_url_view" : "https://community.jboss.org/thread/158696"
+    "sys_url_view" : "https://developer.jboss.org/thread/158696"
   }
 }
 ```
@@ -107,7 +107,7 @@ the response will look similar to the following:
     "sys_title" : "John's Lorem",
     "sys_type" : "forumthread",
     "sys_updated" : "2010-11-10T00:00:00.0-0000",
-    "sys_url_view" : "https://community.jboss.org/thread/158696",
+    "sys_url_view" : "https://developer.jboss.org/thread/158696",
     "sys_rating_avg" : 4.3,
     "sys_rating_num" : 5
   }

@@ -40,7 +40,7 @@ Searchisko contains concept of "Profile provider", which may be used to manage d
 both Contributor and 'Contributor profile' automatically from one source.
 "Profile provider" is typically some remote user management system. 
 
-Jive running at community.jboss.org is used as profile provider for **DCP**, jboss.org username is stored in Contributor's record as `type_specific_code.jbossorg_username`.
+Jive running at developer.jboss.org is used as profile provider for **DCP**, jboss.org username is stored in Contributor's record as `type_specific_code.jbossorg_username`.
 
 Contributor and 'Contributor profile' is created/updated from 'Profile provider' in these cases:
 

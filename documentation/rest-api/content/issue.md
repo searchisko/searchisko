@@ -76,7 +76,7 @@ Contains data from [JBoss Community JIRA](http://issues.jboss.org) and other tra
 		"reporter"              : {"email_address":"john@doe.org", "display_name":"John Doe", "sys_contributor": "John Doe <john@doe.org>"},
 		"assignee"              : {"email_address":"pat@mat.org", "display_name":"Pat Mat", "sys_contributor": "Pat Mat <pat@mat.org>"},
 		"fix_versions"          : [ {"name":"3.0.0"} ],
-		"components"            : [ {"name":"community.jboss.org (SBS)"} ],
+		"components"            : [ {"name":"developer.jboss.org (SBS)"} ],
 		"sys_comments"              : [
 		                            {
 		                              "comment_id"      : "1254652",

@@ -5,7 +5,7 @@ Article related to projects
 
 This data type stored in DCP contains articles published for project - unstructured 
 articles like wiki, this type is not intended for project's documentation guides etc.
-Contains Articles from [JBoss Community](https://community.jboss.org/docs) and 
+Contains Articles from [JBoss Developer](https://developer.jboss.org/docs) and 
 other wiki systems used by distinct projects. 
 
 ## Data structure
@@ -19,7 +19,7 @@ other wiki systems used by distinct projects.
 </thead>
 <tbody>
 <tr><td>sys_title</td><td>Getting Started With Mobile RichFaces</td><td>Article title</td></tr>
-<tr><td>sys_url_view</td><td>https://community.jboss.org/wiki/GettingStartedWithMobileRichFaces</td><td>URL of Article view</td></tr>
+<tr><td>sys_url_view</td><td>https://developer.jboss.org/wiki/GettingStartedWithMobileRichFaces</td><td>URL of Article view</td></tr>
 <tr><td>sys_description</td><td></td><td>Shortened description created from begin of article, contains only clear text</td></tr>
 <tr><td>sys_content</td><td></td><td>Full rendered article. May contain HTML tags or some wiki syntax as defined by `sys_content_content-type`.</td></tr>
 <tr><td>sys_created</td><td>2013-01-02T06:18:52.000-0500</td><td>Timestamp when article was created</td></tr>

@@ -34,7 +34,7 @@ It's mainly related to the [JBoss Community Planet](http://planet.jboss.org) blo
 </thead>
 <tbody>
 <tr><td>author</td><td></td><td>Full name of author</td></tr>
-<tr><td>avatar_link</td><td>https://community.jboss.org/people/sbs-default-avatar/avatar/46.png</td><td>URL of avatar</td></tr>
+<tr><td>avatar_link</td><td>https://developer.jboss.org/people/sbs-default-avatar/avatar/46.png</td><td>URL of avatar</td></tr>
 <tr><td>modified</td><td>2013-01-02T06:18:52.000-0500</td><td>Timestamp when blog post was modified. Can be same as `sys_created`</td></tr>
 <tr><td>tags</td><td>["ruby 1.9", "ruby", "postgresql"]</td><td>Array of tags in original blog posts</td></tr>
 </tbody>

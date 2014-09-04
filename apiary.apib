@@ -1564,7 +1564,7 @@ Create/update contributor configuration for requested `id`.
 
 ##### Request content
 JSON with contributor configuration structure. `code` field is mandatory and must be unique! 
-`code` field can't be changed by this operation not to break data consystenci. See specialized operation later.  
+`code` field can't be changed by this operation not to break data consistency. See specialized operation later.
 
 ##### Response content
 The response contains a JSON structure with `id`.
@@ -1582,7 +1582,7 @@ POST /rest/contributor/{id}
   "id":"22"
 }
 
-Change contributor's `code` for contributor with requested `id`. Searchisko will maintain data consystenci as part of this 
+Change contributor's `code` for contributor with requested `id`. Searchisko will maintain data consistency as part of this
 operation. It will start background reindexation task (se API for tasks later) to patch `sys_contributor` field for whole affected content. 
 
 ##### Response content
@@ -1602,7 +1602,7 @@ Merge Contributor with identifier `idFrom` into Contributor with `idTo`.
 `email` and `type_specific_code` fields are merged together from both records, so all values from both records are kept.
 Merge result is stored into Contributor with identifier `idTo`, `code` of this Contributor is preserved.  
 Contributor with identifier `idFrom` is deleted form Searchisko together with his `code`.
-Searchisko will maintain data consystenci as part of this operation. It will start background reindexation 
+Searchisko will maintain data consistency as part of this operation. It will start background reindexation
 task (se API for tasks later) to patch `sys_contributor` field for whole affected content.
 
 ##### Response content
@@ -1831,7 +1831,7 @@ Get all content where `sys_contributors` contains value passed in task configura
 ```
 
 * `update_contributor_profile`
-Create/Update 'contributor profile' and Contributor records from Profile provider defined in `contributor_type_specific_code_type` config field. In case of DCP only profile provider available is community.jboss.org under `jbossorg_username`.
+Create/Update 'contributor profile' and Contributor records from Profile provider defined in `contributor_type_specific_code_type` config field. In case of DCP only profile provider available is developer.jboss.org under `jbossorg_username`.
 Optional `contributor_type_specific_code_value` config field allow s you to list usernames to create/update. All contributor profiles for given type are updated if not provided.
 
 ```
@@ -1842,7 +1842,7 @@ Optional `contributor_type_specific_code_value` config field allow s you to list
 ```
 
 * `reindex_contributor` and `reindex_project`
-May be used to rebuild internal search indices for Contributor or Project configurations from perisstent store. Usefull after search indices lost (due ES or mapping upgrade or some fatal failure of ES).
+May be used to rebuild internal search indices for Contributor or Project configurations from persistent store. Useful after search indices lost (due ES or mapping upgrade or some fatal failure of ES).
 
 ```
 {

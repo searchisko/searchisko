@@ -165,9 +165,9 @@ The Searchisko REST API is then available at `http://your_openshift_aplication_u
 The ElasticSearch search node REST API is available only from gear shell at `http://$OPENSHIFT_JBOSSEAP_IP:15000/`,
 you have to use port forwarding to access it from outside.
 
-To enable Access to Contributor Profile Provider (community.jboss.org) as authenticated set these [Openshift custom variables](https://www.openshift.com/blogs/taking-advantage-of-environment-variables-in-openshift-php-apps):
+To enable Access to Contributor Profile Provider (developer.jboss.org) as authenticated set these [Openshift custom variables](https://www.openshift.com/blogs/taking-advantage-of-environment-variables-in-openshift-php-apps):
 
-	rhc set-env SEARCHISKO_CB_PROVIDER_USERNAME=community.jboss.org-username SEARCHISKO_CB_PROVIDER_PASSWORD=community.jboss.org-password -a {name of your app}
+	rhc set-env SEARCHISKO_CB_PROVIDER_USERNAME=developer.jboss.org-username SEARCHISKO_CB_PROVIDER_PASSWORD=developer.jboss.org-password -a {name of your app}
 
 
 #### staging/production
