@@ -1,9 +1,9 @@
 {
     "type" : "remote",
     "remote" : {
-        "urlGetDocuments"       : "https://community.jboss.org/data-api/content.jspa?spaceId={space}&type=forum&updatedAfter={updatedAfter}&maxSize=100",
+        "urlGetDocuments"       : "https://developer.jboss.org/data-api/content.jspa?spaceId={space}&type=forum&updatedAfter={updatedAfter}&maxSize=100",
         "getDocsResFieldDocuments"  : "items",
-        "urlGetSpaces"					: "https://community.jboss.org/data-api/spaces.jspa",
+        "urlGetSpaces"					: "https://developer.jboss.org/data-api/spaces.jspa",
         "getSpacesResField"			: "spaces",
         "username" 							: "dcp-sbs-integration",
         "timeout"               : "20s",
