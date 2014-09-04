@@ -5,6 +5,8 @@
  */
 package org.searchisko.api.indexer;
 
+import java.io.IOException;
+
 import javax.ejb.LocalBean;
 import javax.ejb.ObjectNotFoundException;
 import javax.ejb.Singleton;
@@ -26,6 +28,7 @@ import org.jboss.elasticsearch.river.remote.mgm.state.JRStateRequest;
 import org.jboss.elasticsearch.river.remote.mgm.state.JRStateResponse;
 import org.jboss.elasticsearch.river.remote.mgm.state.NodeJRStateResponse;
 import org.searchisko.api.service.SearchClientService;
+import org.searchisko.api.util.SearchUtils;
 
 /**
  * {@link IndexerHandler} implementation for <a
@@ -67,7 +70,12 @@ public class EsRiverRemoteIndexerHandler implements IndexerHandler {
 			throw new ObjectNotFoundException();
 		}
 
-		return nr.getStateInformation();
+		String si = nr.getStateInformation();
+		try {
+			return SearchUtils.convertToJsonMap(si);
+		} catch (IOException e) {
+			return si;
+		}
 	}
 
 	@Override
