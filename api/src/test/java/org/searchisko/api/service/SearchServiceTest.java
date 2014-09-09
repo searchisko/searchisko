@@ -40,7 +40,7 @@ import org.searchisko.api.testtools.TestUtils;
 
 /**
  * Unit test for {@link SearchService}
- * 
+ *
  * @author Vlastimil Elias (velias at redhat dot com)
  * @author Lukas Vlcek
  */
@@ -51,7 +51,7 @@ public class SearchServiceTest {
 
 	/**
 	 * https://github.com/searchisko/searchisko/issues/79
- 	 */
+	 */
 	@Test
 	public void missingFilterFieldsConfigDoesNotThrowNPE() throws ReflectiveOperationException {
 		ConfigService configService = Mockito.mock(ConfigService.class);
@@ -177,8 +177,13 @@ public class SearchServiceTest {
 			tested.setSearchRequestIndicesAndTypes(querySettings, searchRequestBuilderMock);
 			Mockito.verify(tested.indexNamesCache).get("_all||false");
 			Mockito.verify(tested.providerService).getAll();
-			Mockito.verify(searchRequestBuilderMock).setIndices("idx_provider1_issue", "idx_provider1_mailing1",
-					"idx_provider1_mailing2", "idx_provider2_mailing", "idx_provider2_issue1", "idx_provider2_issue2");
+			Mockito.verify(searchRequestBuilderMock).setIndices(
+					"idx_provider1_issue",
+					"idx_provider1_mailing1",
+					"idx_provider1_mailing2",
+					"idx_provider2_issue1",
+					"idx_provider2_issue2",
+					"idx_provider2_mailing");
 			Mockito.verifyNoMoreInteractions(searchRequestBuilderMock);
 		}
 
@@ -297,9 +302,15 @@ public class SearchServiceTest {
 					Mockito.eq(SearchService.prepareIndexNamesCacheKey(sysTypesRequested, false)), Mockito.anySet());
 			Mockito.verifyNoMoreInteractions(tested.indexNamesCache);
 			Mockito.verify(tested.providerService).getAll();
-			Mockito.verify(searchRequestBuilderMock).setIndices("idx_provider1_cosi1", "idx_provider1_cosi2",
-					"idx_provider1_issue", "idx_provider2_cosi1", "idx_provider2_cosi2", "idx_provider2_issue1",
-					"idx_provider2_issue2");
+			Mockito.verify(searchRequestBuilderMock).setIndices(
+					"idx_provider1_issue",
+					"idx_provider1_cosi1",
+					"idx_provider1_cosi2",
+					"idx_provider2_issue1",
+					"idx_provider2_issue2",
+					"idx_provider2_cosi1",
+					"idx_provider2_cosi2"
+			);
 			Mockito.verifyNoMoreInteractions(searchRequestBuilderMock);
 		}
 
@@ -323,8 +334,14 @@ public class SearchServiceTest {
 					Mockito.eq(SearchService.prepareIndexNamesCacheKey(sysTypesRequested, true)), Mockito.anySet());
 			Mockito.verifyNoMoreInteractions(tested.indexNamesCache);
 			Mockito.verify(tested.providerService).getAll();
-			Mockito.verify(searchRequestBuilderMock).setIndices("idx_provider1_issue", "idx_provider1_mailing1",
-					"idx_provider1_mailing2", "idx_provider2_mailing", "idx_provider2_issue1", "idx_provider2_issue2");
+			Mockito.verify(searchRequestBuilderMock).setIndices(
+					"idx_provider1_issue",
+					"idx_provider1_mailing1",
+					"idx_provider1_mailing2",
+					"idx_provider2_issue1",
+					"idx_provider2_issue2",
+					"idx_provider2_mailing"
+			);
 			Mockito.verifyNoMoreInteractions(searchRequestBuilderMock);
 			querySettings.getFacets().clear();
 		}
@@ -350,9 +367,18 @@ public class SearchServiceTest {
 					Mockito.eq(SearchService.prepareIndexNamesCacheKey(sysTypesRequested, true)), Mockito.anySet());
 			Mockito.verifyNoMoreInteractions(tested.indexNamesCache);
 			Mockito.verify(tested.providerService).getAll();
-			Mockito.verify(searchRequestBuilderMock).setIndices("idx_provider1_cosi1", "idx_provider1_cosi2",
-					"idx_provider1_issue", "idx_provider1_mailing1", "idx_provider1_mailing2", "idx_provider2_cosi1",
-					"idx_provider2_cosi2", "idx_provider2_mailing", "idx_provider2_issue1", "idx_provider2_issue2");
+			Mockito.verify(searchRequestBuilderMock).setIndices(
+					"idx_provider1_issue",
+					"idx_provider1_mailing1",
+					"idx_provider1_mailing2",
+					"idx_provider1_cosi1",
+					"idx_provider1_cosi2",
+					"idx_provider2_issue1",
+					"idx_provider2_issue2",
+					"idx_provider2_mailing",
+					"idx_provider2_cosi1",
+					"idx_provider2_cosi2"
+			);
 			Mockito.verifyNoMoreInteractions(searchRequestBuilderMock);
 			querySettings.getFacets().clear();
 		}
@@ -550,7 +576,7 @@ public class SearchServiceTest {
 
 		// case - list of projects is empty
 		{
-			filters.acknowledgeUrlFilterCandidate("project", Collections.<String> emptyList());
+			filters.acknowledgeUrlFilterCandidate("project", Collections.<String>emptyList());
 			tested.parsedFilterConfigService.prepareFiltersForRequest(filters);
 			QueryBuilder qb = QueryBuilders.matchAllQuery();
 			QueryBuilder qbRes = tested.applyCommonFilters(tested.parsedFilterConfigService.getSearchFiltersForRequest(), qb);
@@ -602,7 +628,7 @@ public class SearchServiceTest {
 
 		// case - list of tags is empty
 		{
-			filters.acknowledgeUrlFilterCandidate("tag", Collections.<String> emptyList());
+			filters.acknowledgeUrlFilterCandidate("tag", Collections.<String>emptyList());
 			tested.parsedFilterConfigService.prepareFiltersForRequest(filters);
 			QueryBuilder qb = QueryBuilders.matchAllQuery();
 			QueryBuilder qbRes = tested.applyCommonFilters(tested.parsedFilterConfigService.getSearchFiltersForRequest(), qb);
@@ -664,7 +690,7 @@ public class SearchServiceTest {
 
 		// case - list of contributors is empty
 		{
-			filters.acknowledgeUrlFilterCandidate("contributor", Collections.<String> emptyList());
+			filters.acknowledgeUrlFilterCandidate("contributor", Collections.<String>emptyList());
 			tested.parsedFilterConfigService.prepareFiltersForRequest(filters);
 			QueryBuilder qb = QueryBuilders.matchAllQuery();
 			QueryBuilder qbRes = tested.applyCommonFilters(tested.parsedFilterConfigService.getSearchFiltersForRequest(), qb);
@@ -1577,7 +1603,7 @@ public class SearchServiceTest {
 		Assert.assertEquals("month", tested.getDateHistogramFacetInterval(fieldName));
 	}
 
-	@SuppressWarnings({ "unchecked", "rawtypes" })
+	@SuppressWarnings({"unchecked", "rawtypes"})
 	@Test
 	public void writeSearchHitUsedStatisticsRecord() {
 		SearchService tested = new SearchService();

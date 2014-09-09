@@ -239,7 +239,7 @@ public abstract class TestUtils {
 		XContentParser parser = null;
 		try {
 			parser = XContentFactory.xContent(XContentType.JSON).createParser(TestUtils.class.getResourceAsStream(filePath));
-			return parser.mapAndClose();
+			return parser.mapOrderedAndClose();
 		} catch (IOException e) {
 			throw new RuntimeException(e.getMessage(), e);
 		} finally {
