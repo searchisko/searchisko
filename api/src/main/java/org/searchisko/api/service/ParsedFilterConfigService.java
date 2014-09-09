@@ -5,6 +5,21 @@
  */
 package org.searchisko.api.service;
 
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import javax.enterprise.context.RequestScoped;
+import javax.inject.Inject;
+import javax.inject.Named;
+
 import org.elasticsearch.common.joda.time.DateTime;
 import org.elasticsearch.common.joda.time.format.DateTimeFormatter;
 import org.elasticsearch.common.joda.time.format.ISODateTimeFormat;
@@ -13,15 +28,11 @@ import org.elasticsearch.index.query.RangeFilterBuilder;
 import org.elasticsearch.index.query.TermsFilterBuilder;
 import org.searchisko.api.model.ParsableIntervalConfig;
 import org.searchisko.api.model.QuerySettings;
-import org.searchisko.api.rest.search.*;
-
-import javax.enterprise.context.RequestScoped;
-import javax.inject.Inject;
-import javax.inject.Named;
-import java.lang.reflect.Method;
-import java.util.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.searchisko.api.rest.search.ConfigParseUtil;
+import org.searchisko.api.rest.search.SemiParsedFilterConfig;
+import org.searchisko.api.rest.search.SemiParsedFilterConfigSupportSuppressed;
+import org.searchisko.api.rest.search.SemiParsedRangeFilterConfig;
+import org.searchisko.api.rest.search.SemiParsedTermsFilterConfig;
 
 /**
  * Service that can prepare and cache parsed configuration of filters and search filters for the request.
@@ -98,7 +109,7 @@ public class ParsedFilterConfigService {
 			}
 
 			// iterate over all collected filters and drop those that are suppressed
-			for (String filterName : semiParsedFilters.keySet()) {
+			for (String filterName : semiParsedFilters.keySet().toArray(new String[semiParsedFilters.size()])) {
 				// parsed filters could have been removed in the meantime so we check if it is still present
 				if (semiParsedFilters.containsKey(filterName)) {
 					SemiParsedFilterConfig parsedFilterConfig = semiParsedFilters.get(filterName);
