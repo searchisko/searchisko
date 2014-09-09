@@ -13,6 +13,7 @@ import org.codehaus.jackson.JsonParseException;
 import org.junit.Assert;
 import org.junit.Test;
 import org.searchisko.api.service.ProjectService;
+import org.searchisko.api.testtools.TestUtils;
 import org.searchisko.persistence.service.ContentTuple;
 
 import static org.junit.Assert.assertEquals;
@@ -38,7 +39,7 @@ public class ProjectConverterTest {
 			Project p = converter.convertToModel("as7", data);
 
 			assertEquals("as7", p.getCode());
-			assertEquals("{\"name\":\"AS 7\",\"" + ProjectService.FIELD_CODE + "\":\"as7\"}", p.getValue());
+			TestUtils.assertJsonContent("{\"name\":\"AS 7\",\"" + ProjectService.FIELD_CODE + "\":\"as7\"}", p.getValue());
 		}
 
 		{

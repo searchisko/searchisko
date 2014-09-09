@@ -5,6 +5,19 @@
  */
 package org.searchisko.api.testtools;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.StringWriter;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+
+import javax.ws.rs.core.MultivaluedMap;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.StreamingOutput;
+import javax.ws.rs.core.UriInfo;
+
 import org.apache.commons.io.IOUtils;
 import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.map.DeserializationConfig;
@@ -20,18 +33,6 @@ import org.mockito.Mockito;
 import org.searchisko.api.util.SearchUtils;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.skyscreamer.jsonassert.JSONCompareMode;
-
-import javax.ws.rs.core.MultivaluedMap;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.StreamingOutput;
-import javax.ws.rs.core.UriInfo;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.StringWriter;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
 
 /**
  * Helper methods for Unit tests.
@@ -107,19 +108,20 @@ public abstract class TestUtils {
 	}
 
 	/**
-	 * Assert string value equals one written by the StreamingOutput.
+	 * Assert JSON equals to written by the StreamingOutput.
 	 * 
 	 * @param expected value
-	 * @param actual value
+	 * @param actual value. Has to be instance of StreamingOutput
 	 * @throws IOException
+	 * @throws JSONException
 	 */
-	public static void assetStreamingOutputContent(String expected, Object actual) throws IOException {
+	public static void assetJsonStreamingOutputContent(String expected, Object actual) throws IOException, JSONException {
 		if (!(actual instanceof StreamingOutput)) {
 			Assert.fail("Result must be StreamingOutput but is " + actual);
 		}
 		ByteArrayOutputStream output = new ByteArrayOutputStream();
 		((StreamingOutput) actual).write(output);
-		Assert.assertEquals(expected, output.toString());
+		JSONAssert.assertEquals(expected, output.toString(), JSONCompareMode.NON_EXTENSIBLE);
 	}
 
 	/**

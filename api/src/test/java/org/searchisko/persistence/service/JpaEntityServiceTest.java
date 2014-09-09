@@ -277,7 +277,7 @@ public class JpaEntityServiceTest extends JpaTestBase {
 			em.getTransaction().begin();
 			// case - no pager used so all returned
 			TestUtils
-					.assetStreamingOutputContent(
+					.assetJsonStreamingOutputContent(
 							"{\"total\":2,\"hits\":[{\"id\":\"aaa\",\"data\":{\"val\":\"DDDDFGHDFHD\"}},{\"id\":\"bbbbbb\",\"data\":{\"val\":\"fgdsafgdsafgsdf\"}}]}",
 							tested.getAll(null, null, null));
 
@@ -288,21 +288,21 @@ public class JpaEntityServiceTest extends JpaTestBase {
 
 			em.getTransaction().begin();
 			// case - pager used
-			TestUtils.assetStreamingOutputContent(
+			TestUtils.assetJsonStreamingOutputContent(
 					"{\"total\":4,\"hits\":[{\"id\":\"aaa\",\"data\":{\"val\":\"DDDDFGHDFHD\"}}]}", tested.getAll(0, 1, null));
 
 			TestUtils
-					.assetStreamingOutputContent(
+					.assetJsonStreamingOutputContent(
 							"{\"total\":4,\"hits\":[{\"id\":\"bbbbbb\",\"data\":{\"val\":\"fgdsafgdsafgsdf\"}},{\"id\":\"cc\",\"data\":{\"val\":\"ccc\"}}]}",
 							tested.getAll(1, 2, null));
 
-			TestUtils.assetStreamingOutputContent("{\"total\":4,\"hits\":[]}", tested.getAll(6, 10, null));
+			TestUtils.assetJsonStreamingOutputContent("{\"total\":4,\"hits\":[]}", tested.getAll(6, 10, null));
 
 			// case - filtering used and strange bounds for pager
 			TestUtils
-					.assetStreamingOutputContent(
+					.assetJsonStreamingOutputContent(
 							"{\"total\":4,\"hits\":[{\"id\":\"aaa\",\"data\":{}},{\"id\":\"bbbbbb\",\"data\":{}},{\"id\":\"cc\",\"data\":{}},{\"id\":\"dd\",\"data\":{}}]}",
-							tested.getAll(-10, -1, new String[] { "val" }));
+							tested.getAll(-10, -1, new String[]{"val"}));
 
 			em.getTransaction().commit();
 

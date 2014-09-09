@@ -17,6 +17,7 @@ import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.common.xcontent.ToXContent;
 import org.elasticsearch.common.xcontent.XContentBuilder;
+import org.json.JSONException;
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -50,7 +51,7 @@ public class RestServiceBaseTest {
 	}
 
 	@Test
-	public void createResponse_StreamingOutput() throws IOException {
+	public void createResponse_StreamingOutput() throws IOException, JSONException {
 		RestServiceBase tested = getTested();
 		SearchResponse srMock = Mockito.mock(SearchResponse.class);
 		Mockito.doAnswer(new Answer<Object>() {
@@ -65,15 +66,15 @@ public class RestServiceBaseTest {
 		}).when(srMock).toXContent(Mockito.any(XContentBuilder.class), Mockito.eq(ToXContent.EMPTY_PARAMS));
 
 		Map<String, String> af = new LinkedHashMap<String, String>();
-		TestUtils.assetStreamingOutputContent("{\"testfield\":\"testvalue\"}", tested.createResponse(srMock, af));
+		TestUtils.assetJsonStreamingOutputContent("{\"testfield\":\"testvalue\"}", tested.createResponse(srMock, af));
 
 		af.put("uuid", "myid");
 		af.put("ag", "qag");
 		af.put("oo", null);
 		StreamingOutput so = tested.createResponse(srMock, af);
-		TestUtils.assetStreamingOutputContent("{\"uuid\":\"myid\",\"ag\":\"qag\",\"oo\":null,\"testfield\":\"testvalue\"}",
+		TestUtils.assetJsonStreamingOutputContent("{\"uuid\":\"myid\",\"ag\":\"qag\",\"oo\":null,\"testfield\":\"testvalue\"}",
 				so);
 
-		TestUtils.assetStreamingOutputContent("{\"testfield\":\"testvalue\"}", tested.createResponse(srMock, null));
+		TestUtils.assetJsonStreamingOutputContent("{\"testfield\":\"testvalue\"}", tested.createResponse(srMock, null));
 	}
 }

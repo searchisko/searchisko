@@ -13,6 +13,7 @@ import org.junit.Test;
 import org.searchisko.api.service.ProviderService;
 
 import static org.junit.Assert.assertEquals;
+import org.searchisko.api.testtools.TestUtils;
 
 /**
  * Unit test for {@link ProviderConverter}.
@@ -32,7 +33,7 @@ public class ProviderConverterTest {
 		Provider p = converter.convertToModel("jbossorg", data);
 
 		assertEquals("jbossorg", p.getName());
-		assertEquals("{\"" + ProviderService.NAME + "\":\"jbossorg\",\"" + ProviderService.SUPER_PROVIDER + "\":true}",
+		TestUtils.assertJsonContent("{\"" + ProviderService.NAME + "\":\"jbossorg\",\"" + ProviderService.SUPER_PROVIDER + "\":true}",
 				p.getValue());
 	}
 }

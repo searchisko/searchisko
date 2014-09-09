@@ -5,6 +5,13 @@
  */
 package org.searchisko.api.rest;
 
+import java.util.HashMap;
+import java.util.Map;
+
+import javax.ws.rs.core.Response.Status;
+import javax.ws.rs.core.SecurityContext;
+import javax.ws.rs.core.StreamingOutput;
+
 import org.elasticsearch.action.search.SearchResponse;
 import org.junit.Assert;
 import org.junit.Test;
@@ -13,12 +20,6 @@ import org.searchisko.api.rest.exception.RequiredFieldException;
 import org.searchisko.api.service.ProjectService;
 import org.searchisko.api.testtools.TestUtils;
 import org.searchisko.persistence.service.EntityService;
-
-import javax.ws.rs.core.Response.Status;
-import javax.ws.rs.core.SecurityContext;
-import javax.ws.rs.core.StreamingOutput;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * Unit test for {@link ProjectRestService}
@@ -193,7 +194,7 @@ public class ProjectRestServiceTest {
 			SearchResponse sr = ESDataOnlyResponseTest.mockSearchResponse("ve", "email@em", null, null);
 			Mockito.when(tested.projectService.findByTypeSpecificCode("idType", "idValue")).thenReturn(sr);
 			StreamingOutput ret = (StreamingOutput) tested.search(TestUtils.prepareUriInfiWithParams("idType", "idValue"));
-			TestUtils.assetStreamingOutputContent(
+			TestUtils.assetJsonStreamingOutputContent(
 					"{\"total\":1,\"hits\":[{\"id\":\"ve\",\"data\":{\"sys_name\":\"email@em\",\"sys_id\":\"ve\"}}]}", ret);
 		}
 
@@ -204,7 +205,7 @@ public class ProjectRestServiceTest {
 			Mockito.when(tested.projectService.findByTypeSpecificCode("idType", "idValue")).thenReturn(sr);
 			StreamingOutput ret = (StreamingOutput) tested.search(TestUtils.prepareUriInfiWithParams("idType", "idValue"));
 			Mockito.verify(tested.projectService).findByTypeSpecificCode("idType", "idValue");
-			TestUtils.assetStreamingOutputContent("{\"total\":0,\"hits\":[]}", ret);
+			TestUtils.assetJsonStreamingOutputContent("{\"total\":0,\"hits\":[]}", ret);
 		}
 
 		// case - Exception from service
@@ -231,7 +232,7 @@ public class ProjectRestServiceTest {
 			Mockito.when(tested.projectService.findByCode("testcode")).thenReturn(sr);
 			StreamingOutput ret = (StreamingOutput) tested.search(TestUtils.prepareUriInfiWithParams(
 					ProjectRestService.PARAM_CODE, "testcode"));
-			TestUtils.assetStreamingOutputContent(
+			TestUtils.assetJsonStreamingOutputContent(
 					"{\"total\":1,\"hits\":[{\"id\":\"ve\",\"data\":{\"sys_name\":\"email@em\",\"sys_id\":\"ve\"}}]}", ret);
 		}
 
@@ -242,7 +243,7 @@ public class ProjectRestServiceTest {
 			Mockito.when(tested.projectService.findByCode("testcode")).thenReturn(sr);
 			StreamingOutput ret = (StreamingOutput) tested.search(TestUtils.prepareUriInfiWithParams(
 					ProjectRestService.PARAM_CODE, "testcode"));
-			TestUtils.assetStreamingOutputContent("{\"total\":0,\"hits\":[]}", ret);
+			TestUtils.assetJsonStreamingOutputContent("{\"total\":0,\"hits\":[]}", ret);
 		}
 
 		// case - Exception from service

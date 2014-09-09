@@ -14,6 +14,7 @@ import javax.ws.rs.WebApplicationException;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
+import org.json.JSONException;
 import org.searchisko.api.testtools.TestUtils;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -26,69 +27,69 @@ import org.mockito.Mockito;
 public class ESDataOnlyResponseTest {
 
 	@Test
-	public void write_basic() throws WebApplicationException, IOException {
+	public void write_basic() throws WebApplicationException, IOException, JSONException {
 
 		{
 			ESDataOnlyResponse tested = new ESDataOnlyResponse(null);
-			TestUtils.assetStreamingOutputContent("{\"total\":0,\"hits\":[]}", tested);
+			TestUtils.assetJsonStreamingOutputContent("{\"total\":0,\"hits\":[]}", tested);
 		}
 
 		{
 			ESDataOnlyResponse tested = new ESDataOnlyResponse(mockSearchResponse(null, null, null, null));
-			TestUtils.assetStreamingOutputContent("{\"total\":0,\"hits\":[]}", tested);
+			TestUtils.assetJsonStreamingOutputContent("{\"total\":0,\"hits\":[]}", tested);
 		}
 
 		{
 			ESDataOnlyResponse tested = new ESDataOnlyResponse(mockSearchResponse("1", "name1", null, null));
-			TestUtils.assetStreamingOutputContent(
+			TestUtils.assetJsonStreamingOutputContent(
 					"{\"total\":1,\"hits\":[{\"id\":\"1\",\"data\":{\"sys_name\":\"name1\",\"sys_id\":\"1\"}}]}", tested);
 		}
 
 		{
 			ESDataOnlyResponse tested = new ESDataOnlyResponse(mockSearchResponse("1", "name1", "35", "myname"));
 			TestUtils
-					.assetStreamingOutputContent(
+					.assetJsonStreamingOutputContent(
 							"{\"total\":2,\"hits\":[{\"id\":\"1\",\"data\":{\"sys_name\":\"name1\",\"sys_id\":\"1\"}},{\"id\":\"35\",\"data\":{\"sys_name\":\"myname\",\"sys_id\":\"35\"}}]}",
 							tested);
 		}
 	}
 
 	@Test
-	public void write_filtering() throws WebApplicationException, IOException {
+	public void write_filtering() throws WebApplicationException, IOException, JSONException {
 
 		// case - testing source filtering
 		{
 			ESDataOnlyResponse tested = new ESDataOnlyResponse(mockSearchResponse("1", "name1", "35", "myname"),
 					new String[] { "sys_name" });
 			TestUtils
-					.assetStreamingOutputContent(
+					.assetJsonStreamingOutputContent(
 							"{\"total\":2,\"hits\":[{\"id\":\"1\",\"data\":{\"sys_id\":\"1\"}},{\"id\":\"35\",\"data\":{\"sys_id\":\"35\"}}]}",
 							tested);
 		}
 	}
 
 	@Test
-	public void write_idfield() throws WebApplicationException, IOException {
+	public void write_idfield() throws WebApplicationException, IOException, JSONException {
 
 		// case - testing source filtering
 		{
 			ESDataOnlyResponse tested = new ESDataOnlyResponse(mockSearchResponse("1", "name1", "35", "myname"), "sys_name");
 			TestUtils
-					.assetStreamingOutputContent(
+					.assetJsonStreamingOutputContent(
 							"{\"total\":2,\"hits\":[{\"id\":\"name1\",\"data\":{\"sys_name\":\"name1\",\"sys_id\":\"1\"}},{\"id\":\"myname\",\"data\":{\"sys_name\":\"myname\",\"sys_id\":\"35\"}}]}",
 							tested);
 		}
 	}
 
 	@Test
-	public void write_filtering_idfield() throws WebApplicationException, IOException {
+	public void write_filtering_idfield() throws WebApplicationException, IOException, JSONException {
 
 		// case - testing source filtering
 		{
 			ESDataOnlyResponse tested = new ESDataOnlyResponse(mockSearchResponse("1", "name1", "35", "myname"), "sys_name",
 					new String[] { "sys_name" });
 			TestUtils
-					.assetStreamingOutputContent(
+					.assetJsonStreamingOutputContent(
 							"{\"total\":2,\"hits\":[{\"id\":\"name1\",\"data\":{\"sys_id\":\"1\"}},{\"id\":\"myname\",\"data\":{\"sys_id\":\"35\"}}]}",
 							tested);
 		}

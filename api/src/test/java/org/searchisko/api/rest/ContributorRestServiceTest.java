@@ -5,6 +5,13 @@
  */
 package org.searchisko.api.rest;
 
+import java.util.HashMap;
+import java.util.Map;
+
+import javax.ejb.ObjectNotFoundException;
+import javax.ws.rs.core.Response.Status;
+import javax.ws.rs.core.StreamingOutput;
+
 import org.elasticsearch.action.search.SearchResponse;
 import org.jboss.resteasy.spi.BadRequestException;
 import org.junit.Assert;
@@ -13,12 +20,6 @@ import org.mockito.Mockito;
 import org.searchisko.api.rest.exception.RequiredFieldException;
 import org.searchisko.api.service.ContributorService;
 import org.searchisko.api.testtools.TestUtils;
-
-import javax.ejb.ObjectNotFoundException;
-import javax.ws.rs.core.Response.Status;
-import javax.ws.rs.core.StreamingOutput;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * Unit test for {@link ContributorRestService}.
@@ -48,7 +49,7 @@ public class ContributorRestServiceTest {
 			SearchResponse sr = ESDataOnlyResponseTest.mockSearchResponse("ve", "email@em", null, null);
 			Mockito.when(tested.contributorService.findByTypeSpecificCode("idType", "idValue")).thenReturn(sr);
 			StreamingOutput ret = (StreamingOutput) tested.search(TestUtils.prepareUriInfiWithParams("idType", "idValue"));
-			TestUtils.assetStreamingOutputContent(
+			TestUtils.assetJsonStreamingOutputContent(
 					"{\"total\":1,\"hits\":[{\"id\":\"ve\",\"data\":{\"sys_name\":\"email@em\",\"sys_id\":\"ve\"}}]}", ret);
 		}
 
@@ -59,7 +60,7 @@ public class ContributorRestServiceTest {
 			Mockito.when(tested.contributorService.findByTypeSpecificCode("idType", "idValue")).thenReturn(sr);
 			StreamingOutput ret = (StreamingOutput) tested.search(TestUtils.prepareUriInfiWithParams("idType", "idValue"));
 			Mockito.verify(tested.contributorService).findByTypeSpecificCode("idType", "idValue");
-			TestUtils.assetStreamingOutputContent("{\"total\":0,\"hits\":[]}", ret);
+			TestUtils.assetJsonStreamingOutputContent("{\"total\":0,\"hits\":[]}", ret);
 		}
 
 		// case - Exception from service
@@ -84,7 +85,7 @@ public class ContributorRestServiceTest {
 			Mockito.when(tested.contributorService.findByEmail("email@em")).thenReturn(sr);
 			StreamingOutput ret = (StreamingOutput) tested.search(TestUtils.prepareUriInfiWithParams(
 					ContributorRestService.PARAM_EMAIL, "email@em"));
-			TestUtils.assetStreamingOutputContent(
+			TestUtils.assetJsonStreamingOutputContent(
 					"{\"total\":1,\"hits\":[{\"id\":\"ve\",\"data\":{\"sys_name\":\"email@em\",\"sys_id\":\"ve\"}}]}", ret);
 		}
 
@@ -95,7 +96,7 @@ public class ContributorRestServiceTest {
 			Mockito.when(tested.contributorService.findByEmail("email@em")).thenReturn(sr);
 			StreamingOutput ret = (StreamingOutput) tested.search(TestUtils.prepareUriInfiWithParams(
 					ContributorRestService.PARAM_EMAIL, "email@em"));
-			TestUtils.assetStreamingOutputContent("{\"total\":0,\"hits\":[]}", ret);
+			TestUtils.assetJsonStreamingOutputContent("{\"total\":0,\"hits\":[]}", ret);
 		}
 
 		// case - Exception from service
@@ -119,7 +120,7 @@ public class ContributorRestServiceTest {
 			Mockito.when(tested.contributorService.findByCode("e j <email@em>")).thenReturn(sr);
 			StreamingOutput ret = (StreamingOutput) tested.search(TestUtils.prepareUriInfiWithParams(
 					ContributorRestService.PARAM_CODE, "e j <email@em>"));
-			TestUtils.assetStreamingOutputContent(
+			TestUtils.assetJsonStreamingOutputContent(
 					"{\"total\":1,\"hits\":[{\"id\":\"ve\",\"data\":{\"sys_name\":\"email@em\",\"sys_id\":\"ve\"}}]}", ret);
 		}
 
@@ -130,7 +131,7 @@ public class ContributorRestServiceTest {
 			Mockito.when(tested.contributorService.findByCode("e j <email@em>")).thenReturn(sr);
 			StreamingOutput ret = (StreamingOutput) tested.search(TestUtils.prepareUriInfiWithParams(
 					ContributorRestService.PARAM_CODE, "e j <email@em>"));
-			TestUtils.assetStreamingOutputContent("{\"total\":0,\"hits\":[]}", ret);
+			TestUtils.assetJsonStreamingOutputContent("{\"total\":0,\"hits\":[]}", ret);
 		}
 
 		// case - Exception from service

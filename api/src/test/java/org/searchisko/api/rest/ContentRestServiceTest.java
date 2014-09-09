@@ -5,17 +5,32 @@
  */
 package org.searchisko.api.rest;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.logging.Logger;
+
 import javax.enterprise.event.Event;
 import javax.ws.rs.core.Response;
-import java.io.IOException;
-import java.util.*;
-import java.util.logging.Logger;
 
 import org.elasticsearch.common.settings.SettingsException;
 import org.hamcrest.CustomMatcher;
+import org.json.JSONException;
 import org.junit.Assert;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import org.junit.Test;
 import org.mockito.Mockito;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.when;
 import org.searchisko.api.ContentObjectFields;
 import org.searchisko.api.events.ContentBeforeIndexedEvent;
 import org.searchisko.api.events.ContentDeletedEvent;
@@ -24,19 +39,16 @@ import org.searchisko.api.rest.exception.BadFieldException;
 import org.searchisko.api.rest.exception.NotAuthenticatedException;
 import org.searchisko.api.rest.exception.NotAuthorizedException;
 import org.searchisko.api.rest.exception.RequiredFieldException;
-import org.searchisko.api.service.AuthenticationUtilService;
 import org.searchisko.api.security.AuthenticatedUserType;
+import org.searchisko.api.service.AuthenticationUtilService;
 import org.searchisko.api.service.ProviderService;
 import org.searchisko.api.service.ProviderService.ProviderContentTypeInfo;
 import org.searchisko.api.service.ProviderServiceTest;
 import org.searchisko.api.testtools.ESRealClientTestBase;
 import org.searchisko.api.testtools.TestUtils;
-import org.searchisko.persistence.service.ContentPersistenceService;
-
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
 import static org.searchisko.api.testtools.TestUtils.assertResponseStatus;
-import static org.searchisko.api.testtools.TestUtils.assetStreamingOutputContent;
+import static org.searchisko.api.testtools.TestUtils.assetJsonStreamingOutputContent;
+import org.searchisko.persistence.service.ContentPersistenceService;
 
 /**
  * Unit test for {@link ContentRestService}
@@ -1010,7 +1022,7 @@ public class ContentRestServiceTest extends ESRealClientTestBase {
 	}
 
 	@Test
-	public void getAllContent() throws IOException, InterruptedException {
+	public void getAllContent() throws IOException, InterruptedException, JSONException {
 
 		try {
 			ContentRestService tested = getTested(true);
@@ -1021,7 +1033,7 @@ public class ContentRestServiceTest extends ESRealClientTestBase {
 
 			// case - nothing found because index is empty
 			indexCreate(INDEX_NAME);
-			assetStreamingOutputContent("{\"total\":0,\"hits\":[]}", tested.getAllContent(TYPE_KNOWN, null, null, null));
+			assetJsonStreamingOutputContent("{\"total\":0,\"hits\":[]}", tested.getAllContent(TYPE_KNOWN, null, null, null));
 
 			// case - something found, no from and size param used
 			indexInsertDocument(INDEX_NAME, INDEX_TYPE, "known-1",
@@ -1033,17 +1045,17 @@ public class ContentRestServiceTest extends ESRealClientTestBase {
 			indexInsertDocument(INDEX_NAME, INDEX_TYPE, "known-4",
 					"{\"name\":\"test4\",\"sys_updated\":3,\"sys_content_id\":\"4\"}");
 			indexFlushAndRefresh(INDEX_NAME);
-			assetStreamingOutputContent("{\"total\":4,\"hits\":["
-					+ "{\"id\":\"1\",\"data\":{\"sys_updated\":0,\"sys_content_id\":\"1\",\"name\":\"test1\"}},"
-					+ "{\"id\":\"2\",\"data\":{\"sys_updated\":1,\"sys_content_id\":\"2\",\"name\":\"test2\"}},"
-					+ "{\"id\":\"3\",\"data\":{\"sys_updated\":2,\"sys_content_id\":\"3\",\"name\":\"test3\"}},"
-					+ "{\"id\":\"4\",\"data\":{\"sys_updated\":3,\"sys_content_id\":\"4\",\"name\":\"test4\"}}" + "]}",
+			assetJsonStreamingOutputContent("{\"total\":4,\"hits\":["
+							+ "{\"id\":\"1\",\"data\":{\"sys_updated\":0,\"sys_content_id\":\"1\",\"name\":\"test1\"}},"
+							+ "{\"id\":\"2\",\"data\":{\"sys_updated\":1,\"sys_content_id\":\"2\",\"name\":\"test2\"}},"
+							+ "{\"id\":\"3\",\"data\":{\"sys_updated\":2,\"sys_content_id\":\"3\",\"name\":\"test3\"}},"
+							+ "{\"id\":\"4\",\"data\":{\"sys_updated\":3,\"sys_content_id\":\"4\",\"name\":\"test4\"}}" + "]}",
 					tested.getAllContent(TYPE_KNOWN, null, null, null));
 
 			// case - something found, from and size param used
-			assetStreamingOutputContent("{\"total\":4,\"hits\":["
-					+ "{\"id\":\"2\",\"data\":{\"sys_updated\":1,\"sys_content_id\":\"2\",\"name\":\"test2\"}},"
-					+ "{\"id\":\"3\",\"data\":{\"sys_updated\":2,\"sys_content_id\":\"3\",\"name\":\"test3\"}}" + "]}",
+			assetJsonStreamingOutputContent("{\"total\":4,\"hits\":["
+							+ "{\"id\":\"2\",\"data\":{\"sys_updated\":1,\"sys_content_id\":\"2\",\"name\":\"test2\"}},"
+							+ "{\"id\":\"3\",\"data\":{\"sys_updated\":2,\"sys_content_id\":\"3\",\"name\":\"test3\"}}" + "]}",
 					tested.getAllContent(TYPE_KNOWN, 1, 2, null));
 
 			// case - sort param used
@@ -1051,11 +1063,11 @@ public class ContentRestServiceTest extends ESRealClientTestBase {
 					"{\"name\":\"test5\", \"sys_updated\" : 4,\"sys_content_id\":\"5\"}");
 			indexFlushAndRefresh(INDEX_NAME);
 			// on ASC our record with id 5 is last, so we set from=4
-			assetStreamingOutputContent(
+			assetJsonStreamingOutputContent(
 					"{\"total\":5,\"hits\":[{\"id\":\"5\",\"data\":{\"sys_updated\":4,\"sys_content_id\":\"5\",\"name\":\"test5\"}}]}",
 					tested.getAllContent(TYPE_KNOWN, 4, 1, "asc"));
 			// on DESC our record with id 5 is first, so we set from=0
-			assetStreamingOutputContent(
+			assetJsonStreamingOutputContent(
 					"{\"total\":5,\"hits\":[{\"id\":\"5\",\"data\":{\"sys_updated\":4,\"sys_content_id\":\"5\",\"name\":\"test5\"}}]}",
 					tested.getAllContent(TYPE_KNOWN, 0, 1, "DESC"));
 
