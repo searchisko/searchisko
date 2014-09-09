@@ -1,5 +1,5 @@
 {
-  "code": "jbossdevstudio",
+  "code": "devstudio",
   "name": "Red Hat JBoss Developer Studio",
   "type_specific_code" : {
     "jbossorg_blog": [""],

@@ -1,5 +1,5 @@
 {
-  "code": "jbosseap",
+  "code": "eap",
   "name": "Red Hat JBoss Enterprise Application Platform",
   "type_specific_code" : {
     "jbossorg_blog": [""],

@@ -1,5 +1,5 @@
 {
-  "code": "jbosswebserver",
+  "code": "webserver",
   "name": "Red Hat JBoss Web Server",
   "type_specific_code" : {
     "jbossorg_blog": [""],
