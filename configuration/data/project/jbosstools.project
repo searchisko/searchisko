@@ -4,7 +4,7 @@
   "type_specific_code" : {
     "jbossorg_blog": ["jbosstools", "jbosstoolsteam"],
     "jbossorg_jira": ["JBIDE", "TOOLSDOC"],
-    "jbossorg_sbs" : ["2154","2128","2129"],
+    "jbossorg_sbs" : ["2128","2129"],
     "jbossorg_mailing_list": ["jbosstools"],
     "jbossorg_project_info": "jbosstools"
   }
