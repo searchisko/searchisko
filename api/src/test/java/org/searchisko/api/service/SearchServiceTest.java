@@ -17,6 +17,8 @@ import java.util.Set;
 import java.util.logging.Logger;
 
 import org.elasticsearch.action.search.SearchRequestBuilder;
+import org.elasticsearch.client.Client;
+import org.elasticsearch.client.internal.InternalClient;
 import org.elasticsearch.common.joda.time.DateTime;
 import org.elasticsearch.common.joda.time.format.DateTimeFormatter;
 import org.elasticsearch.common.joda.time.format.ISODateTimeFormat;
@@ -1411,6 +1413,54 @@ public class SearchServiceTest {
 			tested.handleFacetSettings(querySettings, tested.parsedFilterConfigService.getSearchFiltersForRequest(), srbMock);
 			TestUtils.assertJsonContentFromClasspathFile("/search/query_facets_activity_dates_histogram_3.json",
 					srbMock.toString());
+		}
+	}
+
+	/**
+	 * This test demonstrate how to test complete Elasticsearch query (and not only individual parts of it).
+	 *
+	 * @see <a href="https://github.com/searchisko/searchisko/issues/130">This test was inspired by #130.</a>
+	 *
+	 * @throws IOException
+	 * @throws JSONException
+	 * @throws ReflectiveOperationException
+	 */
+	@Test
+	public void testCompleteElasticsearchQuery() throws IOException, JSONException,
+			ReflectiveOperationException {
+
+		ConfigService configService = Mockito.mock(ConfigService.class);
+		Map<String, Object> cfg1 = TestUtils.loadJSONFromClasspathFile("/search/search_fulltext_facets_fields.json");
+		Mockito.when(configService.get(ConfigService.CFGNAME_SEARCH_FULLTEXT_FACETS_FIELDS)).thenReturn(cfg1);
+		Map<String, Object> cfg2 = TestUtils.loadJSONFromClasspathFile("/search/search_fulltext_filter_fields.json");
+		Mockito.when(configService.get(ConfigService.CFGNAME_SEARCH_FULLTEXT_FILTER_FIELDS)).thenReturn(cfg2);
+
+		SearchService tested = new SearchService();
+		tested.providerService = Mockito.mock(ProviderService.class);
+		tested.log = Logger.getLogger("testlogger");
+		tested.indexNamesCache = Mockito.mock(IndexNamesCache.class);
+		tested.configService = configService;
+		tested.parsedFilterConfigService = new ParsedFilterConfigService();
+		tested.parsedFilterConfigService.configService = configService;
+
+		QuerySettings querySettings = new QuerySettings();
+		Filters filters = new Filters();
+		querySettings.setFilters(filters);
+
+		tested.parsedFilterConfigService.prepareFiltersForRequest(filters);
+
+		{
+			SearchRequestBuilder srb = new SearchRequestBuilder(null);
+			querySettings.addFacet("activity_dates_histogram");
+			filters.acknowledgeUrlFilterCandidate("activity_date_interval", PastIntervalValue.TEST.toString());
+			filters.acknowledgeUrlFilterCandidate("project", "eap");
+			filters.acknowledgeUrlFilterCandidate("sys_type", "forumthread");
+			querySettings.setSize(0);
+			tested.parsedFilterConfigService.prepareFiltersForRequest(filters);
+			querySettings.setFilters(filters);
+			tested.performSearchInternal(querySettings, srb);
+			TestUtils.assertJsonContentFromClasspathFile("/search/complete_query_filters_and_activity_dates_histogram.json",
+					srb.toString());
 		}
 	}
 

@@ -88,38 +88,18 @@ public class SearchService {
 	 * 
 	 * @param querySettings to use for search
 	 * @param responseUuid used for search response, we need it only to write it into statistics (so can be null)
+	 * @param statsRecordType
 	 * @return search response
 	 */
 	public SearchResponse performSearch(QuerySettings querySettings, String responseUuid, StatsRecordType statsRecordType) {
 		try {
-			if (!parsedFilterConfigService.isCacheInitialized()) {
-				try {
-					parsedFilterConfigService.prepareFiltersForRequest(querySettings.getFilters());
-				} catch (ReflectiveOperationException e) {
-					throw new ElasticSearchException("Can not prepare filters", e);
-				}
-			}
+
 			SearchRequestBuilder srb = new SearchRequestBuilder(searchClientService.getClient());
-
-			setSearchRequestIndicesAndTypes(querySettings, srb);
-
-			QueryBuilder qb_fulltext = prepareQueryBuilder(querySettings);
-			srb.setQuery(applyCommonFilters(parsedFilterConfigService.getSearchFiltersForRequest(), qb_fulltext));
-
-			parsedFilterConfigService.getSearchFiltersForRequest().put("fulltext_query", new QueryFilterBuilder(qb_fulltext)); // ??
-			handleFacetSettings(querySettings, parsedFilterConfigService.getSearchFiltersForRequest(), srb);
-
-			setSearchRequestSort(querySettings, srb);
-			setSearchRequestHighlight(querySettings, srb);
-			setSearchRequestFields(querySettings, srb);
-			setSearchRequestFromSize(querySettings, srb);
-
+			srb = performSearchInternal(querySettings, srb);
 			srb.setTimeout(TimeValue.timeValueSeconds(timeout.search()));
 
 			log.log(Level.FINE, "Elasticsearch Search request: {0}", srb);
-
 			final SearchResponse searchResponse = srb.execute().actionGet();
-
 			statsClientService.writeStatisticsRecord(statsRecordType, responseUuid, searchResponse,
 					System.currentTimeMillis(), querySettings);
 			return searchResponse;
@@ -127,6 +107,40 @@ public class SearchService {
 			statsClientService.writeStatisticsRecord(statsRecordType, e, System.currentTimeMillis(), querySettings);
 			throw e;
 		}
+	}
+
+	/**
+	 * This method handles search query building.
+	 * The output is a {@link org.elasticsearch.action.search.SearchRequestBuilder} entity that reflects
+	 * input parameters. This method can be used for testing of final complete Elasticsearch query.
+	 *
+	 * @param querySettings
+	 * @param srb
+	 * @return SearchRequestBuilder entity
+	 */
+	protected SearchRequestBuilder performSearchInternal(final QuerySettings querySettings, SearchRequestBuilder srb) {
+		if (!parsedFilterConfigService.isCacheInitialized()) {
+			try {
+				parsedFilterConfigService.prepareFiltersForRequest(querySettings.getFilters());
+			} catch (ReflectiveOperationException e) {
+				throw new ElasticSearchException("Can not prepare filters", e);
+			}
+		}
+
+		setSearchRequestIndicesAndTypes(querySettings, srb);
+
+		QueryBuilder qb_fulltext = prepareQueryBuilder(querySettings);
+		srb.setQuery(applyCommonFilters(parsedFilterConfigService.getSearchFiltersForRequest(), qb_fulltext));
+
+		parsedFilterConfigService.getSearchFiltersForRequest().put("fulltext_query", new QueryFilterBuilder(qb_fulltext)); // ??
+		handleFacetSettings(querySettings, parsedFilterConfigService.getSearchFiltersForRequest(), srb);
+
+		setSearchRequestSort(querySettings, srb);
+		setSearchRequestHighlight(querySettings, srb);
+		setSearchRequestFields(querySettings, srb);
+		setSearchRequestFromSize(querySettings, srb);
+
+		return srb;
 	}
 
 	/**
