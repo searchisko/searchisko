@@ -1,23 +1,31 @@
 package org.searchisko.api.security.jaas;
 
-import org.jasig.cas.client.authentication.SimpleGroup;
-import org.jasig.cas.client.jaas.CasLoginModule;
-import org.jasig.cas.client.util.CommonUtils;
-import org.searchisko.api.service.AppConfigurationService;
-import org.searchisko.api.service.ProviderService;
-import org.searchisko.api.util.CdiHelper;
-
-import javax.inject.Inject;
-import javax.naming.NamingException;
-import javax.security.auth.Subject;
-import javax.security.auth.callback.*;
-import javax.security.auth.login.LoginException;
 import java.io.IOException;
+import java.security.acl.Group;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import javax.inject.Inject;
+import javax.naming.NamingException;
+import javax.security.auth.Subject;
+import javax.security.auth.callback.Callback;
+import javax.security.auth.callback.CallbackHandler;
+import javax.security.auth.callback.NameCallback;
+import javax.security.auth.callback.PasswordCallback;
+import javax.security.auth.callback.UnsupportedCallbackException;
+import javax.security.auth.login.LoginException;
+
+import org.jasig.cas.client.authentication.SimpleGroup;
+import org.jasig.cas.client.authentication.SimplePrincipal;
+import org.jasig.cas.client.jaas.AssertionPrincipal;
+import org.jasig.cas.client.jaas.CasLoginModule;
+import org.jasig.cas.client.util.CommonUtils;
+import org.searchisko.api.service.AppConfigurationService;
+import org.searchisko.api.service.ProviderService;
+import org.searchisko.api.util.CdiHelper;
 
 /**
  * CAS JAAS Login Module
@@ -90,14 +98,41 @@ public class ContributorCasLoginModule extends CasLoginModule {
 		}
 
 
-		//TODO: Set roles to CAS authenticated contributor
+		fixPrincipal();
+
 		Set<SimpleGroup> groups = subject.getPrincipals(org.jasig.cas.client.authentication.SimpleGroup.class);
 		log.log(Level.FINE, "Add Roles to authenticated contributor, default roles: {0}", groups);
 
-//		for (SimpleGroup g : groups) {
-//			g.addMember(new SimplePrincipal("test_role"));
-//		}
+		for (SimpleGroup g : groups) {
+			if (this.roleGroupName.equals(g.getName())) {
+				for (String role : getContributorRoles()) {
+					g.addMember(new SimplePrincipal(role));
+				}
+				log.log(Level.FINE, "Actual roles: {0}", g);
+				break;
+			}
+		}
 
 		return success;
+	}
+
+	protected String[] getContributorRoles() {
+		//TODO: Set roles to CAS authenticated contributor
+		return new String[]{};
+	}
+
+	protected void fixPrincipal() {
+		log.log(Level.FINEST, "Remove CAS principal and default group");
+		this.subject.getPrincipals().remove(new AssertionPrincipal(this.assertion.getPrincipal().getName(), this.assertion));
+		this.subject.getPrincipals().remove(new SimpleGroup(this.principalGroupName));
+
+
+		log.log(Level.FINEST, "Add ContributorPrincipal");
+		final ContributorPrincipal contributorPrincipal = new ContributorPrincipal(this.assertion.getPrincipal().getName(), this.assertion);
+		this.subject.getPrincipals().add(contributorPrincipal);
+
+		final Group principalGroup = new SimpleGroup(this.principalGroupName);
+		principalGroup.addMember(contributorPrincipal);
+		this.subject.getPrincipals().add(principalGroup);
 	}
 }

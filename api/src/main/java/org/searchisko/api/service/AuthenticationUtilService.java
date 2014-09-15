@@ -5,13 +5,14 @@
  */
 package org.searchisko.api.service;
 
+import java.security.Principal;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.servlet.http.HttpServletRequest;
-import java.security.Principal;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import org.searchisko.api.rest.exception.NotAuthenticatedException;
 import org.searchisko.api.rest.exception.NotAuthorizedException;
@@ -161,8 +162,7 @@ public class AuthenticationUtilService {
 		if (principal == null) {
 			return null;
 		}
-		// CAS uses own principal so we can distinguish authentication source based on it
-		if (principal instanceof ContributorPrincipal || principal instanceof org.jasig.cas.client.jaas.AssertionPrincipal) {
+		if (principal instanceof ContributorPrincipal) {
 			return AuthenticatedUserType.CONTRIBUTOR;
 		} else if (principal instanceof ProviderPrincipal) {
 			return AuthenticatedUserType.PROVIDER;
