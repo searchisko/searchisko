@@ -42,8 +42,11 @@ import org.searchisko.contribprofile.provider.Jive6ContributorProfileProvider;
 @Singleton
 public class ContributorProfileService {
 
+	/** Type specific code for jboss.org username */
 	public static final String FIELD_TSC_JBOSSORG_USERNAME = "jbossorg_username";
+	/** Type specific code for github.com username */
 	public static final String FIELD_TSC_GITHUB_USERNAME = "github_username";
+
 	private static final Set<String> TSC_SUPPORTED = new HashSet<>();
 	static {
 		TSC_SUPPORTED.add(FIELD_TSC_JBOSSORG_USERNAME);

@@ -2,6 +2,13 @@
 
 This document contains high-level release notes. More details can be found in [milestones](https://github.com/searchisko/searchisko/issues/milestones) on GitHub.
 
+## 1.2.0
+
+Improvements:
+
+- Additional roles for authenticated user [#137](https://github.com/searchisko/searchisko/issues/137)
+
+
 ## 1.1.1
 
 Improvements:

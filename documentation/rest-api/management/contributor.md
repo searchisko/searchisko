@@ -25,6 +25,7 @@ Contributor configuration fields:
   data to this contributor. Key in the structure marks type of identifier (eg. 
   jboss.org username, github username), value in structure is identifier itself 
   used during mapping.
+* `roles` - List of additional roles that authenticated user has.
 
 Example of contributor configuration:
 
@@ -36,11 +37,12 @@ Example of contributor configuration:
 	    "jbossorg_username" : "jdoe",
 	    "github_username" : "john.doe",
 	    "jbossorg_blog": ["jbosstools.John Doe", "aerogear.John Doe"]
-	  }
+	  },
+	  "roles" : [ "admin" ]
 	}
 
 
 This information is not considered as public! If you have 
-to have some some public contributor informations (aka contributor profile), then simply create 
+to have some public contributor information (aka contributor profile), then simply create 
 necessary Content type and fill it with public contributor data. Searchisko has some support for this, 
 see issue #24 and [`contributor_profile`](../content/contributor_profile.md) content type.

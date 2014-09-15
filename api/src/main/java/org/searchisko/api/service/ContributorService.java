@@ -58,10 +58,10 @@ import org.searchisko.persistence.service.ListRequest;
  * <li> {@link ContributorMergedEvent}
  * <li> {@link ContributorCodeChangedEvent}
  * </ul>
- * 
+ *
  * @author Libor Krzyzanek
  * @author Vlastimil Elias (velias at redhat dot com)
- * 
+ *
  */
 @Named
 @Stateless
@@ -92,10 +92,17 @@ public class ContributorService implements SearchableEntityService {
 	public static final String FIELD_NAME = "name";
 
 	/**
+	 * Contributor document field containing array of roles.
+	 *
+	 * @see #getRolesByTypeSpecificCode(String, String)
+	 */
+	public static final String FIELD_ROLES = "roles";
+
+	/**
 	 * Contributor document field containing Map structure with other unique identifiers used to map pushed data to the
 	 * contributor. Key in the Map structure marks type of identifier (eg. jbossorg_username, github_username), value in
 	 * structure is identifier or array of identifiers itself used during mapping.
-	 * 
+	 *
 	 * @see {@link #findByTypeSpecificCode(String, String)} for description.
 	 */
 	public static final String FIELD_TYPE_SPECIFIC_CODE = "type_specific_code";
@@ -174,7 +181,7 @@ public class ContributorService implements SearchableEntityService {
 
 	/**
 	 * Same as {@link #create(Map)} but allows to control if {@link ContributorCreatedEvent} is fired or not.
-	 * 
+	 *
 	 * @param entity data about contributor
 	 * @param fireEvent true to fire ContributorCreatedEvent
 	 * @return id of created contributor
@@ -209,7 +216,7 @@ public class ContributorService implements SearchableEntityService {
 
 	/**
 	 * Same as {@link #create(String, Map)} but allows to control if Event is fired or not.
-	 * 
+	 *
 	 * @param id of contributor
 	 * @param entity
 	 * @param fireEvent true to fire events
@@ -249,7 +256,7 @@ public class ContributorService implements SearchableEntityService {
 
 	/**
 	 * Same as {@link #update(String, Map)} but allows to control if Event is fired or not.
-	 * 
+	 *
 	 * @param id of contributor
 	 * @param entity
 	 * @param fireEvent true to fire events
@@ -332,7 +339,7 @@ public class ContributorService implements SearchableEntityService {
 
 	/**
 	 * Real implementation of delete, do not fire event.
-	 * 
+	 *
 	 * @param id of contributor to delete.
 	 * @return contributor code. Null if contributor is not found.
 	 */
@@ -352,7 +359,7 @@ public class ContributorService implements SearchableEntityService {
 
 	/**
 	 * Find contributor by <code>code</code> (unique id used in content).
-	 * 
+	 *
 	 * @param code to search contributor for.
 	 * @return search result - should contain zero or one contributor only! Multiple contributors for one code is
 	 *         configuration problem!
@@ -367,7 +374,7 @@ public class ContributorService implements SearchableEntityService {
 
 	/**
 	 * Find contributor by email.
-	 * 
+	 *
 	 * @param email address to search contributor for.
 	 * @return search result - should contain zero or one contributor only! Multiple contributors for one email address is
 	 *         configuration problem!
@@ -382,7 +389,7 @@ public class ContributorService implements SearchableEntityService {
 
 	/**
 	 * Find contributor by name.
-	 * 
+	 *
 	 * @param name to search contributor for.
 	 * @param exactMatch if <code>true</code> then exact match over name is performed, if <code>false</code> then fulltext
 	 *          search is performed.
@@ -402,7 +409,7 @@ public class ContributorService implements SearchableEntityService {
 	/**
 	 * Find contributor by 'type specific code'. These codes are used to map from third party unique identifiers to
 	 * searchisko unique contributor id.
-	 * 
+	 *
 	 * @param codeName name of 'type specific code', eg. <code>jbossorg_username</code>, <code>github_username</code>
 	 * @param codeValue value of code to search for
 	 * @return search result - should contain zero or one contributor only! Multiple contributors for one code is
@@ -424,7 +431,7 @@ public class ContributorService implements SearchableEntityService {
 	 * Be careful, this method returns SCROLL response, so you have to use
 	 * {@link SearchClientService#executeESScrollSearchNextRequest(SearchResponse)} to get real data and go over them as
 	 * is common ES scroll mechanism.
-	 * 
+	 *
 	 * @param codeName name of 'type specific code', eg. <code>jbossorg_username</code>, <code>github_username</code>
 	 * @return search result - should contain zero or more contributors - scrollable!!.
 	 */
@@ -438,8 +445,36 @@ public class ContributorService implements SearchableEntityService {
 	}
 
 	/**
+	 * Get roles for contributor identified by username in type specific field named by codeName attribute.
+	 * <br/>
+	 * Roles are defined in {@link #FIELD_ROLES}
+	 * @param codeName name of 'type specific code', eg. <code>jbossorg_username</code>, <code>github_username</code>
+	 * @param username third party identifier
+	 * @return list of roles or null if no roles defined
+	 * @see org.searchisko.api.service.ContributorProfileService#FIELD_TSC_JBOSSORG_USERNAME
+	 */
+	public List<String> getRolesByTypeSpecificCode(String codeName, String username) {
+		SearchResponse sr = findByTypeSpecificCode(codeName, username);
+		if (sr != null) {
+			if (sr.getHits().getTotalHits() > 1) {
+				log.log(Level.SEVERE,
+						"Configuration problem! Contributor has more than one exact matching contributors! Type specific code: {0}, value: {1}",
+						new Object[]{codeName, username});
+				return null;
+			}
+			if (sr.getHits().getTotalHits() == 1) {
+				Map<String, Object> fields = sr.getHits().getHits()[0].getSource();
+				return extractRoles(fields);
+			} else {
+				log.log(Level.FINE, "No contributor found");
+			}
+		}
+		return null;
+	}
+
+	/**
 	 * Create contributor ID from user related informations.
-	 * 
+	 *
 	 * @param fullName of user
 	 * @param email primary email of user
 	 * @return contributor id
@@ -457,7 +492,7 @@ public class ContributorService implements SearchableEntityService {
 	/**
 	 * Extract contributor name from contributor id string. So extracts 'John Doe' from '
 	 * <code>John Doe <john@doe.org></code>'.
-	 * 
+	 *
 	 * @param contributorID id to extract name from
 	 * @return contributor name
 	 */
@@ -473,6 +508,20 @@ public class ContributorService implements SearchableEntityService {
 	}
 
 	/**
+	 * Extract roles from contributor entry
+	 *
+	 * @param fields
+	 * @return
+	 */
+	@SuppressWarnings("unchecked")
+	public static List<String> extractRoles(Map<String, Object> fields) {
+		if (fields.containsKey(FIELD_ROLES)) {
+			return (List<String>) fields.get(FIELD_ROLES);
+		}
+		return null;
+	}
+
+	/**
 	 * Create or update Contributor record from {@link ContributorProfile} informations loaded from provider using type
 	 * specific code.
 	 * <p>
@@ -480,7 +529,7 @@ public class ContributorService implements SearchableEntityService {
 	 * {@link ContributorMergedEvent} may be fired also if this method detects that merge is necessary. Series of
 	 * {@link ContributorUpdatedEvent} events for other Contributors may be fired also if this method patches uniqueness
 	 * of <code>email</code>s and other <code>type_specific_code</code>s.
-	 * 
+	 *
 	 * @param profile to create/update Contributor from
 	 * @param typeSpecificCodeField profile has been loaded for. Can be null not to use this code to search for
 	 *          Contributor.
@@ -786,7 +835,7 @@ public class ContributorService implements SearchableEntityService {
 	/**
 	 * Get contributor code (unique contributor id within Searchisko used in other documents) from Contributor data
 	 * structure.
-	 * 
+	 *
 	 * @param contribStructure to get code from
 	 * @return contributor code
 	 */
@@ -796,7 +845,7 @@ public class ContributorService implements SearchableEntityService {
 
 	/**
 	 * Get first value of 'Contributor type specific code' from Contributor data structure.
-	 * 
+	 *
 	 * @param contribStructure to get code from
 	 * @param contributorCodeType type of code to get
 	 * @return first code of given type or null
@@ -827,7 +876,7 @@ public class ContributorService implements SearchableEntityService {
 
 	/**
 	 * Change code of contributor to new value. Content reindexation task is started to maintain data consistency.
-	 * 
+	 *
 	 * @param id of contributor to change code for
 	 * @param code new code
 	 * @return contributor's data after change
@@ -868,7 +917,7 @@ public class ContributorService implements SearchableEntityService {
 
 	/**
 	 * Merge two contributors into one. Content reindexation task is started to maintain data consistency.
-	 * 
+	 *
 	 * @param idFrom identifier of Contributor who is source of merge (so is deleted at the end)
 	 * @param idTo identifier of Contributor who is target of merge (so is kept at the end)
 	 * @return final Contributor definition which is result of merge
