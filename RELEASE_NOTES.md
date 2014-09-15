@@ -2,6 +2,23 @@
 
 This document contains high-level release notes. More details can be found in [milestones](https://github.com/searchisko/searchisko/issues/milestones) on GitHub.
 
+## 1.1.1
+
+Improvements:
+
+- Replicate social profile links from Jive to contributor\_profile [#132](https://github.com/searchisko/searchisko/issues/132)
+
+Bug fixes:
+
+- Fix `JdbcContentPersistenceService` unique id constraint violation during content store operation [#129](https://github.com/searchisko/searchisko/issues/129)
+- Change mapping of `/indexer/_all/_status` REST end point from `POST` to `GET` [#119](https://github.com/searchisko/searchisko/issues/119)
+- Fix bad format of `/indexer/_all/_status` REST end point JSON response [#133](https://github.com/searchisko/searchisko/issues/133)
+- Prevent two "Access-Control-Allow-Origin" headers on /v1/rest/sys/es/search/ REST API [#122](https://github.com/searchisko/searchisko/issues/122)
+
+Internal:
+
+- Improved handling of JSON data in unit tests [#134](https://github.com/searchisko/searchisko/issues/134),[#135](https://github.com/searchisko/searchisko/issues/135),[#136](https://github.com/searchisko/searchisko/issues/136)
+
 ## 1.1.0
 
 - Security improved to use standard JAAS role based access control [#76](https://github.com/searchisko/searchisko/issues/76)

@@ -9,7 +9,7 @@ Set Up
 It's necessary to have an unpacked JBoss AS / JBoss EAP bundle.
 Set environment variable `JBOSS_HOME` to AS location e.g.
 
-	export JBOSS_HOME={your user home}/app/INTEG-TEST-jboss-eap-6.2.2
+	export JBOSS_HOME={your user home}/app/INTEG-TEST-jboss-eap-6.3.0
 
 Integration tests are executed against AS with `standalone.xml` profile as default.
 
@@ -34,7 +34,7 @@ It's needed to add security domain `SearchiskoSecurityDomainFTEST` into the `$JB
 
 Note: Security domain name is intentionally different because functional tests uses HTTP Basic authentication to authenticate contributors.
 
-See [JBoss EAP 6.2 standalone.xml example](§) how it can looks like
+See [JBoss EAP 6.3 standalone.xml example](§) how it can looks like
 
 Running tests
 -------------

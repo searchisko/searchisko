@@ -4,7 +4,7 @@ Searchisko Development Guide
 ## Technologies used
 
 * ElasticSearch fulltext search engine
-* JBoss EAP 6.2 - Java EE 6 - JAX-RS RestEasy, CDI, EJB Session beans, Hibernate JPA
+* JBoss EAP 6.3 - Java EE 6 - JAX-RS RestEasy, CDI, EJB Session beans, Hibernate JPA
 * Jackson for JSON processing
 * JUnit, Mockito for unit tests
 * Arquillian for functional tests
@@ -118,7 +118,7 @@ See how is Openshift configured in [Configuration](/.openshift/conf/standalone.x
 #### localhost development
 
 Build project with `localhost` development profile. 
-Deploy `ROOT.war` to the JBoss EAP 6.2 `standalone` configuration, i.e. copy it
+Deploy `ROOT.war` to the JBoss EAP 6.3 `standalone` configuration, i.e. copy it
 to the `$EAP6HOME/standalone/deployments` folder. 
 You can use [Eclipse with JBoss Tools](http://www.jboss.org/tools) or 
 [JBoss Developer Studio](https://devstudio.jboss.com) for this.

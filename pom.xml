@@ -6,7 +6,7 @@
     <groupId>org.searchisko</groupId>
     <artifactId>parent</artifactId>
     <packaging>pom</packaging>
-    <version>1.1.1-SNAPSHOT</version>
+    <version>1.1.1</version>
     <name>Searchisko</name>
     <description>Searchisko - Index, search, retrieve and aggregate content from heterogeneous resources.
     </description>
@@ -86,7 +86,7 @@
         <!-- <jboss.bom.version>1.0.0.Final</jboss.bom.version> -->
         <!-- Alternatively, comment out the above line, and un-comment the line below to use version 1.0.0.Final-redhat-1 which
             is a release certified to work with JBoss EAP 6. It requires you have access to the JBoss EAP 6 maven repository. -->
-        <jboss.bom.version>6.2.0.GA</jboss.bom.version>
+        <jboss.bom.version>6.3.0.GA</jboss.bom.version>
         <structured-content-tools.version>1.2.11</structured-content-tools.version>
         <elasticsearch-river-jira.version>1.4.5</elasticsearch-river-jira.version>
         <elasticsearch-river-remote.version>1.2.8</elasticsearch-river-remote.version>
@@ -118,7 +118,7 @@
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
-			<!-- Dependency management for JBoss EAP 6.2 artifacts -->
+			<!-- Dependency management for JBoss EAP artifacts -->
 			<dependency>
 				<groupId>org.jboss.bom</groupId>
 				<artifactId>eap6-supported-artifacts</artifactId>
@@ -149,7 +149,7 @@
                 <version>${hamcrest.version}</version>
             </dependency>
 			<!-- httpclient needed by API but it's transitive dependency by river-jira and rest-assured -->
-			<!-- Thanks to this only definitino one version is used for both api and ftest modules -->
+			<!-- Thanks to this only definition one version is used for both api and ftest modules -->
 			<dependency>
 				<groupId>org.apache.httpcomponents</groupId>
 				<artifactId>httpclient</artifactId>
@@ -166,7 +166,7 @@
 		<profile>
 			<id>site</id>
 			<reporting>
-				<!-- Have to be defined here as well otherwise suerefire report doesn't have links to sources -->
+				<!-- Have to be defined here as well otherwise surefire report doesn't have links to sources -->
 				<plugins>
 					<plugin>
 						<groupId>org.apache.maven.plugins</groupId>
