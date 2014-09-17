@@ -24,8 +24,9 @@ import org.searchisko.api.security.jaas.ContributorPrincipal;
 import org.searchisko.api.util.SearchUtils;
 
 /**
- * Authentication utility service. Use it in your RestServices if you need info about currently logged in user! Also
- * contains methods for fine grained permission checks.
+ * Authentication utility service. Use it in your RestServices and other places if you need info about currently logged
+ * in user! Also contains methods for fine grained permission checks. It encapsulates underlying security mechanism
+ * based on {@link HttpServletRequest#isUserInRole(String)} and {@link HttpServletRequest#getUserPrincipal()}.
  * 
  * @author Libor Krzyzanek
  * @author Vlastimil Elias (velias at redhat dot com)
@@ -46,7 +47,7 @@ public class AuthenticationUtilService {
 	/**
 	 * request scoped cache.
 	 */
-	private String cachedContributorId;
+	protected String cachedContributorId;
 
 	/**
 	 * Check if any user is authenticated just now.
@@ -137,9 +138,13 @@ public class AuthenticationUtilService {
 			log.log(Level.FINE, "Going to check ProviderManage permission for provider {0} and principal {1}", new Object[] {
 					providerName, httpRequest.getUserPrincipal() });
 		}
-		if (httpRequest.getUserPrincipal() != null && providerName != null
-				&& (httpRequest.isUserInRole(Role.ADMIN) || providerName.equalsIgnoreCase(getAuthenticatedProvider()))) {
-			return;
+		try {
+			if (httpRequest.getUserPrincipal() != null && providerName != null
+					&& (httpRequest.isUserInRole(Role.ADMIN) || providerName.equalsIgnoreCase(getAuthenticatedProvider()))) {
+				return;
+			}
+		} catch (NotAuthenticatedException e) {
+			// let id be as we throw new one later
 		}
 		throw new NotAuthorizedException("management permission for content provider " + providerName);
 	}
@@ -247,11 +252,13 @@ public class AuthenticationUtilService {
 		if (httpRequest.getUserPrincipal() == null) {
 			return false;
 		}
-		switch (userType) {
-		case PROVIDER:
-			return httpRequest.isUserInRole(Role.PROVIDER);
-		case CONTRIBUTOR:
-			return httpRequest.isUserInRole(Role.CONTRIBUTOR);
+		if (userType != null) {
+			switch (userType) {
+			case PROVIDER:
+				return httpRequest.isUserInRole(Role.PROVIDER);
+			case CONTRIBUTOR:
+				return httpRequest.isUserInRole(Role.CONTRIBUTOR);
+			}
 		}
 		return false;
 	}
