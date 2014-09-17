@@ -1,49 +1,39 @@
 package org.searchisko.api.security.jaas;
 
-import java.security.Principal;
+import org.jasig.cas.client.validation.Assertion;
 
 /**
- * Contributor principal. It's used when provider is authenticated although CAS uses own ${@link org.jasig.cas.client.jaas.AssertionPrincipal}
+ * Contributor principal. It's used when contributor is authenticated
  *
  * @author Libor Krzyzanek
  * @see org.jasig.cas.client.jaas.AssertionPrincipal
  */
-public class ContributorPrincipal implements Principal {
+public class ContributorPrincipal extends org.jasig.cas.client.jaas.AssertionPrincipal {
 
-	// TODO: Unify ContributorPrincipal with CAS's org.jasig.cas.client.jaas.AssertionPrincipal
-
-	protected String name;
-
-	public ContributorPrincipal(String name) {
-		this.name = name;
+	/**
+	 * Use only for test purposes!
+	 *
+	 * @param name
+	 */
+	public ContributorPrincipal(final String name) {
+		this(name, null);
 	}
 
-	@Override
-	public String getName() {
-		return name;
-	}
-
-	@Override
-	public boolean equals(Object o) {
-		if (this == o) return true;
-		if (o == null || getClass() != o.getClass()) return false;
-
-		ContributorPrincipal that = (ContributorPrincipal) o;
-
-		if (name != null ? !name.equals(that.name) : that.name != null) return false;
-
-		return true;
-	}
-
-	@Override
-	public int hashCode() {
-		return name != null ? name.hashCode() : 0;
+	/**
+	 * Use in LoginModule
+	 *
+	 * @param name
+	 * @param assertion
+	 */
+	public ContributorPrincipal(final String name, final Assertion assertion) {
+		super(name, assertion);
 	}
 
 	@Override
 	public String toString() {
 		return "ContributorPrincipal{" +
-				"name='" + name + '\'' +
+				"name='" + getName() + '\'' +
+				",assertion='" + getAssertion() + '\'' +
 				'}';
 	}
 }

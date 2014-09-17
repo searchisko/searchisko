@@ -1,26 +1,42 @@
 package org.searchisko.api.security.jaas;
 
-import org.jasig.cas.client.authentication.SimpleGroup;
-import org.jasig.cas.client.jaas.CasLoginModule;
-import org.jasig.cas.client.util.CommonUtils;
-import org.searchisko.api.service.AppConfigurationService;
-import org.searchisko.api.service.ProviderService;
-import org.searchisko.api.util.CdiHelper;
-
-import javax.inject.Inject;
-import javax.naming.NamingException;
-import javax.security.auth.Subject;
-import javax.security.auth.callback.*;
-import javax.security.auth.login.LoginException;
 import java.io.IOException;
+import java.security.acl.Group;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.inject.Inject;
+import javax.naming.NamingException;
+import javax.security.auth.Subject;
+import javax.security.auth.callback.Callback;
+import javax.security.auth.callback.CallbackHandler;
+import javax.security.auth.callback.NameCallback;
+import javax.security.auth.callback.PasswordCallback;
+import javax.security.auth.callback.UnsupportedCallbackException;
+import javax.security.auth.login.LoginException;
+
+import org.jasig.cas.client.authentication.SimpleGroup;
+import org.jasig.cas.client.authentication.SimplePrincipal;
+import org.jasig.cas.client.jaas.AssertionPrincipal;
+import org.jasig.cas.client.jaas.CasLoginModule;
+import org.jasig.cas.client.util.CommonUtils;
+import org.searchisko.api.service.AppConfigurationService;
+import org.searchisko.api.service.ContributorProfileService;
+import org.searchisko.api.service.ContributorService;
+import org.searchisko.api.service.ProviderService;
+import org.searchisko.api.util.CdiHelper;
+
 /**
  * CAS JAAS Login Module
+ * <br/>
+ * Configuration:<br/>
+ * <li>
+ * <ul>contributorTypeSpecificCodeIdentifier - Name of type specific field in Contributor document used for exact match for finding corresponding contributor </ul>
+ * </li>
  *
  * @author Libor Krzyzanek
  * @see org.searchisko.api.security.Role
@@ -36,6 +52,14 @@ public class ContributorCasLoginModule extends CasLoginModule {
 	@Inject
 	protected AppConfigurationService appConfigurationService;
 
+	@Inject
+	protected ContributorService contributorService;
+
+	/**
+	 * Name of type specific field in Contributor document used for exact match for finding corresponding contributor
+	 */
+	protected String contributorTypeSpecificCodeIdentifier = ContributorProfileService.FIELD_TSC_JBOSSORG_USERNAME;
+
 	@Override
 	public void initialize(Subject subject, CallbackHandler handler, Map<String, ?> state, Map<String, ?> options) {
 		try {
@@ -44,6 +68,11 @@ public class ContributorCasLoginModule extends CasLoginModule {
 			throw new RuntimeException("Cannot initialize Login module", e);
 		}
 		log.log(Level.FINE, "Initializing JAAS ContributorCasLoginModule");
+
+		if (options.containsKey("contributorTypeSpecificCodeIdentifier")) {
+			contributorTypeSpecificCodeIdentifier = options.get("contributorTypeSpecificCodeIdentifier").toString();
+		}
+		log.log(Level.FINE, "contributorTypeSpecificCodeIdentifier: " + contributorTypeSpecificCodeIdentifier);
 
 		HashMap<String, Object> ops = new HashMap<>(options);
 
@@ -90,14 +119,43 @@ public class ContributorCasLoginModule extends CasLoginModule {
 		}
 
 
-		//TODO: Set roles to CAS authenticated contributor
+		fixPrincipal();
+
 		Set<SimpleGroup> groups = subject.getPrincipals(org.jasig.cas.client.authentication.SimpleGroup.class);
 		log.log(Level.FINE, "Add Roles to authenticated contributor, default roles: {0}", groups);
 
-//		for (SimpleGroup g : groups) {
-//			g.addMember(new SimplePrincipal("test_role"));
-//		}
+		for (SimpleGroup g : groups) {
+			if (this.roleGroupName.equals(g.getName())) {
+				List<String> roles = getContributorRoles(this.assertion.getPrincipal().getName());
+				if (roles != null) {
+					for (String role : roles) {
+						g.addMember(new SimplePrincipal(role));
+					}
+				}
+				log.log(Level.FINE, "Actual roles: {0}", g);
+				break;
+			}
+		}
 
 		return success;
+	}
+
+	protected List<String> getContributorRoles(String username) {
+		return contributorService.getRolesByTypeSpecificCode(contributorTypeSpecificCodeIdentifier, username);
+	}
+
+	protected void fixPrincipal() {
+		log.log(Level.FINEST, "Remove CAS principal and default group. Assertion name: {0}", this.assertion.getPrincipal().getName());
+		this.subject.getPrincipals().remove(new AssertionPrincipal(this.assertion.getPrincipal().getName(), this.assertion));
+		this.subject.getPrincipals().remove(new SimpleGroup(this.principalGroupName));
+
+
+		log.log(Level.FINEST, "Add ContributorPrincipal");
+		final ContributorPrincipal contributorPrincipal = new ContributorPrincipal(this.assertion.getPrincipal().getName(), this.assertion);
+		this.subject.getPrincipals().add(contributorPrincipal);
+
+		final Group principalGroup = new SimpleGroup(this.principalGroupName);
+		principalGroup.addMember(contributorPrincipal);
+		this.subject.getPrincipals().add(principalGroup);
 	}
 }
