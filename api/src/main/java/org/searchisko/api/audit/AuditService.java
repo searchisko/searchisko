@@ -6,14 +6,15 @@
 
 package org.searchisko.api.audit;
 
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Method;
+
 import javax.ejb.Stateless;
 import javax.enterprise.inject.Any;
 import javax.enterprise.inject.Instance;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.servlet.http.HttpServletRequest;
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Method;
 
 import org.searchisko.api.audit.annotation.AuditContent;
 import org.searchisko.api.audit.annotation.AuditId;
@@ -23,7 +24,7 @@ import org.searchisko.api.service.AuthenticationUtilService;
 
 /**
  * Business logic for Audit Facility
- *
+ * 
  * @author Libor Krzyzanek
  */
 @Named
@@ -42,7 +43,7 @@ public class AuditService {
 
 	/**
 	 * Do the audit logic
-	 *
+	 * 
 	 * @param method
 	 * @param parameters method's parameters
 	 */
@@ -56,15 +57,16 @@ public class AuditService {
 			path = httpRequest.getRequestURI().substring(httpRequest.getContextPath().length());
 			operation = httpRequest.getMethod();
 		}
-		AuthenticatedUserType userType = authenticationUtilService.getUserType(httpRequest.getUserPrincipal());
+		AuthenticatedUserType userType = authenticationUtilService.getAuthenticatedUserType();
 		for (AuditHandler handler : auditHandlers) {
-			handler.handle(method, operation, path, httpRequest.getUserPrincipal(), userType, content, id);
+			handler.handle(method, operation, path, authenticationUtilService.getAuthenticatedUserPrincipal(), userType,
+					content, id);
 		}
 	}
 
 	/**
 	 * Helper method to get value of called method for desired annotation
-	 *
+	 * 
 	 * @param method
 	 * @param parameters
 	 * @param expectedAnnotation

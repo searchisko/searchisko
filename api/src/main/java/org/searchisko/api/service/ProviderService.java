@@ -59,6 +59,8 @@ public class ProviderService implements EntityService {
 
 	/** Configuration Key for sys_type setting **/
 	public static final String SYS_TYPE = "sys_type";
+	/** Configuration Key for sys_visible_for_roles setting **/
+	public static final String SYS_VISIBLE_FOR_ROLES = "sys_visible_for_roles";
 	/** Configuration Key for preprocessors setting **/
 	public static final String INPUT_PREPROCESSORS = "input_preprocessors";
 	/** Configuration Key for Elasticsearch indices **/
