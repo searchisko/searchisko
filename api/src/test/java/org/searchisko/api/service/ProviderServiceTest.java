@@ -7,6 +7,7 @@ package org.searchisko.api.service;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -304,6 +305,63 @@ public class ProviderServiceTest extends ESRealClientTestBase {
 		} catch (SettingsException e) {
 			// OK
 		}
+	}
+
+	@Test
+	public void extractTypeVisibilityRoles() {
+		Map<String, Object> typeDef = new HashMap<String, Object>();
+
+		// case - no roles field defined
+		Assert.assertNull(ProviderService.extractTypeVisibilityRoles(typeDef, TEST_TYPE_NAME));
+		Assert.assertNull(ProviderService
+				.extractTypeVisibilityRoles(createProviderContentTypeInfo(typeDef), TEST_TYPE_NAME));
+
+		// case - roles field is empty
+		List<String> rolesList = new ArrayList<>();
+		typeDef.put(ProviderService.SYS_VISIBLE_FOR_ROLES, rolesList);
+		Assert.assertNull(ProviderService.extractTypeVisibilityRoles(typeDef, TEST_TYPE_NAME));
+		Assert.assertNull(ProviderService
+				.extractTypeVisibilityRoles(createProviderContentTypeInfo(typeDef), TEST_TYPE_NAME));
+
+		// case - roles returned
+		rolesList.add("ROLE1");
+		{
+			Collection<String> ret = ProviderService.extractTypeVisibilityRoles(typeDef, TEST_TYPE_NAME);
+			Assert.assertTrue(ret.contains("ROLE1"));
+			Assert.assertEquals(1, ret.size());
+		}
+		rolesList.add("ROLE2 ");
+		{
+			Collection<String> ret = ProviderService.extractTypeVisibilityRoles(createProviderContentTypeInfo(typeDef),
+					TEST_TYPE_NAME);
+			Assert.assertTrue(ret.contains("ROLE1"));
+			Assert.assertTrue(ret.contains("ROLE2"));
+			Assert.assertEquals(2, ret.size());
+		}
+
+		// case - role field fith one String
+		{
+			typeDef.put(ProviderService.SYS_VISIBLE_FOR_ROLES, "AAAA");
+			Collection<String> ret = ProviderService.extractTypeVisibilityRoles(typeDef, TEST_TYPE_NAME);
+			Assert.assertTrue(ret.contains("AAAA"));
+			Assert.assertEquals(1, ret.size());
+		}
+
+		// case - role field configuration invalid
+		typeDef.put(ProviderService.SYS_VISIBLE_FOR_ROLES, new Integer(25));
+		try {
+			ProviderService.extractTypeVisibilityRoles(typeDef, TEST_TYPE_NAME);
+			Assert.fail("SettingsException expected");
+		} catch (SettingsException e) {
+			// OK
+		}
+		try {
+			ProviderService.extractTypeVisibilityRoles(createProviderContentTypeInfo(typeDef), TEST_TYPE_NAME);
+			Assert.fail("SettingsException expected");
+		} catch (SettingsException e) {
+			// OK
+		}
+
 	}
 
 	@Test
