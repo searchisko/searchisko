@@ -10,6 +10,7 @@ import java.io.InputStreamReader;
 import java.io.StringWriter;
 import java.util.logging.Logger;
 
+import javax.annotation.Resource;
 import javax.ejb.Singleton;
 import javax.enterprise.context.ContextNotActiveException;
 import javax.enterprise.context.RequestScoped;
@@ -19,6 +20,8 @@ import javax.faces.context.FacesContext;
 import javax.inject.Named;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+
+import org.infinispan.manager.EmbeddedCacheManager;
 
 /**
  * This class uses CDI to alias Java EE resources, such as the persistence context, to CDI beans
@@ -63,6 +66,11 @@ public class Resources {
 		}
 		return ctx;
 	}
+
+	@SuppressWarnings("unused")
+	@Produces
+	@Resource(lookup="java:jboss/infinispan/container/searchisko")
+	private static EmbeddedCacheManager container;
 
 	/**
 	 * Read file from classpath into String. UTF-8 encoding expected.

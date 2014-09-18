@@ -1,23 +1,41 @@
 package org.searchisko.api.security.jaas;
 
-import java.security.Principal;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Provider principal. It's used when provider is authenticated.
  *
  * @author Libor Krzyzanek
  */
-public class ProviderPrincipal implements Principal {
+public class ProviderPrincipal implements PrincipalWithRoles {
 
 	protected String name;
 
+	protected Set<String> roles;
+
 	public ProviderPrincipal(String name) {
+		this(name, new HashSet<String>());
+	}
+
+	public ProviderPrincipal(String name, Set<String> roles) {
 		this.name = name;
+		this.roles = roles;
 	}
 
 	@Override
 	public String getName() {
 		return name;
+	}
+
+	@Override
+	public Set<String> getRoles() {
+		return roles;
+	}
+
+	@Override
+	public void setRoles(Set<String> roles) {
+		this.roles = roles;
 	}
 
 	@Override
@@ -41,6 +59,7 @@ public class ProviderPrincipal implements Principal {
 	public String toString() {
 		return "ProviderPrincipal{" +
 				"name='" + name + '\'' +
+				"roles='" + roles + '\'' +
 				'}';
 	}
 }

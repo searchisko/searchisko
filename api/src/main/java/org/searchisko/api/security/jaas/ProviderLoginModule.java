@@ -1,22 +1,25 @@
 package org.searchisko.api.security.jaas;
 
-import org.jasig.cas.client.authentication.SimplePrincipal;
-import org.jboss.security.SimpleGroup;
-import org.jboss.security.auth.spi.UsernamePasswordLoginModule;
-import org.searchisko.api.security.Role;
-import org.searchisko.api.service.ProviderService;
-import org.searchisko.api.util.CdiHelper;
+import java.security.acl.Group;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.inject.Inject;
 import javax.naming.NamingException;
 import javax.security.auth.Subject;
 import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.login.LoginException;
-import java.security.acl.Group;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+
+import org.jasig.cas.client.authentication.SimplePrincipal;
+import org.jboss.security.SimpleGroup;
+import org.jboss.security.auth.spi.UsernamePasswordLoginModule;
+import org.searchisko.api.security.Role;
+import org.searchisko.api.service.ProviderService;
+import org.searchisko.api.util.CdiHelper;
 
 /**
  * Provider login module. Extension of Picketbox's UsernamePasswordLoginModule.
@@ -58,6 +61,18 @@ public class ProviderLoginModule extends UsernamePasswordLoginModule {
 		return super.login();
 	}
 
+
+	@Override
+	public boolean commit() throws LoginException {
+		boolean success = super.commit();
+
+		if (success) {
+			ProviderPrincipal principal = (ProviderPrincipal) getIdentity();
+			principal.setRoles(getRoles(getUsername()));
+		}
+		return success;
+	}
+
 	@Override
 	protected boolean validatePassword(String inputPassword, String expectedPassword) {
 		log.log(Level.FINE, "Validate password for username: {0}", getUsername());
@@ -84,12 +99,19 @@ public class ProviderLoginModule extends UsernamePasswordLoginModule {
 		Group[] groups = new Group[1];
 		// RoleGroup
 		groups[0] = new SimpleGroup("Roles");
-		groups[0].addMember(new SimplePrincipal(Role.PROVIDER));
-
-		if (providerService.isSuperProvider(getUsername())) {
-			groups[0].addMember(new SimplePrincipal(Role.ADMIN));
+		for (String role : getRoles(getUsername())) {
+			groups[0].addMember(new SimplePrincipal(role));
 		}
 
 		return groups;
+	}
+
+	protected Set<String> getRoles(String username) {
+		Set<String> roles = new HashSet<>();
+		roles.add(Role.PROVIDER);
+		if (providerService.isSuperProvider(username)) {
+			roles.add(Role.ADMIN);
+		}
+		return roles;
 	}
 }

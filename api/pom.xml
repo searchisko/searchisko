@@ -147,6 +147,11 @@
 		</dependency>
 
 		<dependency>
+			<groupId>commons-collections</groupId>
+			<artifactId>commons-collections</artifactId>
+		</dependency>
+
+		<dependency>
 			<groupId>org.elasticsearch</groupId>
 			<artifactId>elasticsearch</artifactId>
 		</dependency>
@@ -187,6 +192,13 @@
 		<dependency>
 			<groupId>org.picketbox</groupId>
 			<artifactId>picketbox</artifactId>
+			<scope>provided</scope>
+		</dependency>
+
+		<!-- Needed by using Infinispan CacheManager -->
+		<dependency>
+			<groupId>org.infinispan</groupId>
+			<artifactId>infinispan-core</artifactId>
 			<scope>provided</scope>
 		</dependency>
 

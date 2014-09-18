@@ -3,7 +3,6 @@ package org.searchisko.api.security.jaas;
 import java.io.IOException;
 import java.security.acl.Group;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
@@ -119,20 +118,27 @@ public class ContributorCasLoginModule extends CasLoginModule {
 		}
 
 
-		fixPrincipal();
+		ContributorPrincipal contributorPrincipal = fixPrincipal();
 
 		Set<SimpleGroup> groups = subject.getPrincipals(org.jasig.cas.client.authentication.SimpleGroup.class);
 		log.log(Level.FINE, "Add Roles to authenticated contributor, default roles: {0}", groups);
 
+		Set<String> roles = contributorPrincipal.getRoles();
+		for (final String defaultRole : defaultRoles) {
+			roles.add(defaultRole);
+		}
+
 		for (SimpleGroup g : groups) {
 			if (this.roleGroupName.equals(g.getName())) {
-				List<String> roles = getContributorRoles(this.assertion.getPrincipal().getName());
-				if (roles != null) {
-					for (String role : roles) {
+				Set<String> contributorRoles = getContributorRoles(this.assertion.getPrincipal().getName());
+				if (contributorRoles != null) {
+					for (String role : contributorRoles) {
 						g.addMember(new SimplePrincipal(role));
+						contributorPrincipal.getRoles().add(role);
 					}
 				}
-				log.log(Level.FINE, "Actual roles: {0}", g);
+				log.log(Level.FINE, "Actual roles in role group: {0}", g);
+				log.log(Level.FINE, "Actual roles in principal: {0}", roles);
 				break;
 			}
 		}
@@ -140,11 +146,11 @@ public class ContributorCasLoginModule extends CasLoginModule {
 		return success;
 	}
 
-	protected List<String> getContributorRoles(String username) {
+	protected Set<String> getContributorRoles(String username) {
 		return contributorService.getRolesByTypeSpecificCode(contributorTypeSpecificCodeIdentifier, username);
 	}
 
-	protected void fixPrincipal() {
+	protected ContributorPrincipal fixPrincipal() {
 		log.log(Level.FINEST, "Remove CAS principal and default group. Assertion name: {0}", this.assertion.getPrincipal().getName());
 		this.subject.getPrincipals().remove(new AssertionPrincipal(this.assertion.getPrincipal().getName(), this.assertion));
 		this.subject.getPrincipals().remove(new SimpleGroup(this.principalGroupName));
@@ -157,5 +163,7 @@ public class ContributorCasLoginModule extends CasLoginModule {
 		final Group principalGroup = new SimpleGroup(this.principalGroupName);
 		principalGroup.addMember(contributorPrincipal);
 		this.subject.getPrincipals().add(principalGroup);
+
+		return contributorPrincipal;
 	}
 }

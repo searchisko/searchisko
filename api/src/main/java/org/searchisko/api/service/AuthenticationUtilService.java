@@ -7,6 +7,7 @@ package org.searchisko.api.service;
 
 import java.security.Principal;
 import java.util.Collection;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -21,6 +22,7 @@ import org.searchisko.api.rest.exception.NotAuthorizedException;
 import org.searchisko.api.security.AuthenticatedUserType;
 import org.searchisko.api.security.Role;
 import org.searchisko.api.security.jaas.ContributorPrincipal;
+import org.searchisko.api.security.jaas.PrincipalWithRoles;
 import org.searchisko.api.util.SearchUtils;
 
 /**
@@ -242,6 +244,22 @@ public class AuthenticationUtilService {
 		} else {
 			return null;
 		}
+	}
+
+	/**
+	 * Get user roles for actually authenticated user.
+	 *
+	 * @return null if user is not authenticated or principal is not instance of {@link org.searchisko.api.security.jaas.PrincipalWithRoles}
+	 */
+	public Set<String> getUserRoles() {
+		Principal principal = httpRequest.getUserPrincipal();
+		if (httpRequest.getUserPrincipal() == null) {
+			return null;
+		}
+		if (principal instanceof PrincipalWithRoles) {
+			return ((PrincipalWithRoles)principal).getRoles();
+		}
+		return null;
 	}
 
 	/**

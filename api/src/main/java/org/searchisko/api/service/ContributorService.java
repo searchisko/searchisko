@@ -25,6 +25,7 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.ws.rs.core.StreamingOutput;
 
+import org.apache.commons.collections.ListUtils;
 import org.elasticsearch.action.bulk.BulkRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.Client;
@@ -35,10 +36,12 @@ import org.searchisko.api.events.ContributorCreatedEvent;
 import org.searchisko.api.events.ContributorDeletedEvent;
 import org.searchisko.api.events.ContributorMergedEvent;
 import org.searchisko.api.events.ContributorUpdatedEvent;
+import org.searchisko.api.events.RolesUpdatedEvent;
 import org.searchisko.api.reindexer.ReindexingTaskFactory;
 import org.searchisko.api.reindexer.ReindexingTaskTypes;
 import org.searchisko.api.rest.exception.BadFieldException;
 import org.searchisko.api.rest.exception.RequiredFieldException;
+import org.searchisko.api.security.AuthenticatedUserType;
 import org.searchisko.api.tasker.TaskConfigurationException;
 import org.searchisko.api.tasker.UnsupportedTaskException;
 import org.searchisko.api.util.Resources;
@@ -119,8 +122,12 @@ public class ContributorService implements SearchableEntityService {
 
 	@Inject
 	protected Event<ContributorCreatedEvent> eventCreate;
+
 	@Inject
 	protected Event<ContributorUpdatedEvent> eventUpdate;
+
+	@Inject
+	protected Event<RolesUpdatedEvent> eventRolesUpdate;
 
 	@Inject
 	protected Event<ContributorDeletedEvent> eventDelete;
@@ -226,6 +233,10 @@ public class ContributorService implements SearchableEntityService {
 		String newCode = validateCodeRequired(entity);
 		validateCodeUniqueness(newCode, id);
 		boolean exists = validateCodeNotChanged(id, newCode);
+		boolean rolesChanged = false;
+		if (exists && fireEvent) {
+			rolesChanged = isRolesChanged(id, entity);
+		}
 
 		entityService.create(id, entity);
 		updateSearchIndex(id, entity);
@@ -235,6 +246,14 @@ public class ContributorService implements SearchableEntityService {
 				ContributorUpdatedEvent event = new ContributorUpdatedEvent(id, newCode, entity);
 				log.log(Level.FINE, "Going to fire event {0}", event);
 				eventUpdate.fire(event);
+
+				if (rolesChanged) {
+					RolesUpdatedEvent rolesUpdatedEvent = new RolesUpdatedEvent(
+							AuthenticatedUserType.CONTRIBUTOR,
+							entity);
+					log.log(Level.FINE, "Going to fire roles changed event {0}", rolesUpdatedEvent);
+					eventRolesUpdate.fire(rolesUpdatedEvent);
+				}
 			} else {
 				ContributorCreatedEvent event = new ContributorCreatedEvent(id, newCode, entity);
 				log.log(Level.FINE, "Going to fire event {0}", event);
@@ -321,6 +340,15 @@ public class ContributorService implements SearchableEntityService {
 		return newCode;
 	}
 
+	protected boolean isRolesChanged(String id, Map<String, Object> entity) {
+		Map<String, Object> oldEntity = get(id);
+		if (oldEntity != null) {
+			Set<String> oldRoles = extractRoles(oldEntity);
+			Set<String> newRoles = extractRoles(entity);
+			return !ListUtils.isEqualList(oldRoles, newRoles);
+		}
+		return false;
+	}
 	/**
 	 * Delete contributor.
 	 * <p>
@@ -453,7 +481,7 @@ public class ContributorService implements SearchableEntityService {
 	 * @return list of roles or null if no roles defined
 	 * @see org.searchisko.api.service.ContributorProfileService#FIELD_TSC_JBOSSORG_USERNAME
 	 */
-	public List<String> getRolesByTypeSpecificCode(String codeName, String username) {
+	public Set<String> getRolesByTypeSpecificCode(String codeName, String username) {
 		SearchResponse sr = findByTypeSpecificCode(codeName, username);
 		if (sr != null) {
 			if (sr.getHits().getTotalHits() > 1) {
@@ -514,9 +542,10 @@ public class ContributorService implements SearchableEntityService {
 	 * @return
 	 */
 	@SuppressWarnings("unchecked")
-	public static List<String> extractRoles(Map<String, Object> fields) {
+	public static Set<String> extractRoles(Map<String, Object> fields) {
 		if (fields.containsKey(FIELD_ROLES)) {
-			return (List<String>) fields.get(FIELD_ROLES);
+			List<String> list = (List<String>) fields.get(FIELD_ROLES);
+			return new HashSet<String>(list);
 		}
 		return null;
 	}
