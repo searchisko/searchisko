@@ -24,6 +24,16 @@
                 "type"  : "t_provider2_cosi",
                 "search_indices" : ["idx_provider2_cosi1","idx_provider2_cosi2"]
             }
+        },
+        "provider2_issue_secure" : {
+            "sys_type"  : "issue",
+            "sys_visible_for_roles" : ["AAA","ROLE1"],
+            "search_all_excluded" : "true",
+            "index": {
+                "name" : "idx_provider2_issue_secure",
+                "type"  : "t_provider2_issue_secure"
+            }
         }
+        
     }
 }

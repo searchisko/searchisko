@@ -3,6 +3,7 @@
     "type"     : {
         "provider1_issue" : {
             "sys_type"  : "issue",
+            "sys_visible_for_roles" : [],
             "index": {
                 "name" : "idx_provider1_issue",
                 "type"  : "t_provider1_issue"
@@ -23,6 +24,14 @@
                 "name" : "idx_provider1_cosi",
                 "type"  : "t_provider1_cosi",
                 "search_indices" : ["idx_provider1_cosi1","idx_provider1_cosi2"]
+            }
+        },
+        "provider1_issue_secure" : {
+            "sys_type"  : "issue",
+            "sys_visible_for_roles" : ["ROLE1", "AAA"],
+            "index": {
+                "name" : "idx_provider1_issue_secure",
+                "type"  : "t_provider1_issue_secure"
             }
         }
     }
