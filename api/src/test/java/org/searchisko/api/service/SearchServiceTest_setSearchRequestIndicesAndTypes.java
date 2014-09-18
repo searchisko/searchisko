@@ -22,16 +22,16 @@ import org.searchisko.api.rest.exception.NotAuthorizedException;
 import org.searchisko.api.security.Role;
 
 /**
- * Unit test for {@link SearchService} handleSearchIndicesAndTypes() method.
+ * Unit test for {@link SearchService} setSearchRequestIndicesAndTypes() method.
  * 
  * @author Vlastimil Elias (velias at redhat dot com)
  * @author Lukas Vlcek
  */
-public class SearchServiceTest_handleSearchIndicesAndTypes extends SearchServiceTestBase {
+public class SearchServiceTest_setSearchRequestIndicesAndTypes extends SearchServiceTestBase {
 
 	@SuppressWarnings("unchecked")
 	@Test
-	public void handleSearchIndicesAndTypes_basic() throws ReflectiveOperationException {
+	public void setSearchRequestIndicesAndTypes_basic() throws ReflectiveOperationException {
 		ConfigService configService = mockConfigurationService();
 
 		SearchService tested = getTested(configService);
@@ -89,7 +89,7 @@ public class SearchServiceTest_handleSearchIndicesAndTypes extends SearchService
 	}
 
 	@Test
-	public void handleSearchIndicesAndTypes_contentTypeFilter() throws ReflectiveOperationException {
+	public void setSearchRequestIndicesAndTypes_contentTypeFilter() throws ReflectiveOperationException {
 		ConfigService configService = mockConfigurationService();
 
 		SearchService tested = getTested(configService);
@@ -170,7 +170,7 @@ public class SearchServiceTest_handleSearchIndicesAndTypes extends SearchService
 
 	@SuppressWarnings("unchecked")
 	@Test
-	public void handleSearchIndicesAndTypes_sysTypeFilter() throws ReflectiveOperationException {
+	public void setSearchRequestIndicesAndTypes_sysTypeFilter() throws ReflectiveOperationException {
 		ConfigService configService = mockConfigurationService();
 
 		SearchService tested = getTested(configService);
@@ -350,7 +350,7 @@ public class SearchServiceTest_handleSearchIndicesAndTypes extends SearchService
 	}
 
 	@Test
-	public void handleSearchIndicesAndTypes_security_basic() throws ReflectiveOperationException {
+	public void setSearchRequestIndicesAndTypes_security_basic() throws ReflectiveOperationException {
 		ConfigService configService = mockConfigurationService();
 
 		SearchService tested = getTested(configService);
@@ -436,7 +436,7 @@ public class SearchServiceTest_handleSearchIndicesAndTypes extends SearchService
 	}
 
 	@Test
-	public void handleSearchIndicesAndTypes_security_contentTypeFilter() throws ReflectiveOperationException {
+	public void setSearchRequestIndicesAndTypes_security_contentTypeFilter() throws ReflectiveOperationException {
 		ConfigService configService = mockConfigurationService();
 
 		SearchService tested = getTested(configService);
@@ -554,7 +554,7 @@ public class SearchServiceTest_handleSearchIndicesAndTypes extends SearchService
 	}
 
 	@Test
-	public void handleSearchIndicesAndTypes_security_sysTypeFilter() throws ReflectiveOperationException {
+	public void setSearchRequestIndicesAndTypes_security_sysTypeFilter() throws ReflectiveOperationException {
 		ConfigService configService = mockConfigurationService();
 
 		SearchService tested = getTested(configService);
