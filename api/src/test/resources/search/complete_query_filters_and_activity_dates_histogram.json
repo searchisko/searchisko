@@ -13,7 +13,7 @@
             }
           }, {
             "terms" : {
-              "sys_type" : [ "forumthread" ]
+              "sys_type" : [ "issue" ]
             }
           }, {
             "range" : {

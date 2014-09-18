@@ -207,7 +207,7 @@ public class SearchService {
 			String indexNameCacheKey = prepareIndexNamesCacheKey(sysTypesRequested, isSysTypeFacet);
 			allQueryIndices = indexNamesCache.get(indexNameCacheKey);
 			if (allQueryIndices == null) {
-				allQueryIndices = prepareIndexNames(sysTypesRequested, isSysTypeFacet);
+				allQueryIndices = prepareIndexNamesForSysType(sysTypesRequested, isSysTypeFacet);
 				indexNamesCache.put(indexNameCacheKey, allQueryIndices);
 			}
 			if (log.isLoggable(Level.FINE)) {
@@ -255,7 +255,7 @@ public class SearchService {
 		return sb.toString();
 	}
 
-	private Set<String> prepareIndexNames(Set<String> sysTypesRequested, boolean isSysTypeFacet) {
+	private Set<String> prepareIndexNamesForSysType(Set<String> sysTypesRequested, boolean isSysTypeFacet) {
 		Set<String> indexNames = new LinkedHashSet<>();
 		List<Map<String, Object>> allProviders = providerService.getAll();
 		for (Map<String, Object> providerCfg : allProviders) {

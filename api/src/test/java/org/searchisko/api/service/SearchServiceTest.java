@@ -41,7 +41,7 @@ import org.searchisko.api.testtools.TestUtils;
 
 /**
  * Unit test for {@link SearchService}
- *
+ * 
  * @author Vlastimil Elias (velias at redhat dot com)
  * @author Lukas Vlcek
  */
@@ -58,11 +58,7 @@ public class SearchServiceTest {
 		ConfigService configService = Mockito.mock(ConfigService.class);
 		Mockito.when(configService.get(ConfigService.CFGNAME_SEARCH_FULLTEXT_FILTER_FIELDS)).thenReturn(null);
 
-		SearchService tested = new SearchService();
-		tested.configService = configService;
-		tested.parsedFilterConfigService = new ParsedFilterConfigService();
-		tested.parsedFilterConfigService.log = Logger.getLogger("testlogger");
-		tested.parsedFilterConfigService.configService = configService;
+		SearchService tested = getTested(configService);
 
 		Filters filters = new Filters();
 		filters.acknowledgeUrlFilterCandidate("test", "value");
@@ -72,16 +68,14 @@ public class SearchServiceTest {
 
 	@Test
 	public void getSearchResponseAdditionalFields() throws ReflectiveOperationException {
-		SearchService tested = new SearchService();
-		tested.log = Logger.getLogger("testlogger");
 
-		tested.configService = Mockito.mock(ConfigService.class);
+		ConfigService configService = Mockito.mock(ConfigService.class);
 		Map<String, Object> cfg = TestUtils.loadJSONFromClasspathFile("/search/search_fulltext_facets_fields.json");
-		Mockito.when(tested.configService.get(ConfigService.CFGNAME_SEARCH_FULLTEXT_FACETS_FIELDS)).thenReturn(cfg);
+		Mockito.when(configService.get(ConfigService.CFGNAME_SEARCH_FULLTEXT_FACETS_FIELDS)).thenReturn(cfg);
 		Map<String, Object> cfg2 = TestUtils.loadJSONFromClasspathFile("/search/search_fulltext_filter_fields.json");
-		Mockito.when(tested.configService.get(ConfigService.CFGNAME_SEARCH_FULLTEXT_FILTER_FIELDS)).thenReturn(cfg2);
-		tested.parsedFilterConfigService = new ParsedFilterConfigService();
-		tested.parsedFilterConfigService.configService = tested.configService;
+		Mockito.when(configService.get(ConfigService.CFGNAME_SEARCH_FULLTEXT_FILTER_FIELDS)).thenReturn(cfg2);
+
+		SearchService tested = getTested(configService);
 
 		try {
 			tested.getIntervalValuesForDateHistogramFacets(null);
@@ -132,20 +126,14 @@ public class SearchServiceTest {
 
 	@SuppressWarnings("unchecked")
 	@Test
-	public void handleSearchIndicesAndTypes() throws ReflectiveOperationException {
+	public void handleSearchIndicesAndTypes_basic() throws ReflectiveOperationException {
 		ConfigService configService = Mockito.mock(ConfigService.class);
 		Map<String, Object> cfg1 = TestUtils.loadJSONFromClasspathFile("/search/search_fulltext_facets_fields.json");
 		Mockito.when(configService.get(ConfigService.CFGNAME_SEARCH_FULLTEXT_FACETS_FIELDS)).thenReturn(cfg1);
 		Map<String, Object> cfg2 = TestUtils.loadJSONFromClasspathFile("/search/search_fulltext_filter_fields.json");
 		Mockito.when(configService.get(ConfigService.CFGNAME_SEARCH_FULLTEXT_FILTER_FIELDS)).thenReturn(cfg2);
 
-		SearchService tested = new SearchService();
-		tested.providerService = Mockito.mock(ProviderService.class);
-		tested.log = Logger.getLogger("testlogger");
-		tested.indexNamesCache = Mockito.mock(IndexNamesCache.class);
-		tested.configService = configService;
-		tested.parsedFilterConfigService = new ParsedFilterConfigService();
-		tested.parsedFilterConfigService.configService = configService;
+		SearchService tested = getTested(configService);
 
 		QuerySettings querySettings = new QuerySettings();
 		Filters filters = new Filters();
@@ -156,14 +144,15 @@ public class SearchServiceTest {
 		SearchRequestBuilder searchRequestBuilderMock = Mockito.mock(SearchRequestBuilder.class);
 
 		// case - searching for all types, no provider defined
-		{
+		try {
 			Mockito.when(tested.indexNamesCache.get(Mockito.anyString())).thenReturn(null);
 			List<Map<String, Object>> mockedProvidersList = new ArrayList<>();
 			Mockito.when(tested.providerService.getAll()).thenReturn(mockedProvidersList);
 			tested.setSearchRequestIndicesAndTypes(querySettings, searchRequestBuilderMock);
+			Assert.fail("SettingsException expected");
+		} catch (SettingsException e) {
 			Mockito.verify(tested.indexNamesCache).get("_all||false");
 			Mockito.verify(tested.providerService).getAll();
-			Mockito.verify(searchRequestBuilderMock).setIndices();
 			Mockito.verifyNoMoreInteractions(searchRequestBuilderMock);
 		}
 
@@ -171,32 +160,25 @@ public class SearchServiceTest {
 		{
 			Mockito.reset(tested.providerService, searchRequestBuilderMock, tested.indexNamesCache);
 			Mockito.when(tested.indexNamesCache.get(Mockito.anyString())).thenReturn(null);
-			List<Map<String, Object>> mockedProvidersList = new ArrayList<>();
-			mockedProvidersList.add(TestUtils.loadJSONFromClasspathFile("/search/provider_1.json"));
-			mockedProvidersList.add(TestUtils.loadJSONFromClasspathFile("/search/provider_2.json"));
-			Mockito.when(tested.providerService.getAll()).thenReturn(mockedProvidersList);
+			mockProviderConfiguration(tested, "/search/provider_1.json", "/search/provider_2.json");
+
 			tested.setSearchRequestIndicesAndTypes(querySettings, searchRequestBuilderMock);
 			Mockito.verify(tested.indexNamesCache).get("_all||false");
 			Mockito.verify(tested.providerService).getAll();
-			Mockito.verify(searchRequestBuilderMock).setIndices(
-					"idx_provider1_issue",
-					"idx_provider1_mailing1",
-					"idx_provider1_mailing2",
-					"idx_provider2_issue1",
-					"idx_provider2_issue2",
-					"idx_provider2_mailing");
+			Mockito.verify(searchRequestBuilderMock).setIndices("idx_provider1_issue", "idx_provider1_mailing1",
+					"idx_provider1_mailing2", "idx_provider2_issue1", "idx_provider2_issue2", "idx_provider2_mailing");
 			Mockito.verifyNoMoreInteractions(searchRequestBuilderMock);
 		}
 
 		// case - contentType filter used - type with one index
 		{
 			Mockito.reset(tested.providerService, searchRequestBuilderMock, tested.indexNamesCache);
+			mockProviderConfiguration(tested, "/search/provider_1.json", "/search/provider_2.json");
+
 			String testedType = "provider1_issue";
 			filters.acknowledgeUrlFilterCandidate("type", testedType);
 			tested.parsedFilterConfigService.prepareFiltersForRequest(filters);
-			Mockito.when(tested.providerService.findContentType(testedType)).thenReturn(
-					ProviderServiceTest.createProviderContentTypeInfo(((Map<String, Map<String, Object>>) TestUtils
-							.loadJSONFromClasspathFile("/search/provider_1.json").get(ProviderService.TYPE)).get(testedType)));
+
 			tested.setSearchRequestIndicesAndTypes(querySettings, searchRequestBuilderMock);
 			Mockito.verifyZeroInteractions(tested.indexNamesCache);
 			Mockito.verify(searchRequestBuilderMock).setIndices("idx_provider1_issue");
@@ -207,12 +189,12 @@ public class SearchServiceTest {
 		// case - contentType filter used - type with more search indices
 		{
 			Mockito.reset(tested.providerService, searchRequestBuilderMock, tested.indexNamesCache);
+			mockProviderConfiguration(tested, "/search/provider_1.json", "/search/provider_2.json");
+
 			String testedType = "provider1_mailing";
 			filters.acknowledgeUrlFilterCandidate("type", testedType);
 			tested.parsedFilterConfigService.prepareFiltersForRequest(filters);
-			Mockito.when(tested.providerService.findContentType(testedType)).thenReturn(
-					ProviderServiceTest.createProviderContentTypeInfo(((Map<String, Map<String, Object>>) TestUtils
-							.loadJSONFromClasspathFile("/search/provider_1.json").get(ProviderService.TYPE)).get(testedType)));
+
 			tested.setSearchRequestIndicesAndTypes(querySettings, searchRequestBuilderMock);
 			Mockito.verifyZeroInteractions(tested.indexNamesCache);
 			Mockito.verify(searchRequestBuilderMock).setIndices("idx_provider1_mailing1", "idx_provider1_mailing2");
@@ -223,12 +205,12 @@ public class SearchServiceTest {
 		// case - contentType filter used - type with search_all_excluded=true can be used if named
 		{
 			Mockito.reset(tested.providerService, searchRequestBuilderMock, tested.indexNamesCache);
+			mockProviderConfiguration(tested, "/search/provider_1.json", "/search/provider_2.json");
+
 			String testedType = "provider1_cosi";
 			filters.acknowledgeUrlFilterCandidate("type", testedType);
 			tested.parsedFilterConfigService.prepareFiltersForRequest(filters);
-			Mockito.when(tested.providerService.findContentType(testedType)).thenReturn(
-					ProviderServiceTest.createProviderContentTypeInfo(((Map<String, Map<String, Object>>) TestUtils
-							.loadJSONFromClasspathFile("/search/provider_1.json").get(ProviderService.TYPE)).get(testedType)));
+
 			tested.setSearchRequestIndicesAndTypes(querySettings, searchRequestBuilderMock);
 			Mockito.verifyZeroInteractions(tested.indexNamesCache);
 			Mockito.verify(searchRequestBuilderMock).setIndices("idx_provider1_cosi1", "idx_provider1_cosi2");
@@ -246,10 +228,9 @@ public class SearchServiceTest {
 			sysTypesRequested.add("issue");
 			filters.acknowledgeUrlFilterCandidate("sys_type", new ArrayList<>(sysTypesRequested));
 			tested.parsedFilterConfigService.prepareFiltersForRequest(filters);
-			List<Map<String, Object>> mockedProvidersList = new ArrayList<>();
-			mockedProvidersList.add(TestUtils.loadJSONFromClasspathFile("/search/provider_1.json"));
-			mockedProvidersList.add(TestUtils.loadJSONFromClasspathFile("/search/provider_2.json"));
-			Mockito.when(tested.providerService.getAll()).thenReturn(mockedProvidersList);
+
+			mockProviderConfiguration(tested, "/search/provider_1.json", "/search/provider_2.json");
+
 			tested.setSearchRequestIndicesAndTypes(querySettings, searchRequestBuilderMock);
 			Mockito.verify(tested.indexNamesCache).get(SearchService.prepareIndexNamesCacheKey(sysTypesRequested, false));
 			Mockito.verify(tested.indexNamesCache).put(
@@ -269,10 +250,8 @@ public class SearchServiceTest {
 			sysTypesRequested.add("cosi");
 			filters.acknowledgeUrlFilterCandidate("sys_type", new ArrayList<>(sysTypesRequested));
 			tested.parsedFilterConfigService.prepareFiltersForRequest(filters);
-			List<Map<String, Object>> mockedProvidersList = new ArrayList<>();
-			mockedProvidersList.add(TestUtils.loadJSONFromClasspathFile("/search/provider_1.json"));
-			mockedProvidersList.add(TestUtils.loadJSONFromClasspathFile("/search/provider_2.json"));
-			Mockito.when(tested.providerService.getAll()).thenReturn(mockedProvidersList);
+			mockProviderConfiguration(tested, "/search/provider_1.json", "/search/provider_2.json");
+
 			tested.setSearchRequestIndicesAndTypes(querySettings, searchRequestBuilderMock);
 			Mockito.verify(tested.indexNamesCache).get(SearchService.prepareIndexNamesCacheKey(sysTypesRequested, false));
 			Mockito.verify(tested.indexNamesCache).put(
@@ -293,25 +272,17 @@ public class SearchServiceTest {
 			sysTypesRequested.add("cosi");
 			filters.acknowledgeUrlFilterCandidate("sys_type", new ArrayList<>(sysTypesRequested));
 			tested.parsedFilterConfigService.prepareFiltersForRequest(filters);
-			List<Map<String, Object>> mockedProvidersList = new ArrayList<>();
-			mockedProvidersList.add(TestUtils.loadJSONFromClasspathFile("/search/provider_1.json"));
-			mockedProvidersList.add(TestUtils.loadJSONFromClasspathFile("/search/provider_2.json"));
-			Mockito.when(tested.providerService.getAll()).thenReturn(mockedProvidersList);
+			mockProviderConfiguration(tested, "/search/provider_1.json", "/search/provider_2.json");
+
 			tested.setSearchRequestIndicesAndTypes(querySettings, searchRequestBuilderMock);
 			Mockito.verify(tested.indexNamesCache).get(SearchService.prepareIndexNamesCacheKey(sysTypesRequested, false));
 			Mockito.verify(tested.indexNamesCache).put(
 					Mockito.eq(SearchService.prepareIndexNamesCacheKey(sysTypesRequested, false)), Mockito.anySet());
 			Mockito.verifyNoMoreInteractions(tested.indexNamesCache);
 			Mockito.verify(tested.providerService).getAll();
-			Mockito.verify(searchRequestBuilderMock).setIndices(
-					"idx_provider1_issue",
-					"idx_provider1_cosi1",
-					"idx_provider1_cosi2",
-					"idx_provider2_issue1",
-					"idx_provider2_issue2",
-					"idx_provider2_cosi1",
-					"idx_provider2_cosi2"
-			);
+			Mockito.verify(searchRequestBuilderMock).setIndices("idx_provider1_issue", "idx_provider1_cosi1",
+					"idx_provider1_cosi2", "idx_provider2_issue1", "idx_provider2_issue2", "idx_provider2_cosi1",
+					"idx_provider2_cosi2");
 			Mockito.verifyNoMoreInteractions(searchRequestBuilderMock);
 		}
 
@@ -325,24 +296,16 @@ public class SearchServiceTest {
 			filters.acknowledgeUrlFilterCandidate("sys_type", new ArrayList<>(sysTypesRequested));
 			tested.parsedFilterConfigService.prepareFiltersForRequest(filters);
 			querySettings.addFacet("per_sys_type_counts");
-			List<Map<String, Object>> mockedProvidersList = new ArrayList<>();
-			mockedProvidersList.add(TestUtils.loadJSONFromClasspathFile("/search/provider_1.json"));
-			mockedProvidersList.add(TestUtils.loadJSONFromClasspathFile("/search/provider_2.json"));
-			Mockito.when(tested.providerService.getAll()).thenReturn(mockedProvidersList);
+			mockProviderConfiguration(tested, "/search/provider_1.json", "/search/provider_2.json");
+
 			tested.setSearchRequestIndicesAndTypes(querySettings, searchRequestBuilderMock);
 			Mockito.verify(tested.indexNamesCache).get(SearchService.prepareIndexNamesCacheKey(sysTypesRequested, true));
 			Mockito.verify(tested.indexNamesCache).put(
 					Mockito.eq(SearchService.prepareIndexNamesCacheKey(sysTypesRequested, true)), Mockito.anySet());
 			Mockito.verifyNoMoreInteractions(tested.indexNamesCache);
 			Mockito.verify(tested.providerService).getAll();
-			Mockito.verify(searchRequestBuilderMock).setIndices(
-					"idx_provider1_issue",
-					"idx_provider1_mailing1",
-					"idx_provider1_mailing2",
-					"idx_provider2_issue1",
-					"idx_provider2_issue2",
-					"idx_provider2_mailing"
-			);
+			Mockito.verify(searchRequestBuilderMock).setIndices("idx_provider1_issue", "idx_provider1_mailing1",
+					"idx_provider1_mailing2", "idx_provider2_issue1", "idx_provider2_issue2", "idx_provider2_mailing");
 			Mockito.verifyNoMoreInteractions(searchRequestBuilderMock);
 			querySettings.getFacets().clear();
 		}
@@ -358,28 +321,17 @@ public class SearchServiceTest {
 			filters.acknowledgeUrlFilterCandidate("sys_type", new ArrayList<>(sysTypesRequested));
 			tested.parsedFilterConfigService.prepareFiltersForRequest(filters);
 			querySettings.addFacet("per_sys_type_counts");
-			List<Map<String, Object>> mockedProvidersList = new ArrayList<>();
-			mockedProvidersList.add(TestUtils.loadJSONFromClasspathFile("/search/provider_1.json"));
-			mockedProvidersList.add(TestUtils.loadJSONFromClasspathFile("/search/provider_2.json"));
-			Mockito.when(tested.providerService.getAll()).thenReturn(mockedProvidersList);
+			mockProviderConfiguration(tested, "/search/provider_1.json", "/search/provider_2.json");
+
 			tested.setSearchRequestIndicesAndTypes(querySettings, searchRequestBuilderMock);
 			Mockito.verify(tested.indexNamesCache).get(SearchService.prepareIndexNamesCacheKey(sysTypesRequested, true));
 			Mockito.verify(tested.indexNamesCache).put(
 					Mockito.eq(SearchService.prepareIndexNamesCacheKey(sysTypesRequested, true)), Mockito.anySet());
 			Mockito.verifyNoMoreInteractions(tested.indexNamesCache);
 			Mockito.verify(tested.providerService).getAll();
-			Mockito.verify(searchRequestBuilderMock).setIndices(
-					"idx_provider1_issue",
-					"idx_provider1_mailing1",
-					"idx_provider1_mailing2",
-					"idx_provider1_cosi1",
-					"idx_provider1_cosi2",
-					"idx_provider2_issue1",
-					"idx_provider2_issue2",
-					"idx_provider2_mailing",
-					"idx_provider2_cosi1",
-					"idx_provider2_cosi2"
-			);
+			Mockito.verify(searchRequestBuilderMock).setIndices("idx_provider1_issue", "idx_provider1_mailing1",
+					"idx_provider1_mailing2", "idx_provider1_cosi1", "idx_provider1_cosi2", "idx_provider2_issue1",
+					"idx_provider2_issue2", "idx_provider2_mailing", "idx_provider2_cosi1", "idx_provider2_cosi2");
 			Mockito.verifyNoMoreInteractions(searchRequestBuilderMock);
 			querySettings.getFacets().clear();
 		}
@@ -397,10 +349,8 @@ public class SearchServiceTest {
 			sysTypesRequested.add("cosi");
 			filters.acknowledgeUrlFilterCandidate("sys_type", new ArrayList<>(sysTypesRequested));
 			tested.parsedFilterConfigService.prepareFiltersForRequest(filters);
-			List<Map<String, Object>> mockedProvidersList = new ArrayList<>();
-			mockedProvidersList.add(TestUtils.loadJSONFromClasspathFile("/search/provider_1.json"));
-			mockedProvidersList.add(TestUtils.loadJSONFromClasspathFile("/search/provider_2.json"));
-			Mockito.when(tested.providerService.getAll()).thenReturn(mockedProvidersList);
+			mockProviderConfiguration(tested, "/search/provider_1.json", "/search/provider_2.json");
+
 			tested.setSearchRequestIndicesAndTypes(querySettings, searchRequestBuilderMock);
 
 			Mockito.verify(tested.indexNamesCache).get(SearchService.prepareIndexNamesCacheKey(sysTypesRequested, false));
@@ -410,7 +360,11 @@ public class SearchServiceTest {
 					"idx_provider1_issue");
 			Mockito.verifyNoMoreInteractions(searchRequestBuilderMock);
 		}
+	}
 
+	@Test
+	public void handleSearchIndicesAndTypes_securityTypeLevel() throws ReflectiveOperationException {
+		// TODO #142 unit test
 	}
 
 	@Test
@@ -419,10 +373,7 @@ public class SearchServiceTest {
 		Map<String, Object> cfg = TestUtils.loadJSONFromClasspathFile("/search/search_fulltext_filter_fields.json");
 		Mockito.when(configService.get(ConfigService.CFGNAME_SEARCH_FULLTEXT_FILTER_FIELDS)).thenReturn(cfg);
 
-		SearchService tested = new SearchService();
-		tested.parsedFilterConfigService = new ParsedFilterConfigService();
-		tested.parsedFilterConfigService.configService = configService;
-		tested.log = Logger.getLogger("testlogger");
+		SearchService tested = getTested(configService);
 
 		// case - no filters object exists
 		{
@@ -472,16 +423,12 @@ public class SearchServiceTest {
 	@Test
 	public void handleCommonFiltersSettings_ActivityDateInterval() throws IOException, JSONException,
 			ReflectiveOperationException {
-		SearchService tested = new SearchService();
-		tested.log = Logger.getLogger("testlogger");
 
 		ConfigService configService = Mockito.mock(ConfigService.class);
 		Map<String, Object> cfg2 = TestUtils.loadJSONFromClasspathFile("/search/search_fulltext_filter_fields.json");
 		Mockito.when(configService.get(ConfigService.CFGNAME_SEARCH_FULLTEXT_FILTER_FIELDS)).thenReturn(cfg2);
 
-		tested.providerService = Mockito.mock(ProviderService.class);
-		tested.parsedFilterConfigService = new ParsedFilterConfigService();
-		tested.parsedFilterConfigService.configService = configService;
+		SearchService tested = getTested(configService);
 
 		QuerySettings querySettings = new QuerySettings();
 		Filters filters = new Filters();
@@ -507,10 +454,7 @@ public class SearchServiceTest {
 		Map<String, Object> cfg = TestUtils.loadJSONFromClasspathFile("/search/search_fulltext_filter_fields.json");
 		Mockito.when(configService.get(ConfigService.CFGNAME_SEARCH_FULLTEXT_FILTER_FIELDS)).thenReturn(cfg);
 
-		SearchService tested = new SearchService();
-		tested.parsedFilterConfigService = new ParsedFilterConfigService();
-		tested.parsedFilterConfigService.configService = configService;
-		tested.log = Logger.getLogger("testlogger");
+		SearchService tested = getTested(configService);
 
 		QuerySettings querySettings = new QuerySettings();
 		Filters filters = new Filters();
@@ -553,16 +497,12 @@ public class SearchServiceTest {
 
 	@Test
 	public void handleCommonFiltersSettings_projects() throws IOException, JSONException, ReflectiveOperationException {
-		SearchService tested = new SearchService();
-		tested.log = Logger.getLogger("testlogger");
 
 		ConfigService configService = Mockito.mock(ConfigService.class);
 		Map<String, Object> cfg2 = TestUtils.loadJSONFromClasspathFile("/search/search_fulltext_filter_fields.json");
 		Mockito.when(configService.get(ConfigService.CFGNAME_SEARCH_FULLTEXT_FILTER_FIELDS)).thenReturn(cfg2);
 
-		tested.providerService = Mockito.mock(ProviderService.class);
-		tested.parsedFilterConfigService = new ParsedFilterConfigService();
-		tested.parsedFilterConfigService.configService = configService;
+		SearchService tested = getTested(configService);
 
 		QuerySettings querySettings = new QuerySettings();
 		Filters filters = new Filters();
@@ -577,7 +517,7 @@ public class SearchServiceTest {
 
 		// case - list of projects is empty
 		{
-			filters.acknowledgeUrlFilterCandidate("project", Collections.<String>emptyList());
+			filters.acknowledgeUrlFilterCandidate("project", Collections.<String> emptyList());
 			tested.parsedFilterConfigService.prepareFiltersForRequest(filters);
 			QueryBuilder qb = QueryBuilders.matchAllQuery();
 			QueryBuilder qbRes = tested.applyCommonFilters(tested.parsedFilterConfigService.getSearchFiltersForRequest(), qb);
@@ -605,16 +545,12 @@ public class SearchServiceTest {
 
 	@Test
 	public void handleCommonFiltersSettings_tags() throws IOException, JSONException, ReflectiveOperationException {
-		SearchService tested = new SearchService();
-		tested.log = Logger.getLogger("testlogger");
 
 		ConfigService configService = Mockito.mock(ConfigService.class);
 		Map<String, Object> cfg2 = TestUtils.loadJSONFromClasspathFile("/search/search_fulltext_filter_fields.json");
 		Mockito.when(configService.get(ConfigService.CFGNAME_SEARCH_FULLTEXT_FILTER_FIELDS)).thenReturn(cfg2);
 
-		tested.providerService = Mockito.mock(ProviderService.class);
-		tested.parsedFilterConfigService = new ParsedFilterConfigService();
-		tested.parsedFilterConfigService.configService = configService;
+		SearchService tested = getTested(configService);
 
 		QuerySettings querySettings = new QuerySettings();
 		Filters filters = new Filters();
@@ -629,7 +565,7 @@ public class SearchServiceTest {
 
 		// case - list of tags is empty
 		{
-			filters.acknowledgeUrlFilterCandidate("tag", Collections.<String>emptyList());
+			filters.acknowledgeUrlFilterCandidate("tag", Collections.<String> emptyList());
 			tested.parsedFilterConfigService.prepareFiltersForRequest(filters);
 			QueryBuilder qb = QueryBuilders.matchAllQuery();
 			QueryBuilder qbRes = tested.applyCommonFilters(tested.parsedFilterConfigService.getSearchFiltersForRequest(), qb);
@@ -667,16 +603,12 @@ public class SearchServiceTest {
 	@Test
 	public void handleCommonFiltersSettings_contributors() throws IOException, JSONException,
 			ReflectiveOperationException {
-		SearchService tested = new SearchService();
-		tested.log = Logger.getLogger("testlogger");
 
 		ConfigService configService = Mockito.mock(ConfigService.class);
 		Map<String, Object> cfg2 = TestUtils.loadJSONFromClasspathFile("/search/search_fulltext_filter_fields.json");
 		Mockito.when(configService.get(ConfigService.CFGNAME_SEARCH_FULLTEXT_FILTER_FIELDS)).thenReturn(cfg2);
 
-		tested.providerService = Mockito.mock(ProviderService.class);
-		tested.parsedFilterConfigService = new ParsedFilterConfigService();
-		tested.parsedFilterConfigService.configService = configService;
+		SearchService tested = getTested(configService);
 
 		QuerySettings querySettings = new QuerySettings();
 		Filters filters = new Filters();
@@ -691,7 +623,7 @@ public class SearchServiceTest {
 
 		// case - list of contributors is empty
 		{
-			filters.acknowledgeUrlFilterCandidate("contributor", Collections.<String>emptyList());
+			filters.acknowledgeUrlFilterCandidate("contributor", Collections.<String> emptyList());
 			tested.parsedFilterConfigService.prepareFiltersForRequest(filters);
 			QueryBuilder qb = QueryBuilders.matchAllQuery();
 			QueryBuilder qbRes = tested.applyCommonFilters(tested.parsedFilterConfigService.getSearchFiltersForRequest(), qb);
@@ -719,9 +651,8 @@ public class SearchServiceTest {
 
 	@Test
 	public void handleFulltextSearchSettings() throws IOException, JSONException {
-		SearchService tested = new SearchService();
-		tested.log = Logger.getLogger("testlogger");
-		tested.configService = Mockito.mock(ConfigService.class);
+		ConfigService configService = Mockito.mock(ConfigService.class);
+		SearchService tested = getTested(configService);
 
 		// case - NPE when no settings passed in
 		try {
@@ -778,9 +709,8 @@ public class SearchServiceTest {
 	@SuppressWarnings("unchecked")
 	@Test
 	public void handleHighlightSettings() {
-		SearchService tested = new SearchService();
-		tested.log = Logger.getLogger("testlogger");
-		tested.configService = Mockito.mock(ConfigService.class);
+		ConfigService configService = Mockito.mock(ConfigService.class);
+		SearchService tested = getTested(configService);
 
 		SearchRequestBuilder srbMock = Mockito.mock(SearchRequestBuilder.class);
 
@@ -925,9 +855,8 @@ public class SearchServiceTest {
 
 	@Test
 	public void handleResponseContentSettings_pager() {
-		SearchService tested = new SearchService();
-		tested.log = Logger.getLogger("testlogger");
-		tested.configService = Mockito.mock(ConfigService.class);
+		ConfigService configService = Mockito.mock(ConfigService.class);
+		SearchService tested = getTested(configService);
 
 		SearchRequestBuilder srbMock = Mockito.mock(SearchRequestBuilder.class);
 
@@ -1046,9 +975,8 @@ public class SearchServiceTest {
 
 	@Test
 	public void handleResponseContentSettings_fields() {
-		SearchService tested = new SearchService();
-		tested.log = Logger.getLogger("testlogger");
-		tested.configService = Mockito.mock(ConfigService.class);
+		ConfigService configService = Mockito.mock(ConfigService.class);
+		SearchService tested = getTested(configService);
 
 		SearchRequestBuilder srbMock = Mockito.mock(SearchRequestBuilder.class);
 
@@ -1133,9 +1061,7 @@ public class SearchServiceTest {
 
 	@Test
 	public void handleSortingSettings() {
-		SearchService tested = new SearchService();
-		tested.log = Logger.getLogger("testlogger");
-
+		SearchService tested = getTested(Mockito.mock(ConfigService.class));
 		SearchRequestBuilder srbMock = Mockito.mock(SearchRequestBuilder.class);
 
 		// case - NPE when no settings passed in
@@ -1230,17 +1156,14 @@ public class SearchServiceTest {
 	@Test
 	public void handleFacetSettings_common() throws IOException, JSONException, ReflectiveOperationException {
 
-		SearchService tested = new SearchService();
-		tested.log = Logger.getLogger("testlogger");
-
-		Client client  = Mockito.mock(Client.class);
-		tested.configService = Mockito.mock(ConfigService.class);
+		Client client = Mockito.mock(Client.class);
+		ConfigService configService = Mockito.mock(ConfigService.class);
 		Map<String, Object> cfg = TestUtils.loadJSONFromClasspathFile("/search/search_fulltext_facets_fields.json");
-		Mockito.when(tested.configService.get(ConfigService.CFGNAME_SEARCH_FULLTEXT_FACETS_FIELDS)).thenReturn(cfg);
+		Mockito.when(configService.get(ConfigService.CFGNAME_SEARCH_FULLTEXT_FACETS_FIELDS)).thenReturn(cfg);
 		Map<String, Object> cfg2 = TestUtils.loadJSONFromClasspathFile("/search/search_fulltext_filter_fields.json");
-		Mockito.when(tested.configService.get(ConfigService.CFGNAME_SEARCH_FULLTEXT_FILTER_FIELDS)).thenReturn(cfg2);
-		tested.parsedFilterConfigService = new ParsedFilterConfigService();
-		tested.parsedFilterConfigService.configService = tested.configService;
+		Mockito.when(configService.get(ConfigService.CFGNAME_SEARCH_FULLTEXT_FILTER_FIELDS)).thenReturn(cfg2);
+
+		SearchService tested = getTested(configService);
 
 		// case - no facets requested
 		{
@@ -1302,21 +1225,14 @@ public class SearchServiceTest {
 	@Test
 	public void handleFacetSettings_top_contributors() throws IOException, JSONException, ReflectiveOperationException {
 
-		SearchService tested = new SearchService();
-		tested.log = Logger.getLogger("testlogger");
-
-		Client client  = Mockito.mock(Client.class);
+		Client client = Mockito.mock(Client.class);
 		ConfigService configService = Mockito.mock(ConfigService.class);
+		Map<String, Object> cfg = TestUtils.loadJSONFromClasspathFile("/search/search_fulltext_facets_fields.json");
+		Mockito.when(configService.get(ConfigService.CFGNAME_SEARCH_FULLTEXT_FACETS_FIELDS)).thenReturn(cfg);
 		Map<String, Object> cfg2 = TestUtils.loadJSONFromClasspathFile("/search/search_fulltext_filter_fields.json");
 		Mockito.when(configService.get(ConfigService.CFGNAME_SEARCH_FULLTEXT_FILTER_FIELDS)).thenReturn(cfg2);
 
-		tested.providerService = Mockito.mock(ProviderService.class);
-		tested.parsedFilterConfigService = new ParsedFilterConfigService();
-		tested.parsedFilterConfigService.configService = configService;
-
-		tested.configService = Mockito.mock(ConfigService.class);
-		Map<String, Object> cfg = TestUtils.loadJSONFromClasspathFile("/search/search_fulltext_facets_fields.json");
-		Mockito.when(tested.configService.get(ConfigService.CFGNAME_SEARCH_FULLTEXT_FACETS_FIELDS)).thenReturn(cfg);
+		SearchService tested = getTested(configService);
 
 		// case - no contributor filter used, so only one top_contributors facet
 		{
@@ -1350,21 +1266,14 @@ public class SearchServiceTest {
 	public void handleFacetSettings_activity_dates_histogram() throws IOException, JSONException,
 			ReflectiveOperationException {
 
-		SearchService tested = new SearchService();
-		tested.log = Logger.getLogger("testlogger");
-
-		Client client  = Mockito.mock(Client.class);
+		Client client = Mockito.mock(Client.class);
 		ConfigService configService = Mockito.mock(ConfigService.class);
+		Map<String, Object> cfg = TestUtils.loadJSONFromClasspathFile("/search/search_fulltext_facets_fields.json");
+		Mockito.when(configService.get(ConfigService.CFGNAME_SEARCH_FULLTEXT_FACETS_FIELDS)).thenReturn(cfg);
 		Map<String, Object> cfg2 = TestUtils.loadJSONFromClasspathFile("/search/search_fulltext_filter_fields.json");
 		Mockito.when(configService.get(ConfigService.CFGNAME_SEARCH_FULLTEXT_FILTER_FIELDS)).thenReturn(cfg2);
 
-		tested.providerService = Mockito.mock(ProviderService.class);
-		tested.parsedFilterConfigService = new ParsedFilterConfigService();
-		tested.parsedFilterConfigService.configService = configService;
-
-		tested.configService = Mockito.mock(ConfigService.class);
-		Map<String, Object> cfg = TestUtils.loadJSONFromClasspathFile("/search/search_fulltext_facets_fields.json");
-		Mockito.when(tested.configService.get(ConfigService.CFGNAME_SEARCH_FULLTEXT_FACETS_FIELDS)).thenReturn(cfg);
+		SearchService tested = getTested(configService);
 
 		// case - no activity dates filter used
 		{
@@ -1420,16 +1329,15 @@ public class SearchServiceTest {
 
 	/**
 	 * This test demonstrate how to test complete Elasticsearch query (and not only individual parts of it).
-	 *
+	 * 
 	 * @see <a href="https://github.com/searchisko/searchisko/issues/130">This test was inspired by #130.</a>
-	 *
+	 * 
 	 * @throws IOException
 	 * @throws JSONException
 	 * @throws ReflectiveOperationException
 	 */
 	@Test
-	public void testCompleteElasticsearchQuery() throws IOException, JSONException,
-			ReflectiveOperationException {
+	public void testCompleteElasticsearchQuery() throws IOException, JSONException, ReflectiveOperationException {
 
 		Client client = Mockito.mock(Client.class);
 		ConfigService configService = Mockito.mock(ConfigService.class);
@@ -1438,13 +1346,7 @@ public class SearchServiceTest {
 		Map<String, Object> cfg2 = TestUtils.loadJSONFromClasspathFile("/search/search_fulltext_filter_fields.json");
 		Mockito.when(configService.get(ConfigService.CFGNAME_SEARCH_FULLTEXT_FILTER_FIELDS)).thenReturn(cfg2);
 
-		SearchService tested = new SearchService();
-		tested.providerService = Mockito.mock(ProviderService.class);
-		tested.log = Logger.getLogger("testlogger");
-		tested.indexNamesCache = Mockito.mock(IndexNamesCache.class);
-		tested.configService = configService;
-		tested.parsedFilterConfigService = new ParsedFilterConfigService();
-		tested.parsedFilterConfigService.configService = configService;
+		SearchService tested = getTested(configService);
 
 		QuerySettings querySettings = new QuerySettings();
 		Filters filters = new Filters();
@@ -1452,31 +1354,32 @@ public class SearchServiceTest {
 
 		tested.parsedFilterConfigService.prepareFiltersForRequest(filters);
 
+		mockProviderConfiguration(tested, "/search/provider_1.json", "/search/provider_2.json");
+
 		{
 			SearchRequestBuilder srb = new SearchRequestBuilder(client);
 			querySettings.addFacet("activity_dates_histogram");
 			filters.acknowledgeUrlFilterCandidate("activity_date_interval", PastIntervalValue.TEST.toString());
 			filters.acknowledgeUrlFilterCandidate("project", "eap");
-			filters.acknowledgeUrlFilterCandidate("sys_type", "forumthread");
+			filters.acknowledgeUrlFilterCandidate("sys_type", "issue");
 			querySettings.setSize(0);
 			tested.parsedFilterConfigService.prepareFiltersForRequest(filters);
 			querySettings.setFilters(filters);
 			tested.performSearchInternal(querySettings, srb);
 			TestUtils.assertJsonContentFromClasspathFile("/search/complete_query_filters_and_activity_dates_histogram.json",
 					srb.toString());
+			// We should assert indices and types in srb there, but it is not possible due ES API lack of getters !!!
 		}
 	}
 
 	@Test
 	public void selectActivityDatesHistogramInterval_common() throws ReflectiveOperationException {
-		SearchService tested = new SearchService();
-		tested.log = Logger.getLogger("testlogger");
 
 		ConfigService configService = Mockito.mock(ConfigService.class);
 		Map<String, Object> cfg = TestUtils.loadJSONFromClasspathFile("/search/search_fulltext_filter_fields.json");
 		Mockito.when(configService.get(ConfigService.CFGNAME_SEARCH_FULLTEXT_FILTER_FIELDS)).thenReturn(cfg);
-		tested.parsedFilterConfigService = new ParsedFilterConfigService();
-		tested.parsedFilterConfigService.configService = configService;
+
+		SearchService tested = getTested(configService);
 
 		tested.parsedFilterConfigService.prepareFiltersForRequest(null);
 		String fieldName = "sys_activity_dates";
@@ -1498,14 +1401,11 @@ public class SearchServiceTest {
 
 	@Test
 	public void selectActivityDatesHistogramInterval_intervalFilter() throws ReflectiveOperationException {
-		SearchService tested = new SearchService();
-		tested.log = Logger.getLogger("testlogger");
 
 		ConfigService configService = Mockito.mock(ConfigService.class);
 		Map<String, Object> cfg = TestUtils.loadJSONFromClasspathFile("/search/search_fulltext_filter_fields.json");
 		Mockito.when(configService.get(ConfigService.CFGNAME_SEARCH_FULLTEXT_FILTER_FIELDS)).thenReturn(cfg);
-		tested.parsedFilterConfigService = new ParsedFilterConfigService();
-		tested.parsedFilterConfigService.configService = configService;
+		SearchService tested = getTested(configService);
 
 		String fieldName = "sys_activity_dates";
 		Filters filters = new Filters();
@@ -1533,14 +1433,11 @@ public class SearchServiceTest {
 
 	@Test
 	public void selectActivityDatesHistogramInterval_fromToFilter() throws ReflectiveOperationException {
-		SearchService tested = new SearchService();
-		tested.log = Logger.getLogger("testlogger");
 
 		ConfigService configService = Mockito.mock(ConfigService.class);
 		Map<String, Object> cfg = TestUtils.loadJSONFromClasspathFile("/search/search_fulltext_filter_fields.json");
 		Mockito.when(configService.get(ConfigService.CFGNAME_SEARCH_FULLTEXT_FILTER_FIELDS)).thenReturn(cfg);
-		tested.parsedFilterConfigService = new ParsedFilterConfigService();
-		tested.parsedFilterConfigService.configService = configService;
+		SearchService tested = getTested(configService);
 
 		String fieldName = "sys_activity_dates";
 		Filters filters = new Filters();
@@ -1656,12 +1553,10 @@ public class SearchServiceTest {
 		Assert.assertEquals("month", tested.getDateHistogramFacetInterval(fieldName));
 	}
 
-	@SuppressWarnings({"unchecked", "rawtypes"})
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	@Test
 	public void writeSearchHitUsedStatisticsRecord() {
-		SearchService tested = new SearchService();
-		tested.statsClientService = Mockito.mock(StatsClientService.class);
-		tested.log = Logger.getLogger("test logger");
+		SearchService tested = getTested(null);
 
 		// case - record not accepted
 		{
@@ -1728,6 +1623,43 @@ public class SearchServiceTest {
 					Mockito.anyLong(), Mockito.anyMap());
 			Mockito.verifyNoMoreInteractions(tested.statsClientService);
 		}
+	}
+
+	@SuppressWarnings("unchecked")
+	private void mockProviderConfiguration(SearchService tested, String... fileClassPaths) {
+		List<Map<String, Object>> mockedProvidersList = new ArrayList<>();
+		for (String s : fileClassPaths) {
+			Map<String, Object> providerDef = TestUtils.loadJSONFromClasspathFile(s);
+			mockedProvidersList.add(providerDef);
+
+			// mock all types from provider definition
+			Map<String, Object> types = (Map<String, Object>) providerDef.get(ProviderService.TYPE);
+			if (types != null) {
+				for (String testedType : types.keySet()) {
+					Mockito.when(tested.providerService.findContentType(testedType)).thenReturn(
+							ProviderServiceTest.createProviderContentTypeInfo(((Map<String, Object>) types.get(testedType))));
+				}
+			}
+
+		}
+		Mockito.when(tested.providerService.getAll()).thenReturn(mockedProvidersList);
+
+	}
+
+	private SearchService getTested(ConfigService configService) {
+		SearchService tested = new SearchService();
+		tested.providerService = Mockito.mock(ProviderService.class);
+		tested.log = Logger.getLogger("testlogger");
+		tested.indexNamesCache = Mockito.mock(IndexNamesCache.class);
+		if (configService != null) {
+			tested.configService = configService;
+			tested.parsedFilterConfigService = new ParsedFilterConfigService();
+			tested.parsedFilterConfigService.log = Logger.getLogger("testlogger");
+			tested.parsedFilterConfigService.configService = configService;
+		}
+		tested.authenticationUtilService = Mockito.mock(AuthenticationUtilService.class);
+		tested.statsClientService = Mockito.mock(StatsClientService.class);
+		return tested;
 	}
 
 }
