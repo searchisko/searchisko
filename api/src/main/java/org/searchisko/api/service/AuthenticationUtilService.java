@@ -83,10 +83,13 @@ public class AuthenticationUtilService {
 	/**
 	 * Check if user is at least in one of defined set of roles.
 	 * 
+	 * @param acceptAdmin if true and user has {@link Role#ADMIN} then method returns true
 	 * @param roles array of roles to check
 	 * @return true if user is at least in one of defined roles
 	 */
-	public boolean isUserInAnyOfRoles(String... roles) {
+	public boolean isUserInAnyOfRoles(boolean acceptAdmin, String... roles) {
+		if (acceptAdmin && isUserInRole(Role.ADMIN))
+			return true;
 		if (roles == null || roles.length == 0)
 			return false;
 		for (String role : roles) {
@@ -99,10 +102,13 @@ public class AuthenticationUtilService {
 	/**
 	 * Check if user is at least in one of defined set of roles.
 	 * 
+	 * @param acceptAdmin if true and user has {@link Role#ADMIN} then method returns true
 	 * @param roles array of roles to check
 	 * @return true if user is at least in one of defined roles
 	 */
-	public boolean isUserInAnyOfRoles(Collection<String> roles) {
+	public boolean isUserInAnyOfRoles(boolean acceptAdmin, Collection<String> roles) {
+		if (acceptAdmin && isUserInRole(Role.ADMIN))
+			return true;
 		if (roles == null || roles.isEmpty())
 			return false;
 		for (String role : roles) {

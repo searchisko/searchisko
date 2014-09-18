@@ -110,13 +110,27 @@ public class AuthenticationUtilServiceTest {
 		Mockito.when(tested.httpRequest.isUserInRole(ROLE2)).thenReturn(true);
 		Mockito.when(tested.httpRequest.isUserInRole(ROLE3)).thenReturn(false);
 		Mockito.when(tested.httpRequest.isUserInRole(ROLE4)).thenReturn(true);
+		Mockito.when(tested.httpRequest.isUserInRole(Role.ADMIN)).thenReturn(true);
 
-		Assert.assertFalse(tested.isUserInAnyOfRoles((String[]) null));
-		Assert.assertFalse(tested.isUserInAnyOfRoles(new String[] {}));
-		Assert.assertFalse(tested.isUserInAnyOfRoles(new String[] { ROLE1 }));
-		Assert.assertFalse(tested.isUserInAnyOfRoles(new String[] { ROLE1, ROLE3 }));
-		Assert.assertTrue(tested.isUserInAnyOfRoles(new String[] { ROLE2 }));
-		Assert.assertTrue(tested.isUserInAnyOfRoles(new String[] { ROLE1, ROLE3, ROLE2, ROLE4 }));
+		Assert.assertFalse(tested.isUserInAnyOfRoles(false, (String[]) null));
+		Assert.assertFalse(tested.isUserInAnyOfRoles(false, new String[] {}));
+		Assert.assertFalse(tested.isUserInAnyOfRoles(false, new String[] { ROLE1 }));
+		Assert.assertFalse(tested.isUserInAnyOfRoles(false, new String[] { ROLE1, ROLE3 }));
+		Assert.assertTrue(tested.isUserInAnyOfRoles(false, new String[] { ROLE2 }));
+		Assert.assertTrue(tested.isUserInAnyOfRoles(false, new String[] { ROLE1, ROLE3, ROLE2, ROLE4 }));
+
+		// acceptAdmin param test
+		Assert.assertTrue(tested.isUserInAnyOfRoles(true, (String[]) null));
+		Assert.assertTrue(tested.isUserInAnyOfRoles(true, new String[] {}));
+		Assert.assertTrue(tested.isUserInAnyOfRoles(true, new String[] { ROLE1 }));
+		Assert.assertTrue(tested.isUserInAnyOfRoles(true, new String[] { ROLE1, ROLE3 }));
+
+		Mockito.when(tested.httpRequest.isUserInRole(Role.ADMIN)).thenReturn(false);
+		Assert.assertFalse(tested.isUserInAnyOfRoles(true, (String[]) null));
+		Assert.assertFalse(tested.isUserInAnyOfRoles(true, new String[] {}));
+		Assert.assertFalse(tested.isUserInAnyOfRoles(true, new String[] { ROLE1 }));
+		Assert.assertFalse(tested.isUserInAnyOfRoles(true, new String[] { ROLE1, ROLE3 }));
+
 	}
 
 	@Test
@@ -127,27 +141,47 @@ public class AuthenticationUtilServiceTest {
 		Mockito.when(tested.httpRequest.isUserInRole(ROLE2)).thenReturn(true);
 		Mockito.when(tested.httpRequest.isUserInRole(ROLE3)).thenReturn(false);
 		Mockito.when(tested.httpRequest.isUserInRole(ROLE4)).thenReturn(true);
+		Mockito.when(tested.httpRequest.isUserInRole(Role.ADMIN)).thenReturn(true);
 
-		Assert.assertFalse(tested.isUserInAnyOfRoles((Collection<String>) null));
+		Assert.assertFalse(tested.isUserInAnyOfRoles(false, (Collection<String>) null));
 		List<String> collection = new ArrayList<>();
-		Assert.assertFalse(tested.isUserInAnyOfRoles(collection));
+		Assert.assertFalse(tested.isUserInAnyOfRoles(false, collection));
 
 		collection.add(ROLE1);
-		Assert.assertFalse(tested.isUserInAnyOfRoles(collection));
+		Assert.assertFalse(tested.isUserInAnyOfRoles(false, collection));
 
 		collection.add(ROLE3);
-		Assert.assertFalse(tested.isUserInAnyOfRoles(collection));
+		Assert.assertFalse(tested.isUserInAnyOfRoles(false, collection));
 
 		collection.clear();
 		collection.add(ROLE2);
-		Assert.assertTrue(tested.isUserInAnyOfRoles(collection));
+		Assert.assertTrue(tested.isUserInAnyOfRoles(false, collection));
 
 		collection.clear();
 		collection.add(ROLE1);
 		collection.add(ROLE3);
 		collection.add(ROLE2);
 		collection.add(ROLE4);
-		Assert.assertTrue(tested.isUserInAnyOfRoles(collection));
+		Assert.assertTrue(tested.isUserInAnyOfRoles(false, collection));
+
+		// acceptAdmin param test
+		collection.clear();
+		Assert.assertTrue(tested.isUserInAnyOfRoles(true, (Collection<String>) null));
+		Assert.assertTrue(tested.isUserInAnyOfRoles(true, collection));
+		collection.add(ROLE1);
+		Assert.assertTrue(tested.isUserInAnyOfRoles(true, collection));
+		collection.add(ROLE3);
+		Assert.assertTrue(tested.isUserInAnyOfRoles(true, collection));
+
+		Mockito.when(tested.httpRequest.isUserInRole(Role.ADMIN)).thenReturn(false);
+		collection.clear();
+		Assert.assertFalse(tested.isUserInAnyOfRoles(true, (Collection<String>) null));
+		Assert.assertFalse(tested.isUserInAnyOfRoles(true, collection));
+		collection.add(ROLE1);
+		Assert.assertFalse(tested.isUserInAnyOfRoles(true, collection));
+		collection.add(ROLE3);
+		Assert.assertFalse(tested.isUserInAnyOfRoles(true, collection));
+
 	}
 
 	@Test
