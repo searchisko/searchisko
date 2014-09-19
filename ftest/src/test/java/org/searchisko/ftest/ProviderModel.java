@@ -1,5 +1,6 @@
 package org.searchisko.ftest;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -8,7 +9,7 @@ import org.searchisko.api.service.ProviderService;
 
 /**
  * Simple Model for Provider
- *
+ * 
  * @author Libor Krzyzanek
  */
 public class ProviderModel {
@@ -27,11 +28,30 @@ public class ProviderModel {
 		this.passwordHash = DigestUtils.shaHex(password + name);
 	}
 
-	public void addContentType(String contentType, String sysType, boolean persist) {
-		addContentType(contentType, sysType, persist, null);
+	/**
+	 * Add content type into provider.
+	 * 
+	 * @param contentType name of content type (sys_content_type)
+	 * @param sysType name of sys_type
+	 * @param persist true if content is marked as persistent
+	 * @return name of ES index for this type
+	 */
+	public String addContentType(String contentType, String sysType, boolean persist) {
+		return addContentType(contentType, sysType, persist, null);
 	}
 
-	public void addContentType(String contentType, String sysType, boolean persist, String contentContentType) {
+	/**
+	 * Add content type into provider.
+	 * 
+	 * @param contentType name of content type (sys_content_type)
+	 * @param sysType name of sys_type
+	 * @param persist true if content is marked as persistent
+	 * @param contentContentType {@value ProviderService#SYS_CONTENT_CONTENT_TYPE} value, can be null
+	 * @param roles user roles this type is restricted to
+	 * @return name of ES index for this type
+	 */
+	public String addContentType(String contentType, String sysType, boolean persist, String contentContentType,
+			String... roles) {
 		Map<String, Object> data = new HashMap<>();
 		data.put(ProviderService.SYS_TYPE, sysType);
 		data.put(ProviderService.PERSIST, persist);
@@ -39,17 +59,24 @@ public class ProviderModel {
 			data.put(ProviderService.SYS_CONTENT_CONTENT_TYPE, contentContentType);
 		}
 
+		if (roles != null) {
+			data.put(ProviderService.SYS_VISIBLE_FOR_ROLES, Arrays.asList(roles));
+		}
+
 		Map<String, Object> index = new HashMap<>();
-		index.put("name", "data_" + contentType);
+		String indexName = "data_" + contentType;
+		index.put("name", indexName);
 		index.put("type", contentType);
 		data.put(ProviderService.INDEX, index);
 
 		contentTypes.put(contentType, data);
+
+		return indexName;
 	}
 
 	/**
 	 * Creates "JSON" Map representation
-	 *
+	 * 
 	 * @return
 	 * @see org.searchisko.api.service.ProviderService#NAME
 	 */
@@ -63,11 +90,7 @@ public class ProviderModel {
 
 	@Override
 	public String toString() {
-		return "ProviderModel{" +
-				"name='" + name + '\'' +
-				", password='" + password + '\'' +
-				", passwordHash='" + passwordHash + '\'' +
-				", contentTypes=" + contentTypes +
-				'}';
+		return "ProviderModel{" + "name='" + name + '\'' + ", password='" + password + '\'' + ", passwordHash='"
+				+ passwordHash + '\'' + ", contentTypes=" + contentTypes + '}';
 	}
 }

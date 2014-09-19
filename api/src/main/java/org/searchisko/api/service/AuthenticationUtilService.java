@@ -6,6 +6,7 @@
 package org.searchisko.api.service;
 
 import java.security.Principal;
+import java.util.Collection;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -14,18 +15,19 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.commons.lang.StringUtils;
 import org.searchisko.api.rest.exception.NotAuthenticatedException;
 import org.searchisko.api.rest.exception.NotAuthorizedException;
 import org.searchisko.api.security.AuthenticatedUserType;
 import org.searchisko.api.security.Role;
 import org.searchisko.api.security.jaas.ContributorPrincipal;
-import org.searchisko.api.security.jaas.ProviderPrincipal;
 import org.searchisko.api.util.SearchUtils;
 
 /**
- * Authentication utility service. Use it in your RestServices if you need info about currently logged in user! Also
- * contains methods for fine grained permission checks.
- *
+ * Authentication utility service. Use it in your RestServices and other places if you need info about currently logged
+ * in user! Also contains methods for fine grained permission checks. It encapsulates underlying security mechanism
+ * based on {@link HttpServletRequest#isUserInRole(String)} and {@link HttpServletRequest#getUserPrincipal()}.
+ * 
  * @author Libor Krzyzanek
  * @author Vlastimil Elias (velias at redhat dot com)
  */
@@ -40,20 +42,89 @@ public class AuthenticationUtilService {
 	protected ContributorProfileService contributorProfileService;
 
 	@Inject
-	private HttpServletRequest httpRequest;
+	protected HttpServletRequest httpRequest;
 
 	/**
 	 * request scoped cache.
 	 */
-	private String cachedContributorId;
+	protected String cachedContributorId;
+
+	/**
+	 * Check if any user is authenticated just now.
+	 * 
+	 * @return true is any user is authenticated
+	 */
+	public boolean isAuthenticatedUser() {
+		return httpRequest.getUserPrincipal() != null;
+	}
+
+	/**
+	 * Get authenticated user principal. Return null if no any user is authenticated.
+	 * 
+	 * @return principal if user is authenticated
+	 */
+	public Principal getAuthenticatedUserPrincipal() {
+		return httpRequest.getUserPrincipal();
+	}
+
+	/**
+	 * Check is user is in given role.
+	 * 
+	 * @param role to check permission for
+	 * @return true if user is in given role.
+	 */
+	public boolean isUserInRole(String role) {
+		role = StringUtils.trimToNull(role);
+		if (role == null)
+			return false;
+		return httpRequest.isUserInRole(role);
+	}
+
+	/**
+	 * Check if user is at least in one of defined set of roles.
+	 * 
+	 * @param acceptAdmin if true and user has {@link Role#ADMIN} then method returns true
+	 * @param roles array of roles to check
+	 * @return true if user is at least in one of defined roles
+	 */
+	public boolean isUserInAnyOfRoles(boolean acceptAdmin, String... roles) {
+		if (acceptAdmin && isUserInRole(Role.ADMIN))
+			return true;
+		if (roles == null || roles.length == 0)
+			return false;
+		for (String role : roles) {
+			if (isUserInRole(role))
+				return true;
+		}
+		return false;
+	}
+
+	/**
+	 * Check if user is at least in one of defined set of roles.
+	 * 
+	 * @param acceptAdmin if true and user has {@link Role#ADMIN} then method returns true
+	 * @param roles array of roles to check
+	 * @return true if user is at least in one of defined roles
+	 */
+	public boolean isUserInAnyOfRoles(boolean acceptAdmin, Collection<String> roles) {
+		if (acceptAdmin && isUserInRole(Role.ADMIN))
+			return true;
+		if (roles == null || roles.isEmpty())
+			return false;
+		for (String role : roles) {
+			if (isUserInRole(role))
+				return true;
+		}
+		return false;
+	}
 
 	/**
 	 * Get name of authenticated/logged in 'provider' based on security user principal. Can be used only in methods where
 	 * roles ${@link org.searchisko.api.security.Role#PROVIDER} is applied.
-	 *
+	 * 
 	 * @return name of authenticated provider
-	 * @throws NotAuthenticatedException if Provider is not authenticated. Use role PROVIDER to your
-	 *                                   REST service to prevent this exception.
+	 * @throws NotAuthenticatedException if Provider is not authenticated. Use role PROVIDER to your REST service to
+	 *           prevent this exception.
 	 */
 	public String getAuthenticatedProvider() throws NotAuthenticatedException {
 		if (!isAuthenticatedUserOfType(AuthenticatedUserType.PROVIDER)) {
@@ -64,20 +135,22 @@ public class AuthenticationUtilService {
 
 	/**
 	 * Check if logged in user has management permission for passed in provider.
-	 *
+	 * 
 	 * @param providerName to check permission for
 	 * @throws NotAuthorizedException if user has not the permission
 	 */
 	public void checkProviderManagementPermission(String providerName) throws NotAuthorizedException {
 		if (log.isLoggable(Level.FINE)) {
-			log.log(Level.FINE, "Going to check ProviderManage permission for provider {0} and principal {1}",
-					new Object[]{providerName, httpRequest.getUserPrincipal()});
+			log.log(Level.FINE, "Going to check ProviderManage permission for provider {0} and principal {1}", new Object[] {
+					providerName, httpRequest.getUserPrincipal() });
 		}
-		if (httpRequest.getUserPrincipal() != null
-				&& providerName != null
-				&& (httpRequest.isUserInRole(Role.ADMIN) || providerName
-				.equalsIgnoreCase(getAuthenticatedProvider()))) {
-			return;
+		try {
+			if (httpRequest.getUserPrincipal() != null && providerName != null
+					&& (httpRequest.isUserInRole(Role.ADMIN) || providerName.equalsIgnoreCase(getAuthenticatedProvider()))) {
+				return;
+			}
+		} catch (NotAuthenticatedException e) {
+			// let id be as we throw new one later
 		}
 		throw new NotAuthorizedException("management permission for content provider " + providerName);
 	}
@@ -85,15 +158,15 @@ public class AuthenticationUtilService {
 	/**
 	 * Get 'contributor id' for currently authenticated/logged in user based on security user principal. Can be used only
 	 * in methods where {@link org.searchisko.api.security.Role#CONTRIBUTOR} applied.
-	 *
+	 * 
 	 * @param forceCreate if <code>true</code> we need contributor id so backend should create it for logged in user if
-	 *                    not created yet. If <code>false</code> then we do not need it currently, so system can't create it but
-	 *                    return null instead.
+	 *          not created yet. If <code>false</code> then we do not need it currently, so system can't create it but
+	 *          return null instead.
 	 * @return contributor id - can be null if <code><forceCreate</code> is false and contributor record do not exists yet
-	 * for current user.
+	 *         for current user.
 	 * @throws NotAuthenticatedException in case contributor is not authenticated/logged in. This should never happen if
-	 *                                   security interceptor is correctly implemented and configured for this class and
-	 *                                   {@link org.searchisko.api.security.Role#CONTRIBUTOR} is applied.
+	 *           security interceptor is correctly implemented and configured for this class and
+	 *           {@link org.searchisko.api.security.Role#CONTRIBUTOR} is applied.
 	 */
 	public String getAuthenticatedContributor(boolean forceCreate) throws NotAuthenticatedException {
 		log.log(Level.FINEST, "Get Authenticated Contributor, forceCreate: {0}", forceCreate);
@@ -112,8 +185,7 @@ public class AuthenticationUtilService {
 		Principal user = httpRequest.getUserPrincipal();
 
 		String cid = SearchUtils.trimToNull(contributorProfileService.getContributorId(
-				mapPrincipalToContributorCodeType(user), user.getName(), forceCreate
-		));
+				mapPrincipalToContributorCodeType(user), user.getName(), forceCreate));
 		cachedContributorId = cid;
 
 		log.log(Level.FINE, "Contributor ID for authenticated user: {0}", cid);
@@ -125,7 +197,7 @@ public class AuthenticationUtilService {
 	 * Force update of currently logged in contributor profile. No any exception is thrown. Should be called after
 	 * contributor authentication.
 	 */
-	public void updateAuthenticatedContributorProfile() {
+	public boolean updateAuthenticatedContributorProfile() {
 		if (isAuthenticatedUserOfType(AuthenticatedUserType.CONTRIBUTOR)) {
 			try {
 				String username = SearchUtils.trimToNull(httpRequest.getUserPrincipal().getName());
@@ -133,18 +205,21 @@ public class AuthenticationUtilService {
 					// TODO CONTRIBUTOR_PROFILE we should consider to run update in another thread not to block caller
 					contributorProfileService.createOrUpdateProfile(
 							mapPrincipalToContributorCodeType(httpRequest.getUserPrincipal()), username, false);
+					return true;
 				}
 			} catch (Exception e) {
 				log.log(Level.WARNING, "Contributor profile update failed: " + e.getMessage(), e);
 			}
 		}
+		return false;
 	}
 
 	protected String mapPrincipalToContributorCodeType(Principal principal) {
 		if (principal == null) {
 			throw new NotAuthenticatedException(AuthenticatedUserType.CONTRIBUTOR);
 		}
-		if (AuthenticatedUserType.CONTRIBUTOR.equals(getUserType(principal))) {
+		// CAS uses own principal so we can distinguish authentication source based on it
+		if (principal instanceof ContributorPrincipal || principal instanceof org.jasig.cas.client.jaas.AssertionPrincipal) {
 			return ContributorProfileService.FIELD_TSC_JBOSSORG_USERNAME;
 		} else {
 			throw new UnsupportedOperationException("Unsupported Principal Type: " + principal);
@@ -152,19 +227,17 @@ public class AuthenticationUtilService {
 	}
 
 	/**
-	 * Get user type for give principal.
-	 *
-	 * @param principal avoid using proxy of principal like object taken from @Inject Principal way.
-	 * @return user type or null if unknown
-	 * @see javax.servlet.http.HttpServletRequest#getUserPrincipal()
+	 * Get user type for currently authenticated user.
+	 * 
+	 * @return user type or null if unknown or not authenticated
 	 */
-	public AuthenticatedUserType getUserType(Principal principal) {
-		if (principal == null) {
+	public AuthenticatedUserType getAuthenticatedUserType() {
+		if (httpRequest.getUserPrincipal() == null) {
 			return null;
 		}
-		if (principal instanceof ContributorPrincipal) {
+		if (httpRequest.isUserInRole(Role.CONTRIBUTOR)) {
 			return AuthenticatedUserType.CONTRIBUTOR;
-		} else if (principal instanceof ProviderPrincipal) {
+		} else if (httpRequest.isUserInRole(Role.PROVIDER)) {
 			return AuthenticatedUserType.PROVIDER;
 		} else {
 			return null;
@@ -173,23 +246,25 @@ public class AuthenticationUtilService {
 
 	/**
 	 * Check if user of given type is authenticated.
-	 *
+	 * 
 	 * @param userType to check
 	 * @return true if user of given type is authenticated.
 	 */
 	public boolean isAuthenticatedUserOfType(AuthenticatedUserType userType) {
 		if (log.isLoggable(Level.FINEST)) {
-			log.log(Level.FINEST, "Principal: {0}, role to check: {1}",
-					new Object[]{httpRequest.getUserPrincipal(), userType});
+			log.log(Level.FINEST, "Principal: {0}, role to check: {1}", new Object[] { httpRequest.getUserPrincipal(),
+					userType });
 		}
 		if (httpRequest.getUserPrincipal() == null) {
 			return false;
 		}
-		switch (userType) {
+		if (userType != null) {
+			switch (userType) {
 			case PROVIDER:
 				return httpRequest.isUserInRole(Role.PROVIDER);
 			case CONTRIBUTOR:
 				return httpRequest.isUserInRole(Role.CONTRIBUTOR);
+			}
 		}
 		return false;
 	}

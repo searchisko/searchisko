@@ -5,6 +5,7 @@
  */
 package org.searchisko.api.service;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
@@ -59,6 +60,8 @@ public class ProviderService implements EntityService {
 
 	/** Configuration Key for sys_type setting **/
 	public static final String SYS_TYPE = "sys_type";
+	/** Configuration Key for sys_visible_for_roles setting **/
+	public static final String SYS_VISIBLE_FOR_ROLES = "sys_visible_for_roles";
 	/** Configuration Key for preprocessors setting **/
 	public static final String INPUT_PREPROCESSORS = "input_preprocessors";
 	/** Configuration Key for Elasticsearch indices **/
@@ -539,6 +542,35 @@ public class ProviderService implements EntityService {
 	 */
 	public static String[] extractSearchIndices(ProviderContentTypeInfo typeInfo, String typeName) {
 		return extractSearchIndices(typeInfo.getTypeDef(), typeName);
+	}
+
+	/**
+	 * Get set of user role given <code>sys_content_type</code> is visible for. Array or string with roles is get from
+	 * {@value ProviderService#SYS_VISIBLE_FOR_ROLES} config value if exists.
+	 * 
+	 * @param typeInfo <code>sys_content_type</code> configuration
+	 * @param typeName <code>sys_content_type</code> name to be used for error messages
+	 * @return collection of user roles this content is available for. null means it is available for everybody.
+	 */
+	public static Collection<String> extractTypeVisibilityRoles(ProviderContentTypeInfo typeInfo, String typeName) {
+		return extractTypeVisibilityRoles(typeInfo.getTypeDef(), typeName);
+	}
+
+	/**
+	 * Get set of user role given <code>sys_content_type</code> is visible for. Array or string with roles is get from
+	 * {@value ProviderService#SYS_VISIBLE_FOR_ROLES} config value if exists.
+	 * 
+	 * @param typeInfo <code>sys_content_type</code> configuration
+	 * @param typeName <code>sys_content_type</code> name to be used for error messages
+	 * @return collection of user roles this content is available for. null means it is available for everybody.
+	 */
+	public static Collection<String> extractTypeVisibilityRoles(Map<String, Object> typeDef, String typeName) {
+		try {
+			return SearchUtils.getListOfStringsFromJsonMap(typeDef, SYS_VISIBLE_FOR_ROLES);
+		} catch (SettingsException e) {
+			throw new SettingsException("Incorrect structure of '" + SYS_VISIBLE_FOR_ROLES
+					+ "' configuration for sys_provider_type='" + typeName + "'.");
+		}
 	}
 
 	/**

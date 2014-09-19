@@ -10,7 +10,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashMap;
 
-import com.jayway.restassured.http.ContentType;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.junit.InSequence;
@@ -23,8 +22,13 @@ import org.searchisko.ftest.DeploymentHelpers;
 import org.searchisko.ftest.ProviderModel;
 import org.searchisko.ftest.rest.ProviderRestServiceTest;
 
+import com.jayway.restassured.http.ContentType;
+
 import static com.jayway.restassured.RestAssured.given;
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.notNullValue;
 
 /**
  * Integration test for /sys/es/search and /sys/es/stats access to full Elasticsearch REST API.
@@ -177,8 +181,8 @@ public class ESProxyFilterTest {
 		// create index
 		given().contentType(ContentType.JSON).auth().preemptive()
 				.basic(DeploymentHelpers.DEFAULT_PROVIDER_NAME, DeploymentHelpers.DEFAULT_PROVIDER_PASSWORD)
-				.body(new HashMap<>()).expect().log().ifError().statusCode(200).contentType(ContentType.JSON)
-				.when().post(new URL(context, SEARCH_REST_API + "/unknownindex").toExternalForm());
+				.body(new HashMap<>()).expect().log().ifError().statusCode(200).contentType(ContentType.JSON).when()
+				.post(new URL(context, SEARCH_REST_API + "/unknownindex").toExternalForm());
 
 		// and check it exists
 		given().auth().preemptive()
@@ -199,6 +203,40 @@ public class ESProxyFilterTest {
 				.basic(DeploymentHelpers.DEFAULT_PROVIDER_NAME, DeploymentHelpers.DEFAULT_PROVIDER_PASSWORD).expect().log()
 				.all().statusCode(400).when()
 				.get(new URL(context, STATS_REST_API + "/unknownindex/unknowntype").toExternalForm());
+	}
+
+	/**
+	 * Helper method to create index in ES 'search' cluster. Call it from other tests when you need this.
+	 * 
+	 * @param context to be used to call REST API
+	 * @param indexName name of index to create
+	 * @param indexDef JSON with definition of index
+	 * @throws MalformedURLException
+	 */
+	public static final void createSearchESIndex(URL context, String indexName, String indexDef)
+			throws MalformedURLException {
+		given().contentType(ContentType.JSON).content(indexDef).auth().preemptive()
+				.basic(DeploymentHelpers.DEFAULT_PROVIDER_NAME, DeploymentHelpers.DEFAULT_PROVIDER_PASSWORD).expect().log()
+				.ifError().statusCode(200).contentType(ContentType.JSON).when()
+				.put(new URL(context, SEARCH_REST_API + "/" + indexName + "/").toExternalForm());
+	}
+
+	/**
+	 * Helper method to create mapping in ES 'search' cluster. Call it from other tests when you need this. You have to
+	 * create index first!
+	 * 
+	 * @param context to be used to call REST API
+	 * @param indexName name of index mapping is for
+	 * @param indexType name of ES type mapping is for
+	 * @param mapping JSON with definition of mapping
+	 * @throws MalformedURLException
+	 */
+	public static final void createSearchESIndexMapping(URL context, String indexName, String indexType, String mapping)
+			throws MalformedURLException {
+		given().contentType(ContentType.JSON).content(mapping).auth().preemptive()
+				.basic(DeploymentHelpers.DEFAULT_PROVIDER_NAME, DeploymentHelpers.DEFAULT_PROVIDER_PASSWORD).expect().log()
+				.ifError().statusCode(200).contentType(ContentType.JSON).when()
+				.put(new URL(context, SEARCH_REST_API + "/" + indexName + "/" + indexType + "/_mapping").toExternalForm());
 	}
 
 }

@@ -42,6 +42,7 @@ import org.searchisko.api.cache.IndexNamesCache;
 import org.searchisko.api.model.QuerySettings;
 import org.searchisko.api.model.SortByValue;
 import org.searchisko.api.model.TimeoutConfiguration;
+import org.searchisko.api.rest.exception.NotAuthorizedException;
 import org.searchisko.api.rest.search.SemiParsedFacetConfig;
 import org.searchisko.api.service.ProviderService.ProviderContentTypeInfo;
 
@@ -81,6 +82,9 @@ public class SearchService {
 	protected TimeoutConfiguration timeout;
 
 	@Inject
+	protected AuthenticationUtilService authenticationUtilService;
+
+	@Inject
 	protected Logger log;
 
 	/**
@@ -110,10 +114,10 @@ public class SearchService {
 	}
 
 	/**
-	 * This method handles search query building.
-	 * The output is a {@link org.elasticsearch.action.search.SearchRequestBuilder} entity that reflects
-	 * input parameters. This method can be used for testing of final complete Elasticsearch query.
-	 *
+	 * This method handles search query building. The output is a
+	 * {@link org.elasticsearch.action.search.SearchRequestBuilder} entity that reflects input parameters. This method can
+	 * be used for testing of final complete Elasticsearch query.
+	 * 
 	 * @param querySettings
 	 * @param srb
 	 * @return SearchRequestBuilder entity
@@ -144,12 +148,19 @@ public class SearchService {
 	}
 
 	/**
-	 * Setup indices and types for the search request builder according to query settings.
+	 * Set indices and types into ES search request builder according to the query settings and security constraints.
+	 * <p>
+	 * <strong>SECURITY NOTE:</strong> this method plays crucial role for "content type level security"! It fills search
+	 * request builder with indices and types for content types user has permission to only. So this method MUST BE used
+	 * for each search requests for common users! This method uses {@link AuthenticationUtilService}.
 	 * 
-	 * @param querySettings
-	 * @param srb
+	 * @param querySettings to
+	 * @param srb ES search request builder to add searched indices and types to
+	 * @param NotAuthorizedException if current user has not permission to any of content he requested.
+	 * 
 	 */
-	protected void setSearchRequestIndicesAndTypes(QuerySettings querySettings, SearchRequestBuilder srb) {
+	protected void setSearchRequestIndicesAndTypes(QuerySettings querySettings, SearchRequestBuilder srb)
+			throws NotAuthorizedException {
 
 		Set<String> contentTypes = null;
 		if (querySettings.getFilters() != null && querySettings.getFilters().getFilterCandidatesKeys().size() > 0) {
@@ -157,28 +168,32 @@ public class SearchService {
 			contentTypes = querySettings.getFilters().getFilterCandidateValues(fn);
 		}
 
+		Set<String> allQueryIndices = null;
+		Set<String> allQueryTypes = null;
+
 		if (contentTypes != null && contentTypes.size() > 0) {
-			List<String> allQueryIndices = new ArrayList<>();
-			List<String> allQueryTypes = new ArrayList<>();
+			allQueryIndices = new LinkedHashSet<>();
+			allQueryTypes = new LinkedHashSet<>();
 			for (String type : contentTypes) {
 				ProviderContentTypeInfo typeDef = providerService.findContentType(type);
 				if (typeDef == null) {
-					throw new IllegalArgumentException("type");
+					throw new IllegalArgumentException("Unsupported content type");
 				}
-				String[] queryIndices = ProviderService.extractSearchIndices(typeDef, type);
-				String queryType = ProviderService.extractIndexType(typeDef, type);
-				if (log.isLoggable(Level.FINE)) {
-					log.log(Level.FINE, "Query indices and types relevant to {0}: {1}", new Object[] {
-							ContentObjectFields.SYS_CONTENT_TYPE, type });
-					log.log(Level.FINE, "Query indices: {0}", Arrays.asList(queryIndices).toString());
-					log.log(Level.FINE, "Query indices type: {0}", queryType);
+				// #142 - check content type level security there
+				Collection<String> roles = ProviderService.extractTypeVisibilityRoles(typeDef, type);
+				if (roles == null || authenticationUtilService.isUserInAnyOfRoles(true, roles)) {
+					String[] queryIndices = ProviderService.extractSearchIndices(typeDef, type);
+					String queryType = ProviderService.extractIndexType(typeDef, type);
+					if (log.isLoggable(Level.FINE)) {
+						log.log(Level.FINE, "Query indices and types relevant to {0}: {1}", new Object[] {
+								ContentObjectFields.SYS_CONTENT_TYPE, type });
+						log.log(Level.FINE, "Query indices: {0}", Arrays.asList(queryIndices).toString());
+						log.log(Level.FINE, "Query indices type: {0}", queryType);
+					}
+					Collections.addAll(allQueryIndices, queryIndices);
+					allQueryTypes.add(queryType);
 				}
-				Collections.addAll(allQueryIndices, queryIndices);
-				allQueryTypes.add(queryType);
 			}
-			// array parameters can contain duplicities, but we assume Elasticsearch handles it correctly
-			srb.setIndices(allQueryIndices.toArray(new String[allQueryIndices.size()]));
-			srb.setTypes(allQueryTypes.toArray(new String[allQueryTypes.size()]));
 		} else {
 			Set<String> sysTypesRequested = null;
 			if (querySettings.getFilters() != null && querySettings.getFilters().getFilterCandidatesKeys().size() > 0) {
@@ -188,20 +203,32 @@ public class SearchService {
 			boolean isSysTypeFacet = (querySettings.getFacets() != null && querySettings.getFacets().contains(
 					getFacetNameUsingSysTypeField()));
 
-			// TODO: optimization - prepareIndexNamesCacheKey has no side-effects, consider using Memoize pattern (for example
-			// Guava's CacheBuilder)
-			String indexNameCacheKey = prepareIndexNamesCacheKey(sysTypesRequested, isSysTypeFacet);
-			Set<String> indexNames = indexNamesCache.get(indexNameCacheKey);
-			if (indexNames == null) {
-				indexNames = prepareIndexNames(sysTypesRequested, isSysTypeFacet);
-				indexNamesCache.put(indexNameCacheKey, indexNames);
+			// #142 - we can't cache for authenticated users due content type level security
+			String indexNameCacheKey = null;
+			if (!authenticationUtilService.isAuthenticatedUser()) {
+				indexNameCacheKey = prepareIndexNamesCacheKey(sysTypesRequested, isSysTypeFacet);
+				allQueryIndices = indexNamesCache.get(indexNameCacheKey);
 			}
-			String[] queryIndices = indexNames.toArray(new String[indexNames.size()]);
-			srb.setIndices(queryIndices);
+			if (allQueryIndices == null) {
+				allQueryIndices = prepareIndexNamesForSysType(sysTypesRequested, isSysTypeFacet);
+				if (indexNameCacheKey != null) {
+					indexNamesCache.put(indexNameCacheKey, allQueryIndices);
+				}
+			}
 			if (log.isLoggable(Level.FINE)) {
-				log.log(Level.FINE, "Query indices: {0}", Arrays.asList(queryIndices).toString());
+				log.log(Level.FINE, "Query indices: {0}", allQueryIndices);
 			}
 		}
+
+		if ((allQueryIndices == null || allQueryIndices.isEmpty()) && (allQueryTypes == null || allQueryTypes.isEmpty())) {
+			throw new NotAuthorizedException("No content available for current user");
+		}
+
+		if (allQueryIndices != null && !allQueryIndices.isEmpty())
+			srb.setIndices(allQueryIndices.toArray(new String[allQueryIndices.size()]));
+		if (allQueryTypes != null && !allQueryTypes.isEmpty())
+			srb.setTypes(allQueryTypes.toArray(new String[allQueryTypes.size()]));
+
 	}
 
 	/**
@@ -229,9 +256,13 @@ public class SearchService {
 		return sb.toString();
 	}
 
-	private Set<String> prepareIndexNames(Set<String> sysTypesRequested, boolean isSysTypeFacet) {
+	private Set<String> prepareIndexNamesForSysType(Set<String> sysTypesRequested, boolean isSysTypeFacet) {
+		if (sysTypesRequested != null && sysTypesRequested.isEmpty())
+			sysTypesRequested = null;
 		Set<String> indexNames = new LinkedHashSet<>();
 		List<Map<String, Object>> allProviders = providerService.getAll();
+		boolean unknownType = true;
+		boolean isAnyType = false;
 		for (Map<String, Object> providerCfg : allProviders) {
 			try {
 				@SuppressWarnings("unchecked")
@@ -239,11 +270,19 @@ public class SearchService {
 						.get(ProviderService.TYPE);
 				if (types != null) {
 					for (String typeName : types.keySet()) {
+						isAnyType = true;
 						Map<String, Object> typeDef = types.get(typeName);
-						if ((sysTypesRequested == null && !ProviderService.extractSearchAllExcluded(typeDef))
-								|| (sysTypesRequested != null && ((isSysTypeFacet && !ProviderService.extractSearchAllExcluded(typeDef)) || sysTypesRequested
-										.contains(ProviderService.extractSysType(typeDef, typeName))))) {
-							indexNames.addAll(Arrays.asList(ProviderService.extractSearchIndices(typeDef, typeName)));
+						// #142 - check content type level security there
+						Collection<String> roles = ProviderService.extractTypeVisibilityRoles(typeDef, typeName);
+						if (roles == null || authenticationUtilService.isUserInAnyOfRoles(true, roles)) {
+							String sysType = ProviderService.extractSysType(typeDef, typeName);
+							if ((sysTypesRequested == null && !ProviderService.extractSearchAllExcluded(typeDef))
+									|| (sysTypesRequested != null && ((isSysTypeFacet && !ProviderService
+											.extractSearchAllExcluded(typeDef)) || sysTypesRequested.contains(sysType)))) {
+								indexNames.addAll(Arrays.asList(ProviderService.extractSearchIndices(typeDef, typeName)));
+							} else if (sysTypesRequested == null || sysTypesRequested.contains(sysType)) {
+								unknownType = false;
+							}
 						}
 					}
 				}
@@ -252,6 +291,15 @@ public class SearchService {
 						+ providerCfg.get(ProviderService.NAME) + ".");
 			}
 		}
+
+		if (!isAnyType) {
+			throw new SettingsException("No any content type available");
+		}
+
+		if (sysTypesRequested != null && indexNames.isEmpty() && unknownType) {
+			throw new IllegalArgumentException("Unsupported content sys_type");
+		}
+
 		return indexNames;
 	}
 

@@ -17,6 +17,7 @@ Content provider configuration fields:
 * `type` - structure with configuration of content types pushed into Searchisko by this provider. Key in the structure is type name, which **MUST** be Searchisko instance wide unique (typically starts with content provider `name`). It is used on the 'Content Manipulation API' and stored into `sys_content_type` field of content pushed into Searchisko by this provider. Configuration of each type contains these fields:
  * `description` - description of this type, what contains, which system produces it etc.
  * `sys_type` - value stored into `sys_type` field of pushed content (see description in the [Searchisko Content object](../content/dcp_content_object.md) chapter).
+ * `sys_visible_for_roles` - array of strings with user roles of users who can obtain documents of this type over search REST API. User with `admin` role can see documents even if not listed there. If field is not present or is empty then documents of this type are visible for all users.
  * `sys_content_content-type` - MIME identifier of content type stored in the `sys_content` field if it is used. Eg. `text/plain`, `text/html`, `text/x-markdown`. Fulltext search analyzer for `sys_content` field must be set correctly in ElasticSearch mapping regarding this type (eg. use of html stripping etc.).
  * `search_all_excluded` - optional, if `true` then documents with this type are excluded from searchings targeted to all documents (so can be searched only by explicit requests for this type)
  * `persist` - optional, if `true` then documents with this type are stored into Searchisko persistent store during push. Search index can be rebuilt from this persistent store. Used for content which is hard or expensive to obtain again in the future.
@@ -78,6 +79,7 @@ Example of content provider configuration:
 	    "jbossorg_project_info": {
 	      "description" : "Information about projects (name, links, icons, licenses used etc) pushed into DCP by Magnolia CMS",
 	      "sys_type": "project_info",
+	      "sys_visible_for_roles" : ["role1","role2"],
 	      "sys_content_content-type" : "text/plain",
 	      "input_preprocessors": [
 	        {

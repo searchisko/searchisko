@@ -20,10 +20,12 @@ import java.util.TimeZone;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.apache.commons.lang.StringUtils;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.type.TypeReference;
 import org.elasticsearch.common.joda.time.LocalDateTime;
 import org.elasticsearch.common.joda.time.format.ISODateTimeFormat;
+import org.elasticsearch.common.settings.SettingsException;
 
 /**
  * Distinct utility methods.
@@ -231,6 +233,39 @@ public class SearchUtils {
 			return Integer.valueOf((String) o);
 		else
 			throw new NumberFormatException();
+	}
+
+	/**
+	 * Get list of Strings from given kay on given map. Ig it contains simple String then List is created with it.
+	 * {@link #safeList(List)} is used inside to filter list.
+	 * 
+	 * @param map to get value from
+	 * @param key in map to get value from
+	 * @return list of strings or null.
+	 */
+	public static List<String> getListOfStringsFromJsonMap(Map<String, Object> map, String key) {
+		if (map == null)
+			return null;
+		try {
+			Object o = map.get(key);
+			if (o instanceof String) {
+				String v = StringUtils.trimToNull((String) o);
+				if (v != null) {
+					List<String> l = new ArrayList<>();
+					l.add(v);
+					return l;
+				}
+				return null;
+			}
+			@SuppressWarnings("unchecked")
+			List<String> roles = (List<String>) o;
+			if (roles == null || roles.isEmpty())
+				return null;
+			else
+				return safeList(roles);
+		} catch (ClassCastException e) {
+			throw new SettingsException("No String or Array of strings present in field '" + key);
+		}
 	}
 
 	/**

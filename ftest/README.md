@@ -3,6 +3,12 @@ Searchisko Integration Test Suite
 
 This module contains integration tests powered by Arquillian.
 
+Note
+----
+
+If you get `LinkageError` during test run try to change version of JDK you use. This problem is with Oracle JDK 1.7.0_67 for Linux and downgrade to Oracle JDK 1.7.0_55 helped.
+
+
 Set Up
 ------
 
