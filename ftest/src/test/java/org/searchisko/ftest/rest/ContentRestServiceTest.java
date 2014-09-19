@@ -5,14 +5,12 @@
  */
 package org.searchisko.ftest.rest;
 
-
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.jayway.restassured.http.ContentType;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.junit.InSequence;
@@ -23,15 +21,18 @@ import org.junit.runner.RunWith;
 import org.searchisko.ftest.DeploymentHelpers;
 import org.searchisko.ftest.ProviderModel;
 
-import static com.jayway.restassured.RestAssured.given;
-import static org.hamcrest.Matchers.*;
+import com.jayway.restassured.http.ContentType;
 
+import static com.jayway.restassured.RestAssured.given;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.isOneOf;
+import static org.hamcrest.Matchers.not;
 
 /**
  * Integration tests for {@link org.searchisko.api.rest.ContentRestService} REST API
  * <p/>
  * see http://docs.jbossorg.apiary.io/#contentmanipulationapi
- *
+ * 
  * @author Libor Krzyzanek
  * @see org.searchisko.api.rest.ContentRestService
  */
@@ -46,7 +47,6 @@ public class ContentRestServiceTest {
 
 	public static final String TYPE2 = "provider2_issue";
 
-
 	@ArquillianResource
 	protected URL context;
 
@@ -59,12 +59,9 @@ public class ContentRestServiceTest {
 	@InSequence(0)
 	public void assertBasicAuthHeader() throws MalformedURLException {
 		int expStatus = 401;
-		given().pathParam("type", TYPE1).pathParam("contentId", "test").contentType(ContentType.JSON)
-				.body("{}")
-				.expect().statusCode(expStatus)
-				.header("WWW-Authenticate", "Basic realm=\"Insert Provider's username and password\"")
-				.log().ifStatusCodeMatches(is(not(expStatus)))
-				.when().post(new URL(context, CONTENT_REST_API).toExternalForm());
+		given().pathParam("type", TYPE1).pathParam("contentId", "test").contentType(ContentType.JSON).body("{}").expect()
+				.statusCode(expStatus).header("WWW-Authenticate", "Basic realm=\"Insert Provider's username and password\"")
+				.log().ifStatusCodeMatches(is(not(expStatus))).when().post(new URL(context, CONTENT_REST_API).toExternalForm());
 	}
 
 	@Test
@@ -72,35 +69,28 @@ public class ContentRestServiceTest {
 	public void assertNotAuthenticated() throws MalformedURLException {
 		int expStatus = 401;
 		// POST /content/type/id
-		given().pathParam("type", TYPE1).pathParam("contentId", "id").contentType(ContentType.JSON)
-				.body("{}")
-				.expect().statusCode(expStatus).log().ifValidationFails()
-				.when().post(new URL(context, CONTENT_REST_API).toExternalForm());
+		given().pathParam("type", TYPE1).pathParam("contentId", "id").contentType(ContentType.JSON).body("{}").expect()
+				.statusCode(expStatus).log().ifValidationFails().when()
+				.post(new URL(context, CONTENT_REST_API).toExternalForm());
 
 		// POST /content/type/
-		given().pathParam("type", TYPE1).contentType(ContentType.JSON)
-				.body("{}")
-				.expect().statusCode(expStatus).log().ifValidationFails()
-				.when().post(new URL(context, CONTENT_REST_API_BASE).toExternalForm());
+		given().pathParam("type", TYPE1).contentType(ContentType.JSON).body("{}").expect().statusCode(expStatus).log()
+				.ifValidationFails().when().post(new URL(context, CONTENT_REST_API_BASE).toExternalForm());
 
 		// DELETE /content/type/
-		given().pathParam("type", TYPE1).contentType(ContentType.JSON)
-				.body("{}")
-				.expect().statusCode(expStatus).log().ifValidationFails()
-				.when().delete(new URL(context, CONTENT_REST_API_BASE).toExternalForm());
+		given().pathParam("type", TYPE1).contentType(ContentType.JSON).body("{}").expect().statusCode(expStatus).log()
+				.ifValidationFails().when().delete(new URL(context, CONTENT_REST_API_BASE).toExternalForm());
 
 		// DELETE /content/type/id
-		given().pathParam("type", TYPE1).pathParam("contentId", "id").contentType(ContentType.JSON)
-				.body("{}")
-				.expect().statusCode(expStatus).log().ifValidationFails()
-				.when().delete(new URL(context, CONTENT_REST_API).toExternalForm());
+		given().pathParam("type", TYPE1).pathParam("contentId", "id").contentType(ContentType.JSON).body("{}").expect()
+				.statusCode(expStatus).log().ifValidationFails().when()
+				.delete(new URL(context, CONTENT_REST_API).toExternalForm());
 
 	}
 
 	static ProviderModel provider1 = new ProviderModel("provider1", "password");
 
 	static ProviderModel provider2 = new ProviderModel("provider2", "password2");
-
 
 	@Test
 	@InSequence(1)
@@ -120,26 +110,18 @@ public class ContentRestServiceTest {
 
 	static final String contentId = "test-id";
 
-	public static void createOrUpdateContent(URL context, ProviderModel provider, String contentType, String contentId, Map<String, Object> content) throws MalformedURLException {
-		given().pathParam("type", contentType).pathParam("contentId", contentId).contentType(ContentType.JSON)
-				.auth().basic(provider.name, provider.password)
-				.body(content)
-				.expect()
-				.statusCode(200)
-				.contentType(ContentType.JSON)
-				.log().ifValidationFails()
-				.body("status", isOneOf("insert", "update"))
-				.body("message", isOneOf("Content inserted successfully.", "Content updated successfully."))
-				.when().post(new URL(context, CONTENT_REST_API).toExternalForm());
+	public static void createOrUpdateContent(URL context, ProviderModel provider, String contentType, String contentId,
+			Map<String, Object> content) throws MalformedURLException {
+		given().pathParam("type", contentType).pathParam("contentId", contentId).contentType(ContentType.JSON).auth()
+				.basic(provider.name, provider.password).body(content).expect().statusCode(200).contentType(ContentType.JSON)
+				.log().ifValidationFails().body("status", isOneOf("insert", "update"))
+				.body("message", isOneOf("Content inserted successfully.", "Content updated successfully.")).when()
+				.post(new URL(context, CONTENT_REST_API).toExternalForm());
 
-		given().pathParam("type", contentType).pathParam("contentId", contentId).contentType(ContentType.JSON)
-				.expect()
-				.statusCode(200)
-				.contentType(ContentType.JSON)
-				.log().ifValidationFails()
-				.body("sys_id", is(TYPE1 + "-" + contentId))
-				.body("sys_content_id", is(contentId))
-				.when().get(new URL(context, CONTENT_REST_API).toExternalForm());
+		given().pathParam("type", contentType).pathParam("contentId", contentId).contentType(ContentType.JSON).expect()
+				.statusCode(200).contentType(ContentType.JSON).log().ifValidationFails()
+				.body("sys_id", is(contentType + "-" + contentId)).body("sys_content_id", is(contentId)).when()
+				.get(new URL(context, CONTENT_REST_API).toExternalForm());
 	}
 
 	@Test
@@ -159,13 +141,8 @@ public class ContentRestServiceTest {
 	@Test
 	@InSequence(12)
 	public void assertGetAll() throws MalformedURLException {
-		given().pathParam("type", TYPE1).contentType(ContentType.JSON)
-				.expect()
-				.statusCode(200)
-				.contentType(ContentType.JSON)
-				.log().ifValidationFails()
-				.body("total", is(1))
-				.body("hits[0].id", is(contentId))
+		given().pathParam("type", TYPE1).contentType(ContentType.JSON).expect().statusCode(200)
+				.contentType(ContentType.JSON).log().ifValidationFails().body("total", is(1)).body("hits[0].id", is(contentId))
 				.when().get(new URL(context, CONTENT_REST_API_BASE).toExternalForm());
 	}
 
@@ -181,34 +158,22 @@ public class ContentRestServiceTest {
 	@InSequence(20)
 	public void assertDeleteSecurity() throws MalformedURLException {
 		// provider 2 cannot delete content from provider 1
-		given().pathParam("type", TYPE1).contentType(ContentType.JSON)
-				.auth().basic(provider2.name, provider2.password)
-				.body("{\"id\":[\"" + contentId + "\"]}")
-				.expect()
-				.statusCode(403)
-				.contentType(ContentType.JSON)
-				.log().ifStatusCodeMatches(is(not(403)))
-				.when().delete(new URL(context, CONTENT_REST_API_BASE).toExternalForm());
+		given().pathParam("type", TYPE1).contentType(ContentType.JSON).auth().basic(provider2.name, provider2.password)
+				.body("{\"id\":[\"" + contentId + "\"]}").expect().statusCode(403).contentType(ContentType.JSON).log()
+				.ifStatusCodeMatches(is(not(403))).when().delete(new URL(context, CONTENT_REST_API_BASE).toExternalForm());
 	}
 
-	public static void deleteContent(URL context, ProviderModel provider, String contentType, String contentId) throws MalformedURLException {
-		given().pathParam("type", contentType).contentType(ContentType.JSON)
-				.auth().basic(provider.name, provider.password)
-				.body("{\"id\":[\"" + contentId + "\"]}")
-				.expect()
-				.statusCode(200)
-				.contentType(ContentType.JSON)
-				.body(contentId, is("ok"))
-				.log().ifValidationFails()
-				.when().delete(new URL(context, CONTENT_REST_API_BASE).toExternalForm());
+	public static void deleteContent(URL context, ProviderModel provider, String contentType, String contentId)
+			throws MalformedURLException {
+		given().pathParam("type", contentType).contentType(ContentType.JSON).auth().basic(provider.name, provider.password)
+				.body("{\"id\":[\"" + contentId + "\"]}").expect().statusCode(200).contentType(ContentType.JSON)
+				.body(contentId, is("ok")).log().ifValidationFails().when()
+				.delete(new URL(context, CONTENT_REST_API_BASE).toExternalForm());
 
-		given().pathParam("type", contentType).pathParam("contentId", contentId).contentType(ContentType.JSON)
-				.expect()
-				.statusCode(404)
-				.log().ifStatusCodeMatches(is(not(404)))
-				.when().get(new URL(context, CONTENT_REST_API).toExternalForm());
+		given().pathParam("type", contentType).pathParam("contentId", contentId).contentType(ContentType.JSON).expect()
+				.statusCode(404).log().ifStatusCodeMatches(is(not(404))).when()
+				.get(new URL(context, CONTENT_REST_API).toExternalForm());
 	}
-
 
 	@Test
 	@InSequence(21)
