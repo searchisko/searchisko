@@ -10,7 +10,7 @@
             "status" : {"type" : "string", "index" : "no"},
             "sys_issue_status" : {"type" : "string", "analyzer" : "keyword", "include_in_all" : true},
             "updated" : {"type" : "date", "index" : "no"},
-            "resolutiondate" : {"type" : "date", "index" : "no"},
+            "resolutiondate" : {"type" : "date"},
             "summary" : {"type" : "string", "index" : "no"},
             "tags" : {"type" : "string", "index" : "no"},
             "fix_versions": {
