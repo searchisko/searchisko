@@ -26,10 +26,10 @@ import org.apache.http.HttpEntityEnclosingRequest;
 import org.apache.http.HttpHeaders;
 import org.apache.http.HttpRequest;
 import org.apache.http.HttpResponse;
-import org.apache.http.client.methods.AbortableHttpRequest;
 import org.apache.http.client.utils.URIUtils;
 import org.apache.http.entity.InputStreamEntity;
-import org.apache.http.impl.client.SystemDefaultHttpClient;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
 import org.apache.http.message.BasicHttpEntityEnclosingRequest;
 import org.apache.http.message.BasicHttpRequest;
 import org.apache.http.util.EntityUtils;
@@ -69,7 +69,7 @@ public class ESProxyFilter implements Filter {
 	@Inject
 	protected StatsClientService statsClientService;
 
-	protected SystemDefaultHttpClient proxyClient;
+	protected CloseableHttpClient proxyClient;
 
 	protected boolean useStatsClient = false;
 
@@ -124,13 +124,17 @@ public class ESProxyFilter implements Filter {
 	@Override
 	public void init(FilterConfig filterConfig) throws ServletException {
 		useStatsClient = !SearchUtils.isBlank(filterConfig.getInitParameter(CFG_USE_STATS_CLIENT));
-		proxyClient = new SystemDefaultHttpClient(null);
+		proxyClient = HttpClients.custom().build();
 	}
 
 	@Override
 	public void destroy() {
 		if (proxyClient != null) {
-			proxyClient.getConnectionManager().shutdown();
+			try {
+				proxyClient.close();
+			} catch (IOException e) {
+				// ignore
+			}
 			proxyClient = null;
 		}
 	}
@@ -193,11 +197,6 @@ public class ESProxyFilter implements Filter {
 			copyResponseData(proxyResponse, servletResponse);
 
 		} catch (Exception e) {
-			// abort request, according to best practice with HttpClient
-			if (proxyRequest instanceof AbortableHttpRequest) {
-				AbortableHttpRequest abortableHttpRequest = (AbortableHttpRequest) proxyRequest;
-				abortableHttpRequest.abort();
-			}
 			if (e instanceof RuntimeException)
 				throw (RuntimeException) e;
 			if (e instanceof ServletException)

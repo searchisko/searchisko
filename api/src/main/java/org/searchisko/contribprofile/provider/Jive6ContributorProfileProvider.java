@@ -23,11 +23,13 @@ import javax.inject.Inject;
 import javax.inject.Named;
 
 import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
+import org.apache.http.auth.AuthenticationException;
 import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.auth.BasicScheme;
-import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.type.TypeReference;
@@ -65,11 +67,11 @@ public class Jive6ContributorProfileProvider implements ContributorProfileProvid
 	@Inject
 	protected AppConfiguration appConfiguration;
 
-	protected DefaultHttpClient httpClient;
+	protected CloseableHttpClient httpClient;
 
 	@PostConstruct
 	public void init() {
-		httpClient = new DefaultHttpClient();
+		httpClient = HttpClients.custom().build();
 	}
 
 	@Override
@@ -80,11 +82,12 @@ public class Jive6ContributorProfileProvider implements ContributorProfileProvid
 
 		HttpGet httpGet = new HttpGet(jive6Url + JIVE_PROFILE_REST_API + jbossorgUsername);
 
-		UsernamePasswordCredentials credentials = new UsernamePasswordCredentials(username, password);
-		httpGet.addHeader(BasicScheme.authenticate(credentials, "US-ASCII", false));
-
+		CloseableHttpResponse response = null;
 		try {
-			HttpResponse response = httpClient.execute(httpGet);
+			UsernamePasswordCredentials credentials = new UsernamePasswordCredentials(username, password);
+			BasicScheme bs = new BasicScheme();
+			httpGet.addHeader(bs.authenticate(credentials, httpGet, null));
+			response = httpClient.execute(httpGet);
 			HttpEntity entity = response.getEntity();
 			if (response.getStatusLine().getStatusCode() >= 300) {
 				EntityUtils.consume(entity);
@@ -98,12 +101,25 @@ public class Jive6ContributorProfileProvider implements ContributorProfileProvid
 			return mapRawJsonData(data);
 		} catch (IOException e) {
 			return null;
+		} catch (AuthenticationException e) {
+			throw new RuntimeException(e);
+		} finally {
+			if (response != null)
+				try {
+					response.close();
+				} catch (IOException e) {
+					// ignore
+				}
 		}
 	}
 
 	@PreDestroy
 	public void destroy() {
-		httpClient.getConnectionManager().shutdown();
+		try {
+			httpClient.close();
+		} catch (IOException e) {
+			log.warning(e.getMessage());
+		}
 	}
 
 	private static final byte FIRST_RESPONSE_BYTE = "{".getBytes()[0];

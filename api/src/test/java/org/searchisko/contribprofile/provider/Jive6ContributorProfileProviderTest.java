@@ -17,6 +17,8 @@ import org.elasticsearch.common.settings.SettingsException;
 import org.junit.Assert;
 import org.junit.Test;
 import org.searchisko.api.ContentObjectFields;
+import org.searchisko.api.model.AppConfiguration;
+import org.searchisko.api.model.AppConfiguration.ContributorProfileProviderConfig;
 import org.searchisko.api.service.ContributorProfileService;
 import org.searchisko.api.testtools.TestUtils;
 import org.searchisko.contribprofile.model.ContributorProfile;
@@ -31,6 +33,11 @@ public class Jive6ContributorProfileProviderTest {
 
 	public static void main(String[] args) {
 		Jive6ContributorProfileProvider provider = new Jive6ContributorProfileProvider();
+		provider.appConfiguration = new AppConfiguration("adp");
+		ContributorProfileProviderConfig contributorProfileProviderConfig = new ContributorProfileProviderConfig(
+				"https://developer.jboss.org", "test", null);
+		provider.appConfiguration.setContributorProfileProviderConfig(contributorProfileProviderConfig);
+
 		provider.init();
 		provider.log = Logger.getLogger(Jive6ContributorProfileProvider.class.getName());
 
