@@ -119,8 +119,6 @@ public class FeedRestServiceTest {
 			// assert patched fields
 			Assert.assertEquals(0, qs.getFacets().size());
 			Assert.assertEquals(false, qs.isQueryHighlight());
-			Assert.assertEquals(new Integer(0), qs.getFrom());
-			Assert.assertEquals(new Integer(20), qs.getSize());
 			Assert.assertEquals(SortByValue.NEW, qs.getSortBy());
 			Assert.assertEquals(9, qs.getFields().size());
 			Assert.assertNull(qs.getFilters().getFilterCandidateValues(ACTIVITY_DATE_FROM_KEY));
@@ -128,6 +126,8 @@ public class FeedRestServiceTest {
 			Assert.assertNull(qs.getFilters().getFilterCandidateValues(ACTIVITY_DATE_INTERVAL_KEY));
 
 			// assert preserved fields
+			Assert.assertEquals(new Integer(50), qs.getFrom());
+			Assert.assertEquals(new Integer(150), qs.getSize());
 			Assert.assertEquals("Querry", qs.getQuery());
 			Assert.assertEquals(0, qs.getFacets().size());
 			Assert.assertEquals(1, qs.getFilters().getFilterCandidateValues(CONTENT_TYPE_KEY).size());

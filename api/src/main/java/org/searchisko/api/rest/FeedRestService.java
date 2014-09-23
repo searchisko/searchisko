@@ -129,8 +129,11 @@ public class FeedRestService extends RestServiceBase {
 		if (querySettings.getSortBy() != SortByValue.NEW_CREATION) {
 			querySettings.setSortBy(SortByValue.NEW);
 		}
-		querySettings.setFrom(0);
-		querySettings.setSize(20);
+
+		if (querySettings.getFrom() == null)
+			querySettings.setFrom(0);
+		if (querySettings.getSize() == null)
+			querySettings.setSize(20);
 		Filters filters = querySettings.getFiltersInit();
 		// TODO: no hardcodes, we could probably remove these
 		filters.forgetUrlFilterCandidate("activity_date_from");

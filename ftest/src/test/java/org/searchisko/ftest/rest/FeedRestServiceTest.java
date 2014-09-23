@@ -86,7 +86,7 @@ public class FeedRestServiceTest {
 
 	@Test
 	@InSequence(21)
-	public void assertPushContentWithId() throws MalformedURLException {
+	public void assertPushContentWithType1Id1() throws MalformedURLException {
 		Map<String, Object> content = new HashMap<>();
 		content.put("sys_description", "desc");
 		content.put("sys_content", "content");
@@ -95,7 +95,7 @@ public class FeedRestServiceTest {
 
 	@Test
 	@InSequence(22)
-	public void assertPushContentWithId2() throws MalformedURLException {
+	public void assertPushContentWithType2Id2() throws MalformedURLException {
 		Map<String, Object> content = new HashMap<>();
 		content.put("sys_description", "desc 2");
 		content.put("sys_content", "content 2");
@@ -156,6 +156,35 @@ public class FeedRestServiceTest {
 				.body("feed.entry[0].author.name.text()", is("unknown"))
 				.body("feed.entry[1].author.name.text()", is("unknown")).when()
 				.get(new URL(context, FEED_REST_API).toExternalForm());
+	}
+
+	@Test
+	@InSequence(50)
+	public void assertPushContentWithType1Id2() throws MalformedURLException {
+		Map<String, Object> content = new HashMap<>();
+		content.put("sys_description", "desc 2");
+		content.put("sys_content", "content 2");
+		ContentRestServiceTest.createOrUpdateContent(context, provider1, TYPE1, contentId2, content);
+
+		DeploymentHelpers.refreshES();
+	}
+
+	@Test
+	@InSequence(51)
+	public void assertGetDataFeed_paginationSupport() throws MalformedURLException {
+
+		given().contentType(ContentType.XML).expect().log().all().statusCode(200).contentType("application/atom+xml")
+				.body("feed.entry[0].content.text()", is("content")).body("feed.entry[1].content.text()", is("content 2"))
+				.when().get(new URL(context, FEED_REST_API).toExternalForm());
+
+		given().contentType(ContentType.XML).expect().log().all().statusCode(200).contentType("application/atom+xml")
+				.body("feed.entry.content.@type", is(FEED_CONTENT_TYPE)).body("feed.entry.content.text()", is("content"))
+				.when().get(new URL(context, FEED_REST_API + "?size=1&from=0").toExternalForm());
+
+		given().contentType(ContentType.XML).expect().log().all().statusCode(200).contentType("application/atom+xml")
+				.body("feed.entry.content.@type", is(FEED_CONTENT_TYPE)).body("feed.entry.content.text()", is("content 2"))
+				.when().get(new URL(context, FEED_REST_API + "?size=1&from=1").toExternalForm());
+
 	}
 
 }

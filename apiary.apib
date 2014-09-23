@@ -902,6 +902,8 @@ Get Atom feed with filtered content.
 * `type` filters feed only to specific `sys_content_type`
 * `content_provider` filters feed only to data provided by specified provider - `sys_content_provider` field
 * `query` full text query string
+* `from` start index or returned entries. Default value is 0. Useful together with `size` for results pagination.
+* `size` maximal number of returned entries. Default is 20, maximal value is 500.
 * `sortBy` sort result. If not used then date of last content modification is 
   used to include content in feed. You can use `new-create` value here to 
   include content in feed by date of its creation (so later modifications are ignored and content is not included in feed again).
