@@ -44,7 +44,9 @@ import org.searchisko.api.model.SortByValue;
 import org.searchisko.api.model.TimeoutConfiguration;
 import org.searchisko.api.rest.exception.NotAuthorizedException;
 import org.searchisko.api.rest.search.SemiParsedFacetConfig;
+import org.searchisko.api.security.Role;
 import org.searchisko.api.service.ProviderService.ProviderContentTypeInfo;
+import org.searchisko.api.util.SearchUtils;
 
 import static org.searchisko.api.rest.search.ConfigParseUtil.parseFacetType;
 
@@ -59,6 +61,8 @@ import static org.searchisko.api.rest.search.ConfigParseUtil.parseFacetType;
 @ApplicationScoped
 @Singleton
 public class SearchService {
+
+	public static final String CFGNAME_FIELD_VISIBLE_FOR_ROLES = "field_visible_for_roles";
 
 	@Inject
 	protected SearchClientService searchClientService;
@@ -600,26 +604,51 @@ public class SearchService {
 	 *      href="http://www.elasticsearch.org/guide/en/elasticsearch/reference/0.90/search-request-fields.html">Elasticsearch
 	 *      0.90 - Fields</a>
 	 */
-	@SuppressWarnings({ "unchecked", "rawtypes" })
 	protected void setSearchRequestFields(QuerySettings querySettings, SearchRequestBuilder srb) {
 
-		// handle 'field' params to return configured fields only. Use default set of fields loaded from configuration.
+		Map<String, Object> cf = configService.get(ConfigService.CFGNAME_SEARCH_RESPONSE_FIELDS);
+
+		List<String> fields = null;
+
 		if (querySettings.getFields() != null) {
-			srb.addFields((querySettings.getFields()).toArray(new String[querySettings.getFields().size()]));
+			fields = querySettings.getFields();
 		} else {
-			Map<String, Object> cf = configService.get(ConfigService.CFGNAME_SEARCH_RESPONSE_FIELDS);
-			if (cf != null && cf.containsKey(ConfigService.CFGNAME_SEARCH_RESPONSE_FIELDS)) {
-				Object o = cf.get(ConfigService.CFGNAME_SEARCH_RESPONSE_FIELDS);
-				if (o instanceof Collection) {
-					srb.addFields(((Collection<String>) o).toArray(new String[((Collection) o).size()]));
-				} else if (o instanceof String) {
-					srb.addField((String) o);
-				} else {
-					throw new SettingsException(ConfigService.CFGNAME_SEARCH_RESPONSE_FIELDS
-							+ " configuration document is invalid.");
+			try {
+				fields = SearchUtils.getListOfStringsFromJsonMap(cf, ConfigService.CFGNAME_SEARCH_RESPONSE_FIELDS);
+			} catch (ClassCastException e) {
+				throw new SettingsException(ConfigService.CFGNAME_SEARCH_RESPONSE_FIELDS
+						+ " configuration document is invalid.");
+			}
+
+		}
+
+		if (fields != null && !fields.isEmpty()) {
+			if (cf != null) {
+				@SuppressWarnings("unchecked")
+				Map<String, Object> cfgFieldsPermissions = (Map<String, Object>) cf.get(CFGNAME_FIELD_VISIBLE_FOR_ROLES);
+				if (cfgFieldsPermissions != null && !cfgFieldsPermissions.isEmpty()
+						&& !authenticationUtilService.isUserInRole(Role.ADMIN)) {
+					List<String> fieldsFiltered = new ArrayList<>();
+					for (String field : fields) {
+						List<String> roles = SearchUtils.getListOfStringsFromJsonMap(cfgFieldsPermissions, field);
+						if (roles != null && !roles.isEmpty()) {
+							if (authenticationUtilService.isUserInAnyOfRoles(false, roles)) {
+								fieldsFiltered.add(field);
+							}
+						} else {
+							fieldsFiltered.add(field);
+						}
+					}
+					if (fieldsFiltered.isEmpty()) {
+						throw new NotAuthorizedException("No permission to show any of requested content fields.");
+					}
+					fields = fieldsFiltered;
 				}
 			}
+
+			srb.addFields((fields).toArray(new String[fields.size()]));
 		}
+
 	}
 
 	/**

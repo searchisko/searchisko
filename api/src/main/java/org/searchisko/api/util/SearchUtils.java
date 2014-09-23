@@ -236,7 +236,7 @@ public class SearchUtils {
 	}
 
 	/**
-	 * Get list of Strings from given kay on given map. Ig it contains simple String then List is created with it.
+	 * Get list of Strings from given key on given map. If it contains simple String then List is created with it.
 	 * {@link #safeList(List)} is used inside to filter list.
 	 * 
 	 * @param map to get value from

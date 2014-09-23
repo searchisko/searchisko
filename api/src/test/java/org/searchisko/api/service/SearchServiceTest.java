@@ -736,7 +736,6 @@ public class SearchServiceTest extends SearchServiceTestBase {
 
 		// case - no fields requested so defaults loaded from configuration but do not contains correct key
 		{
-			// default is not defined
 			Mockito.reset(srbMock, tested.configService);
 			Map<String, Object> mockConfig = new HashMap<>();
 			Mockito.when(tested.configService.get(ConfigService.CFGNAME_SEARCH_RESPONSE_FIELDS)).thenReturn(mockConfig);
@@ -749,7 +748,6 @@ public class SearchServiceTest extends SearchServiceTestBase {
 
 		// case - no fields requested so defaults loaded from configuration, contains correct key with String value
 		{
-			// default is not defined
 			Mockito.reset(srbMock, tested.configService);
 			Map<String, Object> mockConfig = new HashMap<>();
 			mockConfig.put(ConfigService.CFGNAME_SEARCH_RESPONSE_FIELDS, "aa");
@@ -757,14 +755,13 @@ public class SearchServiceTest extends SearchServiceTestBase {
 			QuerySettings querySettings = new QuerySettings();
 			tested.setSearchRequestFields(querySettings, srbMock);
 			Mockito.verify(tested.configService).get(ConfigService.CFGNAME_SEARCH_RESPONSE_FIELDS);
-			Mockito.verify(srbMock).addField("aa");
+			Mockito.verify(srbMock).addFields(new String[] { "aa" });
 			Mockito.verifyNoMoreInteractions(srbMock);
 			Mockito.verifyNoMoreInteractions(tested.configService);
 		}
 
 		// case - no fields requested so defaults loaded from configuration, contains correct key with List value
 		{
-			// default is not defined
 			Mockito.reset(srbMock, tested.configService);
 			Map<String, Object> mockConfig = new HashMap<>();
 			List<String> cfgList = new ArrayList<>();
@@ -789,8 +786,46 @@ public class SearchServiceTest extends SearchServiceTestBase {
 			tested.setSearchRequestFields(querySettings, srbMock);
 			Mockito.verify(srbMock).addFields("aa", "bb");
 			Mockito.verifyNoMoreInteractions(srbMock);
+			Mockito.verify(tested.configService).get(ConfigService.CFGNAME_SEARCH_RESPONSE_FIELDS);
 			Mockito.verifyZeroInteractions(tested.configService);
 		}
+	}
+
+	/** TODO #150 - unit test for field level security */
+	@Test
+	public void handleResponseContentSettings_fields_security() {
+		ConfigService configService = Mockito.mock(ConfigService.class);
+		SearchService tested = getTested(configService);
+
+		SearchRequestBuilder srbMock = Mockito.mock(SearchRequestBuilder.class);
+
+		// case - no fields requested so defaults loaded from configuration, but no any available for current user
+		{
+			// Mockito.reset(srbMock, tested.configService);
+			// Map<String, Object> mockConfig = new HashMap<>();
+			// List<String> cfgList = new ArrayList<>();
+			// cfgList.add("bb");
+			// cfgList.add("cc");
+			// mockConfig.put(ConfigService.CFGNAME_SEARCH_RESPONSE_FIELDS, cfgList);
+			// Mockito.when(tested.configService.get(ConfigService.CFGNAME_SEARCH_RESPONSE_FIELDS)).thenReturn(mockConfig);
+			// QuerySettings querySettings = new QuerySettings();
+			// tested.setSearchRequestFields(querySettings, srbMock);
+			// Mockito.verify(tested.configService).get(ConfigService.CFGNAME_SEARCH_RESPONSE_FIELDS);
+			// Mockito.verify(srbMock).addFields("bb", "cc");
+			// Mockito.verifyNoMoreInteractions(srbMock);
+			// Mockito.verifyNoMoreInteractions(tested.configService);
+		}
+
+		// case - no fields requested so defaults loaded from configuration, some available for current user
+
+		// case - no fields requested so defaults loaded from configuration, all available for admin role
+
+		// case - fields requested, but no any available for current user
+
+		// case - fields requested, some available for current user
+
+		// case - fields requested, all available for admin role
+
 	}
 
 	@Test
