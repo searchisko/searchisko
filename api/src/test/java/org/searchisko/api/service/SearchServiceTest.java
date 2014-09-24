@@ -33,6 +33,8 @@ import org.searchisko.api.model.PastIntervalValue;
 import org.searchisko.api.model.QuerySettings;
 import org.searchisko.api.model.QuerySettings.Filters;
 import org.searchisko.api.model.SortByValue;
+import org.searchisko.api.rest.exception.NotAuthorizedException;
+import org.searchisko.api.security.Role;
 import org.searchisko.api.testtools.TestUtils;
 
 /**
@@ -791,7 +793,6 @@ public class SearchServiceTest extends SearchServiceTestBase {
 		}
 	}
 
-	/** TODO #150 - unit test for field level security */
 	@Test
 	public void handleResponseContentSettings_fields_security() {
 		ConfigService configService = Mockito.mock(ConfigService.class);
@@ -799,32 +800,110 @@ public class SearchServiceTest extends SearchServiceTestBase {
 
 		SearchRequestBuilder srbMock = Mockito.mock(SearchRequestBuilder.class);
 
+		Map<String, Object> mockConfig = new HashMap<>();
+		List<String> cfgList = new ArrayList<>();
+		cfgList.add("bb");
+		cfgList.add("cc");
+		mockConfig.put(ConfigService.CFGNAME_SEARCH_RESPONSE_FIELDS, cfgList);
+
+		Map<String, Object> rolesSettings = new HashMap<>();
+		rolesSettings.put("aa", "role1");
+		rolesSettings.put("bb", "role1");
+		rolesSettings.put("cc", "role1");
+		mockConfig.put(SearchService.CFGNAME_FIELD_VISIBLE_FOR_ROLES, rolesSettings);
+
 		// case - no fields requested so defaults loaded from configuration, but no any available for current user
 		{
-			// Mockito.reset(srbMock, tested.configService);
-			// Map<String, Object> mockConfig = new HashMap<>();
-			// List<String> cfgList = new ArrayList<>();
-			// cfgList.add("bb");
-			// cfgList.add("cc");
-			// mockConfig.put(ConfigService.CFGNAME_SEARCH_RESPONSE_FIELDS, cfgList);
-			// Mockito.when(tested.configService.get(ConfigService.CFGNAME_SEARCH_RESPONSE_FIELDS)).thenReturn(mockConfig);
-			// QuerySettings querySettings = new QuerySettings();
-			// tested.setSearchRequestFields(querySettings, srbMock);
-			// Mockito.verify(tested.configService).get(ConfigService.CFGNAME_SEARCH_RESPONSE_FIELDS);
-			// Mockito.verify(srbMock).addFields("bb", "cc");
-			// Mockito.verifyNoMoreInteractions(srbMock);
-			// Mockito.verifyNoMoreInteractions(tested.configService);
+			Mockito.reset(srbMock, tested.configService, tested.authenticationUtilService);
+			mockAuthenticatedUserWithRole(tested, "role2");
+			Mockito.when(tested.configService.get(ConfigService.CFGNAME_SEARCH_RESPONSE_FIELDS)).thenReturn(mockConfig);
+			QuerySettings querySettings = new QuerySettings();
+
+			try {
+				tested.setSearchRequestFields(querySettings, srbMock);
+				Assert.fail("NotAuthorizedException expected");
+			} catch (NotAuthorizedException e) {
+				Mockito.verify(tested.configService).get(ConfigService.CFGNAME_SEARCH_RESPONSE_FIELDS);
+				Mockito.verifyNoMoreInteractions(srbMock);
+				Mockito.verifyNoMoreInteractions(tested.configService);
+			}
 		}
 
 		// case - no fields requested so defaults loaded from configuration, some available for current user
+		rolesSettings.put("bb", TestUtils.createListOfStrings("role1", "role2"));
+		{
+			Mockito.reset(srbMock, tested.configService, tested.authenticationUtilService);
+			mockAuthenticatedUserWithRole(tested, "role2");
+			Mockito.when(tested.configService.get(ConfigService.CFGNAME_SEARCH_RESPONSE_FIELDS)).thenReturn(mockConfig);
+			QuerySettings querySettings = new QuerySettings();
+			tested.setSearchRequestFields(querySettings, srbMock);
+			Mockito.verify(tested.configService).get(ConfigService.CFGNAME_SEARCH_RESPONSE_FIELDS);
+			Mockito.verify(srbMock).addFields("bb");
+			Mockito.verifyNoMoreInteractions(srbMock);
+			Mockito.verifyNoMoreInteractions(tested.configService);
+		}
 
 		// case - no fields requested so defaults loaded from configuration, all available for admin role
+		{
+			Mockito.reset(srbMock, tested.configService, tested.authenticationUtilService);
+			mockAuthenticatedUserWithRole(tested, Role.ADMIN);
+			Mockito.when(tested.configService.get(ConfigService.CFGNAME_SEARCH_RESPONSE_FIELDS)).thenReturn(mockConfig);
+			QuerySettings querySettings = new QuerySettings();
+			tested.setSearchRequestFields(querySettings, srbMock);
+			Mockito.verify(tested.configService).get(ConfigService.CFGNAME_SEARCH_RESPONSE_FIELDS);
+			Mockito.verify(srbMock).addFields("bb", "cc");
+			Mockito.verifyNoMoreInteractions(srbMock);
+			Mockito.verifyNoMoreInteractions(tested.configService);
+		}
 
 		// case - fields requested, but no any available for current user
+		{
+			Mockito.reset(srbMock, tested.configService, tested.authenticationUtilService);
+			mockAuthenticatedUserWithRole(tested, "role2");
+			Mockito.when(tested.configService.get(ConfigService.CFGNAME_SEARCH_RESPONSE_FIELDS)).thenReturn(mockConfig);
+			QuerySettings querySettings = new QuerySettings();
+			querySettings.addField("aa");
+			querySettings.addField("cc");
+			try {
+				tested.setSearchRequestFields(querySettings, srbMock);
+				Assert.fail("NotAuthorizedException expected");
+			} catch (NotAuthorizedException e) {
+				Mockito.verify(tested.configService).get(ConfigService.CFGNAME_SEARCH_RESPONSE_FIELDS);
+				Mockito.verifyNoMoreInteractions(srbMock);
+				Mockito.verifyNoMoreInteractions(tested.configService);
+			}
+		}
 
 		// case - fields requested, some available for current user
+		{
+			Mockito.reset(srbMock, tested.configService, tested.authenticationUtilService);
+			mockAuthenticatedUserWithRole(tested, "role1");
+			Mockito.when(tested.configService.get(ConfigService.CFGNAME_SEARCH_RESPONSE_FIELDS)).thenReturn(mockConfig);
+			QuerySettings querySettings = new QuerySettings();
+			querySettings.addField("aa");
+			querySettings.addField("bb");
+			tested.setSearchRequestFields(querySettings, srbMock);
+			Mockito.verify(tested.configService).get(ConfigService.CFGNAME_SEARCH_RESPONSE_FIELDS);
+			Mockito.verify(srbMock).addFields("aa", "bb");
+			Mockito.verifyNoMoreInteractions(srbMock);
+			Mockito.verifyNoMoreInteractions(tested.configService);
+		}
 
 		// case - fields requested, all available for admin role
+		{
+			Mockito.reset(srbMock, tested.configService, tested.authenticationUtilService);
+			mockAuthenticatedUserWithRole(tested, Role.ADMIN);
+			Mockito.when(tested.configService.get(ConfigService.CFGNAME_SEARCH_RESPONSE_FIELDS)).thenReturn(mockConfig);
+			QuerySettings querySettings = new QuerySettings();
+			querySettings.addField("aa");
+			querySettings.addField("bb");
+			querySettings.addField("cc");
+			tested.setSearchRequestFields(querySettings, srbMock);
+			Mockito.verify(tested.configService).get(ConfigService.CFGNAME_SEARCH_RESPONSE_FIELDS);
+			Mockito.verify(srbMock).addFields("aa", "bb", "cc");
+			Mockito.verifyNoMoreInteractions(srbMock);
+			Mockito.verifyNoMoreInteractions(tested.configService);
+		}
 
 	}
 
