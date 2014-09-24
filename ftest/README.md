@@ -43,7 +43,10 @@ Note: Security domain name is intentionally different because functional tests u
 Copy this cache configuration into `<subsystem xmlns="urn:jboss:domain:infinispan:1.5">` section of `standalone.xml`:
 
 	<cache-container name="searchisko">
-		<local-cache name="searchisko-user-roles" />
+		<local-cache name="searchisko-user-roles">
+			<!-- Expiration - 30 mins - should be same as session expiration -->
+			<expiration lifespan="1800000"/>
+		</local-cache>
 	</cache-container>
 
 See [JBoss EAP 6.3 standalone.xml example](src/conf/jboss-eap-6.3-standalone.xml) how it can looks like
