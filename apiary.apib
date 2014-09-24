@@ -1876,7 +1876,8 @@ Management API - System
 This part of the API is used by 'Searchisko administrators' for some system operations.
 --
 
-Get system info about current instance of Searchisko. Common user get basic info only, authenticated 'Searchisko administrator' gets full info. 
+Get system info about current instance of Searchisko. 
+Common user get basic info only, authenticated 'Searchisko administrator' gets full info. 
 
 GET /rest/sys/info
 < 200
@@ -1890,6 +1891,36 @@ GET /rest/sys/info
     "build-timestamp": "2014-03-27T15:55:45.454+0100"
   }
 }
+
+
+Get information about current locks of "Content Manipulation API". Lock means 
+that "Content Manipulation API" can't be used by named providers or all providers if `_all` value is used 
+- "Content Manipulation API" call returns http code `503` - Service Unavailable if locked.
+
+##### Response content
+
+The response contains a JSON structure with one field called `content_manipulation_lock`. 
+It contains array of names of locked providers, or value `_all` if all providers are locked. 
+Field is not present if no any lock is currently in place.  
+
+
+GET /rest/sys/content_manipulation_lock
+< 200
+< Content-Type: application/json
+{
+  "content_manipulation_lock": ["provider1", "provider2"]
+}
+
+
+Create or remove lock of "Content Manipulation API" (see previous operation description for details).
+
+##### Request parameters
+
+* `provider_name` - name of provider to change lock for. Value `_all` means all providers.
+* `status` - value `create` to create lock or `remove` to remove lock. Not that creating lock for `_all` removes previously placed individual locks.
+
+POST /rest/sys/content_manipulation_lock/{provider_name}/{status}
+< 200
 
 
 Get system audit log. 'Searchisko administrator' authentication required.
