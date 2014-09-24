@@ -35,11 +35,11 @@ import org.searchisko.api.rest.search.SemiParsedRangeFilterConfig;
 import org.searchisko.api.rest.search.SemiParsedTermsFilterConfig;
 
 /**
- * Service that can prepare and cache parsed configuration of filters and search filters for the request.
- * In order to prepare the cache the
+ * Service that can prepare and cache parsed configuration of filters and search filters for the request. In order to
+ * prepare the cache the
  * {@link ParsedFilterConfigService#prepareFiltersForRequest(org.searchisko.api.model.QuerySettings.Filters)} method
  * must be called first.
- *
+ * 
  * @author Lukas Vlcek
  * @since 1.0.2
  */
@@ -53,31 +53,42 @@ public class ParsedFilterConfigService {
 	@Inject
 	protected ConfigService configService;
 
-	private static final DateTimeFormatter DATE_TIME_FORMATTER_UTC = ISODateTimeFormat.dateTime().withZoneUTC();
+	protected static final DateTimeFormatter DATE_TIME_FORMATTER_UTC = ISODateTimeFormat.dateTime().withZoneUTC();
 
 	// <filter name, config>
-	private Map<String, SemiParsedFilterConfig> semiParsedFilters = null;
+	protected Map<String, SemiParsedFilterConfig> semiParsedFilters = null;
 
 	// <field name, filter builder>
-	private Map<String, FilterBuilder> searchFilters = null;
+	protected Map<String, FilterBuilder> searchFilters = null;
 
 	// <field name, interval range>
-	private Map<String, IntervalRange> rangeFiltersIntervals = null;
+	protected Map<String, IntervalRange> rangeFiltersIntervals = null;
 
 	public class IntervalRange {
 		private DateTime gte;
 		private DateTime lte;
-		public DateTime getGte() {return gte; }
-		public void setGte(DateTime value) { this.gte = value; }
-		public DateTime getLte() {return lte; }
-		public void setLte(DateTime value) { this.lte = value; }
+
+		public DateTime getGte() {
+			return gte;
+		}
+
+		public void setGte(DateTime value) {
+			this.gte = value;
+		}
+
+		public DateTime getLte() {
+			return lte;
+		}
+
+		public void setLte(DateTime value) {
+			this.lte = value;
+		}
 	}
 
 	/**
-	 * Prepares cache of parsed filter configurations and search filters valid for actual request.
-	 * This method should be called as soon as {@link QuerySettings.Filters} is
-	 * available.
-	 *
+	 * Prepares cache of parsed filter configurations and search filters valid for actual request. This method should be
+	 * called as soon as {@link QuerySettings.Filters} is available.
+	 * 
 	 * @param filters to use to prepare relevant parsed filter configurations into request scope
 	 * @throws java.lang.ReflectiveOperationException if filter field configuration file can not be parsed correctly
 	 */
@@ -90,10 +101,10 @@ public class ParsedFilterConfigService {
 		if (filters != null && !filters.getFilterCandidatesKeys().isEmpty()) {
 			Map<String, Object> filtersConfig = configService.get(ConfigService.CFGNAME_SEARCH_FULLTEXT_FILTER_FIELDS);
 
-			if (filtersConfig == null || (filtersConfig != null && filtersConfig.isEmpty())) {
+			if (filtersConfig == null || filtersConfig.isEmpty()) {
 				if (log.isLoggable(Level.FINEST)) {
-					log.log(Level.FINEST, "Configuration document [" +
-							ConfigService.CFGNAME_SEARCH_FULLTEXT_FILTER_FIELDS + "] not found or is empty! This might be a bug.");
+					log.log(Level.FINEST, "Configuration document [" + ConfigService.CFGNAME_SEARCH_FULLTEXT_FILTER_FIELDS
+							+ "] not found or is empty! This might be a bug.");
 				}
 				return;
 			}
@@ -103,7 +114,8 @@ public class ParsedFilterConfigService {
 				if (filtersConfig.containsKey(filterCandidateKey)) {
 					// get filter types for filterCandidateKey and check all types are the same
 					Object filterConfig = filtersConfig.get(filterCandidateKey);
-					SemiParsedFilterConfig parsedFilterConfig = ConfigParseUtil.parseFilterType(filterConfig, filterCandidateKey); // TODO get from cache?
+					// TODO search filter configuration - cache it
+					SemiParsedFilterConfig parsedFilterConfig = ConfigParseUtil.parseFilterType(filterConfig, filterCandidateKey);
 					semiParsedFilters.put(filterCandidateKey, parsedFilterConfig);
 				}
 			}
@@ -163,8 +175,8 @@ public class ParsedFilterConfigService {
 
 					RangeFilterBuilder rfb;
 					// check if there is already range filter for this document field
-					if (searchFilters.containsKey(conf.getFieldName()) &&
-							searchFilters.get(conf.getFieldName()) instanceof RangeFilterBuilder) {
+					if (searchFilters.containsKey(conf.getFieldName())
+							&& searchFilters.get(conf.getFieldName()) instanceof RangeFilterBuilder) {
 						// in this case we will be adding (or overriding) settings of existing filter
 						rfb = (RangeFilterBuilder) searchFilters.get(conf.getFieldName());
 					} else {
@@ -179,13 +191,15 @@ public class ParsedFilterConfigService {
 						IntervalRange intervalRange = rangeFiltersIntervals.get(conf.getFieldName());
 						if (intervalRange == null) {
 							intervalRange = new IntervalRange();
-							rangeFiltersIntervals.put(conf.getFieldName(),intervalRange);
+							rangeFiltersIntervals.put(conf.getFieldName(), intervalRange);
 						}
 
 						// handle <_processor> if specified
 						if (conf.getProcessor() != null) {
 							Class<?> processorClass = Class.forName(conf.getProcessor());
-							if (!processorClass.isEnum()) { throw new RuntimeException("Class [" + conf.getProcessor() + "] is not an enum type."); }
+							if (!processorClass.isEnum()) {
+								throw new RuntimeException("Class [" + conf.getProcessor() + "] is not an enum type.");
+							}
 							// TODO: improve ParsableIntervalConfig design to make sure this method has to be implemented
 							Method m = processorClass.getMethod("parseRequestParameterValue", String.class);
 							interval = (ParsableIntervalConfig) m.invoke(processorClass, filterValue);
@@ -234,56 +248,55 @@ public class ParsedFilterConfigService {
 	}
 
 	/**
-	 * Provide all valid filter configurations relevant to current request.
-	 * Keys of returned map represent filter names of filter configurations for current request.
-	 *
+	 * Provide all valid filter configurations relevant to current request. Keys of returned map represent filter names of
+	 * filter configurations for current request.
+	 * 
 	 * @return map of {@link org.searchisko.api.rest.search.SemiParsedFilterConfig}s for current request
 	 * @throws java.lang.RuntimeException if new request filters cache hasn't been initialized yet
 	 */
 	public Map<String, SemiParsedFilterConfig> getFilterConfigsForRequest() {
 		if (semiParsedFilters == null) {
 			// this should not happen if request filters have been initialized correctly before
-			throw new RuntimeException("Parsed filters not initialized yet. New request filters need to be " +
-					"initialized via prepareFiltersForRequest() method. This is probably an implementation error.");
+			throw new RuntimeException("Parsed filters not initialized yet. New request filters need to be "
+					+ "initialized via prepareFiltersForRequest() method. This is probably an implementation error.");
 		}
 		return semiParsedFilters;
 	}
 
 	/**
-	 * Provide all valid search filters relevant to current request.
-	 * Keys of returned map represent document field name the search filter executes on.
-	 *
+	 * Provide all valid search filters relevant to current request. Keys of returned map represent document field name
+	 * the search filter executes on.
+	 * 
 	 * @return map of {@link org.elasticsearch.index.query.FilterBuilder}s for current request
 	 * @throws java.lang.RuntimeException if new request filters cache hasn't been initialized yet
 	 */
 	public Map<String, FilterBuilder> getSearchFiltersForRequest() {
 		if (searchFilters == null) {
 			// this should not happen if request filters have been initialized correctly before
-			throw new RuntimeException("Search filters not initialized yet. New request filters need to be " +
-					"initialized via prepareFiltersForRequest() method. This is probably an implementation error.");
+			throw new RuntimeException("Search filters not initialized yet. New request filters need to be "
+					+ "initialized via prepareFiltersForRequest() method. This is probably an implementation error.");
 		}
 		return searchFilters;
 	}
 
 	/**
-	 * Provides all valid interval ranges relevant to current request.
-	 * Keys of returned map represent document field name.
-	 *
+	 * Provides all valid interval ranges relevant to current request. Keys of returned map represent document field name.
+	 * 
 	 * @return
 	 * @throws java.lang.RuntimeException if new request filters cache hasn't been initialized yet
 	 */
 	public Map<String, IntervalRange> getRangeFiltersIntervals() {
 		if (rangeFiltersIntervals == null) {
 			// this should not happen if range filter intervals have been initialized correctly before
-			throw new RuntimeException("Range filter intervals not initialized yet. New request filters need to be " +
-					"initialized via prepareFiltersForRequest() method. This is probably an implementation error.");
+			throw new RuntimeException("Range filter intervals not initialized yet. New request filters need to be "
+					+ "initialized via prepareFiltersForRequest() method. This is probably an implementation error.");
 		}
 		return rangeFiltersIntervals;
 	}
 
 	/**
 	 * Return set of filter names configured to work on top of given field name.
-	 *
+	 * 
 	 * @param fieldName
 	 * @return Set of filter names
 	 * @throws java.lang.RuntimeException if new request filters cache hasn't been initialized yet
@@ -303,6 +316,6 @@ public class ParsedFilterConfigService {
 	 *         {@link org.elasticsearch.index.query.FilterBuilder}s has been initialized
 	 */
 	public boolean isCacheInitialized() {
-		return (semiParsedFilters == null || searchFilters == null) ? false: true;
+		return (semiParsedFilters != null && searchFilters != null);
 	}
 }
