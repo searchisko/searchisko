@@ -20,6 +20,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.searchisko.api.security.Role;
+import org.searchisko.api.service.ConfigService;
 import org.searchisko.ftest.DeploymentHelpers;
 import org.searchisko.ftest.ProviderModel;
 import org.searchisko.ftest.filter.ESProxyFilterTest;
@@ -28,6 +29,7 @@ import com.jayway.restassured.http.ContentType;
 
 import static com.jayway.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.isEmptyOrNullString;
 
 /**
  * Integration test for /search REST API.
@@ -52,7 +54,7 @@ public class SearchRestServiceTest {
 	@Test
 	@InSequence(10)
 	public void assertSearchNoAnyProviderConfigured() throws MalformedURLException {
-		given().contentType(ContentType.JSON).expect().log().ifError().statusCode(500).when()
+		given().contentType(ContentType.JSON).expect().log().ifValidationFails().statusCode(500).when()
 				.get(new URL(context, SEARCH_REST_API).toExternalForm());
 	}
 
@@ -83,8 +85,9 @@ public class SearchRestServiceTest {
 	@Test
 	@InSequence(31)
 	public void assertSearchAllNoResult() throws MalformedURLException {
-		given().contentType(ContentType.JSON).expect().log().ifError().statusCode(200).contentType(ContentType.JSON)
-				.body("hits.total", is(0)).when().get(new URL(context, SEARCH_REST_API).toExternalForm());
+		given().contentType(ContentType.JSON).expect().log().ifValidationFails().statusCode(200)
+				.contentType(ContentType.JSON).body("hits.total", is(0)).when()
+				.get(new URL(context, SEARCH_REST_API).toExternalForm());
 	}
 
 	@Test
@@ -92,6 +95,9 @@ public class SearchRestServiceTest {
 	public void assertPushContentWithId() throws MalformedURLException {
 		Map<String, Object> content = new HashMap<>();
 		content.put("data", "test");
+		content.put("data2", "test2");
+		content.put("data3", "test3");
+		content.put("data4", "test4");
 		ContentRestServiceTest.createOrUpdateContent(context, provider1, TYPE1, contentId, content);
 	}
 
@@ -99,7 +105,10 @@ public class SearchRestServiceTest {
 	@InSequence(33)
 	public void assertPushContentWithId2() throws MalformedURLException {
 		Map<String, Object> content = new HashMap<>();
+		content.put("data", "test");
 		content.put("data2", "test2");
+		content.put("data3", "test3");
+		content.put("data4", "test4");
 		ContentRestServiceTest.createOrUpdateContent(context, provider1, TYPE1, contentId2, content);
 	}
 
@@ -107,7 +116,10 @@ public class SearchRestServiceTest {
 	@InSequence(34)
 	public void assertPushContentWithId3() throws MalformedURLException {
 		Map<String, Object> content = new HashMap<>();
+		content.put("data", "test");
+		content.put("data2", "test2");
 		content.put("data3", "test3");
+		content.put("data4", "test4");
 		ContentRestServiceTest.createOrUpdateContent(context, provider1, TYPE2, contentId3, content);
 	}
 
@@ -115,6 +127,9 @@ public class SearchRestServiceTest {
 	@InSequence(35)
 	public void assertPushContentWithId4() throws MalformedURLException {
 		Map<String, Object> content = new HashMap<>();
+		content.put("data", "test");
+		content.put("data2", "test2");
+		content.put("data3", "test3");
 		content.put("data4", "test4");
 		ContentRestServiceTest.createOrUpdateContent(context, provider1, TYPE2, contentId4, content);
 	}
@@ -127,60 +142,119 @@ public class SearchRestServiceTest {
 
 	protected static String uuid;
 
+	// /////////////////////////////// document type level security ////////////////////////////////
+
 	@Test
 	@InSequence(41)
-	public void assertSearchAllInsertedContent_noPermissionForAnonym() throws MalformedURLException {
+	public void assertDtlsSearchAllInsertedContent_noPermissionForAnonym() throws MalformedURLException {
 		// unauthenticated user has permission only to type 1 data
-		uuid = given().contentType(ContentType.JSON).expect().log().all().statusCode(200).contentType(ContentType.JSON)
-				.body("hits.total", is(2)).body("hits.hits[0]._type", is(TYPE1)).body("hits.hits[1]._type", is(TYPE1)).when()
-				.get(new URL(context, SEARCH_REST_API).toExternalForm()).andReturn().getBody().jsonPath().getString("uuid");
+		uuid = given().contentType(ContentType.JSON).expect().log().ifValidationFails().statusCode(200)
+				.contentType(ContentType.JSON).body("hits.total", is(2)).body("hits.hits[0]._type", is(TYPE1))
+				.body("hits.hits[1]._type", is(TYPE1)).when().get(new URL(context, SEARCH_REST_API).toExternalForm())
+				.andReturn().getBody().jsonPath().getString("uuid");
 	}
 
 	@Test
 	@InSequence(42)
-	public void assertSearchAllInsertedContent_providerHasPermission() throws MalformedURLException {
+	public void assertDtlsSearchAllInsertedContent_providerHasPermission() throws MalformedURLException {
 		// authenticated provider has right to type 2 as it allows role "provider"
 		given().contentType(ContentType.JSON).auth().preemptive().basic(provider1.name, provider1.password).expect().log()
-				.all().statusCode(200).contentType(ContentType.JSON).body("hits.total", is(4)).when()
-				.get(new URL(context, SEARCH_REST_API).toExternalForm()).andReturn().getBody().jsonPath().getString("uuid");
+				.ifValidationFails().statusCode(200).contentType(ContentType.JSON).body("hits.total", is(4)).when()
+				.get(new URL(context, SEARCH_REST_API).toExternalForm());
 	}
 
 	@Test
 	@InSequence(43)
-	public void assertChangeRoleInProvider1() throws MalformedURLException {
+	public void assertDtlsChangeRoleInProvider1() throws MalformedURLException {
 		provider1.addContentType(TYPE2, "issue", true, "", "otherrole");
-		ProviderRestServiceTest.deleteProvider(context, provider1);
-		ProviderRestServiceTest.createNewProvider(context, provider1);
+		ProviderRestServiceTest.updateProvider(context, provider1);
 	}
 
 	@Test
 	@InSequence(44)
-	public void assertSearchAllInsertedContent_providerHasNoPermission() throws MalformedURLException {
+	public void assertDtlsSearchAllInsertedContent_providerHasNoPermission() throws MalformedURLException {
 		// authenticated provider has no right to type 2 as it allows another role now
 		given().contentType(ContentType.JSON).auth().preemptive().basic(provider1.name, provider1.password).expect().log()
-				.all().statusCode(200).contentType(ContentType.JSON).body("hits.total", is(2))
+				.ifValidationFails().statusCode(200).contentType(ContentType.JSON).body("hits.total", is(2))
 				.body("hits.hits[0]._type", is(TYPE1)).body("hits.hits[1]._type", is(TYPE1)).when()
-				.get(new URL(context, SEARCH_REST_API).toExternalForm()).andReturn().getBody().jsonPath().getString("uuid");
+				.get(new URL(context, SEARCH_REST_API).toExternalForm());
 	}
 
 	@Test
 	@InSequence(45)
-	public void assertSearchAllInsertedContent_adminHasPermission() throws MalformedURLException {
+	public void assertDtlsSearchAllInsertedContent_adminHasPermission() throws MalformedURLException {
 		// default provider has right to type 2 as he is admin
 		given().contentType(ContentType.JSON).auth().preemptive()
 				.basic(DeploymentHelpers.DEFAULT_PROVIDER_NAME, DeploymentHelpers.DEFAULT_PROVIDER_PASSWORD).expect().log()
-				.all().statusCode(200).contentType(ContentType.JSON).body("hits.total", is(4)).when()
-				.get(new URL(context, SEARCH_REST_API).toExternalForm()).andReturn().getBody().jsonPath().getString("uuid");
+				.ifValidationFails().statusCode(200).contentType(ContentType.JSON).body("hits.total", is(4)).when()
+				.get(new URL(context, SEARCH_REST_API).toExternalForm());
 	}
 
-	@Test
-	@InSequence(49)
-	public void assertRefreshES2() throws MalformedURLException {
-		DeploymentHelpers.refreshES();
-	}
+	// /////////////////////////////// field level security ////////////////////////////////
 
 	@Test
 	@InSequence(50)
+	public void assertFlsChangeRoleInProvider1() throws MalformedURLException {
+		provider1.addContentType(TYPE2, "issue", true, "");
+		ProviderRestServiceTest.updateProvider(context, provider1);
+	}
+
+	@Test
+	@InSequence(51)
+	public void assertFlsUploadConfigFields() throws MalformedURLException {
+		String data = "{\"field_visible_for_roles\" : {\n" + "	    \"data2\" : [\"provider2\",\"provider\"],\n"
+				+ "	    \"data3\" : [\"anotherrole\"] \n" + "	  }}";
+		ConfigRestServiceTest.uploadConfigFile(context, ConfigService.CFGNAME_SEARCH_RESPONSE_FIELDS, data);
+	}
+
+	@Test
+	@InSequence(52)
+	public void assertFlsSearchAllInsertedContent_anonymHasNoPermissionToField() throws MalformedURLException {
+
+		// anonym can get 'data' but not 'data2' nor 'data3' field
+		given().expect().log().ifValidationFails().statusCode(200).contentType(ContentType.JSON)
+				.body("hits.hits[0].fields.data[0]", is("test")).body("hits.hits[0].fields.data2", isEmptyOrNullString())
+				.body("hits.hits[0].fields.data3", isEmptyOrNullString()).when()
+				.get(new URL(context, SEARCH_REST_API + "?field=data&field=data2&field=data3").toExternalForm());
+
+		// non authenticated user has no right to data2 and data3 field so we get 403 Unauthorized
+		given().expect().log().ifValidationFails().statusCode(403).when()
+				.get(new URL(context, SEARCH_REST_API + "?field=data2").toExternalForm());
+		given().expect().log().ifValidationFails().statusCode(403).when()
+				.get(new URL(context, SEARCH_REST_API + "?field=data3").toExternalForm());
+	}
+
+	@Test
+	@InSequence(53)
+	public void assertFlsSearchAllInsertedContent_providerHasNoPermissionToSomeField() throws MalformedURLException {
+
+		// authenticated provider can get 'data' and 'data2' but not 'data3' field
+		given().auth().preemptive().basic(provider1.name, provider1.password).expect().log().ifValidationFails()
+				.statusCode(200).contentType(ContentType.JSON).body("hits.hits[0].fields.data[0]", is("test"))
+				.body("hits.hits[0].fields.data2[0]", is("test2")).body("hits.hits[0].fields.data3", isEmptyOrNullString())
+				.when().get(new URL(context, SEARCH_REST_API + "?field=data&field=data2&field=data3").toExternalForm());
+
+		// authenticated provider has no right to data3 field so we get 403 Unauthorized
+		given().auth().preemptive().basic(provider1.name, provider1.password).expect().log().ifValidationFails()
+				.statusCode(403).when().get(new URL(context, SEARCH_REST_API + "?field=data3").toExternalForm());
+	}
+
+	@Test
+	@InSequence(55)
+	public void assertFlsSearchAllInsertedContent_adminHasPermissionToAllFields() throws MalformedURLException {
+		given().auth().preemptive()
+				.basic(DeploymentHelpers.DEFAULT_PROVIDER_NAME, DeploymentHelpers.DEFAULT_PROVIDER_PASSWORD).expect().log()
+				.ifValidationFails().statusCode(200).contentType(ContentType.JSON)
+				.body("hits.hits[0].fields.data[0]", is("test")).body("hits.hits[0].fields.data2[0]", is("test2"))
+				.body("hits.hits[0].fields.data3[0]", is("test3")).when()
+				.get(new URL(context, SEARCH_REST_API + "?field=data&field=data2&field=data3").toExternalForm());
+
+	}
+
+	// /////////////////////////////// put search result use info ////////////////////////////////
+
+	@Test
+	@InSequence(100)
 	public void assertPutSearchInvalid() throws MalformedURLException {
 		given().contentType(ContentType.JSON).pathParam("search_result_uuid", "invalid-uuid")
 				.pathParam("hit_id", "invalid-hit-id").expect().statusCode(200).log().ifError()
@@ -190,10 +264,9 @@ public class SearchRestServiceTest {
 	}
 
 	@Test
-	@InSequence(51)
+	@InSequence(101)
 	@Ignore("REST Search API behaves differently")
 	public void assertPutSearch() throws MalformedURLException {
-		// TODO: FTEST: SearchRestAPI: Investigate Put Search
 		given().contentType(ContentType.JSON).pathParam("search_result_uuid", uuid)
 				.pathParam("hit_id", TYPE1 + "-" + contentId).log().all().expect().log().all().statusCode(200)
 				.body(is("statistics record accepted")).when()
