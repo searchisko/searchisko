@@ -84,9 +84,34 @@ Just copy this security domain definition into `<subsystem xmlns="urn:jboss:doma
 
 See how is Openshift configured in [Configuration](/.openshift/conf/standalone.xml) for instance.
 
+### Cache
+Searchisko needs configured container cache for actual roles distribution which happens when contributor's roles are changed.
+
+Standalone configuration:
+Just copy this cache configuration into `<subsystem xmlns="urn:jboss:domain:infinispan:1.5">` section of `standalone.xml`:
+
+	<cache-container name="searchisko">
+		<local-cache name="searchisko-user-roles">
+			<!-- Expiration - 30 mins - should be same as session expiration -->
+			<expiration lifespan="1800000"/>
+		</local-cache>
+	</cache-container>
+
+
+Clustered configuration:
+TODO: Test cluster deployment 
+Edit `domain/configuration/domain.xml` and add a this cache container configuration to the `full-ha` profile:
+
+    <cache-container name="searchisko">
+        <transport lock-timeout="60000"/>
+        <replicated-cache name="searchisko-user-roles" mode="SYNC" batching="true">
+        </replicated-cache>
+    </cache-container>
+
+[More info](https://docs.jboss.org/author/display/ISPN/Clustering+modes#Clusteringmodes-ReplicatedMode)
 
 ### Audit Log
-Audit log is handled via Java Logging facitility and thus can be tuned in AS logging configuration.
+Audit log is handled via Java Logging facility and thus can be tuned in AS logging configuration.
 In JBoss AS it's wise to not mix audit logs with system logging and it can be achieved by logging configuration like this
 (all within `<subsystem xmlns="urn:jboss:domain:logging:1.3">` subsystem):
 

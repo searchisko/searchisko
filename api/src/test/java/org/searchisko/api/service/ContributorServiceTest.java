@@ -580,6 +580,33 @@ public class ContributorServiceTest extends ESRealClientTestBase {
 	}
 
 	@Test
+	public void isRolesChanged() {
+		ContributorService tested = new ContributorService();
+		tested.entityService = Mockito.mock(EntityService.class);
+
+		Map<String, Object> oldEntity = new HashMap<>();
+		List<String> oldRoles = new ArrayList<>();
+		oldEntity.put(ContributorService.FIELD_ROLES, oldRoles);
+
+		oldRoles.add("admin");
+		oldRoles.add("contributor");
+		Mockito.when(tested.entityService.get(Mockito.anyString())).thenReturn(oldEntity);
+
+
+		Map<String, Object> newEntity = new HashMap<>();
+		List<String> newRoles = new ArrayList<>();
+		newEntity.put(ContributorService.FIELD_ROLES, newRoles);
+
+		newRoles.add("admin");
+		newRoles.add("contributor");
+		Assert.assertFalse(tested.isRolesChanged("", newEntity));
+
+		newRoles.remove("admin");
+		Assert.assertTrue(tested.isRolesChanged("", newEntity));
+
+	}
+
+	@Test
 	public void delete() throws InterruptedException {
 		Client client = prepareESClientForUnitTest();
 		ContributorService tested = getTested(client);

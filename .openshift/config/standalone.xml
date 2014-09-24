@@ -233,6 +233,11 @@
 			<iiop enable-by-default="false" use-qualified-name="false" />
 		</subsystem>
 		<subsystem xmlns="urn:jboss:domain:infinispan:1.4">
+			<cache-container name="searchisko">
+				<transport lock-timeout="60000"/>
+				<replicated-cache name="searchisko-user-roles" mode="SYNC" batching="true">
+				</replicated-cache>
+			</cache-container>
 			<cache-container name="cluster" aliases="ha-partition"
 				default-cache="default">
 				<transport lock-timeout="60000" />

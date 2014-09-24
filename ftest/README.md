@@ -27,7 +27,7 @@ It's needed to add security domain `SearchiskoSecurityDomainFTEST` into the `$JB
 					<authentication>
 						<login-module code="org.searchisko.api.security.jaas.ProviderLoginModule" flag="sufficient">
 						</login-module>
-						<login-module code="org.jboss.security.auth.spi.UsersRolesLoginModule" flag="sufficient">
+						<login-module code="org.searchisko.api.security.jaas.UsersRolesForPrincipalWithRolesLoginModule" flag="sufficient">
 							<module-option name="principalClass" value="org.searchisko.api.security.jaas.ContributorPrincipal" />
 							<module-option name="usersProperties" value="searchisko-ftest-users.properties" /> 
 							<module-option name="rolesProperties" value="searchisko-ftest-roles.properties" />
@@ -40,7 +40,14 @@ It's needed to add security domain `SearchiskoSecurityDomainFTEST` into the `$JB
 
 Note: Security domain name is intentionally different because functional tests uses HTTP Basic authentication to authenticate contributors.
 
-See [JBoss EAP 6.3 standalone.xml example](§) how it can looks like
+Copy this cache configuration into `<subsystem xmlns="urn:jboss:domain:infinispan:1.5">` section of `standalone.xml`:
+
+	<cache-container name="searchisko">
+		<local-cache name="searchisko-user-roles" />
+	</cache-container>
+
+See [JBoss EAP 6.3 standalone.xml example](src/conf/jboss-eap-6.3-standalone.xml) how it can looks like
+
 
 Running tests
 -------------

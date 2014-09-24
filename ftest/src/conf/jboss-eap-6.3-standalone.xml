@@ -205,6 +205,9 @@
             <default-missing-method-permissions-deny-access value="true"/>
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:infinispan:1.5">
+			<cache-container name="searchisko">
+				<local-cache name="searchisko-user-roles" />
+			</cache-container>
             <cache-container name="web" aliases="standard-session-cache" default-cache="local-web" module="org.jboss.as.clustering.web.infinispan">
                 <local-cache name="local-web" batching="true">
                     <file-store passivation="false" purge="false"/>
@@ -276,7 +279,7 @@
                 <security-domain name="SearchiskoSecurityDomainFTEST">
                     <authentication>
                         <login-module code="org.searchisko.api.security.jaas.ProviderLoginModule" flag="sufficient"/>
-                        <login-module code="org.jboss.security.auth.spi.UsersRolesLoginModule" flag="sufficient">
+                        <login-module code="org.searchisko.api.security.jaas.UsersRolesForPrincipalWithRolesLoginModule" flag="sufficient">
                             <module-option name="principalClass" value="org.searchisko.api.security.jaas.ContributorPrincipal"/>
                             <module-option name="usersProperties" value="searchisko-ftest-users.properties"/>
                             <module-option name="rolesProperties" value="searchisko-ftest-roles.properties"/>

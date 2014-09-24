@@ -155,7 +155,8 @@ public class DeploymentHelpers {
 				.addAsWebInfResource(new StringAsset("<jboss-web><security-domain>" + SECURITY_DOMAIN
 						+ "</security-domain></jboss-web>"), "jboss-web.xml")
 				.addAsWebInfResource("webapp/WEB-INF/test-searchisko-ds.xml", "searchisko-ds.xml")
-				.addAsWebInfResource(new File(projectRootPath + "/api/src/main/webapp/WEB-INF/beans.xml"), "beans.xml");
+				.addAsWebInfResource(new File(projectRootPath + "/api/src/main/webapp/WEB-INF/beans.xml"), "beans.xml")
+				.addAsWebInfResource(new File(projectRootPath + "/api/src/main/webapp/WEB-INF/jboss-deployment-structure.xml"), "jboss-deployment-structure.xml");
 
 		return war;
 	}
