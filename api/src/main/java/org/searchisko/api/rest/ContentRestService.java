@@ -5,19 +5,29 @@
  */
 package org.searchisko.api.rest;
 
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.logging.Level;
+
 import javax.annotation.security.PermitAll;
 import javax.annotation.security.RolesAllowed;
 import javax.enterprise.context.RequestScoped;
 import javax.enterprise.event.Event;
 import javax.inject.Inject;
-import javax.ws.rs.*;
-import javax.ws.rs.core.Context;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
-import javax.ws.rs.core.SecurityContext;
-import java.util.*;
-import java.util.logging.Level;
 
 import org.elasticsearch.action.bulk.BulkItemResponse;
 import org.elasticsearch.action.bulk.BulkRequestBuilder;
@@ -40,9 +50,11 @@ import org.searchisko.api.events.ContentDeletedEvent;
 import org.searchisko.api.events.ContentStoredEvent;
 import org.searchisko.api.rest.exception.BadFieldException;
 import org.searchisko.api.rest.exception.NotAuthorizedException;
+import org.searchisko.api.rest.exception.OperationUnavailableException;
 import org.searchisko.api.rest.exception.RequiredFieldException;
-import org.searchisko.api.service.AuthenticationUtilService;
 import org.searchisko.api.security.Role;
+import org.searchisko.api.service.AuthenticationUtilService;
+import org.searchisko.api.service.ContentManipulationLockService;
 import org.searchisko.api.service.ProviderService;
 import org.searchisko.api.service.ProviderService.ProviderContentTypeInfo;
 import org.searchisko.api.service.SearchClientService;
@@ -59,7 +71,7 @@ import org.searchisko.persistence.service.ContentPersistenceService;
 @Path("/content/{type}")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
-@RolesAllowed({Role.ADMIN, Role.PROVIDER})
+@RolesAllowed({ Role.ADMIN, Role.PROVIDER })
 public class ContentRestService extends RestServiceBase {
 
 	static final String RETFIELD_WARNINGS = "warnings";
@@ -80,8 +92,8 @@ public class ContentRestService extends RestServiceBase {
 	@Inject
 	protected AuthenticationUtilService authenticationUtilService;
 
-	@Context
-	protected SecurityContext securityContext;
+	@Inject
+	protected ContentManipulationLockService contentManipulationLockService;
 
 	@Inject
 	protected Event<ContentStoredEvent> eventContentStored;
@@ -373,15 +385,17 @@ public class ContentRestService extends RestServiceBase {
 	}
 
 	/**
-	 * Get info about requested content type with permission check for management.
+	 * Get info about requested content type with permission check for management and check for API lockdown.
 	 * 
 	 * @param type name to get info for
 	 * @return type info, never null
 	 * @throws BadFieldException if type is unknown
 	 * @throws NotAuthorizedException if user has no permission to manage this type
+	 * @throws OperationUnavailableException if API is locked down
+	 * @see ContentManipulationLockService
 	 */
 	protected ProviderContentTypeInfo getTypeInfoWithManagePermissionCheck(String type) throws NotAuthorizedException,
-			BadFieldException {
+			BadFieldException, OperationUnavailableException {
 
 		if (type == null || SearchUtils.isBlank(type)) {
 			throw new RequiredFieldException("type");
@@ -392,6 +406,11 @@ public class ContentRestService extends RestServiceBase {
 			throw new BadFieldException("type", "content type not found");
 		}
 		authenticationUtilService.checkProviderManagementPermission(typeInfo.getProviderName());
+
+		if (contentManipulationLockService.isLockedForProvider(typeInfo.getProviderName())) {
+			throw new OperationUnavailableException("Content manipulation API is locked down by administrator");
+		}
+
 		return typeInfo;
 	}
 
