@@ -1892,6 +1892,21 @@ Optional `contributor_type_specific_code_value` config field allow s you to list
 }
 ```
 
+* `sync_contributors_and_profiles`
+Get all profiles based on `contributor_type_specific_code_type` config field from contributor provider and create new 'contributor' entries if existing and update 'contributor profile'.
+In case of DCP only profile provider available is developer.jboss.org under `jbossorg_username`.
+Fields `start` and `size` are optional. If they're not present then default value from contributor profile provider is used for `size` and start is 0.
+
+Caution! This task can run for a long time (hours) based on amount of data from Contributor Profile Providers
+
+```
+{
+  "contributor_type_specific_code_type" : "jbossorg_username",
+  "start" : 0,
+  "size" : 100
+}
+```
+
 * `reindex_contributor` and `reindex_project`
 May be used to rebuild internal search indices for Contributor or Project configurations from persistent store. Useful after search indices lost (due ES or mapping upgrade or some fatal failure of ES).
 

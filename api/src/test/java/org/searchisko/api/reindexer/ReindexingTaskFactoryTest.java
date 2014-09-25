@@ -747,6 +747,39 @@ public class ReindexingTaskFactoryTest {
 		Assert.assertEquals(tested.projectService, ctask.searchableEntityService);
 	}
 
+	@Test
+	public void testGetConfigInteger() throws TaskConfigurationException {
+		String PROP_NAME = "testproperty";
+		Map<String, Object> taskConfig = new HashMap<>();
+
+		// empty value and not mandatory
+		Assert.assertNull(ReindexingTaskFactory.getConfigInteger(taskConfig, PROP_NAME, false));
+
+		// valid value - Integer
+		taskConfig.put(PROP_NAME, new Integer(1));
+		Assert.assertEquals(new Integer(1), ReindexingTaskFactory.getConfigInteger(taskConfig, PROP_NAME, false));
+
+
+		// valid value - string
+		taskConfig.put(PROP_NAME, "1");
+		Assert.assertEquals(new Integer(1), ReindexingTaskFactory.getConfigInteger(taskConfig, PROP_NAME, false));
+	}
+
+	@Test(expected = TaskConfigurationException.class)
+	public void testGetConfigIntegerMissingValue() throws TaskConfigurationException {
+		ReindexingTaskFactory.getConfigInteger(new HashMap<String, Object>(), "property", true);
+	}
+
+	@Test(expected = TaskConfigurationException.class)
+	public void testGetConfigIntegerBadValue() throws TaskConfigurationException {
+		String PROP_NAME = "testproperty";
+		Map<String, Object> taskConfig = new HashMap<>();
+
+		taskConfig.put(PROP_NAME, "badvalue");
+		ReindexingTaskFactory.getConfigInteger(taskConfig, PROP_NAME, false);
+	}
+
+
 	@SuppressWarnings("unchecked")
 	private ReindexingTaskFactory getTested() {
 		ReindexingTaskFactory tested = new ReindexingTaskFactory();

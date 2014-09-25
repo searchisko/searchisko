@@ -95,6 +95,7 @@ public class TaskRestServiceTest {
 						"renormalize_by_contributor_lookup_id",
 						"renormalize_by_project_lookup_id",
 						"update_contributor_profile",
+						"sync_contributors_and_profiles",
 						"reindex_contributor",
 						"reindex_project"
 				))
