@@ -39,6 +39,7 @@ It's needed to add security domain `SearchiskoSecurityDomainFTEST` into the `$JB
         </subsystem>
 
 Note: Security domain name is intentionally different because functional tests uses HTTP Basic authentication to authenticate contributors.
+It also doesn't have any authentication cache
 
 Copy this cache configuration into `<subsystem xmlns="urn:jboss:domain:infinispan:1.5">` section of `standalone.xml`:
 

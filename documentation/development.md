@@ -64,7 +64,7 @@ Searchisko is secured by JAAS framework and application server needs to be confi
 Two modules are prepared for Provider authentication and CAS integration for Contributor authentication.
 Just copy this security domain definition into `<subsystem xmlns="urn:jboss:domain:security:1.2"><security-domains>` section of `standalone.xml`:
 
-	<security-domain name="SearchiskoSecurityDomain">
+	<security-domain name="SearchiskoSecurityDomain" cache-type="infinispan">
 		<authentication>
 			<login-module code="org.searchisko.api.security.jaas.ProviderLoginModule" flag="sufficient">
 			</login-module>
@@ -85,11 +85,19 @@ Just copy this security domain definition into `<subsystem xmlns="urn:jboss:doma
 See how is Openshift configured in [Configuration](/.openshift/conf/standalone.xml) for instance.
 
 ### Cache
-Searchisko needs configured container cache for actual roles distribution which happens when contributor's roles are changed.
+Searchisko needs number of caches to be configured:
+
+1. cache for actual roles distribution which happens when contributor's roles are changed.
+2. JAAS authentication cache
 
 Standalone configuration:
 Just copy this cache configuration into `<subsystem xmlns="urn:jboss:domain:infinispan:1.5">` section of `standalone.xml`:
 
+	<cache-container name="security" default-cache="auth-cache">
+		<local-cache name="auth-cache" batching="true">
+			<expiration lifespan="10000"/>
+		</local-cache>
+	</cache-container>
 	<cache-container name="searchisko">
 		<local-cache name="searchisko-user-roles">
 			<!-- Expiration - 30 mins - should be same as session expiration -->
@@ -102,6 +110,11 @@ Clustered configuration:
 TODO: Test cluster deployment 
 Edit `domain/configuration/domain.xml` and add a this cache container configuration to the `full-ha` profile:
 
+	<cache-container name="security" default-cache="auth-cache">
+		<local-cache name="auth-cache" batching="true">
+			<expiration lifespan="10000"/>
+		</local-cache>
+	</cache-container>
     <cache-container name="searchisko">
         <transport lock-timeout="60000"/>
         <replicated-cache name="searchisko-user-roles" mode="SYNC" batching="true">
