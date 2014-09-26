@@ -1,0 +1,180 @@
+throw 'allowIllegalResourceCall is false.';
+{
+  "list" : [ {
+    "name" : {
+    },
+    "type" : "person",
+    "displayName" : "Danielsds",
+    "thumbnailUrl" : "https://developer-stg.jboss.org/api/core/v3/people/41742/avatar",
+    "jive" : {
+      "level" : {
+        "name" : "Newbie",
+        "description" : "",
+        "points" : 1
+      },
+      "locale" : "en_US",
+      "timeZone" : "Europe/Bratislava",
+      "username" : "Danielsds",
+      "profile" : [ {
+        "value" : "(GMT -12:00 hours) Eniwetok, Kwajalein",
+        "jive_label" : "Time Zone"
+      }, {
+        "value" : "No",
+        "jive_label" : "Subscribe to JBoss Newsletter"
+      }, {
+        "value" : "No",
+        "jive_label" : "Click here to opt-out of ALL communication"
+      } ],
+      "external" : false,
+      "visible" : true,
+      "enabled" : true,
+      "externalContributor" : false,
+      "federated" : false
+    },
+    "updated" : "2009-12-12T20:43:23.723+0000",
+    "emails" : [ {
+      "value" : "danielsds@fake.com",
+      "type" : "work",
+      "jive_label" : "Email",
+      "primary" : true
+    } ],
+    "resources" : {
+      "following" : {
+        "ref" : "https://developer-stg.jboss.org/api/core/v3/people/41742/@following",
+        "allowed" : [ "GET" ]
+      },
+      "followers" : {
+        "ref" : "https://developer-stg.jboss.org/api/core/v3/people/41742/@followers",
+        "allowed" : [ "GET" ]
+      },
+      "securityGroups" : {
+        "ref" : "https://developer-stg.jboss.org/api/core/v3/people/41742/securityGroups",
+        "allowed" : [ "GET" ]
+      },
+      "images" : {
+        "ref" : "https://developer-stg.jboss.org/api/core/v3/people/41742/images",
+        "allowed" : [ "GET", "POST" ]
+      },
+      "streams" : {
+        "ref" : "https://developer-stg.jboss.org/api/core/v3/people/41742/streams",
+        "allowed" : [ "GET", "POST" ]
+      },
+      "self" : {
+        "ref" : "https://developer-stg.jboss.org/api/core/v3/people/41742",
+        "allowed" : [ "PUT", "DELETE", "GET" ]
+      },
+      "html" : {
+        "ref" : "https://developer-stg.jboss.org/people/Danielsds",
+        "allowed" : [ "GET" ]
+      },
+      "followingIn" : {
+        "ref" : "https://developer-stg.jboss.org/api/core/v3/people/41742/followingIn",
+        "allowed" : [ "GET" ]
+      },
+      "avatar" : {
+        "ref" : "https://developer-stg.jboss.org/api/core/v3/people/41742/avatar",
+        "allowed" : [ "GET" ]
+      },
+      "members" : {
+        "ref" : "https://developer-stg.jboss.org/api/core/v3/members/people/41742",
+        "allowed" : [ "GET" ]
+      },
+      "activity" : {
+        "ref" : "https://developer-stg.jboss.org/api/core/v3/people/41742/activities",
+        "allowed" : [ "GET" ]
+      }
+    },
+    "id" : "41742"
+  }, {
+    "name" : {
+    },
+    "type" : "person",
+    "displayName" : "dppsp",
+    "thumbnailUrl" : "https://developer-stg.jboss.org/api/core/v3/people/41736/avatar",
+    "jive" : {
+      "level" : {
+        "name" : "Newbie",
+        "description" : "",
+        "points" : 8
+      },
+      "locale" : "en_US",
+      "timeZone" : "Europe/Bratislava",
+      "username" : "dppsp",
+      "profile" : [ {
+        "value" : "(GMT -12:00 hours) Eniwetok, Kwajalein",
+        "jive_label" : "Time Zone"
+      }, {
+        "value" : "No",
+        "jive_label" : "Subscribe to JBoss Newsletter"
+      }, {
+        "value" : "No",
+        "jive_label" : "Click here to opt-out of ALL communication"
+      } ],
+      "external" : false,
+      "visible" : true,
+      "enabled" : true,
+      "externalContributor" : false,
+      "federated" : false
+    },
+    "updated" : "2009-12-12T20:43:18.572+0000",
+    "emails" : [ {
+      "value" : "patrick@fake.com",
+      "type" : "work",
+      "jive_label" : "Email",
+      "primary" : true
+    } ],
+    "resources" : {
+      "following" : {
+        "ref" : "https://developer-stg.jboss.org/api/core/v3/people/41736/@following",
+        "allowed" : [ "GET" ]
+      },
+      "followers" : {
+        "ref" : "https://developer-stg.jboss.org/api/core/v3/people/41736/@followers",
+        "allowed" : [ "GET" ]
+      },
+      "securityGroups" : {
+        "ref" : "https://developer-stg.jboss.org/api/core/v3/people/41736/securityGroups",
+        "allowed" : [ "GET" ]
+      },
+      "images" : {
+        "ref" : "https://developer-stg.jboss.org/api/core/v3/people/41736/images",
+        "allowed" : [ "GET", "POST" ]
+      },
+      "streams" : {
+        "ref" : "https://developer-stg.jboss.org/api/core/v3/people/41736/streams",
+        "allowed" : [ "GET", "POST" ]
+      },
+      "self" : {
+        "ref" : "https://developer-stg.jboss.org/api/core/v3/people/41736",
+        "allowed" : [ "PUT", "DELETE", "GET" ]
+      },
+      "html" : {
+        "ref" : "https://developer-stg.jboss.org/people/dppsp",
+        "allowed" : [ "GET" ]
+      },
+      "followingIn" : {
+        "ref" : "https://developer-stg.jboss.org/api/core/v3/people/41736/followingIn",
+        "allowed" : [ "GET" ]
+      },
+      "avatar" : {
+        "ref" : "https://developer-stg.jboss.org/api/core/v3/people/41736/avatar",
+        "allowed" : [ "GET" ]
+      },
+      "members" : {
+        "ref" : "https://developer-stg.jboss.org/api/core/v3/members/people/41736",
+        "allowed" : [ "GET" ]
+      },
+      "activity" : {
+        "ref" : "https://developer-stg.jboss.org/api/core/v3/people/41736/activities",
+        "allowed" : [ "GET" ]
+      }
+    },
+    "id" : "41736"
+  } ],
+  "startIndex" : 5000,
+  "itemsPerPage" : 2,
+  "links" : {
+    "next" : "https://developer-stg.jboss.org/api/core/v3/people/?sort=firstNameAsc&fields=jive%2Cusername%2Cname%2Cemails%2CdisplayName%2Ctags%2Cupdated%2Cresources%2CthumbnailUrl&count=2&startIndex=5002",
+    "previous" : "https://developer-stg.jboss.org/api/core/v3/people/?sort=firstNameAsc&fields=jive%2Cusername%2Cname%2Cemails%2CdisplayName%2Ctags%2Cupdated%2Cresources%2CthumbnailUrl&count=2&startIndex=4998"
+  }
+}

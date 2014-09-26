@@ -25,7 +25,7 @@ import org.searchisko.contribprofile.model.ContributorProfile;
 
 /**
  * Unit test for {@link Jive6ContributorProfileProvider}.
- * 
+ *
  * @author Libor Krzyzanek
  * @author Vlastimil Elias (velias at redhat dot com)
  */
@@ -55,19 +55,18 @@ public class Jive6ContributorProfileProviderTest {
 
 	@SuppressWarnings("deprecation")
 	@Test(expected = RuntimeException.class)
-	public void mapRawJsonData_jiveDataError1() throws Exception {
+	public void convertJSONMap_jiveDataError1() throws Exception {
 		Jive6ContributorProfileProvider provider = getTested();
 
-		provider.mapRawJsonData(IOUtils.toByteArray(""));
-
+		provider.convertJSONMap(IOUtils.toByteArray(""));
 	}
 
 	@Test
-	public void mapRawJsonData() throws Exception {
+	public void testConvertToProfile() throws Exception {
 		Jive6ContributorProfileProvider provider = getTested();
 
 		InputStream is = Jive6ContributorProfileProviderTest.class.getResourceAsStream("Jive6ProfileData.json");
-		ContributorProfile profile = provider.mapRawJsonData(IOUtils.toByteArray(is));
+		ContributorProfile profile = provider.convertToProfile(IOUtils.toByteArray(is));
 		Assert.assertEquals("lkrzyzanek",
 				profile.getTypeSpecificCodes().get(ContributorProfileService.FIELD_TSC_JBOSSORG_USERNAME).get(0));
 		Assert.assertEquals("lkrzyzanek-ght",
@@ -91,20 +90,20 @@ public class Jive6ContributorProfileProviderTest {
 	}
 
 	@Test(expected = SettingsException.class)
-	public void mapRawJsonData_emptyEmail() throws Exception {
+	public void testConvertToProfile_emptyEmail() throws Exception {
 		Jive6ContributorProfileProvider provider = getTested();
 
 		InputStream is = Jive6ContributorProfileProviderTest.class.getResourceAsStream("Jive6ProfileData_emptyEmail.json");
-		provider.mapRawJsonData(IOUtils.toByteArray(is));
+		provider.convertToProfile(IOUtils.toByteArray(is));
 	}
 
 	@Test
-	public void mapRawJsonData_emptyUsernames() throws Exception {
+	public void testConvertToProfile_emptyUsernames() throws Exception {
 		Jive6ContributorProfileProvider provider = getTested();
 
 		InputStream is = Jive6ContributorProfileProviderTest.class
 				.getResourceAsStream("Jive6ProfileData_emptyUsernames.json");
-		ContributorProfile profile = provider.mapRawJsonData(IOUtils.toByteArray(is));
+		ContributorProfile profile = provider.convertToProfile(IOUtils.toByteArray(is));
 		Assert.assertEquals("lkrzyzanek",
 				profile.getTypeSpecificCodes().get(ContributorProfileService.FIELD_TSC_JBOSSORG_USERNAME).get(0));
 		Assert.assertNull(profile.getTypeSpecificCodes().get(ContributorProfileService.FIELD_TSC_GITHUB_USERNAME));
@@ -236,5 +235,29 @@ public class Jive6ContributorProfileProviderTest {
 		Assert.assertEquals(1, typeSpecificCodes.get("b").size());
 		Assert.assertTrue(typeSpecificCodes.get("b").contains("v1"));
 
+	}
+
+	@Test
+	public void testConvertToProfiles() throws Exception {
+		Jive6ContributorProfileProvider provider = getTested();
+
+		InputStream is = Jive6ContributorProfileProviderTest.class.getResourceAsStream("Jive6AllProfilesData.json");
+
+		List<ContributorProfile> profiles = provider.convertToProfiles(IOUtils.toByteArray(is));
+		ContributorProfile profile1 = profiles.get(0);
+
+		Assert.assertEquals("Danielsds",
+				profile1.getTypeSpecificCodes().get(ContributorProfileService.FIELD_TSC_JBOSSORG_USERNAME).get(0));
+
+		Assert.assertEquals("Danielsds", profile1.getFullName());
+		Assert.assertEquals("danielsds@fake.com", profile1.getPrimaryEmail());
+
+		ContributorProfile profile2 = profiles.get(1);
+
+		Assert.assertEquals("dppsp",
+				profile2.getTypeSpecificCodes().get(ContributorProfileService.FIELD_TSC_JBOSSORG_USERNAME).get(0));
+
+		Assert.assertEquals("dppsp", profile2.getFullName());
+		Assert.assertEquals("patrick@fake.com", profile2.getPrimaryEmail());
 	}
 }

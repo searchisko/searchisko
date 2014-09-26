@@ -6,11 +6,12 @@ This document contains high-level release notes. More details can be found in [m
 
 Improvements:
 
-- Additional roles for authenticated user [#137](https://github.com/searchisko/searchisko/issues/137)
+- Additional roles for authenticated user [#137](https://github.com/searchisko/searchisko/issues/137), [#147](https://github.com/searchisko/searchisko/issues/147)
 - Support for 'Content type level' security [#142](https://github.com/searchisko/searchisko/issues/142)
 - Support for 'Field level' security [#150](https://github.com/searchisko/searchisko/issues/150)
 - Administrator can lock "Content manipulation API" during maintenance [#109](https://github.com/searchisko/searchisko/issues/109)
 - Added pagination support (from,size) on Feed API [#152](https://github.com/searchisko/searchisko/issues/152)
+- New task for syncing all uses from contributor profile provider [#141](https://github.com/searchisko/searchisko/issues/141)
  
 Internal:
 - Upgrade to elasticsearch 1.3.0 [#48](https://github.com/searchisko/searchisko/issues/48)

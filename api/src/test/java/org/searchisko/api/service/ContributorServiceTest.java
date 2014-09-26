@@ -1113,6 +1113,7 @@ public class ContributorServiceTest extends ESRealClientTestBase {
 		sourceTSC.put(CODE_NAME_1, TestUtils.createListOfStrings("c11_t", "c11"));
 		sourceTSC.put(CODE_NAME_2, TestUtils.createListOfStrings("c21"));
 		source.put(ContributorService.FIELD_TYPE_SPECIFIC_CODE, sourceTSC);
+		source.put(ContributorService.FIELD_ROLES, TestUtils.createListOfStrings("roleA", "roleB"));
 
 		target.put(ContributorService.FIELD_CODE, "targetcode");
 		target.put(ContributorService.FIELD_NAME, "targetname");
@@ -1120,6 +1121,7 @@ public class ContributorServiceTest extends ESRealClientTestBase {
 		Map<String, List<String>> targetTSC = new HashMap<>();
 		targetTSC.put(CODE_NAME_1, TestUtils.createListOfStrings("c11"));
 		target.put(ContributorService.FIELD_TYPE_SPECIFIC_CODE, targetTSC);
+		target.put(ContributorService.FIELD_ROLES, TestUtils.createListOfStrings("role1", "role2"));
 
 		tested.mergeContributorData(target, source);
 
@@ -1142,6 +1144,12 @@ public class ContributorServiceTest extends ESRealClientTestBase {
 		List l2 = m.get(CODE_NAME_2);
 		Assert.assertEquals(1, l2.size());
 		Assert.assertTrue(l2.contains("c21"));
+		List roles = (List) target.get(ContributorService.FIELD_ROLES);
+		Assert.assertEquals(4, roles.size());
+		Assert.assertTrue(roles.contains("roleA"));
+		Assert.assertTrue(roles.contains("roleB"));
+		Assert.assertTrue(roles.contains("role1"));
+		Assert.assertTrue(roles.contains("role2"));
 	}
 
 	@Test

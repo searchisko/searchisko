@@ -33,7 +33,7 @@ import org.searchisko.contribprofile.provider.Jive6ContributorProfileProvider;
 
 /**
  * Service for handling 'Contributor profiles'.
- * 
+ *
  * @author Libor Krzyzanek
  * @author Vlastimil Elias (velias at redhat dot com)
  */
@@ -73,7 +73,7 @@ public class ContributorProfileService {
 
 	/**
 	 * Updates search index by current entity identified by id
-	 * 
+	 *
 	 * @param id of entity to update
 	 * @param entity to update
 	 */
@@ -90,8 +90,8 @@ public class ContributorProfileService {
 	 * available, so it can be passed into other methods in this service which require external provider.
 	 * <p>
 	 * // TODO CONTRIBUTOR_PROFILE support for more profile providers, eg. for distinct contributorCodeType
-	 * 
-	 * @param type of contributor "Type Specific Code" (eg. jboss.org username, github username etc, see
+	 *
+	 * @param contributorCodeType of contributor "Type Specific Code" (eg. jboss.org username, github username etc, see
 	 *          <code>FIELD_TSC_xx</code> constants) to check
 	 * @return true if given type is supported - we can handle profile update for it.
 	 */
@@ -101,7 +101,7 @@ public class ContributorProfileService {
 
 	/**
 	 * Get contributor id based on contributor's "Type Specific Code", eg. obtained from authentication.
-	 * 
+	 *
 	 * @param contributorCodeType type of contributor's "Type Specific Code" (eg. jboss.org username, github username etc,
 	 *          see <code>FIELD_TSC_xx</code> constants)
 	 * @param contributorCodeValue code value to get contributor <code>code</code> for.
@@ -147,7 +147,7 @@ public class ContributorProfileService {
 
 	/**
 	 * Create or Update contributor profile based on Contributor's "Type Specific Code".
-	 * 
+	 *
 	 * @param contributorCodeType type of contributor "Type Specific Code" (eg. jboss.org username, github username etc,
 	 *          see <code>FIELD_TSC_xx</code> constants)
 	 * @param contributorCodeValue of code to get create or update profile for.
@@ -199,7 +199,7 @@ public class ContributorProfileService {
 
 	/**
 	 * Take contributor profile from provider (ie. download it from remote server etc)
-	 * 
+	 *
 	 * @param contributorCodeType to take profile for
 	 * @param contributorCodeValue to take profile for
 	 * @return profile data or null if not found
@@ -258,7 +258,7 @@ public class ContributorProfileService {
 
 	/**
 	 * Find Contributor Profile for contributor with defined code.
-	 * 
+	 *
 	 * @param contributorCode to find for
 	 * @return search response, null in case of missing index
 	 */
@@ -273,7 +273,7 @@ public class ContributorProfileService {
 
 	/**
 	 * Find Contributor Profile for contributor with defined code.
-	 * 
+	 *
 	 * @param code to delete contributor for
 	 * @return true if profile has been really deleted (it existed)
 	 */
@@ -294,11 +294,50 @@ public class ContributorProfileService {
 	}
 
 	/**
+	 * Full synchronization of contributors and their profiles for given contributorCodeType. If contributor entry
+	 * is missing then is created and corresponding contributor profile as well.
+	 *
+	 * @param contributorCodeType type of contributor "Type Specific Code" (eg. jboss.org username, github username etc,
+	 *                            see <code>FIELD_TSC_xx</code> constants) to update profiles for.
+	 * @param start pagination - start
+	 * @param size paginatino - size
+	 * @return number of created/updated profiles. -1 if 'contributorCodeType' is not supported or something is wrong with contributor profile provider configuration.
+	 * @see #isContributorCodeTypesSupported(String)
+	 */
+	@TransactionAttribute(TransactionAttributeType.NEVER)
+	public int fullSynContributorsAndProfiles(String contributorCodeType, Integer start, Integer size) {
+		if (!isContributorCodeTypesSupported(contributorCodeType)) {
+			log.log(Level.FINE,
+					"We can't sync contributors and its profiles for type specific code {0} because no profile provider is available.",
+					contributorCodeType);
+			return -1;
+		}
+
+		if (log.isLoggable(Level.INFO)) {
+			log.log(Level.INFO, "Going to sync all contributors and its profiles for Type Specific Code: {0}, start: {1}, size: {2}",
+					new Object[] {contributorCodeType, start, size});
+		}
+
+		List<ContributorProfile> profiles = contributorProfileProvider.getAllProfiles(start, size);
+		if (profiles == null) {
+			return -1;
+		}
+		for (ContributorProfile profile : profiles) {
+			String contributorCode = ContributorService.createContributorId(profile.getFullName(), profile.getPrimaryEmail());
+			String contributorCodeValue = (String) profile.getProfileData().get(ContentObjectFields.SYS_CONTENT_ID);
+
+			updateProfileAndContributorFromProfile(profile, contributorCode, contributorCodeType, contributorCodeValue);
+		}
+
+		return profiles.size();
+	}
+
+	/**
 	 * Create or Update contributor profiles for all Contributors who have filled defined Contributor's
 	 * "Type Specific Code".
 	 * <p>
 	 * This method may run really long time!
-	 * 
+	 *
 	 * @param contributorCodeType type of contributor "Type Specific Code" (eg. jboss.org username, github username etc,
 	 *          see <code>FIELD_TSC_xx</code> constants) to update profiles for.
 	 * @return number of created/updated profiles. -1 if 'contributorCodeType' is not supported.
@@ -327,10 +366,7 @@ public class ContributorProfileService {
 										contributorEntityContent, contributorCodeType);
 								ContributorProfile profile = takeProfileFromProvider(contributorCodeType, contributorCodeValue);
 								if (profile != null) {
-									// update Contributor record to add latest codes used for mappings
-									contributorService.createOrUpdateFromProfile(profile, contributorCodeType, contributorCodeValue);
-									// update Contributor profile
-									updateContributorProfileInSearchIndex(contributorCode, profile);
+									updateProfileAndContributorFromProfile(profile, contributorCode, contributorCodeType, contributorCodeValue);
 								} else {
 									log.log(
 											Level.WARNING,
@@ -355,9 +391,17 @@ public class ContributorProfileService {
 		}
 	}
 
+	protected void updateProfileAndContributorFromProfile(ContributorProfile profile, String contributorCode, String contributorCodeType, String contributorCodeValue) {
+		// update Contributor record to add latest codes used for mappings
+		contributorService.createOrUpdateFromProfile(profile, contributorCodeType, contributorCodeValue);
+		// update Contributor profile
+		updateContributorProfileInSearchIndex(contributorCode, profile);
+
+	}
+
 	/**
 	 * CDI Event handler for {@link ContributorDeletedEvent} used to remove profile when contributor is deleted.
-	 * 
+	 *
 	 * @param event to process
 	 */
 	public void contributorDeletedEventHandler(@Observes ContributorDeletedEvent event) {
@@ -371,7 +415,7 @@ public class ContributorProfileService {
 
 	/**
 	 * CDI event handler for {@link ContributorMergedEvent} used to remove profile of deleted contributor.
-	 * 
+	 *
 	 * @param event
 	 */
 	public void contributorMergedEventHandler(@Observes ContributorMergedEvent event) {
@@ -384,7 +428,7 @@ public class ContributorProfileService {
 
 	/**
 	 * CDI event handler for {@link ContributorCodeChangedEvent} used to change code in profile document.
-	 * 
+	 *
 	 * @param event
 	 */
 	public void contributorCodeChangedEventHandler(@Observes ContributorCodeChangedEvent event) {

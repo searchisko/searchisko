@@ -35,7 +35,7 @@ import org.searchisko.persistence.service.ContentPersistenceService;
 /**
  * {@link TaskFactory} for Searchisko tasks. It's CDI singleton bean because it needs to be injected some other
  * Searchisko components to pass them into tasks.
- * 
+ *
  * @author Vlastimil Elias (velias at redhat dot com)
  */
 @Named
@@ -101,6 +101,8 @@ public class ReindexingTaskFactory implements TaskFactory {
 					ProjectService.SEARCH_INDEX_TYPE, CFG_PROJECT_ID_TYPE, CFG_PROJECT_ID_VALUE);
 		case UPDATE_CONTRIBUTOR_PROFILE:
 			return new UpdateContributorProfileTask(contributorProfileService, taskConfig);
+		case SYNC_CONTRIBUTORS_AND_PROFILES:
+				return new FullSyncContributorAndProfilesTask(contributorProfileService, taskConfig);
 		case REINDEX_CONTRIBUTOR:
 			return new ReindexSearchableEntityTask(contributorService);
 		case REINDEX_PROJECT:
@@ -147,7 +149,7 @@ public class ReindexingTaskFactory implements TaskFactory {
 
 	/**
 	 * Utility method to get config String value with validation.
-	 * 
+	 *
 	 * @param taskConfig to get value from
 	 * @param propertyName to get value for
 	 * @return String value
@@ -168,7 +170,7 @@ public class ReindexingTaskFactory implements TaskFactory {
 
 	/**
 	 * Utility method to get config String array value with validation.
-	 * 
+	 *
 	 * @param taskConfig to get value from
 	 * @param propertyName to get value for
 	 * @return String array
@@ -181,7 +183,7 @@ public class ReindexingTaskFactory implements TaskFactory {
 
 	/**
 	 * Utility method to get config String array value.
-	 * 
+	 *
 	 * @param taskConfig to get value from
 	 * @param propertyName to get value for
 	 * @return String array
@@ -192,8 +194,42 @@ public class ReindexingTaskFactory implements TaskFactory {
 	}
 
 	/**
+	 * Utility method to get config String value with validation.
+	 *
+	 * @param taskConfig to get value from
+	 * @param propertyName to get value for
+	 * @return Integer value or null if not present and is not mandatory
+	 * @throws TaskConfigurationException if value is not present or is empty
+	 */
+	public static Integer getConfigInteger(Map<String, Object> taskConfig, String propertyName, boolean isMandatory)
+			throws TaskConfigurationException {
+		if (taskConfig == null)
+			throw new TaskConfigurationException(propertyName + " configuration property must be defined");
+
+		Object val = taskConfig.get(propertyName);
+		if (val instanceof Integer) {
+			return (Integer) val;
+		}
+
+		boolean isEmpty = val == null || val.toString().trim().isEmpty();
+		if (isMandatory && isEmpty) {
+			throw new TaskConfigurationException(propertyName + " configuration property must be defined");
+		}
+
+		if (!isMandatory && isEmpty) {
+			return null;
+		}
+
+		try {
+			return new Integer(val.toString().trim());
+		} catch (NumberFormatException e) {
+			throw new TaskConfigurationException(propertyName + " configuration property must be a number");
+		}
+	}
+
+	/**
 	 * Utility method to get config String array value with validation.
-	 * 
+	 *
 	 * @param taskConfig to get value from
 	 * @param propertyName to get value for
 	 * @return String array
