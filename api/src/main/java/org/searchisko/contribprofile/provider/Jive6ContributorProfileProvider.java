@@ -45,6 +45,7 @@ import org.searchisko.contribprofile.model.ContributorProfile;
 /**
  * Jive 6 implementation of Contributor Provider. <br/>
  * Documentation for Jive 6 REST API: https://developers.jivesoftware.com/api/v3/rest/PersonService.html
+ * Access to Jive 6 has to be authenticated. See AppConfiguration
  *
  * @author Libor Krzyzanek
  * @author Vlastimil Elias (velias at redhat dot com)
@@ -87,6 +88,9 @@ public class Jive6ContributorProfileProvider implements ContributorProfileProvid
 
 
 		byte[] data = getData(url);
+		if (data == null) {
+			return null;
+		}
 
 		return convertToProfiles(data);
 	}
@@ -121,7 +125,20 @@ public class Jive6ContributorProfileProvider implements ContributorProfileProvid
 		return getData(url, username, password);
 	}
 
+	/**
+	 * Get data from provider
+	 *
+	 * @param url
+	 * @param username
+	 * @param password
+	 * @return data or null if something goes wrong.
+	 */
 	protected byte[] getData(String url, String username, String password) {
+		if (StringUtils.isBlank(username) && StringUtils.isBlank(password)) {
+			log.log(Level.SEVERE, "Jive provider configuration has username and password blank.");
+			return null;
+		}
+
 		HttpGet httpGet = new HttpGet(url);
 
 		CloseableHttpResponse response = null;
@@ -132,8 +149,8 @@ public class Jive6ContributorProfileProvider implements ContributorProfileProvid
 			response = httpClient.execute(httpGet);
 			HttpEntity entity = response.getEntity();
 			if (response.getStatusLine().getStatusCode() >= 300) {
-				EntityUtils.consume(entity);
-				log.log(Level.WARNING, "Cannot get data from Jive, reason: {0}", response);
+				String output = EntityUtils.toString(entity);
+				log.log(Level.WARNING, "Cannot get data from Jive, response: {0}, code: {1}", new Object[]{output, response.getStatusLine().getStatusCode()});
 				return null;
 			}
 			byte[] data = EntityUtils.toByteArray(entity);

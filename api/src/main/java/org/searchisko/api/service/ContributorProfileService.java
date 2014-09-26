@@ -301,7 +301,7 @@ public class ContributorProfileService {
 	 *                            see <code>FIELD_TSC_xx</code> constants) to update profiles for.
 	 * @param start pagination - start
 	 * @param size paginatino - size
-	 * @return number of created/updated profiles. -1 if 'contributorCodeType' is not supported.
+	 * @return number of created/updated profiles. -1 if 'contributorCodeType' is not supported or something is wrong with contributor profile provider configuration.
 	 * @see #isContributorCodeTypesSupported(String)
 	 */
 	@TransactionAttribute(TransactionAttributeType.NEVER)
@@ -319,6 +319,9 @@ public class ContributorProfileService {
 		}
 
 		List<ContributorProfile> profiles = contributorProfileProvider.getAllProfiles(start, size);
+		if (profiles == null) {
+			return -1;
+		}
 		for (ContributorProfile profile : profiles) {
 			String contributorCode = ContributorService.createContributorId(profile.getFullName(), profile.getPrimaryEmail());
 			String contributorCodeValue = (String) profile.getProfileData().get(ContentObjectFields.SYS_CONTENT_ID);

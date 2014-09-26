@@ -27,7 +27,7 @@ public interface ContributorProfileProvider {
 	 *
 	 * @param start can be null to use default value
 	 * @param size can be null to use default value
-	 * @return List of ContributorProfile or empty list
+	 * @return List of ContributorProfile (can be empty) or null if something goes wrong
 	 */
 	public List<ContributorProfile> getAllProfiles(Integer start, Integer size);
 
@@ -35,7 +35,7 @@ public interface ContributorProfileProvider {
 	 * Retrieve contributor profile based on jboss.org username takene e.g. from CAS filters
 	 *
 	 * @param jbossorgUsername
-	 * @return
+	 * @return contributor profile or null if something goes wrong
 	 */
 	public ContributorProfile getProfile(String jbossorgUsername);
 
