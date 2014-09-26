@@ -22,6 +22,20 @@ Note: each .sh script accepts commandline parameters which allows to configure
 location of Searchisko REST API or Elasticsearch search node http connector used by 
 given script. Steps 2 - 5 can be performed by top level `init_all_noriver.sh` script.
 
+## Example - localhost:8080
+
+1. Optional: Clean environment (Searchisko data and embedded DB)
+
+		rm -rf ~/.dcp_data/
+		rm -rf $JBOSS_HOME/bin/searchisko.*
+
+2. Start Searchisko in local EAP. Read [Development Docs](../documentation/development.md).
+
+3. Push all init data
+
+		cd configuration/
+		./init_all_noriver.sh
+
 
 ## Example - OpenShift
 
