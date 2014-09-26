@@ -18,6 +18,7 @@ import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.searchisko.api.service.ContentManipulationLockService;
 import org.searchisko.ftest.DeploymentHelpers;
 import org.searchisko.ftest.ProviderModel;
 
@@ -199,6 +200,48 @@ public class ContentRestServiceTest {
 	@InSequence(31)
 	public void assertDeleteAsSuperProvider() throws MalformedURLException {
 		deleteContent(context, DeploymentHelpers.DEFAULT_PROVIDER, TYPE1, contentId);
+	}
+
+	// ///////////////////////////// issue #109 - Content manipulation lock handling
+
+	@Test
+	@InSequence(40)
+	public void assertContentAPILockForProvider() throws MalformedURLException {
+
+		ProviderRestServiceTest.cmLockCreate(context, provider1.name, DeploymentHelpers.DEFAULT_PROVIDER_NAME,
+				DeploymentHelpers.DEFAULT_PROVIDER_PASSWORD);
+
+		Map<String, Object> content = new HashMap<>();
+		content.put("data", "test");
+
+		// API blocked for provider 1
+		given().pathParam("type", TYPE1).pathParam("contentId", contentId).contentType(ContentType.JSON).auth()
+				.basic(provider1.name, provider1.password).body(content).expect().statusCode(503).log().ifValidationFails()
+				.when().post(new URL(context, CONTENT_REST_API).toExternalForm());
+
+		// API works for provider 2
+		createOrUpdateContent(context, provider2, TYPE2, contentId, content);
+	}
+
+	@Test
+	@InSequence(41)
+	public void assertContentAPILockForAll() throws MalformedURLException {
+
+		ProviderRestServiceTest.cmLockCreate(context, ContentManipulationLockService.API_ID_ALL,
+				DeploymentHelpers.DEFAULT_PROVIDER_NAME, DeploymentHelpers.DEFAULT_PROVIDER_PASSWORD);
+
+		Map<String, Object> content = new HashMap<>();
+		content.put("data", "test");
+
+		// API blocked for provider 1
+		given().pathParam("type", TYPE1).pathParam("contentId", contentId).contentType(ContentType.JSON).auth()
+				.basic(provider1.name, provider1.password).body(content).expect().statusCode(503).log().ifValidationFails()
+				.when().post(new URL(context, CONTENT_REST_API).toExternalForm());
+
+		// API blocked for provider 2
+		given().pathParam("type", TYPE2).pathParam("contentId", contentId).contentType(ContentType.JSON).auth()
+				.basic(provider2.name, provider2.password).body(content).expect().statusCode(503).log().ifValidationFails()
+				.when().post(new URL(context, CONTENT_REST_API).toExternalForm());
 	}
 
 }

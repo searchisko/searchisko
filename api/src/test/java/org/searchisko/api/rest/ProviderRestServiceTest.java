@@ -445,7 +445,50 @@ public class ProviderRestServiceTest {
 		tested.contentManipulationLockCreate("");
 	}
 
-	// TODO #109 unit test
+	@Test(expected = NotAuthorizedException.class)
+	public void contentManipulationLockCreate_all_noPermission() throws ObjectNotFoundException {
+		ProviderRestService tested = getTested();
+		Mockito.when(tested.authenticationUtilService.isUserInRole(Role.ADMIN)).thenReturn(false);
+		tested.contentManipulationLockCreate(ContentManipulationLockService.API_ID_ALL);
+		Mockito.verifyZeroInteractions(tested.contentManipulationLockService);
+	}
+
+	@Test
+	public void contentManipulationLockCreate_all_ok() throws ObjectNotFoundException {
+		ProviderRestService tested = getTested();
+		Mockito.when(tested.authenticationUtilService.isUserInRole(Role.ADMIN)).thenReturn(true);
+
+		Object ret = tested.contentManipulationLockCreate(ContentManipulationLockService.API_ID_ALL);
+		TestUtils.assertResponseStatus(ret, Status.OK);
+		Mockito.verify(tested.contentManipulationLockService).createLockAll();
+		Mockito.verifyZeroInteractions(tested.contentManipulationLockService);
+	}
+
+	@Test(expected = ObjectNotFoundException.class)
+	public void contentManipulationLockCreate_provider_unknown() throws ObjectNotFoundException {
+		ProviderRestService tested = getTested();
+		Mockito.when(tested.entityService.get("provider1")).thenReturn(null);
+		tested.contentManipulationLockCreate("provider1");
+	}
+
+	@Test(expected = NotAuthorizedException.class)
+	public void contentManipulationLockCreate_provider_noPermission() throws ObjectNotFoundException {
+		ProviderRestService tested = getTested();
+		mockEntityGet(tested, "provider1");
+		Mockito.doThrow(new NotAuthorizedException("")).when(tested.authenticationUtilService)
+				.checkProviderManagementPermission("provider1");
+		tested.contentManipulationLockCreate("provider1");
+	}
+
+	@Test
+	public void contentManipulationLockCreate_provider_ok() throws ObjectNotFoundException {
+		ProviderRestService tested = getTested();
+		mockEntityGet(tested, "provider1");
+		Object ret = tested.contentManipulationLockCreate("provider1");
+		TestUtils.assertResponseStatus(ret, Status.OK);
+		Mockito.verify(tested.contentManipulationLockService).createLock("provider1");
+		Mockito.verifyZeroInteractions(tested.contentManipulationLockService);
+	}
 
 	@Test(expected = RequiredFieldException.class)
 	public void contentManipulationLockDelete_inputParamValidation_1() throws ObjectNotFoundException {
@@ -459,7 +502,65 @@ public class ProviderRestServiceTest {
 		tested.contentManipulationLockDelete("");
 	}
 
-	// TODO #109 unit test
+	@Test(expected = NotAuthorizedException.class)
+	public void contentManipulationLockDelete_all_noPermission() throws ObjectNotFoundException {
+		ProviderRestService tested = getTested();
+		Mockito.when(tested.authenticationUtilService.isUserInRole(Role.ADMIN)).thenReturn(false);
+		tested.contentManipulationLockDelete(ContentManipulationLockService.API_ID_ALL);
+		Mockito.verifyZeroInteractions(tested.contentManipulationLockService);
+	}
+
+	@Test
+	public void contentManipulationLockDelete_all_ok() throws ObjectNotFoundException {
+		ProviderRestService tested = getTested();
+		Mockito.when(tested.authenticationUtilService.isUserInRole(Role.ADMIN)).thenReturn(true);
+
+		Object ret = tested.contentManipulationLockDelete(ContentManipulationLockService.API_ID_ALL);
+		TestUtils.assertResponseStatus(ret, Status.OK);
+		Mockito.verify(tested.contentManipulationLockService).removeLockAll();
+		Mockito.verifyZeroInteractions(tested.contentManipulationLockService);
+	}
+
+	@Test(expected = ObjectNotFoundException.class)
+	public void contentManipulationLockDelete_provider_unknown() throws ObjectNotFoundException {
+		ProviderRestService tested = getTested();
+		Mockito.when(tested.entityService.get("provider1")).thenReturn(null);
+		tested.contentManipulationLockDelete("provider1");
+	}
+
+	@Test(expected = NotAuthorizedException.class)
+	public void contentManipulationLockDelete_provider_noPermission() throws ObjectNotFoundException {
+		ProviderRestService tested = getTested();
+		mockEntityGet(tested, "provider1");
+		Mockito.doThrow(new NotAuthorizedException("")).when(tested.authenticationUtilService)
+				.checkProviderManagementPermission("provider1");
+		tested.contentManipulationLockDelete("provider1");
+	}
+
+	@Test
+	public void contentManipulationLockDelete_provider_noPermissionToRemoveLockAll() throws ObjectNotFoundException {
+		ProviderRestService tested = getTested();
+		try {
+			mockEntityGet(tested, "provider1");
+			Mockito.when(tested.contentManipulationLockService.removeLock("provider1")).thenReturn(false);
+			tested.contentManipulationLockDelete("provider1");
+			Assert.fail("NotAuthorizedException expected");
+		} catch (NotAuthorizedException e) {
+			Mockito.verify(tested.contentManipulationLockService).removeLock("provider1");
+			Mockito.verifyZeroInteractions(tested.contentManipulationLockService);
+		}
+	}
+
+	@Test
+	public void contentManipulationLockDelete_provider_ok() throws ObjectNotFoundException {
+		ProviderRestService tested = getTested();
+		mockEntityGet(tested, "provider1");
+		Mockito.when(tested.contentManipulationLockService.removeLock("provider1")).thenReturn(true);
+		Object ret = tested.contentManipulationLockDelete("provider1");
+		TestUtils.assertResponseStatus(ret, Status.OK);
+		Mockito.verify(tested.contentManipulationLockService).removeLock("provider1");
+		Mockito.verifyZeroInteractions(tested.contentManipulationLockService);
+	}
 
 	private void mockEntityGet(ProviderRestService tested, String name) {
 		Map<String, Object> entity = new HashMap<>();

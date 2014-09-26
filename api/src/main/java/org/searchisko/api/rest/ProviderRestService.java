@@ -236,6 +236,7 @@ public class ProviderRestService extends RestEntityServiceBase {
 	@GET
 	@Path("/{id}/content_manipulation_lock")
 	@RolesAllowed({ Role.ADMIN, Role.PROVIDER })
+	@Produces(MediaType.APPLICATION_JSON)
 	public Map<String, Object> contentManipulationLockInfo(@PathParam("id") @AuditId String id)
 			throws ObjectNotFoundException {
 
