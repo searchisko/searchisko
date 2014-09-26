@@ -18,6 +18,7 @@ import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.searchisko.api.service.ContentManipulationLockService;
 import org.searchisko.api.service.ProviderService;
 import org.searchisko.ftest.DeploymentHelpers;
 import org.searchisko.ftest.ProviderModel;
@@ -43,6 +44,8 @@ public class ProviderRestServiceTest {
 	public static final String PROVIDER_REST_API_BASE = DeploymentHelpers.DEFAULT_REST_VERSION + "provider/";
 
 	public static final String PROVIDER_REST_API = PROVIDER_REST_API_BASE + "{id}";
+
+	public static final String PROVIDER_CML_REST_API = PROVIDER_REST_API_BASE + "{id}/content_manipulation_lock";
 
 	public static final ProviderModel provider1 = new ProviderModel("provider1", "Password1");
 
@@ -78,6 +81,23 @@ public class ProviderRestServiceTest {
 		given().pathParam("id", DeploymentHelpers.DEFAULT_PROVIDER_NAME).contentType(ContentType.JSON).body("").expect()
 				.statusCode(expStatus).log().ifStatusCodeMatches(is(not(expStatus))).when()
 				.delete(new URL(context, PROVIDER_REST_API).toExternalForm());
+
+		// / Content manipulation lock part of API
+
+		// TEST: GET /provider/jbossorg/content_manipulation_lock
+		given().pathParam("id", DeploymentHelpers.DEFAULT_PROVIDER_NAME).contentType(ContentType.JSON).expect()
+				.statusCode(expStatus).log().ifStatusCodeMatches(is(not(expStatus))).when()
+				.get(new URL(context, PROVIDER_CML_REST_API).toExternalForm());
+
+		// TEST: POST /provider/test/content_manipulation_lock
+		given().pathParam("id", "test").contentType(ContentType.JSON).body("").expect().statusCode(expStatus).log()
+				.ifStatusCodeMatches(is(not(expStatus))).when().post(new URL(context, PROVIDER_CML_REST_API).toExternalForm());
+
+		// TEST: DELETE /provider/jbossorg/content_manipulation_lock
+		given().pathParam("id", DeploymentHelpers.DEFAULT_PROVIDER_NAME).contentType(ContentType.JSON).body("").expect()
+				.statusCode(expStatus).log().ifStatusCodeMatches(is(not(expStatus))).when()
+				.delete(new URL(context, PROVIDER_CML_REST_API).toExternalForm());
+
 	}
 
 	@Test
@@ -114,52 +134,6 @@ public class ProviderRestServiceTest {
 		given().contentType(ContentType.JSON).body("").auth()
 				.basic(DeploymentHelpers.DEFAULT_PROVIDER_NAME, DeploymentHelpers.DEFAULT_PROVIDER_PASSWORD).expect()
 				.statusCode(400).when().post(new URL(context, PROVIDER_REST_API_BASE).toExternalForm());
-	}
-
-	/**
-	 * Helper method to create new provider - non existence is tested
-	 * 
-	 * @param context
-	 * @param provider
-	 * @throws MalformedURLException
-	 */
-	public static void createNewProvider(URL context, ProviderModel provider) throws MalformedURLException {
-		log.log(Level.INFO, "Create new provider, data: {0}", provider);
-		// TEST: Ensure that provider doesn't exist
-		given().pathParam("id", provider.name).contentType(ContentType.JSON).auth()
-				.basic(DeploymentHelpers.DEFAULT_PROVIDER_NAME, DeploymentHelpers.DEFAULT_PROVIDER_PASSWORD).expect().log()
-				.ifStatusCodeMatches(is(not(404))).statusCode(404).when()
-				.get(new URL(context, PROVIDER_REST_API).toExternalForm());
-
-		// TEST: New Provider
-		given().pathParam("id", provider.name).contentType(ContentType.JSON).auth()
-				.basic(DeploymentHelpers.DEFAULT_PROVIDER_NAME, DeploymentHelpers.DEFAULT_PROVIDER_PASSWORD)
-				.body(provider.getProviderJSONModel()).expect().log().ifError().statusCode(200).body("id", is(provider.name))
-				.when().post(new URL(context, PROVIDER_REST_API).toExternalForm());
-
-		// TEST: Get provider back
-		given().pathParam("id", provider.name).contentType(ContentType.JSON).auth().basic(provider.name, provider.password)
-				.expect().log().ifError().statusCode(200).body("name", is(provider.name)).body("super_provider", nullValue())
-				.body(ProviderService.PASSWORD_HASH, nullValue()).when()
-				.get(new URL(context, PROVIDER_REST_API).toExternalForm());
-
-	}
-
-	/**
-	 * Helper method to update provider
-	 * 
-	 * @param context
-	 * @param provider
-	 * @throws MalformedURLException
-	 */
-	public static void updateProvider(URL context, ProviderModel provider) throws MalformedURLException {
-		log.log(Level.INFO, "Update provider, data: {0}", provider);
-
-		given().pathParam("id", provider.name).contentType(ContentType.JSON).auth()
-				.basic(DeploymentHelpers.DEFAULT_PROVIDER_NAME, DeploymentHelpers.DEFAULT_PROVIDER_PASSWORD)
-				.body(provider.getProviderJSONModel()).expect().log().ifError().statusCode(200).body("id", is(provider.name))
-				.when().post(new URL(context, PROVIDER_REST_API).toExternalForm());
-
 	}
 
 	@Test
@@ -255,6 +229,320 @@ public class ProviderRestServiceTest {
 				.get(new URL(context, PROVIDER_REST_API_BASE).toExternalForm());
 	}
 
+	@Test
+	@InSequence(50)
+	public void assertDeleteProviderSecurity(@ArquillianResource URL context) throws MalformedURLException {
+		// Provider1 cannot delete itself
+		given().pathParam("id", provider1.name).contentType(ContentType.JSON).auth()
+				.basic(provider1.name, provider1.password).expect().log().ifStatusCodeMatches(is(not(401))).statusCode(401)
+				.when().delete(new URL(context, PROVIDER_REST_API).toExternalForm());
+
+		// Provider1 cannot delete Provider2
+		given().pathParam("id", provider2.name).contentType(ContentType.JSON).auth()
+				.basic(provider1.name, provider1.password).expect().log().ifStatusCodeMatches(is(not(401))).statusCode(401)
+				.when().delete(new URL(context, PROVIDER_REST_API).toExternalForm());
+
+	}
+
+	// ///////////////////////////// issue #109 - Content manipulation lock handling
+
+	@Test
+	@InSequence(58)
+	public void assertCMLGetByAdminNoAnyLockDefined(@ArquillianResource URL context) throws MalformedURLException {
+
+		// get for unknown provider
+		given().pathParam("id", "unknown").contentType(ContentType.JSON).auth()
+				.basic(DeploymentHelpers.DEFAULT_PROVIDER_NAME, DeploymentHelpers.DEFAULT_PROVIDER_PASSWORD).expect()
+				.statusCode(404).log().ifValidationFails().when().get(new URL(context, PROVIDER_CML_REST_API).toExternalForm());
+
+		// get for known provider
+		given().pathParam("id", provider1.name).contentType(ContentType.JSON).auth()
+				.basic(DeploymentHelpers.DEFAULT_PROVIDER_NAME, DeploymentHelpers.DEFAULT_PROVIDER_PASSWORD).expect()
+				.statusCode(200).log().ifValidationFails().body("content_manipulation_lock", nullValue()).when()
+				.get(new URL(context, PROVIDER_CML_REST_API).toExternalForm());
+
+		// get all
+		given().pathParam("id", ContentManipulationLockService.API_ID_ALL).contentType(ContentType.JSON).auth()
+				.basic(DeploymentHelpers.DEFAULT_PROVIDER_NAME, DeploymentHelpers.DEFAULT_PROVIDER_PASSWORD).expect()
+				.statusCode(200).log().ifValidationFails().body("content_manipulation_lock", nullValue()).when()
+				.get(new URL(context, PROVIDER_CML_REST_API).toExternalForm());
+	}
+
+	@Test
+	@InSequence(59)
+	public void assertCMLGetByProviderNoAnyLockDefined(@ArquillianResource URL context) throws MalformedURLException {
+
+		// get for me
+		given().pathParam("id", provider1.name).contentType(ContentType.JSON).auth()
+				.basic(provider1.name, provider1.password).expect().statusCode(200).log().ifValidationFails()
+				.body("content_manipulation_lock", nullValue()).when()
+				.get(new URL(context, PROVIDER_CML_REST_API).toExternalForm());
+
+		// get from other provider is denied
+		given().pathParam("id", provider2.name).contentType(ContentType.JSON).auth()
+				.basic(provider1.name, provider1.password).expect().statusCode(403).log().ifValidationFails()
+				.get(new URL(context, PROVIDER_CML_REST_API).toExternalForm());
+
+		// get all is denied
+		given().pathParam("id", ContentManipulationLockService.API_ID_ALL).contentType(ContentType.JSON).auth()
+				.basic(provider1.name, provider1.password).expect().statusCode(403).log().ifValidationFails()
+				.get(new URL(context, PROVIDER_CML_REST_API).toExternalForm());
+	}
+
+	@Test
+	@InSequence(60)
+	public void assertCMLCreateForProviderByAdmin(@ArquillianResource URL context) throws MalformedURLException {
+		cmLockCreate(context, provider1.name, DeploymentHelpers.DEFAULT_PROVIDER_NAME,
+				DeploymentHelpers.DEFAULT_PROVIDER_PASSWORD);
+	}
+
+	@Test
+	@InSequence(61)
+	public void assertCMLCreateForProviderByProvider(@ArquillianResource URL context) throws MalformedURLException {
+		cmLockCreate(context, provider2.name, provider2.name, provider2.password);
+
+		// not possible to create lock for another provider
+		given().pathParam("id", provider1.name).contentType(ContentType.JSON).body("").auth()
+				.basic(provider2.name, provider2.password).expect().statusCode(403).log().ifValidationFails().when()
+				.post(new URL(context, PROVIDER_CML_REST_API).toExternalForm());
+	}
+
+	@Test
+	@InSequence(62)
+	public void assertCMLGetByProviderSomeLocksDefined(@ArquillianResource URL context) throws MalformedURLException {
+
+		given().pathParam("id", provider1.name).contentType(ContentType.JSON).auth()
+				.basic(provider1.name, provider1.password).expect().statusCode(200).log().ifValidationFails()
+				.body("content_manipulation_lock[0]", is(provider1.name)).when()
+				.get(new URL(context, PROVIDER_CML_REST_API).toExternalForm());
+
+		given().pathParam("id", provider2.name).contentType(ContentType.JSON).auth()
+				.basic(provider2.name, provider2.password).expect().statusCode(200).log().ifValidationFails()
+				.body("content_manipulation_lock[0]", is(provider2.name)).when()
+				.get(new URL(context, PROVIDER_CML_REST_API).toExternalForm());
+	}
+
+	@Test
+	@InSequence(62)
+	public void assertCMLGetByAdminSomeLocksDefined(@ArquillianResource URL context) throws MalformedURLException {
+
+		// get for named provider
+		given().pathParam("id", provider1.name).contentType(ContentType.JSON).auth()
+				.basic(DeploymentHelpers.DEFAULT_PROVIDER_NAME, DeploymentHelpers.DEFAULT_PROVIDER_PASSWORD).expect()
+				.statusCode(200).log().ifValidationFails().body("content_manipulation_lock[0]", is(provider1.name)).when()
+				.get(new URL(context, PROVIDER_CML_REST_API).toExternalForm());
+
+		given().pathParam("id", provider2.name).contentType(ContentType.JSON).auth()
+				.basic(DeploymentHelpers.DEFAULT_PROVIDER_NAME, DeploymentHelpers.DEFAULT_PROVIDER_PASSWORD).expect()
+				.statusCode(200).log().ifValidationFails().body("content_manipulation_lock[0]", is(provider2.name)).when()
+				.get(new URL(context, PROVIDER_CML_REST_API).toExternalForm());
+
+		// get all
+		given().pathParam("id", ContentManipulationLockService.API_ID_ALL).contentType(ContentType.JSON).auth()
+				.basic(DeploymentHelpers.DEFAULT_PROVIDER_NAME, DeploymentHelpers.DEFAULT_PROVIDER_PASSWORD).expect()
+				.statusCode(200).log().ifValidationFails().body("content_manipulation_lock[0]", is(provider1.name))
+				.body("content_manipulation_lock[1]", is(provider2.name)).when()
+				.get(new URL(context, PROVIDER_CML_REST_API).toExternalForm());
+	}
+
+	@Test
+	@InSequence(64)
+	public void assertCMLDeleteForProviderByAdmin(@ArquillianResource URL context) throws MalformedURLException {
+
+		// delete for one provider
+		cmLockDelete(context, provider1.name, DeploymentHelpers.DEFAULT_PROVIDER_NAME,
+				DeploymentHelpers.DEFAULT_PROVIDER_PASSWORD);
+
+		// check it is deleted
+		given().pathParam("id", ContentManipulationLockService.API_ID_ALL).contentType(ContentType.JSON).auth()
+				.basic(DeploymentHelpers.DEFAULT_PROVIDER_NAME, DeploymentHelpers.DEFAULT_PROVIDER_PASSWORD).expect()
+				.statusCode(200).log().ifValidationFails().body("content_manipulation_lock[0]", is(provider2.name)).when()
+				.get(new URL(context, PROVIDER_CML_REST_API).toExternalForm());
+
+		// delete for all must remove individual locks
+		cmLockDelete(context, ContentManipulationLockService.API_ID_ALL, DeploymentHelpers.DEFAULT_PROVIDER_NAME,
+				DeploymentHelpers.DEFAULT_PROVIDER_PASSWORD);
+
+		// check it is deleted
+		given().pathParam("id", ContentManipulationLockService.API_ID_ALL).contentType(ContentType.JSON).auth()
+				.basic(DeploymentHelpers.DEFAULT_PROVIDER_NAME, DeploymentHelpers.DEFAULT_PROVIDER_PASSWORD).expect()
+				.statusCode(200).log().ifValidationFails().body("content_manipulation_lock", nullValue()).when()
+				.get(new URL(context, PROVIDER_CML_REST_API).toExternalForm());
+	}
+
+	@Test
+	@InSequence(65)
+	public void assertCMLDeleteForProviderByProvider(@ArquillianResource URL context) throws MalformedURLException {
+
+		// create test lock
+		cmLockCreate(context, provider2.name, provider2.name, provider2.password);
+
+		// not possible to delete for another provider
+		given().pathParam("id", provider2.name).contentType(ContentType.JSON).auth()
+				.basic(provider1.name, provider1.password).expect().statusCode(403).log().ifValidationFails().when()
+				.delete(new URL(context, PROVIDER_CML_REST_API).toExternalForm());
+
+		// delete for me
+		cmLockDelete(context, provider2.name, provider2.name, provider2.password);
+
+		// check lock is deleted
+		given().pathParam("id", ContentManipulationLockService.API_ID_ALL).contentType(ContentType.JSON).auth()
+				.basic(DeploymentHelpers.DEFAULT_PROVIDER_NAME, DeploymentHelpers.DEFAULT_PROVIDER_PASSWORD).expect()
+				.statusCode(200).log().ifValidationFails().body("content_manipulation_lock", nullValue()).when()
+				.get(new URL(context, PROVIDER_CML_REST_API).toExternalForm());
+
+	}
+
+	@Test
+	@InSequence(66)
+	public void assertCMLCreateForAllByProviderNoPerm(@ArquillianResource URL context) throws MalformedURLException {
+		given().pathParam("id", ContentManipulationLockService.API_ID_ALL).contentType(ContentType.JSON).body("").auth()
+				.basic(provider2.name, provider2.password).expect().statusCode(403).log().ifValidationFails().when()
+				.post(new URL(context, PROVIDER_CML_REST_API).toExternalForm());
+	}
+
+	@Test
+	@InSequence(67)
+	public void assertCMLCreateForAllByAdmin(@ArquillianResource URL context) throws MalformedURLException {
+		// test that _all lock replaces individual locks if any
+		cmLockCreate(context, provider1.name, DeploymentHelpers.DEFAULT_PROVIDER_NAME,
+				DeploymentHelpers.DEFAULT_PROVIDER_PASSWORD);
+
+		cmLockCreate(context, ContentManipulationLockService.API_ID_ALL, DeploymentHelpers.DEFAULT_PROVIDER_NAME,
+				DeploymentHelpers.DEFAULT_PROVIDER_PASSWORD);
+
+		// check it is created
+		given().pathParam("id", ContentManipulationLockService.API_ID_ALL).contentType(ContentType.JSON).auth()
+				.basic(DeploymentHelpers.DEFAULT_PROVIDER_NAME, DeploymentHelpers.DEFAULT_PROVIDER_PASSWORD).expect()
+				.statusCode(200).log().ifValidationFails()
+				.body("content_manipulation_lock[0]", is(ContentManipulationLockService.API_ID_ALL)).when()
+				.get(new URL(context, PROVIDER_CML_REST_API).toExternalForm());
+
+		// check how GEt works for _all value if only one provider is requested
+		given().pathParam("id", provider1.name).contentType(ContentType.JSON).auth()
+				.basic(DeploymentHelpers.DEFAULT_PROVIDER_NAME, DeploymentHelpers.DEFAULT_PROVIDER_PASSWORD).expect()
+				.statusCode(200).log().ifValidationFails()
+				.body("content_manipulation_lock[0]", is(ContentManipulationLockService.API_ID_ALL)).when()
+				.get(new URL(context, PROVIDER_CML_REST_API).toExternalForm());
+		given().pathParam("id", provider1.name).contentType(ContentType.JSON).auth()
+				.basic(provider1.name, provider1.password).expect().statusCode(200).log().ifValidationFails()
+				.body("content_manipulation_lock[0]", is(ContentManipulationLockService.API_ID_ALL)).when()
+				.get(new URL(context, PROVIDER_CML_REST_API).toExternalForm());
+
+	}
+
+	@Test
+	@InSequence(68)
+	public void assertCMLDeleteForProviderByProviderNotPermIfLockAllExists(@ArquillianResource URL context)
+			throws MalformedURLException {
+		given().pathParam("id", provider2.name).contentType(ContentType.JSON).auth()
+				.basic(provider2.name, provider2.password).expect().statusCode(403).log().ifValidationFails().when()
+				.delete(new URL(context, PROVIDER_CML_REST_API).toExternalForm());
+	}
+
+	@Test
+	@InSequence(69)
+	public void assertCMLDeleteForAllByAdmin(@ArquillianResource URL context) throws MalformedURLException {
+		cmLockDelete(context, ContentManipulationLockService.API_ID_ALL, DeploymentHelpers.DEFAULT_PROVIDER_NAME,
+				DeploymentHelpers.DEFAULT_PROVIDER_PASSWORD);
+
+		// check it is deleted
+		given().pathParam("id", ContentManipulationLockService.API_ID_ALL).contentType(ContentType.JSON).auth()
+				.basic(DeploymentHelpers.DEFAULT_PROVIDER_NAME, DeploymentHelpers.DEFAULT_PROVIDER_PASSWORD).expect()
+				.statusCode(200).log().ifValidationFails().body("content_manipulation_lock", nullValue()).when()
+				.get(new URL(context, PROVIDER_CML_REST_API).toExternalForm());
+	}
+
+	/**
+	 * Helper method to delete Content Manipulation API lock for given provider.
+	 * 
+	 * @param context to be used for call REST API
+	 * @param providerNameForLock name of provider to unlock
+	 * @param username to authenticate on REST API
+	 * @param password to authenticate on REST API
+	 * @throws MalformedURLException
+	 */
+	public static final void cmLockDelete(URL context, String providerNameForLock, String username, String password)
+			throws MalformedURLException {
+		given().pathParam("id", providerNameForLock).contentType(ContentType.JSON).auth().basic(username, password)
+				.expect().statusCode(200).log().ifValidationFails().when()
+				.delete(new URL(context, PROVIDER_CML_REST_API).toExternalForm());
+	}
+
+	/**
+	 * Helper method to create Content Manipulation API lock for given provider.
+	 * 
+	 * @param context to be used for call REST API
+	 * @param providerNameForLock name of provider to lock
+	 * @param username to authenticate on REST API
+	 * @param password to authenticate on REST API
+	 * @throws MalformedURLException
+	 */
+	public static final void cmLockCreate(URL context, String providerNameForLock, String username, String password)
+			throws MalformedURLException {
+		given().pathParam("id", providerNameForLock).contentType(ContentType.JSON).auth().basic(username, password)
+				.expect().statusCode(200).log().ifValidationFails().when()
+				.post(new URL(context, PROVIDER_CML_REST_API).toExternalForm());
+	}
+
+	@Test
+	@InSequence(100)
+	public void assertDeleteProvider1(@ArquillianResource URL context) throws MalformedURLException {
+		deleteProvider(context, provider1);
+	}
+
+	@Test
+	@InSequence(101)
+	public void assertDeleteProvider2(@ArquillianResource URL context) throws MalformedURLException {
+		deleteProvider(context, provider2);
+	}
+
+	/**
+	 * Helper method to create new provider - non existence is tested
+	 * 
+	 * @param context
+	 * @param provider
+	 * @throws MalformedURLException
+	 */
+	public static void createNewProvider(URL context, ProviderModel provider) throws MalformedURLException {
+		log.log(Level.INFO, "Create new provider, data: {0}", provider);
+		// TEST: Ensure that provider doesn't exist
+		given().pathParam("id", provider.name).contentType(ContentType.JSON).auth()
+				.basic(DeploymentHelpers.DEFAULT_PROVIDER_NAME, DeploymentHelpers.DEFAULT_PROVIDER_PASSWORD).expect().log()
+				.ifStatusCodeMatches(is(not(404))).statusCode(404).when()
+				.get(new URL(context, PROVIDER_REST_API).toExternalForm());
+
+		// TEST: New Provider
+		given().pathParam("id", provider.name).contentType(ContentType.JSON).auth()
+				.basic(DeploymentHelpers.DEFAULT_PROVIDER_NAME, DeploymentHelpers.DEFAULT_PROVIDER_PASSWORD)
+				.body(provider.getProviderJSONModel()).expect().log().ifError().statusCode(200).body("id", is(provider.name))
+				.when().post(new URL(context, PROVIDER_REST_API).toExternalForm());
+
+		// TEST: Get provider back
+		given().pathParam("id", provider.name).contentType(ContentType.JSON).auth().basic(provider.name, provider.password)
+				.expect().log().ifError().statusCode(200).body("name", is(provider.name)).body("super_provider", nullValue())
+				.body(ProviderService.PASSWORD_HASH, nullValue()).when()
+				.get(new URL(context, PROVIDER_REST_API).toExternalForm());
+
+	}
+
+	/**
+	 * Helper method to update provider
+	 * 
+	 * @param context
+	 * @param provider
+	 * @throws MalformedURLException
+	 */
+	public static void updateProvider(URL context, ProviderModel provider) throws MalformedURLException {
+		log.log(Level.INFO, "Update provider, data: {0}", provider);
+
+		given().pathParam("id", provider.name).contentType(ContentType.JSON).auth()
+				.basic(DeploymentHelpers.DEFAULT_PROVIDER_NAME, DeploymentHelpers.DEFAULT_PROVIDER_PASSWORD)
+				.body(provider.getProviderJSONModel()).expect().log().ifError().statusCode(200).body("id", is(provider.name))
+				.when().post(new URL(context, PROVIDER_REST_API).toExternalForm());
+
+	}
+
 	/**
 	 * Helper method to delete provider
 	 * 
@@ -271,33 +559,6 @@ public class ProviderRestServiceTest {
 				.basic(DeploymentHelpers.DEFAULT_PROVIDER_NAME, DeploymentHelpers.DEFAULT_PROVIDER_PASSWORD).expect()
 				.statusCode(404).log().ifStatusCodeMatches(is(not(404))).when()
 				.get(new URL(context, PROVIDER_REST_API).toExternalForm());
-	}
-
-	@Test
-	@InSequence(50)
-	public void assertDeleteProviderSecurity(@ArquillianResource URL context) throws MalformedURLException {
-		// Provider1 cannot delete itself
-		given().pathParam("id", provider1.name).contentType(ContentType.JSON).auth()
-				.basic(provider1.name, provider1.password).expect().log().ifStatusCodeMatches(is(not(401))).statusCode(401)
-				.when().delete(new URL(context, PROVIDER_REST_API).toExternalForm());
-
-		// Provider1 cannot delete Provider2
-		given().pathParam("id", provider2.name).contentType(ContentType.JSON).auth()
-				.basic(provider1.name, provider1.password).expect().log().ifStatusCodeMatches(is(not(401))).statusCode(401)
-				.when().delete(new URL(context, PROVIDER_REST_API).toExternalForm());
-
-	}
-
-	@Test
-	@InSequence(51)
-	public void assertDeleteProvider1(@ArquillianResource URL context) throws MalformedURLException {
-		deleteProvider(context, provider1);
-	}
-
-	@Test
-	@InSequence(52)
-	public void assertDeleteProvider2(@ArquillianResource URL context) throws MalformedURLException {
-		deleteProvider(context, provider2);
 	}
 
 }

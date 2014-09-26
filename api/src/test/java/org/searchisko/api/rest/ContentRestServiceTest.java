@@ -20,17 +20,8 @@ import org.elasticsearch.common.settings.SettingsException;
 import org.hamcrest.CustomMatcher;
 import org.json.JSONException;
 import org.junit.Assert;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 import org.junit.Test;
 import org.mockito.Mockito;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.reset;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
-import static org.mockito.Mockito.verifyZeroInteractions;
-import static org.mockito.Mockito.when;
 import org.searchisko.api.ContentObjectFields;
 import org.searchisko.api.events.ContentBeforeIndexedEvent;
 import org.searchisko.api.events.ContentDeletedEvent;
@@ -38,17 +29,31 @@ import org.searchisko.api.events.ContentStoredEvent;
 import org.searchisko.api.rest.exception.BadFieldException;
 import org.searchisko.api.rest.exception.NotAuthenticatedException;
 import org.searchisko.api.rest.exception.NotAuthorizedException;
+import org.searchisko.api.rest.exception.OperationUnavailableException;
 import org.searchisko.api.rest.exception.RequiredFieldException;
 import org.searchisko.api.security.AuthenticatedUserType;
 import org.searchisko.api.service.AuthenticationUtilService;
+import org.searchisko.api.service.ContentManipulationLockService;
 import org.searchisko.api.service.ProviderService;
 import org.searchisko.api.service.ProviderService.ProviderContentTypeInfo;
 import org.searchisko.api.service.ProviderServiceTest;
 import org.searchisko.api.testtools.ESRealClientTestBase;
 import org.searchisko.api.testtools.TestUtils;
+import org.searchisko.persistence.service.ContentPersistenceService;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.when;
+
 import static org.searchisko.api.testtools.TestUtils.assertResponseStatus;
 import static org.searchisko.api.testtools.TestUtils.assetJsonStreamingOutputContent;
-import org.searchisko.persistence.service.ContentPersistenceService;
 
 /**
  * Unit test for {@link ContentRestService}
@@ -104,8 +109,8 @@ public class ContentRestServiceTest extends ESRealClientTestBase {
 			Assert.assertNotNull(ret);
 			Assert.assertEquals(TYPE_KNOWN, ret.getTypeName());
 			Assert.assertEquals(ProviderServiceTest.TEST_PROVIDER_NAME, ret.getProviderName());
-			verify(tested.authenticationUtilService).checkProviderManagementPermission(
-					ProviderServiceTest.TEST_PROVIDER_NAME);
+			verify(tested.authenticationUtilService)
+					.checkProviderManagementPermission(ProviderServiceTest.TEST_PROVIDER_NAME);
 		}
 
 		// known type, provider has no permission
@@ -231,6 +236,15 @@ public class ContentRestServiceTest extends ESRealClientTestBase {
 		content.put("test", "testvalue");
 		Mockito.doThrow(new NotAuthorizedException("no perm")).when(tested.authenticationUtilService)
 				.checkProviderManagementPermission(ProviderServiceTest.TEST_PROVIDER_NAME);
+		tested.pushContent(TYPE_KNOWN, "1", content);
+	}
+
+	@Test(expected = OperationUnavailableException.class)
+	public void pushContent_apiLockedDown() throws Exception {
+		ContentRestService tested = getTested(false);
+		Mockito.when(tested.contentManipulationLockService.isLockedForProvider(Mockito.anyString())).thenReturn(true);
+		Map<String, Object> content = new HashMap<String, Object>();
+		content.put("test", "testvalue");
 		tested.pushContent(TYPE_KNOWN, "1", content);
 	}
 
@@ -480,6 +494,17 @@ public class ContentRestServiceTest extends ESRealClientTestBase {
 		content.put("1", contentItem);
 		Mockito.doThrow(new NotAuthorizedException("no perm")).when(tested.authenticationUtilService)
 				.checkProviderManagementPermission(ProviderServiceTest.TEST_PROVIDER_NAME);
+		tested.pushContentBulk(TYPE_KNOWN, content);
+	}
+
+	@Test(expected = OperationUnavailableException.class)
+	public void pushContentBulk_apiLockedDown() throws Exception {
+		ContentRestService tested = getTested(false);
+		Mockito.when(tested.contentManipulationLockService.isLockedForProvider(Mockito.anyString())).thenReturn(true);
+		Map<String, Object> content = new HashMap<String, Object>();
+		Map<String, Object> contentItem = new HashMap<String, Object>();
+		contentItem.put("title", "aaa");
+		content.put("1", contentItem);
 		tested.pushContentBulk(TYPE_KNOWN, content);
 	}
 
@@ -759,6 +784,15 @@ public class ContentRestServiceTest extends ESRealClientTestBase {
 		tested.deleteContent(TYPE_KNOWN, "1", null);
 	}
 
+	@Test(expected = OperationUnavailableException.class)
+	public void deleteContent_apiLockedDown() throws Exception {
+		ContentRestService tested = getTested(false);
+		Map<String, Object> content = new HashMap<String, Object>();
+		content.put("test", "testvalue");
+		Mockito.when(tested.contentManipulationLockService.isLockedForProvider(Mockito.anyString())).thenReturn(true);
+		tested.deleteContent(TYPE_KNOWN, "1", null);
+	}
+
 	@Test
 	public void deleteContent() throws Exception {
 
@@ -865,6 +899,15 @@ public class ContentRestServiceTest extends ESRealClientTestBase {
 		content.put("id", new ArrayList<String>());
 		Mockito.doThrow(new NotAuthorizedException("no perm")).when(tested.authenticationUtilService)
 				.checkProviderManagementPermission(ProviderServiceTest.TEST_PROVIDER_NAME);
+		tested.deleteContentBulk(TYPE_KNOWN, content);
+	}
+
+	@Test(expected = OperationUnavailableException.class)
+	public void deleteContentBulk_apiLockedDown() throws Exception {
+		ContentRestService tested = getTested(false);
+		Mockito.when(tested.contentManipulationLockService.isLockedForProvider(Mockito.anyString())).thenReturn(true);
+		Map<String, Object> content = new HashMap<String, Object>();
+		content.put("id", new ArrayList<String>());
 		tested.deleteContentBulk(TYPE_KNOWN, content);
 	}
 
@@ -1046,16 +1089,16 @@ public class ContentRestServiceTest extends ESRealClientTestBase {
 					"{\"name\":\"test4\",\"sys_updated\":3,\"sys_content_id\":\"4\"}");
 			indexFlushAndRefresh(INDEX_NAME);
 			assetJsonStreamingOutputContent("{\"total\":4,\"hits\":["
-							+ "{\"id\":\"1\",\"data\":{\"sys_updated\":0,\"sys_content_id\":\"1\",\"name\":\"test1\"}},"
-							+ "{\"id\":\"2\",\"data\":{\"sys_updated\":1,\"sys_content_id\":\"2\",\"name\":\"test2\"}},"
-							+ "{\"id\":\"3\",\"data\":{\"sys_updated\":2,\"sys_content_id\":\"3\",\"name\":\"test3\"}},"
-							+ "{\"id\":\"4\",\"data\":{\"sys_updated\":3,\"sys_content_id\":\"4\",\"name\":\"test4\"}}" + "]}",
+					+ "{\"id\":\"1\",\"data\":{\"sys_updated\":0,\"sys_content_id\":\"1\",\"name\":\"test1\"}},"
+					+ "{\"id\":\"2\",\"data\":{\"sys_updated\":1,\"sys_content_id\":\"2\",\"name\":\"test2\"}},"
+					+ "{\"id\":\"3\",\"data\":{\"sys_updated\":2,\"sys_content_id\":\"3\",\"name\":\"test3\"}},"
+					+ "{\"id\":\"4\",\"data\":{\"sys_updated\":3,\"sys_content_id\":\"4\",\"name\":\"test4\"}}" + "]}",
 					tested.getAllContent(TYPE_KNOWN, null, null, null));
 
 			// case - something found, from and size param used
 			assetJsonStreamingOutputContent("{\"total\":4,\"hits\":["
-							+ "{\"id\":\"2\",\"data\":{\"sys_updated\":1,\"sys_content_id\":\"2\",\"name\":\"test2\"}},"
-							+ "{\"id\":\"3\",\"data\":{\"sys_updated\":2,\"sys_content_id\":\"3\",\"name\":\"test3\"}}" + "]}",
+					+ "{\"id\":\"2\",\"data\":{\"sys_updated\":1,\"sys_content_id\":\"2\",\"name\":\"test2\"}},"
+					+ "{\"id\":\"3\",\"data\":{\"sys_updated\":2,\"sys_content_id\":\"3\",\"name\":\"test3\"}}" + "]}",
 					tested.getAllContent(TYPE_KNOWN, 1, 2, null));
 
 			// case - sort param used
@@ -1161,12 +1204,14 @@ public class ContentRestServiceTest extends ESRealClientTestBase {
 		tested.log = Logger.getLogger("testlogger");
 		tested.authenticationUtilService = mock(AuthenticationUtilService.class);
 
+		tested.contentManipulationLockService = Mockito.mock(ContentManipulationLockService.class);
+
 		tested.eventContentDeleted = mock(Event.class);
 		tested.eventContentStored = mock(Event.class);
 		tested.eventBeforeIndexed = mock(Event.class);
 
-		when(tested.authenticationUtilService.getAuthenticatedProvider()).thenReturn(
-				ProviderServiceTest.TEST_PROVIDER_NAME);
+		when(tested.authenticationUtilService.getAuthenticatedProvider())
+				.thenReturn(ProviderServiceTest.TEST_PROVIDER_NAME);
 
 		return tested;
 	}
