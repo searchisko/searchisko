@@ -1,14 +1,20 @@
 package org.searchisko.api.filter;
 
-import javax.inject.Inject;
-import javax.servlet.*;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import javax.inject.Inject;
+import javax.servlet.Filter;
+import javax.servlet.FilterChain;
+import javax.servlet.FilterConfig;
+import javax.servlet.ServletException;
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.codec.binary.Base64;
 
@@ -39,34 +45,41 @@ public class BasicAuthenticationFilter implements Filter {
 		if (log.isLoggable(Level.FINEST)) {
 			log.log(Level.FINEST, "Request headers: {0}", Collections.list(request.getHeaderNames()));
 			log.log(Level.FINEST, "Basic Authentication, authentications: {0}", Collections.list(request.getHeaders("Authorization")));
+			log.log(Level.FINEST, "Current principal: {0}", request.getUserPrincipal());
 		}
 
-		Enumeration<String> authentication = request.getHeaders("Authorization");
-		while (authentication.hasMoreElements()) {
-			String auth = authentication.nextElement();
-			log.log(Level.FINEST, "Basic Authentication, examining: {0}", auth);
-			if (!auth.startsWith("Basic")) {
-				continue;
-			}
-			String hash = auth.substring(6);
+		if (request.getUserPrincipal() != null) {
+			// #158 - Do not consume http basic authentication header when user is already authenticated
+			log.log(Level.FINE, "Request already authenticated.");
+			chain.doFilter(req, resp);
+		} else {
+			Enumeration<String> authentication = request.getHeaders("Authorization");
+			while (authentication.hasMoreElements()) {
+				String auth = authentication.nextElement();
+				log.log(Level.FINEST, "Basic Authentication, examining: {0}", auth);
+				if (!auth.startsWith("Basic")) {
+					continue;
+				}
+				String hash = auth.substring(6);
 
-			// Alternatively use org.jboss.resteasy.util.Base64
-			byte[] decoded = Base64.decodeBase64(hash);
-			String usernamePassword = new String(decoded);
+				// Alternatively use org.jboss.resteasy.util.Base64
+				byte[] decoded = Base64.decodeBase64(hash);
+				String usernamePassword = new String(decoded);
 
-			int colon = usernamePassword.indexOf(':');
-			if (colon > 0) {
-				String username = usernamePassword.substring(0, colon);
-				String password = usernamePassword.substring(colon + 1, usernamePassword.length());
+				int colon = usernamePassword.indexOf(':');
+				if (colon > 0) {
+					String username = usernamePassword.substring(0, colon);
+					String password = usernamePassword.substring(colon + 1, usernamePassword.length());
 
-				log.log(Level.FINE, "Requiring Basic Authentication for username: {0}", username);
-				try {
-					request.login(username, password);
-					log.log(Level.FINE, "Authenticated request: {0}", request.getUserPrincipal());
-				} catch (final ServletException e) {
-					log.log(Level.FINE, "Custom authentication failed.", e);
-					response.sendError(HttpServletResponse.SC_FORBIDDEN, e.getMessage());
-					return;
+					log.log(Level.FINE, "Requiring Basic Authentication for username: {0}", username);
+					try {
+						request.login(username, password);
+						log.log(Level.FINE, "Authenticated request: {0}", request.getUserPrincipal());
+					} catch (final ServletException e) {
+						log.log(Level.FINE, "Custom authentication failed.", e);
+						response.sendError(HttpServletResponse.SC_FORBIDDEN, e.getMessage());
+						return;
+					}
 				}
 			}
 		}
