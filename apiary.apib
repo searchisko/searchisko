@@ -56,7 +56,7 @@ DCP uses jboss.org login server running at [sso.jboss.org](https://sso.jboss.org
 Client JavaScript applications running directly in user browser can use Searchisko REST API directly, even when served from another domain, thanks to these techniques:
 
 * [Cross-Origin Resource Sharing (CORS)](http://www.w3.org/TR/cors/) support: Response contains correct `Access-Control-Allow-Origin` and `Access-Control-Allow-Credentials` HTTP response headers if `Origin` request header is used. There is correct handling of CORS Preflight OPTIONS requests also. But DON'T FORGET to set `withCredentials: true` into `XMLHttpRequest` JavaScript objects to make correct use of this method!
-* [JSONP](http://en.wikipedia.org/wiki/JSONP): Searchisko provides JSONP technique, but it works only for GET requests. If you want to use JSONP, just add `callback` parameter to your request.
+* [JSONP](http://en.wikipedia.org/wiki/JSONP): Searchisko provides JSONP technique, but it works only for unauthenticated GET requests. If you want to use JSONP, just add `callback` parameter to your request.
 
 ---
 
