@@ -7,6 +7,7 @@
 		<!-- In OpenShift it's standard name for myslq cartridge and it's already configured in standalone.xml -->
 		<jta-data-source>${persistence.xml.jta-data-source}</jta-data-source>
 
+		<shared-cache-mode>DISABLE_SELECTIVE</shared-cache-mode>
 		<properties>
 			<!-- Bean validation is used for validation and DDL as well -->
 			<property name="javax.persistence.validation.mode" value="callback, ddl" />
@@ -15,6 +16,10 @@
 			<property name="hibernate.hbm2ddl.auto" value="update" />
 			<property name="hibernate.show_sql" value="false" />
 			<property name="hibernate.format_sql" value="false" />
+
+			<!-- Caching - https://docs.jboss.org/author/display/ISPN/Using+Infinispan+as+JPA-Hibernate+Second+Level+Cache+Provider -->
+			<property name="hibernate.cache.use_second_level_cache" value="true" />
+			<property name="hibernate.cache.use_query_cache" value="true" />
 		</properties>
 	</persistence-unit>
 </persistence>
