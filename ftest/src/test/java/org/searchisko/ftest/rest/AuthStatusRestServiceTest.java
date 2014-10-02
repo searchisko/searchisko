@@ -11,8 +11,12 @@ import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.searchisko.api.rest.AuthStatusRestService;
 import org.searchisko.ftest.DeploymentHelpers;
 
+import com.jayway.restassured.http.ContentType;
+
+import static com.jayway.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
 import static org.searchisko.ftest.rest.RestTestHelpers.givenJsonAndLogIfFails;
@@ -21,12 +25,14 @@ import static org.searchisko.ftest.rest.RestTestHelpers.givenJsonAndLogIfFails;
  * Integration test for /auth/status REST API.
  * <p/>
  * http://docs.jbossorg.apiary.io/#userauthenticationstatusapi
- *
+ * 
  * @author Lukas Vlcek
  * @author Libor Krzyzanek
  */
 @RunWith(Arquillian.class)
 public class AuthStatusRestServiceTest {
+
+	private static final String REST_API_AUTH_STATUS = DeploymentHelpers.DEFAULT_REST_VERSION + "auth/status";
 
 	@ArquillianResource
 	protected URL context;
@@ -39,11 +45,38 @@ public class AuthStatusRestServiceTest {
 	@Test
 	@InSequence(0)
 	public void assertSSOServiceNotAvailable() throws MalformedURLException {
-		givenJsonAndLogIfFails().
-				when().get(new URL(context, DeploymentHelpers.DEFAULT_REST_VERSION + "auth/status").toExternalForm()).
-				then().
-				statusCode(200).
-				header("WWW-Authenticate", nullValue()).
-				body("authenticated", is(false));
+		givenJsonAndLogIfFails().when().get(new URL(context, REST_API_AUTH_STATUS).toExternalForm()).then().statusCode(200)
+				.header("WWW-Authenticate", nullValue()).body(AuthStatusRestService.RESPONSE_FIELD_AUTHENTICATED, is(false))
+				.body(AuthStatusRestService.RESPONSE_FIELD_ROLES, nullValue());
 	}
+
+	@Test
+	@InSequence(5)
+	public void assertProviderLooksLikeUnauthenticatedThere() throws MalformedURLException {
+		given().contentType(ContentType.JSON).auth().preemptive()
+				.basic(DeploymentHelpers.DEFAULT_PROVIDER_NAME, DeploymentHelpers.DEFAULT_PROVIDER_PASSWORD).log()
+				.ifValidationFails().when().get(new URL(context, REST_API_AUTH_STATUS).toExternalForm()).then().statusCode(200)
+				.header("WWW-Authenticate", nullValue()).body(AuthStatusRestService.RESPONSE_FIELD_AUTHENTICATED, is(false))
+				.body(AuthStatusRestService.RESPONSE_FIELD_ROLES, nullValue());
+	}
+
+	@Test
+	@InSequence(6)
+	public void assertContributorAuthenticatedNoRolesRequested() throws MalformedURLException {
+		given().contentType(ContentType.JSON).auth().preemptive().basic("contributor1", "password1").log()
+				.ifValidationFails().when().get(new URL(context, REST_API_AUTH_STATUS).toExternalForm()).then().statusCode(200)
+				.header("WWW-Authenticate", nullValue()).body(AuthStatusRestService.RESPONSE_FIELD_AUTHENTICATED, is(true))
+				.body(AuthStatusRestService.RESPONSE_FIELD_ROLES, nullValue());
+	}
+
+	@Test
+	@InSequence(7)
+	public void assertContributorAuthenticatedRolesRequested() throws MalformedURLException {
+		given().contentType(ContentType.JSON).auth().preemptive().basic("contributor1", "password1").log()
+				.ifValidationFails().when().get(new URL(context, REST_API_AUTH_STATUS + "?roles=y").toExternalForm()).then()
+				.statusCode(200).header("WWW-Authenticate", nullValue())
+				.body(AuthStatusRestService.RESPONSE_FIELD_AUTHENTICATED, is(true))
+				.body(AuthStatusRestService.RESPONSE_FIELD_ROLES + "[0]", is("contributor"));
+	}
+
 }
