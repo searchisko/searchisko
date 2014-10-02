@@ -28,9 +28,9 @@ import org.searchisko.api.service.ContributorProfileService;
 import org.searchisko.api.service.ContributorService;
 
 /**
- * Utility Service that keeps actual roles in cache.
- * It observes {@link org.searchisko.api.events.RolesUpdatedEvent} and put updated roles into the cache.
- *
+ * Utility Service that keeps actual roles in cache. It observes {@link org.searchisko.api.events.RolesUpdatedEvent} and
+ * put updated roles into the cache.
+ * 
  * @author Libor Krzyzanek
  */
 @Named
@@ -58,7 +58,8 @@ public class ActualRolesService {
 
 		if (AuthenticatedUserType.CONTRIBUTOR.equals(event.getAuthenticatedUserType())) {
 			Map<String, Object> entity = event.getEntity();
-			String username = ContributorService.getContributorTypeSpecificCodeFirst(entity, ContributorProfileService.FIELD_TSC_JBOSSORG_USERNAME);
+			String username = ContributorService.getContributorTypeSpecificCodeFirst(entity,
+					ContributorProfileService.FIELD_TSC_JBOSSORG_USERNAME);
 
 			String key = getCacheKey(AuthenticatedUserType.CONTRIBUTOR, username);
 			Set<String> roles = ContributorService.extractRoles(entity);
@@ -71,7 +72,6 @@ public class ActualRolesService {
 		return authenticatedUserType.name() + "-" + username;
 	}
 
-	@SuppressWarnings("unchecked")
 	public Set<String> getActualRolesRemoveFromCache(Principal principal) {
 		String key = getCacheKey(AuthenticatedUserType.CONTRIBUTOR, principal.getName());
 

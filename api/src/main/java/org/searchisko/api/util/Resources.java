@@ -67,9 +67,8 @@ public class Resources {
 		return ctx;
 	}
 
-	@SuppressWarnings("unused")
 	@Produces
-	@Resource(lookup="java:jboss/infinispan/container/searchisko")
+	@Resource(lookup = "java:jboss/infinispan/container/searchisko")
 	private static EmbeddedCacheManager container;
 
 	/**

@@ -44,9 +44,9 @@ import org.searchisko.contribprofile.model.ContributorProfile;
 
 /**
  * Jive 6 implementation of Contributor Provider. <br/>
- * Documentation for Jive 6 REST API: https://developers.jivesoftware.com/api/v3/rest/PersonService.html
- * Access to Jive 6 has to be authenticated. See AppConfiguration
- *
+ * Documentation for Jive 6 REST API: https://developers.jivesoftware.com/api/v3/rest/PersonService.html Access to Jive
+ * 6 has to be authenticated. See AppConfiguration
+ * 
  * @author Libor Krzyzanek
  * @author Vlastimil Elias (velias at redhat dot com)
  */
@@ -85,7 +85,6 @@ public class Jive6ContributorProfileProvider implements ContributorProfileProvid
 
 		String url = jive6Url + JIVE_ALL_PROFILES_REST_API;
 		url = addPaginationToUrl(url, start, size);
-
 
 		byte[] data = getData(url);
 		if (data == null) {
@@ -127,7 +126,7 @@ public class Jive6ContributorProfileProvider implements ContributorProfileProvid
 
 	/**
 	 * Get data from provider
-	 *
+	 * 
 	 * @param url
 	 * @param username
 	 * @param password
@@ -150,7 +149,8 @@ public class Jive6ContributorProfileProvider implements ContributorProfileProvid
 			HttpEntity entity = response.getEntity();
 			if (response.getStatusLine().getStatusCode() >= 300) {
 				String output = EntityUtils.toString(entity);
-				log.log(Level.WARNING, "Cannot get data from Jive, response: {0}, code: {1}", new Object[]{output, response.getStatusLine().getStatusCode()});
+				log.log(Level.WARNING, "Cannot get data from Jive, response: {0}, code: {1}", new Object[] { output,
+						response.getStatusLine().getStatusCode() });
 				return null;
 			}
 			byte[] data = EntityUtils.toByteArray(entity);
@@ -201,7 +201,6 @@ public class Jive6ContributorProfileProvider implements ContributorProfileProvid
 
 	protected Map<String, Object> convertJSONMap(byte[] data) {
 		ObjectMapper mapper = new ObjectMapper();
-		Map<String, Object> map;
 		try {
 			// next code is used to remove weird first line of JIVE response. Simply we find first { which means begin of JSON
 			// data.
@@ -249,8 +248,8 @@ public class Jive6ContributorProfileProvider implements ContributorProfileProvid
 			fullName = (String) map.get("displayName");
 		}
 
-		ContributorProfile profile = new ContributorProfile((String) profileData.get(ContentObjectFields.SYS_ID),
-				fullName, primaryEmail, getEmails(emailsObject), typeSpecificCodes);
+		ContributorProfile profile = new ContributorProfile((String) profileData.get(ContentObjectFields.SYS_ID), fullName,
+				primaryEmail, getEmails(emailsObject), typeSpecificCodes);
 
 		profile.setProfileData(profileData);
 
@@ -307,37 +306,37 @@ public class Jive6ContributorProfileProvider implements ContributorProfileProvid
 		if (jiveProfile != null) {
 			for (Map<String, Object> p : jiveProfile) {
 				switch ((String) p.get(JIVE_PROFILE_NAME_KEY)) {
-					case "Biography":
-						profileData.put("aboutMe", p.get(JIVE_PROFILE_VALUE_KEY));
-						profileData.put("sys_description", p.get(JIVE_PROFILE_VALUE_KEY));
-						break;
-					case "Twitter Username":
-						storeAccountInfo(accounts, DOMAIN_TWITTER_COM, DCP_PROFILE_ACCOUNT_USERNAME, p.get(JIVE_PROFILE_VALUE_KEY));
-						break;
-					case "Twitter URL":
-						storeAccountInfo(accounts, DOMAIN_TWITTER_COM, DCP_PROFILE_ACCOUNT_LINK, p.get(JIVE_PROFILE_VALUE_KEY));
-						break;
-					case "github Username":
-						storeAccountInfo(accounts, DOMAIN_GITHUB_COM, DCP_PROFILE_ACCOUNT_USERNAME, p.get(JIVE_PROFILE_VALUE_KEY));
-						break;
-					case "Github Profile":
-						storeAccountInfo(accounts, DOMAIN_GITHUB_COM, DCP_PROFILE_ACCOUNT_LINK, p.get(JIVE_PROFILE_VALUE_KEY));
-						break;
-					case "Facebook Username":
-						storeAccountInfo(accounts, DOMAIN_FACEBOOK_COM, DCP_PROFILE_ACCOUNT_USERNAME, p.get(JIVE_PROFILE_VALUE_KEY));
-						break;
-					case "Facebook Profile":
-						storeAccountInfo(accounts, DOMAIN_FACEBOOK_COM, DCP_PROFILE_ACCOUNT_LINK, p.get(JIVE_PROFILE_VALUE_KEY));
-						break;
-					case "LinkedIn Username":
-						storeAccountInfo(accounts, DOMAIN_LINKEDIN_COM, DCP_PROFILE_ACCOUNT_USERNAME, p.get(JIVE_PROFILE_VALUE_KEY));
-						break;
-					case "LinkedIn Profile":
-						storeAccountInfo(accounts, DOMAIN_LINKEDIN_COM, DCP_PROFILE_ACCOUNT_LINK, p.get(JIVE_PROFILE_VALUE_KEY));
-						break;
-					case "Google Profile":
-						storeAccountInfo(accounts, DOMAIN_GOOGLE_COM, DCP_PROFILE_ACCOUNT_LINK, p.get(JIVE_PROFILE_VALUE_KEY));
-						break;
+				case "Biography":
+					profileData.put("aboutMe", p.get(JIVE_PROFILE_VALUE_KEY));
+					profileData.put("sys_description", p.get(JIVE_PROFILE_VALUE_KEY));
+					break;
+				case "Twitter Username":
+					storeAccountInfo(accounts, DOMAIN_TWITTER_COM, DCP_PROFILE_ACCOUNT_USERNAME, p.get(JIVE_PROFILE_VALUE_KEY));
+					break;
+				case "Twitter URL":
+					storeAccountInfo(accounts, DOMAIN_TWITTER_COM, DCP_PROFILE_ACCOUNT_LINK, p.get(JIVE_PROFILE_VALUE_KEY));
+					break;
+				case "github Username":
+					storeAccountInfo(accounts, DOMAIN_GITHUB_COM, DCP_PROFILE_ACCOUNT_USERNAME, p.get(JIVE_PROFILE_VALUE_KEY));
+					break;
+				case "Github Profile":
+					storeAccountInfo(accounts, DOMAIN_GITHUB_COM, DCP_PROFILE_ACCOUNT_LINK, p.get(JIVE_PROFILE_VALUE_KEY));
+					break;
+				case "Facebook Username":
+					storeAccountInfo(accounts, DOMAIN_FACEBOOK_COM, DCP_PROFILE_ACCOUNT_USERNAME, p.get(JIVE_PROFILE_VALUE_KEY));
+					break;
+				case "Facebook Profile":
+					storeAccountInfo(accounts, DOMAIN_FACEBOOK_COM, DCP_PROFILE_ACCOUNT_LINK, p.get(JIVE_PROFILE_VALUE_KEY));
+					break;
+				case "LinkedIn Username":
+					storeAccountInfo(accounts, DOMAIN_LINKEDIN_COM, DCP_PROFILE_ACCOUNT_USERNAME, p.get(JIVE_PROFILE_VALUE_KEY));
+					break;
+				case "LinkedIn Profile":
+					storeAccountInfo(accounts, DOMAIN_LINKEDIN_COM, DCP_PROFILE_ACCOUNT_LINK, p.get(JIVE_PROFILE_VALUE_KEY));
+					break;
+				case "Google Profile":
+					storeAccountInfo(accounts, DOMAIN_GOOGLE_COM, DCP_PROFILE_ACCOUNT_LINK, p.get(JIVE_PROFILE_VALUE_KEY));
+					break;
 				}
 			}
 		} else {
@@ -353,7 +352,7 @@ public class Jive6ContributorProfileProvider implements ContributorProfileProvid
 	}
 
 	protected void storeAccountInfo(Map<String, Map<String, Object>> accounts, String domainName, String infoKey,
-									Object infoValue) {
+			Object infoValue) {
 
 		if (infoValue == null)
 			return;
@@ -374,9 +373,9 @@ public class Jive6ContributorProfileProvider implements ContributorProfileProvid
 
 	/**
 	 * Safe getter for <code>jive.profile</code> field value.
-	 *
+	 * 
 	 * @param jiveObject to get profile value from
-	 * @param jiveLabel  <code>jive_label</code> for profile field value we can obtain
+	 * @param jiveLabel <code>jive_label</code> for profile field value we can obtain
 	 * @return profile field value or null
 	 */
 	@SuppressWarnings("unchecked")
@@ -400,7 +399,7 @@ public class Jive6ContributorProfileProvider implements ContributorProfileProvid
 
 	/**
 	 * Get list of email addresses from JIVE profile <code>emails</code> structure.
-	 *
+	 * 
 	 * @param emailsObject JIVE profile <code>emails</code> structure
 	 * @return list of emails. never null.
 	 */
@@ -419,8 +418,8 @@ public class Jive6ContributorProfileProvider implements ContributorProfileProvid
 
 	/**
 	 * @param typeSpecificCodes structure to add code into
-	 * @param fieldTcsName      name of Type Specific Code to add
-	 * @param value             of code. May be null or empty - ignored in this case.
+	 * @param fieldTcsName name of Type Specific Code to add
+	 * @param value of code. May be null or empty - ignored in this case.
 	 */
 	protected void addTypeSpecificCode(Map<String, List<String>> typeSpecificCodes, String fieldTcsName, String value) {
 		value = SearchUtils.trimToNull(value);
@@ -437,7 +436,7 @@ public class Jive6ContributorProfileProvider implements ContributorProfileProvid
 
 	/**
 	 * Get primary email address from JIVE profile <code>emails</code> structure.
-	 *
+	 * 
 	 * @param emailsObject JIVE profile <code>emails</code> structure.
 	 * @return primary email address or null if not found
 	 */

@@ -537,7 +537,7 @@ Description of important response fields:
 * `hits/hits/highlight` highlights of fulltext matching in given document, see `query_highlight` request parameter
 * `facets` values from facets, see `facet` request parameter
 
-GET /rest/search?{query,query_highlight,sortBy,from,size,facet,field,content_provider,type,sys_type,tag,project,activity_date_interval,activity_date_from,activity_date_to,contributor}
+GET /rest/search{?query,query_highlight,sortBy,from,size,facet,field,content_provider,type,sys_type,tag,project,activity_date_interval,activity_date_from,activity_date_to,contributor}
 < 200
 < Content-Type: application/json
 < Access-Control-Allow-Origin: *
@@ -572,7 +572,7 @@ or viewed detail). Validation is performed during server side record write to en
 identifier has been part of given search response. 
 * `session_id` - optional, identifier of user's frontend session to allow more precise user behavior analyze
 
-PUT /rest/search/{search_result_uuid}/{hit_id}?{session_id}
+PUT /rest/search/{search_result_uuid}/{hit_id}{?session_id}
 < 200
 < Access-Control-Allow-Origin: *
 
@@ -787,7 +787,7 @@ The second response should be used for "Did you mean?" scenario or as a fallback
 * `size` of returned result array. Default is 5. Note are two arrays returned in the response. Max value is 100.
 * `field` you can use this param multiple times to specify which [fields](http://www.elasticsearch.org/guide/en/elasticsearch/reference/0.90/search-request-fields.html) from search index will be returned in results. Fields `sys_project` and `sys_project_name` are always returned as a part of response. Using `field` parameter you can define additional fields to return. If you want complete documents use `_source` value for this param. Be careful about performance impact of this param, consult DCP administrators if necessary!
 
-GET /rest/suggestions/project?{query,size,field}
+GET /rest/suggestions/project{?query,size,field}
 < 200
 < Content-Type: application/json
 < Access-Control-Allow-Origin: *
@@ -910,7 +910,7 @@ Get Atom feed with filtered content.
 * `feed_title` optional param allows to customize title of generated feed. By default it's generated from the filter criteria used for feed.  
 
 
-GET /rest/feed?{project,contributor,sys_type,tag,type,content_provider,query,sortBy,feed_title}
+GET /rest/feed{?project,contributor,sys_type,tag,type,content_provider,query,sortBy,feed_title}
 < 200
 < Content-Type: application/atom+xml
 < Access-Control-Allow-Origin: *
@@ -945,16 +945,24 @@ data (like 'content rating' endpoint).
 
 Check if user is authenticated.
 
+##### Request parameters
+
+* `roles` if this http patam is not empty then response contains array of roles if user is authenticated.
+
 ##### Response content
-The response contains a JSON object with `authenticated` field. Value `true` means user is authenticated:
+The response contains a JSON object with fields:
+
+* `authenticated` - `true` means user is authenticated, `false` for not authenticated user.
+* `roles` - contains array of user roles if user is authenticated and `roles` request param is not empty.
 
 ```
 {
-  "authenticated":true
+  "authenticated":true,
+  "roles" : ["contributor","anotherrole"]
 }
 ```
 
-GET /rest/auth/status
+GET /rest/auth/status{?roles}
 < 200
 < Content-Type: application/json
 {
