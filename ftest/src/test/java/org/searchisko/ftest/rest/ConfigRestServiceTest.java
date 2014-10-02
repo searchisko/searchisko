@@ -8,7 +8,11 @@ package org.searchisko.ftest.rest;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.HashSet;
+import java.util.Set;
 
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.notNullValue;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.junit.InSequence;
@@ -16,25 +20,26 @@ import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.searchisko.api.security.Role;
 import org.searchisko.ftest.DeploymentHelpers;
-
-import com.jayway.restassured.http.ContentType;
-
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.notNullValue;
 import static org.searchisko.ftest.rest.RestTestHelpers.givenJsonAndLogIfFailsAndAuthDefaultProvider;
-import static org.searchisko.ftest.rest.RestTestHelpers.givenLogIfFails;
+import static org.searchisko.ftest.rest.RestTestHelpers.givenJsonAndLogIfFailsAndAuthPreemptive;
 
 /**
  * Integration test for /config REST API.
  * <p/>
  * http://docs.jbossorg.apiary.io/#managementapiconfiguration
- * 
+ *
  * @author Libor Krzyzanek
  * @see org.searchisko.api.rest.ConfigRestService
  */
 @RunWith(Arquillian.class)
 public class ConfigRestServiceTest {
+
+	public static final Set<String> ALLOWED_ROLES = new HashSet<>();
+	static {
+		ALLOWED_ROLES.add(Role.ADMIN);
+	}
 
 	public static final String CONFIG_REST_API_BASE = DeploymentHelpers.DEFAULT_REST_VERSION + "config/";
 
@@ -50,10 +55,10 @@ public class ConfigRestServiceTest {
 
 	/**
 	 * Helper method which allows to upload config file even from other tests.
-	 * 
+	 *
 	 * @param context to be used for upload
-	 * @param id of the config file
-	 * @param data JSON content of the config file
+	 * @param id      of the config file
+	 * @param data    JSON content of the config file
 	 * @throws MalformedURLException
 	 */
 	public static void uploadConfigFile(URL context, String id, String data) throws MalformedURLException {
@@ -64,22 +69,35 @@ public class ConfigRestServiceTest {
 	@Test
 	@InSequence(0)
 	public void assertNotAuthenticated() throws MalformedURLException {
-		int expStatus = 401;
+		assertAccess(401, null, null);
+	}
 
+	@Test
+	@InSequence(1)
+	public void assertForbidden() throws MalformedURLException {
+		for (String role : Role.ALL_ROLES) {
+			if (!ALLOWED_ROLES.contains(role)) {
+				assertAccess(403, role, role);
+			}
+		}
+	}
+
+	public void assertAccess(int expStatus, String username, String password) throws MalformedURLException {
 		// GET /config
-		givenLogIfFails().expect().statusCode(expStatus).when()
+		givenJsonAndLogIfFailsAndAuthPreemptive(username, password)
+				.expect().statusCode(expStatus).when()
 				.get(new URL(context, CONFIG_REST_API_BASE).toExternalForm());
 
 		// GET /config/some-id
-		givenLogIfFails().pathParam("id", "some-id").expect().statusCode(expStatus).when()
+		givenJsonAndLogIfFailsAndAuthPreemptive(username, password).pathParam("id", "some-id").expect().statusCode(expStatus).when()
 				.get(new URL(context, CONFIG_REST_API).toExternalForm());
 
 		// POST /config/some-id
-		givenLogIfFails().contentType(ContentType.JSON).pathParam("id", "some-id").body("{}").expect()
+		givenJsonAndLogIfFailsAndAuthPreemptive(username, password).pathParam("id", "some-id").body("{}").expect()
 				.statusCode(expStatus).when().post(new URL(context, CONFIG_REST_API).toExternalForm());
 
 		// DELETE /config/some-id
-		givenLogIfFails().contentType(ContentType.JSON).pathParam("id", "some-id").expect().statusCode(expStatus).when()
+		givenJsonAndLogIfFailsAndAuthPreemptive(username, password).pathParam("id", "some-id").expect().statusCode(expStatus).when()
 				.delete(new URL(context, CONFIG_REST_API).toExternalForm());
 	}
 

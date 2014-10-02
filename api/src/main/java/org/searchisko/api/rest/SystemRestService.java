@@ -5,6 +5,9 @@
  */
 package org.searchisko.api.rest;
 
+import java.io.IOException;
+import java.util.Map;
+
 import javax.annotation.security.PermitAll;
 import javax.annotation.security.RolesAllowed;
 import javax.enterprise.context.RequestScoped;
@@ -13,9 +16,10 @@ import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.*;
-import java.io.IOException;
-import java.util.Map;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.SecurityContext;
+import javax.ws.rs.core.StreamingOutput;
 
 import org.apache.commons.lang.StringUtils;
 import org.elasticsearch.action.search.SearchResponse;
@@ -36,7 +40,7 @@ import org.searchisko.api.service.SystemInfoService;
  */
 @Path("/sys")
 @RequestScoped
-@RolesAllowed(Role.PROVIDER)
+@RolesAllowed(Role.ADMIN)
 @Audit
 public class SystemRestService {
 
@@ -60,7 +64,6 @@ public class SystemRestService {
 	@GET
 	@Path("/auditlog")
 	@Produces(MediaType.APPLICATION_JSON)
-	@RolesAllowed(Role.ADMIN)
 	@AuditIgnore
 	public StreamingOutput getAuditLog(
 			@QueryParam("operation") String operation,

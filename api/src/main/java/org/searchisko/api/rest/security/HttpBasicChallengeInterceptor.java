@@ -1,5 +1,19 @@
 package org.searchisko.api.rest.security;
 
+import java.lang.reflect.Method;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import javax.annotation.security.DenyAll;
+import javax.annotation.security.PermitAll;
+import javax.annotation.security.RolesAllowed;
+import javax.inject.Inject;
+import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.SecurityContext;
+import javax.ws.rs.ext.Provider;
+
 import org.jboss.resteasy.annotations.interception.HeaderDecoratorPrecedence;
 import org.jboss.resteasy.annotations.interception.ServerInterceptor;
 import org.jboss.resteasy.core.ResourceMethod;
@@ -10,19 +24,6 @@ import org.jboss.resteasy.spi.HttpRequest;
 import org.jboss.resteasy.spi.ResteasyProviderFactory;
 import org.jboss.resteasy.util.HttpResponseCodes;
 import org.searchisko.api.security.Role;
-
-import javax.annotation.security.DenyAll;
-import javax.annotation.security.PermitAll;
-import javax.annotation.security.RolesAllowed;
-import javax.inject.Inject;
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.SecurityContext;
-import javax.ws.rs.ext.Provider;
-import java.lang.reflect.Method;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * Interceptor extends SecurityInterceptor for HTTP Basic Authentication Challenge headers for defined roles
@@ -50,7 +51,7 @@ public class HttpBasicChallengeInterceptor extends SecurityInterceptor {
 	public static final String CHALLENGE_TEXT = "Insert Provider's username and password";
 
 	/**
-	 * Creates standard HTTP Basic Response
+	 * Creates standard Response with Http Basic authentication challenge
 	 *
 	 * @return
 	 */
@@ -62,7 +63,14 @@ public class HttpBasicChallengeInterceptor extends SecurityInterceptor {
 		return response;
 	}
 
-	@SuppressWarnings({ "rawtypes", "unchecked" })
+	public ServerResponse createForbiddenResponse() {
+		log.fine("REST Security, request is not authorized, returning 403");
+		ServerResponse response = new ServerResponse();
+		response.setStatus(HttpResponseCodes.SC_FORBIDDEN);
+		return response;
+	}
+
+	@SuppressWarnings({"rawtypes", "unchecked"})
 	@Override
 	public ServerResponse preProcess(HttpRequest request, ResourceMethod resourceMethod) throws Failure, WebApplicationException {
 		// Retrieve again all annotations
@@ -115,7 +123,11 @@ public class HttpBasicChallengeInterceptor extends SecurityInterceptor {
 					}
 				}
 				if (onlyTestedRole) {
-					return createHttpBasicChallengeResponse();
+					if (context.getUserPrincipal() == null) {
+						return createHttpBasicChallengeResponse();
+					} else {
+						return createForbiddenResponse();
+					}
 				} else {
 					return super.preProcess(request, resourceMethod);
 				}

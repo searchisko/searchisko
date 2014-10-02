@@ -7,6 +7,16 @@ package org.searchisko.api.security;
  */
 public class Role {
 
+	// When adding new roles:
+	// 1. Add it to ALL_ROLES
+	// 2. Add it to functional tests in searchisko-ftest-users.properties and searchisko-ftest-roles.properties
+
+	public static final String[] ALL_ROLES = {
+			Role.ADMIN,
+			Role.PROVIDER,
+			Role.CONTRIBUTOR
+	};
+
 	/**
 	 * System Admin. The highest permission. Super Provider has this role
 	 */

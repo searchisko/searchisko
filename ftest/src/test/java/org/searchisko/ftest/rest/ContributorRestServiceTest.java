@@ -9,7 +9,9 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import com.jayway.restassured.builder.ResponseSpecBuilder;
 import com.jayway.restassured.http.ContentType;
@@ -21,10 +23,12 @@ import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.searchisko.api.security.Role;
 import org.searchisko.ftest.DeploymentHelpers;
 
 import static com.jayway.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.*;
+import static org.searchisko.ftest.rest.RestTestHelpers.givenJsonAndLogIfFailsAndAuthPreemptive;
 
 /**
  * Integration tests for /contributor REST API.
@@ -35,6 +39,11 @@ import static org.hamcrest.Matchers.*;
  */
 @RunWith(Arquillian.class)
 public class ContributorRestServiceTest {
+
+	public static final Set<String> ALLOWED_ROLES = new HashSet<>();
+	static {
+		ALLOWED_ROLES.add(Role.ADMIN);
+	}
 
     @Deployment(testable = false)
     public static WebArchive createDeployment() throws IOException {
@@ -49,75 +58,82 @@ public class ContributorRestServiceTest {
 
 	private static String contributorCode;
 
-	@Test
-	@InSequence(0)
-	public void assertNotAuthenticated(@ArquillianResource URL context) throws MalformedURLException {
-		int expStatus = 401;
+	@ArquillianResource
+	protected URL context;
 
+	@Test
+	@InSequence(-2)
+	public void assertNotAuthenticated() throws MalformedURLException {
+		assertAccess(401, null, null);
+	}
+
+	@Test
+	@InSequence(-1)
+	public void assertForbidden() throws MalformedURLException {
+		for (String role : Role.ALL_ROLES) {
+			if (!ALLOWED_ROLES.contains(role)) {
+				assertAccess(403, role, role);
+			}
+		}
+	}
+
+	public void assertAccess(int expStatus, String username, String password) throws MalformedURLException {
 		// GET /contributor/
-		given().contentType(ContentType.JSON)
+		givenJsonAndLogIfFailsAndAuthPreemptive(username, password)
 				.expect().statusCode(expStatus)
-				.log().ifStatusCodeMatches(is(not(expStatus)))
 				.when().get(new URL(context, CONTRIBUTOR_REST_API_BASE).toExternalForm());
 
 
 		// GET /contributor/some-id
-		given().contentType(ContentType.JSON)
+		givenJsonAndLogIfFailsAndAuthPreemptive(username, password)
 				.pathParam("id", "some-id")
 				.expect().statusCode(expStatus)
-				.log().ifStatusCodeMatches(is(not(expStatus)))
 				.when().get(new URL(context, CONTRIBUTOR_REST_API).toExternalForm());
 
 		// GET /contributor/search
-		given().contentType(ContentType.JSON)
+		givenJsonAndLogIfFailsAndAuthPreemptive(username, password)
 				.expect().statusCode(expStatus)
-				.log().ifStatusCodeMatches(is(not(expStatus)))
 				.when().get(new URL(context, CONTRIBUTOR_REST_API_BASE + "search").toExternalForm());
 
 		// POST /contributor/
-		given().contentType(ContentType.JSON)
+		givenJsonAndLogIfFailsAndAuthPreemptive(username, password)
 				.body("{}")
 				.expect().statusCode(expStatus)
-				.log().ifStatusCodeMatches(is(not(expStatus)))
 				.when().post(new URL(context, CONTRIBUTOR_REST_API_BASE).toExternalForm());
 
 		// POST /contributor/some-id
-		given().contentType(ContentType.JSON)
+		givenJsonAndLogIfFailsAndAuthPreemptive(username, password)
 				.pathParam("id", "some-id")
 				.body("{}")
 				.expect().statusCode(expStatus)
-				.log().ifStatusCodeMatches(is(not(expStatus)))
 				.when().post(new URL(context, CONTRIBUTOR_REST_API).toExternalForm());
 
 
 		// POST /contributor/some-id/code/some-code
-		given().contentType(ContentType.JSON)
+		givenJsonAndLogIfFailsAndAuthPreemptive(username, password)
 				.pathParam("id", "some-id")
 				.pathParam("code", "some-code")
 				.body("{}")
 				.expect().statusCode(expStatus)
-				.log().ifStatusCodeMatches(is(not(expStatus)))
 				.when().post(new URL(context, CONTRIBUTOR_REST_API + "/code/{code}").toExternalForm());
 
 		// POST /contributor/some-id/mergeTo/idTo
-		given().contentType(ContentType.JSON)
+		givenJsonAndLogIfFailsAndAuthPreemptive(username, password)
 				.pathParam("id", "some-id")
 				.pathParam("idTo", "idTo")
 				.body("{}")
 				.expect().statusCode(expStatus)
-				.log().ifStatusCodeMatches(is(not(expStatus)))
 				.when().post(new URL(context, CONTRIBUTOR_REST_API + "/mergeTo/{idTo}").toExternalForm());
 
 		// DELETE /contributor/some-id
-		given().contentType(ContentType.JSON)
+		givenJsonAndLogIfFailsAndAuthPreemptive(username, password)
 				.pathParam("id", "some-id")
 				.expect().statusCode(expStatus)
-				.log().ifStatusCodeMatches(is(not(expStatus)))
 				.when().delete(new URL(context, CONTRIBUTOR_REST_API).toExternalForm());
 	}
 
 
-    @Test @InSequence(0)
+	@Test @InSequence(0)
     public void assertServiceRespondingNoHits(@ArquillianResource URL context) throws MalformedURLException {
         given().
 				contentType(ContentType.JSON).

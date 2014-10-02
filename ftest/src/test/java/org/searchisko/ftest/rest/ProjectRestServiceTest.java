@@ -8,6 +8,8 @@ package org.searchisko.ftest.rest;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.HashSet;
+import java.util.Set;
 
 import com.jayway.restassured.http.ContentType;
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -17,10 +19,12 @@ import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.searchisko.api.security.Role;
 import org.searchisko.ftest.DeploymentHelpers;
 
 import static com.jayway.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.*;
+import static org.searchisko.ftest.rest.RestTestHelpers.givenJsonAndLogIfFailsAndAuthPreemptive;
 
 /**
  * Integration tests for {@link org.searchisko.api.rest.ProjectRestService} REST API
@@ -32,6 +36,11 @@ import static org.hamcrest.Matchers.*;
  */
 @RunWith(Arquillian.class)
 public class ProjectRestServiceTest {
+
+	public static final Set<String> ALLOWED_ROLES = new HashSet<>();
+	static {
+		ALLOWED_ROLES.add(Role.ADMIN);
+	}
 
 	public static final String PROJECT_REST_API = DeploymentHelpers.DEFAULT_REST_VERSION + "project";
 
@@ -46,22 +55,35 @@ public class ProjectRestServiceTest {
 	@Test
 	@InSequence(0)
 	public void assertNotAuthenticated() throws MalformedURLException {
-		int expStatus = 401;
+		assertAccess(401, null, null);
+	}
+
+	@Test
+	@InSequence(1)
+	public void assertForbidden() throws MalformedURLException {
+		for (String role : Role.ALL_ROLES) {
+			if (!ALLOWED_ROLES.contains(role)) {
+				assertAccess(403, role, role);
+			}
+		}
+	}
+
+	public void assertAccess(int expStatus, String username, String password) throws MalformedURLException {
 		// GET /project
-		given().contentType(ContentType.JSON)
+		givenJsonAndLogIfFailsAndAuthPreemptive(username, password)
 				.expect().statusCode(expStatus)
 				.log().ifValidationFails()
 				.when().get(new URL(context, PROJECT_REST_API + "/search").toExternalForm());
 
 		// POST /project
-		given().contentType(ContentType.JSON)
+		givenJsonAndLogIfFailsAndAuthPreemptive(username, password)
 				.body("{}")
 				.expect().statusCode(expStatus)
 				.log().ifValidationFails()
 				.when().post(new URL(context, PROJECT_REST_API).toExternalForm());
 
 		// DELETE /project/projectcode
-		given().contentType(ContentType.JSON)
+		givenJsonAndLogIfFailsAndAuthPreemptive(username, password)
 				.expect().statusCode(expStatus)
 				.log().ifValidationFails()
 				.when().delete(new URL(context, PROJECT_REST_API + "/projectcode").toExternalForm());

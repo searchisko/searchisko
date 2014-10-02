@@ -8,8 +8,9 @@ package org.searchisko.ftest.rest;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.HashSet;
+import java.util.Set;
 
-import com.jayway.restassured.http.ContentType;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.junit.InSequence;
@@ -17,9 +18,9 @@ import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.searchisko.api.security.Role;
 import org.searchisko.ftest.DeploymentHelpers;
-
-import static com.jayway.restassured.RestAssured.given;
+import static org.searchisko.ftest.rest.RestTestHelpers.givenJsonAndLogIfFailsAndAuthPreemptive;
 
 /**
  * Integration test for /normalization REST API.
@@ -31,6 +32,12 @@ import static com.jayway.restassured.RestAssured.given;
  */
 @RunWith(Arquillian.class)
 public class NormalizationRestServiceTest {
+
+	public static final Set<String> ALLOWED_ROLES = new HashSet<>();
+	static {
+		ALLOWED_ROLES.add(Role.ADMIN);
+		ALLOWED_ROLES.add(Role.PROVIDER);
+	}
 
 	public static final String NORMALIZATION_REST_API_BASE = DeploymentHelpers.DEFAULT_REST_VERSION + "normalization/{normalizationName}/";
 
@@ -47,21 +54,31 @@ public class NormalizationRestServiceTest {
 	@Test
 	@InSequence(0)
 	public void assertNotAuthenticated() throws MalformedURLException {
-		int expStatus = 401;
+		assertAccess(401, null, null);
+	}
 
+	@Test
+	@InSequence(1)
+	public void assertForbidden() throws MalformedURLException {
+		for (String role : Role.ALL_ROLES) {
+			if (!ALLOWED_ROLES.contains(role)) {
+				assertAccess(403, role, role);
+			}
+		}
+	}
+
+	public void assertAccess(int expStatus, String username, String password) throws MalformedURLException {
 		// GET /indexer/{normalizationName}/
-		given().contentType(ContentType.JSON)
+		givenJsonAndLogIfFailsAndAuthPreemptive(username, password)
 				.pathParam("normalizationName", "bad-name")
 				.expect().statusCode(expStatus)
-				.log().ifValidationFails()
 				.when().get(new URL(context, NORMALIZATION_REST_API_BASE).toExternalForm());
 
 		// GET /indexer/{normalizationName}/{id}
-		given().contentType(ContentType.JSON)
+		givenJsonAndLogIfFailsAndAuthPreemptive(username, password)
 				.pathParam("normalizationName", "bad-name")
 				.pathParam("id", "bad-id")
 				.expect().statusCode(expStatus)
-				.log().ifValidationFails()
 				.when().get(new URL(context, NORMALIZATION_REST_API).toExternalForm());
 	}
 
