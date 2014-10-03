@@ -6,6 +6,7 @@
     "jbossorg_jira": ["NETTY"],
     "jbossorg_sbs" : ["2198","2199"],
     "jbossorg_mailing_list": "",
-    "jbossorg_project_info": "netty"
+    "jbossorg_project_info": "netty",
+    "product" : false
   }
 }

@@ -6,6 +6,7 @@
     "jbossorg_jira": ["JBESB"],
     "jbossorg_sbs" : ["2031","2032"],
     "jbossorg_mailing_list": ["esb"],
-    "jbossorg_project_info": "jbossesb"
+    "jbossorg_project_info": "jbossesb",
+    "product" : false
   }
 }

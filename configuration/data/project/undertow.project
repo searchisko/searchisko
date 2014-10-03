@@ -6,6 +6,7 @@
     "jbossorg_jira": ["UNDERTOW"],
     "jbossorg_sbs" : [""],
     "jbossorg_mailing_list": ["undertow"],
-    "jbossorg_project_info": "undertow"
+    "jbossorg_project_info": "undertow",
+    "product" : false
   }
 }

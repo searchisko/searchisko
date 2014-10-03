@@ -6,6 +6,7 @@
     "jbossorg_jira": ["JBMAR"],
     "jbossorg_sbs" : [],
     "jbossorg_mailing_list": "",
-    "jbossorg_project_info": "jbossmarshalling"
+    "jbossorg_project_info": "jbossmarshalling",
+    "product" : false
   }
 }

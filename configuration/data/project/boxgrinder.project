@@ -6,6 +6,7 @@
     "jbossorg_jira": ["BG", "BGBUILD", "BGREST"],
     "jbossorg_sbs" : ["2232"],
     "jbossorg_mailing_list": "",
-    "jbossorg_project_info": "boxgrinder"
+    "jbossorg_project_info": "boxgrinder",
+    "product" : false
   }
 }

@@ -6,6 +6,7 @@
     "jbossorg_jira": ["DNA"],
     "jbossorg_sbs" : [],
     "jbossorg_mailing_list": "",
-    "jbossorg_project_info": "dna"
+    "jbossorg_project_info": "dna",
+    "product" : false
   }
 }

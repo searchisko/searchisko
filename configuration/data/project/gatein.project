@@ -6,6 +6,7 @@
     "jbossorg_jira": ["GTNCOMMON", "GTNMGMT", "GTNMAVEN", "GTNMOP", "GTNPORTAL", "GTNSSO", "GTNUXP", "GTNWCI", "GTNWSRP"],
     "jbossorg_sbs" : ["2183","2292","2236"],
     "jbossorg_mailing_list": ["gatein"],
-    "jbossorg_project_info": "gatein"
+    "jbossorg_project_info": "gatein",
+    "product" : false
   }
 }

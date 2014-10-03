@@ -6,6 +6,7 @@
     "jbossorg_jira": ["TEIID"],
     "jbossorg_sbs" : ["2119","2120"],
     "jbossorg_mailing_list": ["teiid"],
-    "jbossorg_project_info": "teiid"
+    "jbossorg_project_info": "teiid",
+    "product" : false
   }
 }

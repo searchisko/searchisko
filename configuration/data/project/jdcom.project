@@ -6,6 +6,7 @@
     "jbossorg_jira": ["JDCOM"],
     "jbossorg_sbs" : [],
     "jbossorg_mailing_list": "",
-    "jbossorg_project_info": "jdcom"
+    "jbossorg_project_info": "jdcom",
+    "product" : false
   }
 }

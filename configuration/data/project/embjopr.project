@@ -6,6 +6,7 @@
     "jbossorg_jira": ["EMBJOPR"],
     "jbossorg_sbs" : ["2106","2107","2108"],
     "jbossorg_mailing_list": ["embjopr"],
-    "jbossorg_project_info": "embjopr"
+    "jbossorg_project_info": "embjopr",
+    "product" : false
   }
 }

@@ -6,6 +6,7 @@
     "jbossorg_jira": ["JBCACHE"],
     "jbossorg_sbs" : ["2052","2053","2054","2055","2056"],
     "jbossorg_mailing_list": ["jbosscache"],
-    "jbossorg_project_info": "jbosscache"
+    "jbossorg_project_info": "jbosscache",
+    "product" : false
   }
 }

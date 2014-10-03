@@ -6,6 +6,7 @@
     "jbossorg_jira": ["RESTEASY"],
     "jbossorg_sbs" : ["2201","2202"],
     "jbossorg_mailing_list": "",
-    "jbossorg_project_info": "resteasy"
+    "jbossorg_project_info": "resteasy",
+    "product" : false
   }
 }

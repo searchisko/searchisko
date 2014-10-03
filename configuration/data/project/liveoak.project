@@ -6,6 +6,7 @@
     "jbossorg_jira": ["LIVEOAK"],
     "jbossorg_sbs" : [],
     "jbossorg_mailing_list": "",
-    "jbossorg_project_info": "liveoak"
+    "jbossorg_project_info": "liveoak",
+    "product" : false
   }
 }

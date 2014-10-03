@@ -6,6 +6,7 @@
     "jbossorg_jira": [""],
     "jbossorg_sbs" : ["2211"],
     "jbossorg_mailing_list": "",
-    "jbossorg_project_info": ["hibernate_subprojects_validator", "hibernateValidator"]
+    "jbossorg_project_info": ["hibernate_subprojects_validator", "hibernateValidator"],
+    "product" : false
   }
 }

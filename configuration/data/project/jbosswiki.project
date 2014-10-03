@@ -6,6 +6,7 @@
     "jbossorg_jira": ["JBWIKI"],
     "jbossorg_sbs" : ["2019","2020"],
     "jbossorg_mailing_list": "",
-    "jbossorg_project_info": "jbosswiki"
+    "jbossorg_project_info": "jbosswiki",
+    "product" : false
   }
 }

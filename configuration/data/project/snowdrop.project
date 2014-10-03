@@ -6,6 +6,7 @@
     "jbossorg_jira": ["SNOWDROP"],
     "jbossorg_sbs" : ["2082","2197","2277"],
     "jbossorg_mailing_list": "",
-    "jbossorg_project_info": "snowdrop"
+    "jbossorg_project_info": "snowdrop",
+    "product" : false
   }
 }

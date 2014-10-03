@@ -6,6 +6,7 @@
     "jbossorg_jira": [""],
     "jbossorg_sbs" : ["2096","2097"],
     "jbossorg_mailing_list": "",
-    "jbossorg_project_info": "jbossiiop"
+    "jbossorg_project_info": "jbossiiop",
+    "product" : false
   }
 }

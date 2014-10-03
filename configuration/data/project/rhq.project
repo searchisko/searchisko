@@ -6,6 +6,7 @@
     "jbossorg_jira": [""],
     "jbossorg_sbs" : ["2152","2121"],
     "jbossorg_mailing_list": "",
-    "jbossorg_project_info": "rhq"
+    "jbossorg_project_info": "rhq",
+    "product" : false
   }
 }

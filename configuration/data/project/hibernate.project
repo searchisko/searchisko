@@ -6,6 +6,7 @@
     "jbossorg_jira": ["HIBERNATE"],
     "jbossorg_sbs" : ["2206","2208","2209","2212","2216","2224"],
     "jbossorg_mailing_list": ["hibernate"],
-    "jbossorg_project_info": ["hibernate", "hibernateOrm"]
+    "jbossorg_project_info": ["hibernate", "hibernateOrm"],
+    "product" : false
   }
 }

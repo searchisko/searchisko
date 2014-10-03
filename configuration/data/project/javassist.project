@@ -6,6 +6,7 @@
     "jbossorg_jira": ["JASSIST"],
     "jbossorg_sbs" : ["2062","2063"],
     "jbossorg_mailing_list": "",
-    "jbossorg_project_info": "javassist"
+    "jbossorg_project_info": "javassist",
+    "product" : false
   }
 }

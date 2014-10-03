@@ -6,6 +6,7 @@
     "jbossorg_jira": ["DROOLS", "JBRULES"],
     "jbossorg_sbs" : ["2220","2221"],
     "jbossorg_mailing_list": ["rules"],
-    "jbossorg_project_info": "drools"
+    "jbossorg_project_info": "drools",
+    "product" : false
   }
 }

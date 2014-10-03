@@ -6,6 +6,7 @@
     "jbossorg_jira": ["JBSEAM", "SEAM", "SEAMCLOUD", "SEAMCRON", "SEAMDROOLS", "SEAMFACES", "SEAMWICKET", "SEAMINTL", "SEAMJBPM", "SEAMJCR", "SEAMJMS", "SEAMMAIL", "SEAMPERSIST", "SEAMREMOTING", "SEAMREPORTS", "SEAMREST", "SEAMSECURITY", "SEAMSOCIAL", "SEAMSPRING", "SEAMTRANSACTION", "SEAMVALIDATE", "SEAMFP"],
     "jbossorg_sbs" : ["2026","2286"],
     "jbossorg_mailing_list": ["seam"],
-    "jbossorg_project_info": "seam_projectnav"
+    "jbossorg_project_info": "seam_projectnav",
+    "product" : false
   }
 }

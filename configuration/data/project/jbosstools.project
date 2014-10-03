@@ -6,6 +6,7 @@
     "jbossorg_jira": ["JBIDE", "TOOLSDOC"],
     "jbossorg_sbs" : ["2128","2129"],
     "jbossorg_mailing_list": ["jbosstools"],
-    "jbossorg_project_info": "jbosstools"
+    "jbossorg_project_info": "jbosstools",
+    "product" : false
   }
 }

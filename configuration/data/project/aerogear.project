@@ -6,6 +6,7 @@
     "jbossorg_jira": ["AEROGEAR"],
     "jbossorg_sbs" : ["2284","2285"],
     "jbossorg_mailing_list": ["Aerogear", "aerogear"],
-    "jbossorg_project_info": "aerogear"
+    "jbossorg_project_info": "aerogear",
+    "product" : false
   }
 }

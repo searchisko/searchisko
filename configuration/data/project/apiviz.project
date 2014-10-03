@@ -6,6 +6,7 @@
     "jbossorg_jira": ["APIVIZ"],
     "jbossorg_sbs" : [],
     "jbossorg_mailing_list": "",
-    "jbossorg_project_info": "apiviz"
+    "jbossorg_project_info": "apiviz",
+    "product" : false
   }
 }
