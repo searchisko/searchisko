@@ -60,4 +60,19 @@ public class RestTestHelpers {
 	public static RequestSpecification givenJsonAndLogIfFailsAndAuthDefaultProvider() {
 		return givenJsonAndLogIfFails().auth().basic(DeploymentHelpers.DEFAULT_PROVIDER_NAME, DeploymentHelpers.DEFAULT_PROVIDER_PASSWORD);
 	}
+
+	/**
+	 * Helper method to get RequestSpecification same as {@link #givenJsonAndLogIfFails()} plus:
+	 * Basic preemptive authentication for give username and password or without it if username and password is null
+	 *
+	 * @param username username or null if no auth. is needed
+	 * @param password password or null if no auth. is needed
+	 * @return
+	 */
+	public static RequestSpecification givenJsonAndLogIfFailsAndAuthPreemptive(String username, String password) {
+		if (username == null && password == null) {
+			return givenJsonAndLogIfFails();
+		}
+		return givenJsonAndLogIfFails().auth().preemptive().basic(username, password);
+	}
 }

@@ -8,8 +8,9 @@ package org.searchisko.ftest.rest;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.HashSet;
+import java.util.Set;
 
-import com.jayway.restassured.http.ContentType;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.junit.InSequence;
@@ -17,11 +18,9 @@ import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.searchisko.api.security.Role;
 import org.searchisko.ftest.DeploymentHelpers;
-
-import static com.jayway.restassured.RestAssured.given;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.not;
+import static org.searchisko.ftest.rest.RestTestHelpers.givenJsonAndLogIfFailsAndAuthPreemptive;
 
 /**
  * Integration test for /indexer REST API.
@@ -33,6 +32,13 @@ import static org.hamcrest.Matchers.not;
  */
 @RunWith(Arquillian.class)
 public class IndexerRestServiceTest {
+
+	public static final Set<String> ALLOWED_ROLES = new HashSet<>();
+
+	static {
+		ALLOWED_ROLES.add(Role.ADMIN);
+		ALLOWED_ROLES.add(Role.PROVIDER);
+	}
 
 	public static final String INDEXER_REST_API = DeploymentHelpers.DEFAULT_REST_VERSION + "indexer/{type}/{operation}";
 
@@ -51,45 +57,54 @@ public class IndexerRestServiceTest {
 	@Test
 	@InSequence(0)
 	public void assertNotAuthenticated() throws MalformedURLException {
-		int expStatus = 401;
+		assertAccess(401, null, null);
+	}
 
+	@Test
+	@InSequence(1)
+	public void assertForbidden() throws MalformedURLException {
+		for (String role : Role.ALL_ROLES) {
+			if (!ALLOWED_ROLES.contains(role)) {
+				assertAccess(403, role, role);
+			}
+		}
+	}
+
+	public void assertAccess(int expStatus, String username, String password) throws MalformedURLException {
 		for (String type : types) {
 			// GET /indexer/{type}/_status
-			given().contentType(ContentType.JSON)
+			givenJsonAndLogIfFailsAndAuthPreemptive(username, password)
 					.pathParam("type", type)
 					.pathParam("operation", "_status")
 					.expect().statusCode(expStatus)
-					.log().ifValidationFails()
 					.when().get(new URL(context, INDEXER_REST_API).toExternalForm());
 
 			// POST /indexer/{type}/_stop
-			given().contentType(ContentType.JSON)
+			givenJsonAndLogIfFailsAndAuthPreemptive(username, password)
 					.pathParam("type", type)
 					.pathParam("operation", "_stop")
 					.expect().statusCode(expStatus)
-					.log().ifStatusCodeMatches(is(not(expStatus)))
 					.when().post(new URL(context, INDEXER_REST_API).toExternalForm());
 
 
 			// POST /indexer/{type}/_restart
-			given().contentType(ContentType.JSON)
+			givenJsonAndLogIfFailsAndAuthPreemptive(username, password)
 					.pathParam("type", type)
 					.pathParam("operation", "_restart")
 					.expect().statusCode(expStatus)
-					.log().ifValidationFails()
 					.when().post(new URL(context, INDEXER_REST_API).toExternalForm());
 
 
 			if (!TYPE_ALL.equals(type)) {
 				// POST /indexer/{type}/_force_reindex
-				given().contentType(ContentType.JSON)
+				givenJsonAndLogIfFailsAndAuthPreemptive(username, password)
 						.pathParam("type", type)
 						.pathParam("operation", "_force_reindex")
 						.expect().statusCode(expStatus)
-						.log().ifValidationFails()
 						.when().post(new URL(context, INDEXER_REST_API).toExternalForm());
 			}
 		}
+
 	}
 
 	//TODO: FTEST: IndexerRestServiceTest: Test start reindex

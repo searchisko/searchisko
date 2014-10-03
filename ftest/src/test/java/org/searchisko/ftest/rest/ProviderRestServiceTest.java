@@ -8,6 +8,8 @@ package org.searchisko.ftest.rest;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -18,6 +20,7 @@ import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.searchisko.api.security.Role;
 import org.searchisko.api.service.ContentManipulationLockService;
 import org.searchisko.api.service.ProviderService;
 import org.searchisko.ftest.DeploymentHelpers;
@@ -29,15 +32,21 @@ import static com.jayway.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
+import static org.searchisko.ftest.rest.RestTestHelpers.givenJsonAndLogIfFailsAndAuthPreemptive;
 
 /**
  * Integration test for /provider REST API.
- * 
+ *
  * @author Libor Krzyzanek
  * @see org.searchisko.api.rest.ProviderRestService
  */
 @RunWith(Arquillian.class)
 public class ProviderRestServiceTest {
+
+	public static final Set<String> ALLOWED_ROLES = new HashSet<>();
+	static {
+		ALLOWED_ROLES.add(Role.ADMIN);
+	}
 
 	protected static Logger log = Logger.getLogger(ProviderRestServiceTest.class.getName());
 
@@ -51,6 +60,9 @@ public class ProviderRestServiceTest {
 
 	public static final ProviderModel provider2 = new ProviderModel("provider2", "Password2");
 
+	@ArquillianResource
+	URL context;
+
 	@Deployment(testable = false)
 	public static WebArchive createDeployment() throws IOException {
 		return DeploymentHelpers.createDeployment();
@@ -58,46 +70,73 @@ public class ProviderRestServiceTest {
 
 	@Test
 	@InSequence(0)
-	public void assertNotAuthenticated(@ArquillianResource URL context) throws MalformedURLException {
-		int expStatus = 401;
+	public void assertNotAuthenticated() throws MalformedURLException {
+		assertAccess(401, null, null, null);
+	}
+
+	@Test
+	@InSequence(1)
+	public void assertForbidden() throws MalformedURLException {
+		for (String role : Role.ALL_ROLES) {
+			if (!ALLOWED_ROLES.contains(role)) {
+				assertAccess(403, role, role, role);
+			}
+		}
+	}
+
+	public void assertAccess(int expStatus, String username, String password, String role) throws MalformedURLException {
 		// TEST: GET /provider
-		given().contentType(ContentType.JSON).expect().statusCode(expStatus).log().ifStatusCodeMatches(is(not(expStatus)))
+		givenJsonAndLogIfFailsAndAuthPreemptive(username, password)
+				.expect().statusCode(expStatus)
 				.when().get(new URL(context, PROVIDER_REST_API_BASE).toExternalForm());
 
-		// TEST: GET /provider/jbossorg
-		given().pathParam("id", DeploymentHelpers.DEFAULT_PROVIDER_NAME).contentType(ContentType.JSON).expect()
-				.statusCode(expStatus).log().ifStatusCodeMatches(is(not(expStatus))).when()
-				.get(new URL(context, PROVIDER_REST_API).toExternalForm());
-
 		// TEST: POST /provider
-		given().contentType(ContentType.JSON).body("").expect().statusCode(expStatus).log()
-				.ifStatusCodeMatches(is(not(expStatus))).when().post(new URL(context, PROVIDER_REST_API_BASE).toExternalForm());
+		givenJsonAndLogIfFailsAndAuthPreemptive(username, password).body("")
+				.expect().statusCode(expStatus)
+				.when().post(new URL(context, PROVIDER_REST_API_BASE).toExternalForm());
 
 		// TEST: POST /provider/test
-		given().pathParam("id", "test").contentType(ContentType.JSON).body("").expect().statusCode(expStatus).log()
-				.ifStatusCodeMatches(is(not(expStatus))).when().post(new URL(context, PROVIDER_REST_API).toExternalForm());
+		givenJsonAndLogIfFailsAndAuthPreemptive(username, password)
+				.pathParam("id", "test").body("")
+				.expect().statusCode(expStatus)
+				.when().post(new URL(context, PROVIDER_REST_API).toExternalForm());
 
-		// TEST: DELETE /provider/test
-		given().pathParam("id", DeploymentHelpers.DEFAULT_PROVIDER_NAME).contentType(ContentType.JSON).body("").expect()
-				.statusCode(expStatus).log().ifStatusCodeMatches(is(not(expStatus))).when()
-				.delete(new URL(context, PROVIDER_REST_API).toExternalForm());
+		// Overridden default role access
+		// PROVIDER has access to this as well so skip it
+		if (expStatus == 401 || (expStatus == 403 && !Role.PROVIDER.equals(role))) {
+			// TEST: GET /provider/jbossorg
+			givenJsonAndLogIfFailsAndAuthPreemptive(username, password)
+					.pathParam("id", DeploymentHelpers.DEFAULT_PROVIDER_NAME)
+					.expect().statusCode(expStatus).when()
+					.get(new URL(context, PROVIDER_REST_API).toExternalForm());
 
-		// / Content manipulation lock part of API
 
-		// TEST: GET /provider/jbossorg/content_manipulation_lock
-		given().pathParam("id", DeploymentHelpers.DEFAULT_PROVIDER_NAME).contentType(ContentType.JSON).expect()
-				.statusCode(expStatus).log().ifStatusCodeMatches(is(not(expStatus))).when()
-				.get(new URL(context, PROVIDER_CML_REST_API).toExternalForm());
+			// TEST: DELETE /provider/test
+			givenJsonAndLogIfFailsAndAuthPreemptive(username, password)
+					.pathParam("id", DeploymentHelpers.DEFAULT_PROVIDER_NAME).body("")
+					.expect().statusCode(expStatus)
+					.when().delete(new URL(context, PROVIDER_REST_API).toExternalForm());
 
-		// TEST: POST /provider/test/content_manipulation_lock
-		given().pathParam("id", "test").contentType(ContentType.JSON).body("").expect().statusCode(expStatus).log()
-				.ifStatusCodeMatches(is(not(expStatus))).when().post(new URL(context, PROVIDER_CML_REST_API).toExternalForm());
+			// / Content manipulation lock part of API
 
-		// TEST: DELETE /provider/jbossorg/content_manipulation_lock
-		given().pathParam("id", DeploymentHelpers.DEFAULT_PROVIDER_NAME).contentType(ContentType.JSON).body("").expect()
-				.statusCode(expStatus).log().ifStatusCodeMatches(is(not(expStatus))).when()
-				.delete(new URL(context, PROVIDER_CML_REST_API).toExternalForm());
+			// TEST: GET /provider/jbossorg/content_manipulation_lock
+			givenJsonAndLogIfFailsAndAuthPreemptive(username, password)
+					.pathParam("id", DeploymentHelpers.DEFAULT_PROVIDER_NAME)
+					.expect().statusCode(expStatus).when()
+					.get(new URL(context, PROVIDER_CML_REST_API).toExternalForm());
 
+			// TEST: POST /provider/test/content_manipulation_lock
+			givenJsonAndLogIfFailsAndAuthPreemptive(username, password)
+					.pathParam("id", "test").body("")
+					.expect().statusCode(expStatus)
+					.when().post(new URL(context, PROVIDER_CML_REST_API).toExternalForm());
+
+			// TEST: DELETE /provider/jbossorg/content_manipulation_lock
+			givenJsonAndLogIfFailsAndAuthPreemptive(username, password)
+					.pathParam("id", DeploymentHelpers.DEFAULT_PROVIDER_NAME).body("")
+					.expect().statusCode(expStatus).when()
+					.delete(new URL(context, PROVIDER_CML_REST_API).toExternalForm());
+		}
 	}
 
 	@Test
@@ -166,7 +205,7 @@ public class ProviderRestServiceTest {
 		// TEST: Create a new Provider via standard (not super) provider
 		given().pathParam("id", provider2.name).contentType(ContentType.JSON).auth()
 				.basic(provider1.name, provider1.password).body(provider2.getProviderJSONModel()).expect().log()
-				.ifStatusCodeMatches(is(not(401))).statusCode(401).when()
+				.ifStatusCodeMatches(is(not(401))).statusCode(403).when()
 				.post(new URL(context, PROVIDER_REST_API).toExternalForm());
 	}
 
@@ -234,12 +273,12 @@ public class ProviderRestServiceTest {
 	public void assertDeleteProviderSecurity(@ArquillianResource URL context) throws MalformedURLException {
 		// Provider1 cannot delete itself
 		given().pathParam("id", provider1.name).contentType(ContentType.JSON).auth()
-				.basic(provider1.name, provider1.password).expect().log().ifStatusCodeMatches(is(not(401))).statusCode(401)
+				.basic(provider1.name, provider1.password).expect().log().ifValidationFails().statusCode(403)
 				.when().delete(new URL(context, PROVIDER_REST_API).toExternalForm());
 
 		// Provider1 cannot delete Provider2
 		given().pathParam("id", provider2.name).contentType(ContentType.JSON).auth()
-				.basic(provider1.name, provider1.password).expect().log().ifStatusCodeMatches(is(not(401))).statusCode(401)
+				.basic(provider1.name, provider1.password).expect().log().ifValidationFails().statusCode(403)
 				.when().delete(new URL(context, PROVIDER_REST_API).toExternalForm());
 
 	}
@@ -455,11 +494,11 @@ public class ProviderRestServiceTest {
 
 	/**
 	 * Helper method to delete Content Manipulation API lock for given provider.
-	 * 
-	 * @param context to be used for call REST API
+	 *
+	 * @param context             to be used for call REST API
 	 * @param providerNameForLock name of provider to unlock
-	 * @param username to authenticate on REST API
-	 * @param password to authenticate on REST API
+	 * @param username            to authenticate on REST API
+	 * @param password            to authenticate on REST API
 	 * @throws MalformedURLException
 	 */
 	public static final void cmLockDelete(URL context, String providerNameForLock, String username, String password)
@@ -471,11 +510,11 @@ public class ProviderRestServiceTest {
 
 	/**
 	 * Helper method to create Content Manipulation API lock for given provider.
-	 * 
-	 * @param context to be used for call REST API
+	 *
+	 * @param context             to be used for call REST API
 	 * @param providerNameForLock name of provider to lock
-	 * @param username to authenticate on REST API
-	 * @param password to authenticate on REST API
+	 * @param username            to authenticate on REST API
+	 * @param password            to authenticate on REST API
 	 * @throws MalformedURLException
 	 */
 	public static final void cmLockCreate(URL context, String providerNameForLock, String username, String password)
@@ -499,7 +538,7 @@ public class ProviderRestServiceTest {
 
 	/**
 	 * Helper method to create new provider - non existence is tested
-	 * 
+	 *
 	 * @param context
 	 * @param provider
 	 * @throws MalformedURLException
@@ -528,7 +567,7 @@ public class ProviderRestServiceTest {
 
 	/**
 	 * Helper method to update provider
-	 * 
+	 *
 	 * @param context
 	 * @param provider
 	 * @throws MalformedURLException
@@ -545,7 +584,7 @@ public class ProviderRestServiceTest {
 
 	/**
 	 * Helper method to delete provider
-	 * 
+	 *
 	 * @param context
 	 * @param provider
 	 * @throws MalformedURLException

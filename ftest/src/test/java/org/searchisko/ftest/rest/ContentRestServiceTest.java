@@ -9,7 +9,9 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
@@ -18,6 +20,7 @@ import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.searchisko.api.security.Role;
 import org.searchisko.api.service.ContentManipulationLockService;
 import org.searchisko.ftest.DeploymentHelpers;
 import org.searchisko.ftest.ProviderModel;
@@ -28,6 +31,7 @@ import static com.jayway.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.isOneOf;
 import static org.hamcrest.Matchers.not;
+import static org.searchisko.ftest.rest.RestTestHelpers.givenJsonAndLogIfFailsAndAuthPreemptive;
 
 /**
  * Integration tests for {@link org.searchisko.api.rest.ContentRestService} REST API
@@ -39,6 +43,12 @@ import static org.hamcrest.Matchers.not;
  */
 @RunWith(Arquillian.class)
 public class ContentRestServiceTest {
+
+	public static final Set<String> ALLOWED_ROLES = new HashSet<>();
+	static {
+		ALLOWED_ROLES.add(Role.ADMIN);
+		ALLOWED_ROLES.add(Role.PROVIDER);
+	}
 
 	public static final String CONTENT_REST_API_BASE = DeploymentHelpers.DEFAULT_REST_VERSION + "content/{type}/";
 
@@ -68,24 +78,43 @@ public class ContentRestServiceTest {
 	@Test
 	@InSequence(1)
 	public void assertNotAuthenticated() throws MalformedURLException {
-		int expStatus = 401;
+		assertAccess(401, null, null);
+	}
+
+	@Test
+	@InSequence(2)
+	public void assertForbidden() throws MalformedURLException {
+		for (String role : Role.ALL_ROLES) {
+			if (!ALLOWED_ROLES.contains(role)) {
+				assertAccess(403, role, role);
+			}
+		}
+	}
+
+	public void assertAccess(int expStatus, String username, String password) throws MalformedURLException {
 		// POST /content/type/id
-		given().pathParam("type", TYPE1).pathParam("contentId", "id").contentType(ContentType.JSON).body("{}").expect()
-				.statusCode(expStatus).log().ifValidationFails().when()
-				.post(new URL(context, CONTENT_REST_API).toExternalForm());
+		givenJsonAndLogIfFailsAndAuthPreemptive(username, password)
+				.pathParam("type", TYPE1).pathParam("contentId", "id").contentType(ContentType.JSON).body("{}")
+				.expect().statusCode(expStatus)
+				.when().post(new URL(context, CONTENT_REST_API).toExternalForm());
 
 		// POST /content/type/
-		given().pathParam("type", TYPE1).contentType(ContentType.JSON).body("{}").expect().statusCode(expStatus).log()
-				.ifValidationFails().when().post(new URL(context, CONTENT_REST_API_BASE).toExternalForm());
+		givenJsonAndLogIfFailsAndAuthPreemptive(username, password)
+				.pathParam("type", TYPE1).contentType(ContentType.JSON).body("{}").expect().statusCode(expStatus)
+				.when().post(new URL(context, CONTENT_REST_API_BASE).toExternalForm());
 
 		// DELETE /content/type/
-		given().pathParam("type", TYPE1).contentType(ContentType.JSON).body("{}").expect().statusCode(expStatus).log()
-				.ifValidationFails().when().delete(new URL(context, CONTENT_REST_API_BASE).toExternalForm());
+		givenJsonAndLogIfFailsAndAuthPreemptive(username, password)
+				.pathParam("type", TYPE1).contentType(ContentType.JSON).body("{}")
+				.expect().statusCode(expStatus)
+				.when().delete(new URL(context, CONTENT_REST_API_BASE).toExternalForm());
 
 		// DELETE /content/type/id
-		given().pathParam("type", TYPE1).pathParam("contentId", "id").contentType(ContentType.JSON).body("{}").expect()
-				.statusCode(expStatus).log().ifValidationFails().when()
-				.delete(new URL(context, CONTENT_REST_API).toExternalForm());
+		givenJsonAndLogIfFailsAndAuthPreemptive(username, password)
+				.pathParam("type", TYPE1).pathParam("contentId", "id").contentType(ContentType.JSON).body("{}")
+				.expect().statusCode(expStatus)
+				.when().delete(new URL(context, CONTENT_REST_API).toExternalForm());
+
 
 	}
 

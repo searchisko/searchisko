@@ -8,6 +8,8 @@ package org.searchisko.ftest.rest;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.HashSet;
+import java.util.Set;
 
 import com.jayway.restassured.http.ContentType;
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -17,10 +19,12 @@ import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.searchisko.api.security.Role;
 import org.searchisko.ftest.DeploymentHelpers;
 
 import static com.jayway.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.*;
+import static org.searchisko.ftest.rest.RestTestHelpers.givenJsonAndLogIfFailsAndAuthPreemptive;
 
 /**
  * Integration test for Tasks REST API {@link org.searchisko.api.rest.TaskRestService}
@@ -31,6 +35,11 @@ import static org.hamcrest.Matchers.*;
  */
 @RunWith(Arquillian.class)
 public class TaskRestServiceTest {
+
+	public static final Set<String> ALLOWED_ROLES = new HashSet<>();
+	static {
+		ALLOWED_ROLES.add(Role.ADMIN);
+	}
 
 	public static final String TASKS_REST_API = DeploymentHelpers.DEFAULT_REST_VERSION + "tasks";
 
@@ -45,39 +54,45 @@ public class TaskRestServiceTest {
 	@Test
 	@InSequence(0)
 	public void assertNotAuthenticated() throws MalformedURLException {
-		int expStatus = 401;
+		assertAccess(401, null, null);
+	}
 
+	@Test
+	@InSequence(1)
+	public void assertForbidden() throws MalformedURLException {
+		for (String role : Role.ALL_ROLES) {
+			if (!ALLOWED_ROLES.contains(role)) {
+				assertAccess(403, role, role);
+			}
+		}
+	}
+
+	public void assertAccess(int expStatus, String username, String password) throws MalformedURLException {
 		// GET /tasks/type
-		given().contentType(ContentType.JSON)
+		givenJsonAndLogIfFailsAndAuthPreemptive(username, password)
 				.expect().statusCode(expStatus)
-				.log().ifValidationFails()
 				.when().get(new URL(context, TASKS_REST_API + "/type").toExternalForm());
 
 		// GET /tasks/task
-		given().contentType(ContentType.JSON)
+		givenJsonAndLogIfFailsAndAuthPreemptive(username, password)
 				.expect().statusCode(expStatus)
-				.log().ifValidationFails()
 				.when().get(new URL(context, TASKS_REST_API + "/task").toExternalForm());
 
 		// GET /tasks/taskId
-		given().contentType(ContentType.JSON)
+		givenJsonAndLogIfFailsAndAuthPreemptive(username, password)
 				.expect().statusCode(expStatus)
-				.log().ifValidationFails()
 				.when().get(new URL(context, TASKS_REST_API + "/task/id").toExternalForm());
 
 		// POST /tasks/taskType e.g. reindex_from_persistence
-		given().contentType(ContentType.JSON)
+		givenJsonAndLogIfFailsAndAuthPreemptive(username, password)
 				.body("{\"sys_content_type\" : \"jbossorg_blog\"}")
 				.expect().statusCode(expStatus)
-				.log().ifValidationFails()
 				.when().post(new URL(context, TASKS_REST_API + "/task/reindex_from_persistence").toExternalForm());
 
 		// DELETE /tasks/task/id e.g. reindex_from_persistence
-		given().contentType(ContentType.JSON)
+		givenJsonAndLogIfFailsAndAuthPreemptive(username, password)
 				.expect().statusCode(expStatus)
-				.log().ifValidationFails()
-				.when().delete(new URL(context, TASKS_REST_API + "/task/id").toExternalForm());
-	}
+				.when().delete(new URL(context, TASKS_REST_API + "/task/id").toExternalForm());	}
 
 	@Test
 	@InSequence(10)

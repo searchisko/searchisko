@@ -8,6 +8,8 @@ package org.searchisko.ftest.rest;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.logging.Logger;
 
 import com.jayway.restassured.builder.ResponseSpecBuilder;
@@ -21,11 +23,13 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.searchisko.api.security.Role;
 import org.searchisko.ftest.DeploymentHelpers;
 import org.searchisko.ftest.ProviderModel;
 
 import static com.jayway.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.*;
+import static org.searchisko.ftest.rest.RestTestHelpers.givenJsonAndLogIfFailsAndAuthPreemptive;
 
 /**
  * Integration test for /sys REST API.
@@ -37,6 +41,11 @@ import static org.hamcrest.Matchers.*;
  */
 @RunWith(Arquillian.class)
 public class SystemRestServiceTest {
+
+	public static final Set<String> ALLOWED_ROLES = new HashSet<>();
+	static {
+		ALLOWED_ROLES.add(Role.ADMIN);
+	}
 
 	public static final String SYSTEM_REST_API = DeploymentHelpers.DEFAULT_REST_VERSION + "sys/{operation}";
 
@@ -58,13 +67,26 @@ public class SystemRestServiceTest {
 	@Test
 	@InSequence(0)
 	public void assertNotAuthenticated() throws MalformedURLException {
-		int expStatus = 401;
-		// TEST: GET /auditlog
-		given().pathParam("operation", OPERATION_AUDITLOG).contentType(ContentType.JSON)
-				.expect().statusCode(expStatus).log().ifStatusCodeMatches(is(not(expStatus)))
-				.when().get(new URL(context, SYSTEM_REST_API).toExternalForm());
+		assertAccess(401, null, null);
 	}
 
+	@Test
+	@InSequence(1)
+	public void assertForbidden() throws MalformedURLException {
+		for (String role : Role.ALL_ROLES) {
+			if (!ALLOWED_ROLES.contains(role)) {
+				assertAccess(403, role, role);
+			}
+		}
+	}
+
+	public void assertAccess(int expStatus, String username, String password) throws MalformedURLException {
+		// TEST: GET /auditlog
+		givenJsonAndLogIfFailsAndAuthPreemptive(username, password)
+				.pathParam("operation", OPERATION_AUDITLOG)
+				.expect().statusCode(expStatus)
+				.when().get(new URL(context, SYSTEM_REST_API).toExternalForm());
+	}
 	// TODO: Create index and push mapping
 
 	@Test
