@@ -46,7 +46,7 @@ public class JSONPRestrictionFilterTest {
 
 	public static final String TYPE1 = "provider1_blog";
 
-	static ProviderModel provider1 = new ProviderModel("provider1", "password");
+	public static ProviderModel provider1 = new ProviderModel("provider1", "password");
 
 	@Test
 	@InSequence(0)

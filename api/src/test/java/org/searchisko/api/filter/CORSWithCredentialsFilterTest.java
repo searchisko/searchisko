@@ -6,14 +6,21 @@
 package org.searchisko.api.filter;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.logging.Logger;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
+import org.searchisko.api.service.ConfigService;
 
 /**
  * Unit test for {@link CORSWithCredentialsFilter}.
@@ -21,6 +28,8 @@ import org.mockito.Mockito;
  * @author Vlastimil Elias (velias at redhat dot com)
  */
 public class CORSWithCredentialsFilterTest {
+
+	private static final String KEY = "KEY";
 
 	private static final String M_OPTIONS = "OPTIONS";
 	private static final String M_GET = "GET";
@@ -44,7 +53,7 @@ public class CORSWithCredentialsFilterTest {
 
 	@Test
 	public void doFilter_NO_CORS_NO_OPTIONS() throws IOException, ServletException {
-		CORSWithCredentialsFilter tested = new CORSWithCredentialsFilter();
+		CORSWithCredentialsFilter tested = getTested();
 
 		HttpServletRequest request = Mockito.mock(HttpServletRequest.class);
 		HttpServletResponse response = Mockito.mock(HttpServletResponse.class);
@@ -71,7 +80,7 @@ public class CORSWithCredentialsFilterTest {
 
 	@Test
 	public void doFilter_NO_CORS_OPTIONS() throws IOException, ServletException {
-		CORSWithCredentialsFilter tested = new CORSWithCredentialsFilter();
+		CORSWithCredentialsFilter tested = getTested();
 
 		HttpServletRequest request = Mockito.mock(HttpServletRequest.class);
 		HttpServletResponse response = Mockito.mock(HttpServletResponse.class);
@@ -91,7 +100,7 @@ public class CORSWithCredentialsFilterTest {
 
 	@Test
 	public void doFilter_CORS_NO_OPTIONS() throws IOException, ServletException {
-		CORSWithCredentialsFilter tested = new CORSWithCredentialsFilter();
+		CORSWithCredentialsFilter tested = getTested();
 
 		HttpServletRequest request = Mockito.mock(HttpServletRequest.class);
 		HttpServletResponse response = Mockito.mock(HttpServletResponse.class);
@@ -120,7 +129,7 @@ public class CORSWithCredentialsFilterTest {
 
 	@Test
 	public void doFilter_CORS_OPTIONS() throws IOException, ServletException {
-		CORSWithCredentialsFilter tested = new CORSWithCredentialsFilter();
+		CORSWithCredentialsFilter tested = getTested();
 
 		HttpServletRequest request = Mockito.mock(HttpServletRequest.class);
 		HttpServletResponse response = Mockito.mock(HttpServletResponse.class);
@@ -145,5 +154,35 @@ public class CORSWithCredentialsFilterTest {
 
 		// request is NOT passed to other handling!
 		Mockito.verifyZeroInteractions(chain);
+	}
+
+	@Test
+	public void getConfigList() {
+		CORSWithCredentialsFilter tested = getTested();
+
+		Assert.assertNull(tested.getConfigList(null, KEY));
+
+		Map<String, Object> config = new HashMap<>();
+		Assert.assertNull(tested.getConfigList(config, KEY));
+
+		// case - bad type
+		config.put(KEY, "aaa");
+		Assert.assertNull(tested.getConfigList(config, KEY));
+
+		// case - empty list
+		List<String> list = new ArrayList<>();
+		config.put(KEY, list);
+		Assert.assertNull(tested.getConfigList(config, KEY));
+
+		list.add("aaa");
+		Assert.assertEquals(list, tested.getConfigList(config, KEY));
+
+	}
+
+	private CORSWithCredentialsFilter getTested() {
+		CORSWithCredentialsFilter tested = new CORSWithCredentialsFilter();
+		tested.configService = Mockito.mock(ConfigService.class);
+		tested.log = Logger.getLogger("test logger");
+		return tested;
 	}
 }

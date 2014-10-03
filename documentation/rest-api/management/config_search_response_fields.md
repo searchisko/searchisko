@@ -1,7 +1,7 @@
 Searchisko configuration - definition of search response fields
 ===============================================================
 
-**configuration API id:** `search_response_fields`
+**[configuration API](http://docs.jbossorg.apiary.io/#managementapiconfiguration) id:** `search_response_fields`
 
 This configuration document contains distinct configurations related to content fields returned from 
 Searchisko content retrieval API's (eg. 'Search API'. 'Feed API'). 
