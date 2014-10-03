@@ -39,6 +39,7 @@ public class TaskRestServiceTest {
 	public static final Set<String> ALLOWED_ROLES = new HashSet<>();
 	static {
 		ALLOWED_ROLES.add(Role.ADMIN);
+		ALLOWED_ROLES.add(Role.TASKS_MANAGER);
 	}
 
 	public static final String TASKS_REST_API = DeploymentHelpers.DEFAULT_REST_VERSION + "tasks";

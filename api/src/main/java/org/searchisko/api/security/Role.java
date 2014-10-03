@@ -7,14 +7,17 @@ package org.searchisko.api.security;
  */
 public class Role {
 
-	// When adding new roles:
+	// When adding a new role:
 	// 1. Add it to ALL_ROLES
 	// 2. Add it to functional tests in searchisko-ftest-users.properties and searchisko-ftest-roles.properties
 
 	public static final String[] ALL_ROLES = {
 			Role.ADMIN,
 			Role.PROVIDER,
-			Role.CONTRIBUTOR
+			Role.CONTRIBUTOR,
+			Role.CONTRIBUTORS_MANAGER,
+			Role.PROJECTS_MANAGER,
+			Role.TASKS_MANAGER
 	};
 
 	/**
@@ -31,5 +34,26 @@ public class Role {
 	 * Default role for authenticated contributor
 	 */
 	public static final String CONTRIBUTOR = "contributor";
+
+	/**
+	 * User with this role can manage contributors via Contributor REST API
+	 *
+	 * @see org.searchisko.api.rest.ContributorRestService
+	 */
+	public static final String CONTRIBUTORS_MANAGER = "contributors_manager";
+
+	/**
+	 * User with this role can manage projects via Project REST API
+	 *
+	 * @see org.searchisko.api.rest.ProjectRestService
+	 */
+	public static final String PROJECTS_MANAGER = "projects_manager";
+
+	/**
+	 * User with this role can manage tasks via Task REST API
+	 *
+	 * @see org.searchisko.api.rest.TaskRestService
+	 */
+	public static final String TASKS_MANAGER = "tasks_manager";
 
 }

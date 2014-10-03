@@ -43,6 +43,7 @@ public class ContributorRestServiceTest {
 	public static final Set<String> ALLOWED_ROLES = new HashSet<>();
 	static {
 		ALLOWED_ROLES.add(Role.ADMIN);
+		ALLOWED_ROLES.add(Role.CONTRIBUTORS_MANAGER);
 	}
 
     @Deployment(testable = false)

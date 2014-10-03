@@ -40,6 +40,7 @@ public class ProjectRestServiceTest {
 	public static final Set<String> ALLOWED_ROLES = new HashSet<>();
 	static {
 		ALLOWED_ROLES.add(Role.ADMIN);
+		ALLOWED_ROLES.add(Role.PROJECTS_MANAGER);
 	}
 
 	public static final String PROJECT_REST_API = DeploymentHelpers.DEFAULT_REST_VERSION + "project";
