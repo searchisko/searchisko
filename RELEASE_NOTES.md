@@ -12,6 +12,7 @@ Improvements:
 - Administrator can lock "Content manipulation API" during maintenance [#109](https://github.com/searchisko/searchisko/issues/109)
 - Added pagination support (from,size) on Feed API [#152](https://github.com/searchisko/searchisko/issues/152)
 - New task for syncing all uses from contributor profile provider [#141](https://github.com/searchisko/searchisko/issues/141)
+- CORS support is now configurable so you can restrict Origins who can use REST API [#160](https://github.com/searchisko/searchisko/issues/160)
  
 Internal:
 - Upgrade to elasticsearch 1.3.0 [#48](https://github.com/searchisko/searchisko/issues/48)
