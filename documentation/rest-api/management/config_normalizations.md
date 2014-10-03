@@ -1,7 +1,7 @@
 Searchisko configuration - configuration of normalizations for "Normalization REST API"
 ======================================================================================
 
-**configuration API id:** `normalizations`
+**[configuration API](http://docs.jbossorg.apiary.io/#managementapiconfiguration) id:** `normalizations`
 
 This configuration document contains definition of normalizations which can be performed using 
 Searchisko 'Normalization API' `normalization` operation. It contains JSON object structure where key is 

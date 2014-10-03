@@ -43,7 +43,8 @@ public class JSONPRestrictionFilter implements Filter {
 		HttpServletResponse response = (HttpServletResponse) resp;
 
 		// JSONP is only on GET
-		if ("GET".equals(request.getMethod()) && StringUtils.isNotBlank(request.getParameter(PARAM_CALLBACK))) {
+		if (CORSWithCredentialsFilter.GET.equals(request.getMethod())
+				&& StringUtils.isNotBlank(request.getParameter(PARAM_CALLBACK))) {
 			if (request.getRequestURI().endsWith("/auth/status") || request.getUserPrincipal() != null) {
 				response.sendError(HttpServletResponse.SC_FORBIDDEN,
 						"JSONP is not allowed for authenticated user and for /auth/status due security reasons");
