@@ -34,7 +34,7 @@ import org.searchisko.api.util.SearchUtils;
  */
 @RequestScoped
 @Path("/contributor")
-@RolesAllowed(Role.ADMIN)
+@RolesAllowed({Role.ADMIN, Role.CONTRIBUTORS_MANAGER})
 @Audit
 public class ContributorRestService extends RestEntityServiceBase {
 

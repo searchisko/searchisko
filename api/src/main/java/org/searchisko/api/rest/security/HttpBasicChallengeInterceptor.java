@@ -1,6 +1,7 @@
 package org.searchisko.api.rest.security;
 
 import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Level;
@@ -41,11 +42,11 @@ public class HttpBasicChallengeInterceptor extends SecurityInterceptor {
 	/**
 	 * List of tested roles
 	 */
-	public static final Set<String> testedRoles = new HashSet<>();
+	public static final Set<String> testedRoles = new HashSet<>(Arrays.asList(Role.ALL_ROLES));
 
 	static {
-		testedRoles.add(Role.ADMIN);
-		testedRoles.add(Role.PROVIDER);
+		// Contributor has different auth. mechanism
+		testedRoles.remove(Role.CONTRIBUTOR);
 	}
 
 	public static final String CHALLENGE_TEXT = "Insert Provider's username and password";
