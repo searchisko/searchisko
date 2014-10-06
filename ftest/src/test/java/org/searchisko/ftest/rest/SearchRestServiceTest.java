@@ -19,6 +19,7 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.searchisko.api.ContentObjectFields;
 import org.searchisko.api.security.Role;
 import org.searchisko.api.service.ConfigService;
 import org.searchisko.ftest.DeploymentHelpers;
@@ -71,7 +72,7 @@ public class SearchRestServiceTest {
 
 	@Test
 	@InSequence(30)
-	public void assertCreateProvider1() throws MalformedURLException {
+	public void setupCreateProviderAndDocumentTypes() throws MalformedURLException {
 		String idx1 = provider1.addContentType(TYPE1, "blogpost", true);
 		String idx2 = provider1.addContentType(TYPE2, "issue", true, "", Role.PROVIDER);
 
@@ -92,7 +93,7 @@ public class SearchRestServiceTest {
 
 	@Test
 	@InSequence(32)
-	public void assertPushContentWithId() throws MalformedURLException {
+	public void setupPushContentWithId() throws MalformedURLException {
 		Map<String, Object> content = new HashMap<>();
 		content.put("data", "test");
 		content.put("data2", "test2");
@@ -103,7 +104,7 @@ public class SearchRestServiceTest {
 
 	@Test
 	@InSequence(33)
-	public void assertPushContentWithId2() throws MalformedURLException {
+	public void setupPushContentWithId2() throws MalformedURLException {
 		Map<String, Object> content = new HashMap<>();
 		content.put("data", "test");
 		content.put("data2", "test2");
@@ -114,7 +115,7 @@ public class SearchRestServiceTest {
 
 	@Test
 	@InSequence(34)
-	public void assertPushContentWithId3() throws MalformedURLException {
+	public void setupPushContentWithId3() throws MalformedURLException {
 		Map<String, Object> content = new HashMap<>();
 		content.put("data", "test");
 		content.put("data2", "test2");
@@ -125,7 +126,7 @@ public class SearchRestServiceTest {
 
 	@Test
 	@InSequence(35)
-	public void assertPushContentWithId4() throws MalformedURLException {
+	public void setupPushContentWithId4() throws MalformedURLException {
 		Map<String, Object> content = new HashMap<>();
 		content.put("data", "test");
 		content.put("data2", "test2");
@@ -136,7 +137,7 @@ public class SearchRestServiceTest {
 
 	@Test
 	@InSequence(40)
-	public void assertRefreshES() throws MalformedURLException {
+	public void setupRefreshES() throws MalformedURLException {
 		DeploymentHelpers.refreshES();
 	}
 
@@ -165,7 +166,7 @@ public class SearchRestServiceTest {
 
 	@Test
 	@InSequence(43)
-	public void assertDtlsChangeRoleInProvider1() throws MalformedURLException {
+	public void setupDtlsChangeRoleInProvider1() throws MalformedURLException {
 		provider1.addContentType(TYPE2, "issue", true, "", "otherrole");
 		ProviderRestServiceTest.updateProvider(context, provider1);
 	}
@@ -194,14 +195,14 @@ public class SearchRestServiceTest {
 
 	@Test
 	@InSequence(50)
-	public void assertFlsChangeRoleInProvider1() throws MalformedURLException {
+	public void setupFlsChangeRoleInProvider1() throws MalformedURLException {
 		provider1.addContentType(TYPE2, "issue", true, "");
 		ProviderRestServiceTest.updateProvider(context, provider1);
 	}
 
 	@Test
 	@InSequence(51)
-	public void assertFlsUploadConfigFields() throws MalformedURLException {
+	public void setupFlsUploadConfigFields() throws MalformedURLException {
 		String data = "{\"field_visible_for_roles\" : {\n" + "	    \"data2\" : [\"provider2\",\"provider\"],\n"
 				+ "	    \"data3\" : [\"anotherrole\"] \n" + "	  }}";
 		ConfigRestServiceTest.uploadConfigFile(context, ConfigService.CFGNAME_SEARCH_RESPONSE_FIELDS, data);
@@ -251,7 +252,53 @@ public class SearchRestServiceTest {
 
 	}
 
-	// TODO #143 assert content level security reflected in search API
+	// /////////////////////////////// Document level security - #143 ////////////////////////////////
+
+	@Test
+	@InSequence(60)
+	public void setupDlsTests() throws MalformedURLException {
+		ConfigRestServiceTest.removeConfigFile(context, ConfigService.CFGNAME_SEARCH_RESPONSE_FIELDS);
+
+		// this one will be visible only for admin in our case
+		{
+			Map<String, Object> content = new HashMap<>();
+			content.put(ContentObjectFields.SYS_VISIBLE_FOR_ROLES, "role1");
+			ContentRestServiceTest.createOrUpdateContent(context, provider1, TYPE1, contentId3, content);
+		}
+
+		// this one will be visible for admin and auth provider with role in our case
+		{
+			Map<String, Object> content = new HashMap<>();
+			content.put(ContentObjectFields.SYS_VISIBLE_FOR_ROLES, "provider");
+			ContentRestServiceTest.createOrUpdateContent(context, provider1, TYPE1, contentId4, content);
+		}
+
+		DeploymentHelpers.refreshES();
+	}
+
+	@Test
+	@InSequence(61)
+	public void assertDls_adminHasPermissionToAllDocuments() throws MalformedURLException {
+		given().auth().preemptive()
+				.basic(DeploymentHelpers.DEFAULT_PROVIDER_NAME, DeploymentHelpers.DEFAULT_PROVIDER_PASSWORD).expect().log()
+				.ifValidationFails().statusCode(200).contentType(ContentType.JSON).body("hits.total", is(6)).when()
+				.get(new URL(context, SEARCH_REST_API).toExternalForm());
+	}
+
+	@Test
+	@InSequence(62)
+	public void assertDls_anonym() throws MalformedURLException {
+		given().expect().log().ifValidationFails().statusCode(200).contentType(ContentType.JSON).body("hits.total", is(4))
+				.when().get(new URL(context, SEARCH_REST_API).toExternalForm());
+	}
+
+	@Test
+	@InSequence(63)
+	public void assertDls_userwithrole() throws MalformedURLException {
+		given().auth().preemptive().basic(provider1.name, provider1.password).expect().log().ifValidationFails()
+				.statusCode(200).contentType(ContentType.JSON).body("hits.total", is(5)).when()
+				.get(new URL(context, SEARCH_REST_API).toExternalForm());
+	}
 
 	// /////////////////////////////// put search result use info ////////////////////////////////
 

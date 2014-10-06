@@ -11,8 +11,6 @@ import java.net.URL;
 import java.util.HashSet;
 import java.util.Set;
 
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.notNullValue;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.junit.InSequence;
@@ -22,6 +20,9 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.searchisko.api.security.Role;
 import org.searchisko.ftest.DeploymentHelpers;
+
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.searchisko.ftest.rest.RestTestHelpers.givenJsonAndLogIfFailsAndAuthDefaultProvider;
 import static org.searchisko.ftest.rest.RestTestHelpers.givenJsonAndLogIfFailsAndAuthPreemptive;
 
@@ -29,7 +30,7 @@ import static org.searchisko.ftest.rest.RestTestHelpers.givenJsonAndLogIfFailsAn
  * Integration test for /config REST API.
  * <p/>
  * http://docs.jbossorg.apiary.io/#managementapiconfiguration
- *
+ * 
  * @author Libor Krzyzanek
  * @see org.searchisko.api.rest.ConfigRestService
  */
@@ -55,15 +56,27 @@ public class ConfigRestServiceTest {
 
 	/**
 	 * Helper method which allows to upload config file even from other tests.
-	 *
+	 * 
 	 * @param context to be used for upload
-	 * @param id      of the config file
-	 * @param data    JSON content of the config file
+	 * @param id of the config file
+	 * @param data JSON content of the config file
 	 * @throws MalformedURLException
 	 */
 	public static void uploadConfigFile(URL context, String id, String data) throws MalformedURLException {
 		givenJsonAndLogIfFailsAndAuthDefaultProvider().pathParam("id", id).body(data).expect().statusCode(200)
 				.body("id", is(id)).when().post(new URL(context, CONFIG_REST_API).toExternalForm());
+	}
+
+	/**
+	 * Helper method which allows to delete config file even from other tests.
+	 * 
+	 * @param context to be used for upload
+	 * @param id of the config file
+	 * @throws MalformedURLException
+	 */
+	public static void removeConfigFile(URL context, String id) throws MalformedURLException {
+		givenJsonAndLogIfFailsAndAuthDefaultProvider().pathParam("id", id).expect().statusCode(200).when()
+				.delete(new URL(context, CONFIG_REST_API).toExternalForm());
 	}
 
 	@Test
@@ -84,21 +97,20 @@ public class ConfigRestServiceTest {
 
 	public void assertAccess(int expStatus, String username, String password) throws MalformedURLException {
 		// GET /config
-		givenJsonAndLogIfFailsAndAuthPreemptive(username, password)
-				.expect().statusCode(expStatus).when()
+		givenJsonAndLogIfFailsAndAuthPreemptive(username, password).expect().statusCode(expStatus).when()
 				.get(new URL(context, CONFIG_REST_API_BASE).toExternalForm());
 
 		// GET /config/some-id
-		givenJsonAndLogIfFailsAndAuthPreemptive(username, password).pathParam("id", "some-id").expect().statusCode(expStatus).when()
-				.get(new URL(context, CONFIG_REST_API).toExternalForm());
+		givenJsonAndLogIfFailsAndAuthPreemptive(username, password).pathParam("id", "some-id").expect()
+				.statusCode(expStatus).when().get(new URL(context, CONFIG_REST_API).toExternalForm());
 
 		// POST /config/some-id
 		givenJsonAndLogIfFailsAndAuthPreemptive(username, password).pathParam("id", "some-id").body("{}").expect()
 				.statusCode(expStatus).when().post(new URL(context, CONFIG_REST_API).toExternalForm());
 
 		// DELETE /config/some-id
-		givenJsonAndLogIfFailsAndAuthPreemptive(username, password).pathParam("id", "some-id").expect().statusCode(expStatus).when()
-				.delete(new URL(context, CONFIG_REST_API).toExternalForm());
+		givenJsonAndLogIfFailsAndAuthPreemptive(username, password).pathParam("id", "some-id").expect()
+				.statusCode(expStatus).when().delete(new URL(context, CONFIG_REST_API).toExternalForm());
 	}
 
 	@Test
