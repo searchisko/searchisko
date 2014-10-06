@@ -203,6 +203,8 @@ public class FeedRestServiceTest {
 		provider1.addContentType(TYPE2, "issue", true, "");
 		ProviderRestServiceTest.updateProvider(context, provider1);
 
+		ContentRestServiceTest.deleteContent(context, provider1, TYPE2, contentId2);
+
 		// this one will be visible only for admin in our case
 		{
 			Map<String, Object> content = new HashMap<>();
@@ -238,12 +240,11 @@ public class FeedRestServiceTest {
 		given().contentType(ContentType.XML).auth().preemptive()
 				.basic(DeploymentHelpers.DEFAULT_PROVIDER_NAME, DeploymentHelpers.DEFAULT_PROVIDER_PASSWORD).expect().log()
 				.ifValidationFails().statusCode(200).contentType("application/atom+xml")
-				.body("feed.entry[0].id.text()", is("searchisko:content:id:provider1_issue-test-id2"))
-				.body("feed.entry[1].id.text()", is("searchisko:content:id:provider1_blog-test-id"))
-				.body("feed.entry[2].id.text()", is("searchisko:content:id:provider1_blog-test-id2"))
-				.body("feed.entry[3].id.text()", is("searchisko:content:id:provider1_blog-test-id3"))
-				.body("feed.entry[4].id.text()", is("searchisko:content:id:provider1_blog-test-id4"))
-				.body("feed.entry[5].id.text()", is("searchisko:content:id:provider1_blog-test-id5")).when()
+				.body("feed.entry[0].id.text()", is("searchisko:content:id:provider1_blog-test-id"))
+				.body("feed.entry[1].id.text()", is("searchisko:content:id:provider1_blog-test-id2"))
+				.body("feed.entry[2].id.text()", is("searchisko:content:id:provider1_blog-test-id3"))
+				.body("feed.entry[3].id.text()", is("searchisko:content:id:provider1_blog-test-id4"))
+				.body("feed.entry[4].id.text()", is("searchisko:content:id:provider1_blog-test-id5")).when()
 				.get(new URL(context, FEED_REST_API).toExternalForm());
 	}
 
@@ -252,10 +253,9 @@ public class FeedRestServiceTest {
 	public void assertDls_anonym() throws MalformedURLException {
 		given().contentType(ContentType.XML).expect().log().ifValidationFails().statusCode(200)
 				.contentType("application/atom+xml")
-				.body("feed.entry[0].id.text()", is("searchisko:content:id:provider1_issue-test-id2"))
-				.body("feed.entry[1].id.text()", is("searchisko:content:id:provider1_blog-test-id"))
-				.body("feed.entry[2].id.text()", is("searchisko:content:id:provider1_blog-test-id2"))
-				.body("feed.entry[3].id.text()", is("searchisko:content:id:provider1_blog-test-id5")).when()
+				.body("feed.entry[0].id.text()", is("searchisko:content:id:provider1_blog-test-id"))
+				.body("feed.entry[1].id.text()", is("searchisko:content:id:provider1_blog-test-id2"))
+				.body("feed.entry[2].id.text()", is("searchisko:content:id:provider1_blog-test-id5")).when()
 				.get(new URL(context, FEED_REST_API).toExternalForm());
 	}
 
@@ -264,11 +264,10 @@ public class FeedRestServiceTest {
 	public void assertDls_userwithrole() throws MalformedURLException {
 		given().contentType(ContentType.XML).auth().preemptive().basic(provider1.name, provider1.password).expect().log()
 				.ifValidationFails().statusCode(200).contentType("application/atom+xml")
-				.body("feed.entry[0].id.text()", is("searchisko:content:id:provider1_issue-test-id2"))
-				.body("feed.entry[1].id.text()", is("searchisko:content:id:provider1_blog-test-id"))
-				.body("feed.entry[2].id.text()", is("searchisko:content:id:provider1_blog-test-id2"))
-				.body("feed.entry[3].id.text()", is("searchisko:content:id:provider1_blog-test-id4"))
-				.body("feed.entry[4].id.text()", is("searchisko:content:id:provider1_blog-test-id5")).when()
+				.body("feed.entry[0].id.text()", is("searchisko:content:id:provider1_blog-test-id"))
+				.body("feed.entry[1].id.text()", is("searchisko:content:id:provider1_blog-test-id2"))
+				.body("feed.entry[2].id.text()", is("searchisko:content:id:provider1_blog-test-id4"))
+				.body("feed.entry[3].id.text()", is("searchisko:content:id:provider1_blog-test-id5")).when()
 				.get(new URL(context, FEED_REST_API).toExternalForm());
 	}
 
