@@ -6,6 +6,7 @@
     "jbossorg_jira": ["SAVARA"],
     "jbossorg_sbs" : ["2124","2125"],
     "jbossorg_mailing_list": ["savara"],
-    "jbossorg_project_info": "savara"
+    "jbossorg_project_info": "savara",
+    "product" : false
   }
 }

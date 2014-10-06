@@ -6,6 +6,7 @@
     "jbossorg_jira": ["SCRIBBLE"],
     "jbossorg_sbs" : ["2222","2223"],
     "jbossorg_mailing_list": ["scribble"],
-    "jbossorg_project_info": "scribble"
+    "jbossorg_project_info": "scribble",
+    "product" : false
   }
 }

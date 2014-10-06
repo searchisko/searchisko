@@ -6,6 +6,7 @@
     "jbossorg_jira": ["CIRRAS"],
     "jbossorg_sbs" : [],
     "jbossorg_mailing_list": "",
-    "jbossorg_project_info": "stormgrind_projects_cirras"
+    "jbossorg_project_info": "stormgrind_projects_cirras",
+    "product" : false
   }
 }

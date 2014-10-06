@@ -6,6 +6,7 @@
     "jbossorg_jira": ["TTALE"],
     "jbossorg_sbs" : ["2135","2136"],
     "jbossorg_mailing_list": "",
-    "jbossorg_project_info": "tattletale"
+    "jbossorg_project_info": "tattletale",
+    "product" : false
   }
 }

@@ -6,6 +6,7 @@
     "jbossorg_jira": ["IMMUTANT"],
     "jbossorg_sbs" : [],
     "jbossorg_mailing_list": "",
-    "jbossorg_project_info": "immutant"
+    "jbossorg_project_info": "immutant",
+    "product" : false
   }
 }

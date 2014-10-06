@@ -6,6 +6,7 @@
     "jbossorg_jira": ["EJBTHREE"],
     "jbossorg_sbs" : ["2029","2030"],
     "jbossorg_mailing_list": "",
-    "jbossorg_project_info": "ejb3"
+    "jbossorg_project_info": "ejb3",
+    "product" : false
   }
 }

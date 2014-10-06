@@ -6,6 +6,7 @@
     "jbossorg_jira": ["SWAP"],
     "jbossorg_sbs" : ["2023"],
     "jbossorg_mailing_list": ["portletswap"],
-    "jbossorg_project_info": "portletswap"
+    "jbossorg_project_info": "portletswap",
+    "product" : false
   }
 }

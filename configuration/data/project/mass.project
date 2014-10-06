@@ -6,6 +6,7 @@
     "jbossorg_jira": ["MASS"],
     "jbossorg_sbs" : [],
     "jbossorg_mailing_list": "",
-    "jbossorg_project_info": "mass"
+    "jbossorg_project_info": "mass",
+    "product" : false
   }
 }

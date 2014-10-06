@@ -6,6 +6,7 @@
     "jbossorg_jira": ["FORGE", "FORGEPLUGINS"],
     "jbossorg_sbs" : ["2293"],
     "jbossorg_mailing_list": ["forge"],
-    "jbossorg_project_info": "forge_projectnav"
+    "jbossorg_project_info": "forge_projectnav",
+    "product" : false
   }
 }

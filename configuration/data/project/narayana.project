@@ -6,6 +6,7 @@
     "jbossorg_jira": ["JBTM"],
     "jbossorg_sbs" : ["2040","2041"],
     "jbossorg_mailing_list": ["jbossts"],
-    "jbossorg_project_info": "narayana"
+    "jbossorg_project_info": "narayana",
+    "product" : false
   }
 }

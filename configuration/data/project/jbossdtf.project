@@ -6,6 +6,7 @@
     "jbossorg_jira": ["DTF"],
     "jbossorg_sbs" : [],
     "jbossorg_mailing_list": ["dtf"],
-    "jbossorg_project_info": "jbossdtf"
+    "jbossorg_project_info": "jbossdtf",
+    "product" : false
   }
 }

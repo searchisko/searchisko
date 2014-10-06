@@ -6,6 +6,7 @@
     "jbossorg_jira": [""],
     "jbossorg_sbs" : [],
     "jbossorg_mailing_list": ["jopr"],
-    "jbossorg_project_info": "jopr"
+    "jbossorg_project_info": "jopr",
+    "product" : false
   }
 }

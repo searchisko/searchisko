@@ -6,6 +6,7 @@
     "jbossorg_jira": ["JBWS"],
     "jbossorg_sbs" : ["2044","2045","2046","2047"],
     "jbossorg_mailing_list": ["jbossws"],
-    "jbossorg_project_info": "jbossws"
+    "jbossorg_project_info": "jbossws",
+    "product" : false
   }
 }

@@ -6,6 +6,7 @@
     "jbossorg_jira": ["JBID"],
     "jbossorg_sbs" : [],
     "jbossorg_mailing_list": ["jboss-identity"],
-    "jbossorg_project_info": "jbossidentity"
+    "jbossorg_project_info": "jbossidentity",
+    "product" : false
   }
 }

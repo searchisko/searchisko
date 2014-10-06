@@ -6,6 +6,7 @@
     "jbossorg_jira": ["JBCLUSTER"],
     "jbossorg_sbs" : [],
     "jbossorg_mailing_list": ["jboss-cluster"],
-    "jbossorg_project_info": "jbossclustering"
+    "jbossorg_project_info": "jbossclustering",
+    "product" : false
   }
 }

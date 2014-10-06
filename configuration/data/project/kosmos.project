@@ -6,6 +6,7 @@
     "jbossorg_jira": ["KOSMOS"],
     "jbossorg_sbs" : ["2146","2147"],
     "jbossorg_mailing_list": "",
-    "jbossorg_project_info": "kosmos"
+    "jbossorg_project_info": "kosmos",
+    "product" : false
   }
 }

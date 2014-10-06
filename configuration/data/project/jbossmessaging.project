@@ -6,6 +6,7 @@
     "jbossorg_jira": ["JBMESSAGING"],
     "jbossorg_sbs" : ["2042","2043"],
     "jbossorg_mailing_list": "",
-    "jbossorg_project_info": "jbossmessaging"
+    "jbossorg_project_info": "jbossmessaging",
+    "product" : false
   }
 }

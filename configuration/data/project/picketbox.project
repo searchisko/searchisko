@@ -6,6 +6,7 @@
     "jbossorg_jira": ["SECURITY"],
     "jbossorg_sbs" : ["2087","2088"],
     "jbossorg_mailing_list": "",
-    "jbossorg_project_info": "picketbox"
+    "jbossorg_project_info": "picketbox",
+    "product" : false
   }
 }

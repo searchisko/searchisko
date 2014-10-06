@@ -6,6 +6,7 @@
     "jbossorg_jira": ["ARQ", "ARQGRA", "ARQRUSH"],
     "jbossorg_sbs" : ["2191","2192"],
     "jbossorg_mailing_list": ["arquillian"],
-    "jbossorg_project_info": "arquillian"
+    "jbossorg_project_info": "arquillian",
+    "product" : false
   }
 }

@@ -6,6 +6,7 @@
     "jbossorg_jira": ["MTAJZR"],
     "jbossorg_sbs" : [],
     "jbossorg_mailing_list": "",
-    "jbossorg_project_info": "metajizer"
+    "jbossorg_project_info": "metajizer",
+    "product" : false
   }
 }

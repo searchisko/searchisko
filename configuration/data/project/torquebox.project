@@ -6,6 +6,7 @@
     "jbossorg_jira": ["TORQUE"],
     "jbossorg_sbs" : [],
     "jbossorg_mailing_list": "",
-    "jbossorg_project_info": "torquebox"
+    "jbossorg_project_info": "torquebox",
+    "product" : false
   }
 }

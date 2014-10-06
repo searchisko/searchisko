@@ -6,6 +6,7 @@
     "jbossorg_jira": ["JBPM", "BPEL", "GPD"],
     "jbossorg_sbs" : ["2034","2035"],
     "jbossorg_mailing_list": ["jbpm"],
-    "jbossorg_project_info": "jbpm"
+    "jbossorg_project_info": "jbpm",
+    "product" : false
   }
 }

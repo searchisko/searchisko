@@ -6,6 +6,7 @@
     "jbossorg_jira": ["CAPEDWARF"],
     "jbossorg_sbs" : ["2280","2281"],
     "jbossorg_mailing_list": "",
-    "jbossorg_project_info": "capedwarf"
+    "jbossorg_project_info": "capedwarf",
+    "product" : false
   }
 }

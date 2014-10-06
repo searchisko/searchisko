@@ -6,6 +6,7 @@
     "jbossorg_jira": ["SOAG", "SRAMP"],
     "jbossorg_sbs" : ["2122","2123"],
     "jbossorg_mailing_list": ["overlord"],
-    "jbossorg_project_info": "overlord"
+    "jbossorg_project_info": "overlord",
+    "product" : false
   }
 }

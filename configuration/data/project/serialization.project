@@ -6,6 +6,7 @@
     "jbossorg_jira": ["JBSER"],
     "jbossorg_sbs" : [],
     "jbossorg_mailing_list": "",
-    "jbossorg_project_info": "serialization"
+    "jbossorg_project_info": "serialization",
+    "product" : false
   }
 }

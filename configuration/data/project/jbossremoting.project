@@ -6,6 +6,7 @@
     "jbossorg_jira": ["JBREM"],
     "jbossorg_sbs" : ["2050","2051"],
     "jbossorg_mailing_list": "",
-    "jbossorg_project_info": "jbossremoting"
+    "jbossorg_project_info": "jbossremoting",
+    "product" : false
   }
 }

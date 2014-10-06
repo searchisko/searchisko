@@ -6,6 +6,7 @@
     "jbossorg_jira": ["JBPORTAL"],
     "jbossorg_sbs" : ["2011","2012","2013","2014"],
     "jbossorg_mailing_list": "",
-    "jbossorg_project_info": "jbossportal"
+    "jbossorg_project_info": "jbossportal",
+    "product" : false
   }
 }

@@ -6,6 +6,7 @@
     "jbossorg_jira": ["JBWEB"],
     "jbossorg_sbs" : ["2111","2112"],
     "jbossorg_mailing_list": "",
-    "jbossorg_project_info": "jbossweb"
+    "jbossorg_project_info": "jbossweb",
+    "product" : false
   }
 }

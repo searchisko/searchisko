@@ -6,6 +6,7 @@
     "jbossorg_jira": ["JBJMX"],
     "jbossorg_sbs" : ["2104","2105"],
     "jbossorg_mailing_list": "",
-    "jbossorg_project_info": "jbossjmx"
+    "jbossorg_project_info": "jbossjmx",
+    "product" : false
   }
 }

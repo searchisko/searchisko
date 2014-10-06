@@ -6,6 +6,7 @@
     "jbossorg_jira": ["BYTEMAN"],
     "jbossorg_sbs" : ["2068","2069"],
     "jbossorg_mailing_list": "",
-    "jbossorg_project_info": "byteman"
+    "jbossorg_project_info": "byteman",
+    "product" : false
   }
 }

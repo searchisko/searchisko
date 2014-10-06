@@ -6,6 +6,7 @@
     "jbossorg_jira": ["ENVERS"],
     "jbossorg_sbs" : ["2033"],
     "jbossorg_mailing_list": ["jboss-envers"],
-    "jbossorg_project_info": "envers"
+    "jbossorg_project_info": "envers",
+    "product" : false
   }
 }

@@ -6,6 +6,7 @@
     "jbossorg_jira": ["GUVNOR", "GUVNORSOA"],
     "jbossorg_sbs" : ["2274","2275"],
     "jbossorg_mailing_list": ["guvnor"],
-    "jbossorg_project_info": "guvnor"
+    "jbossorg_project_info": "guvnor",
+    "product" : false
   }
 }

@@ -6,6 +6,7 @@
     "jbossorg_jira": ["KEYCLOAK"],
     "jbossorg_sbs" : [""],
     "jbossorg_mailing_list": ["keycloak"],
-    "jbossorg_project_info": "keycloak"
+    "jbossorg_project_info": "keycloak",
+    "product" : false
   }
 }

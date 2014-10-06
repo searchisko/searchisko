@@ -6,6 +6,7 @@
     "jbossorg_jira": ["UF"],
     "jbossorg_sbs" : [""],
     "jbossorg_mailing_list": ["uberfire"],
-    "jbossorg_project_info": "uberfire"
+    "jbossorg_project_info": "uberfire",
+    "product" : false
   }
 }

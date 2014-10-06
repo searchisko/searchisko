@@ -6,6 +6,7 @@
     "jbossorg_jira": ["JBBLOG"],
     "jbossorg_sbs" : ["2021","2022"],
     "jbossorg_mailing_list": "",
-    "jbossorg_project_info": "jbossblog"
+    "jbossorg_project_info": "jbossblog",
+    "product" : false
   }
 }

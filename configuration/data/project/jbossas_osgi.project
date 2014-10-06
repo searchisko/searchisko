@@ -6,6 +6,7 @@
     "jbossorg_jira": ["JBOSGI"],
     "jbossorg_sbs" : [],
     "jbossorg_mailing_list": ["jboss-osgi"],
-    "jbossorg_project_info": "jbossas_osgi"
+    "jbossorg_project_info": "jbossas_osgi",
+    "product" : false
   }
 }

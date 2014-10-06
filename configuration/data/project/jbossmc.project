@@ -6,6 +6,7 @@
     "jbossorg_jira": ["JBMICROCONT", "JBMCINT", "JBMCSCAN", "JBMCTOOL"],
     "jbossorg_sbs" : ["2114","2115","2184"],
     "jbossorg_mailing_list": "",
-    "jbossorg_project_info": "jbossmc"
+    "jbossorg_project_info": "jbossmc",
+    "product" : false
   }
 }

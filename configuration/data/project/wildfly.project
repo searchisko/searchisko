@@ -6,6 +6,7 @@
     "jbossorg_jira": ["WFLY"],
     "jbossorg_sbs" : [""],
     "jbossorg_mailing_list": ["wildfly"],
-    "jbossorg_project_info": "wildfly"
+    "jbossorg_project_info": "wildfly",
+    "product" : false
   }
 }

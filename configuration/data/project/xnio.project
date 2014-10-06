@@ -6,6 +6,7 @@
     "jbossorg_jira": ["XNIO"],
     "jbossorg_sbs" : ["2243"],
     "jbossorg_mailing_list": "",
-    "jbossorg_project_info": "xnio"
+    "jbossorg_project_info": "xnio",
+    "product" : false
   }
 }

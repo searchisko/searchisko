@@ -6,6 +6,7 @@
     "jbossorg_jira": ["RIFTSAW"],
     "jbossorg_sbs" : ["2181","2182"],
     "jbossorg_mailing_list": ["riftsaw"],
-    "jbossorg_project_info": "riftsaw"
+    "jbossorg_project_info": "riftsaw",
+    "product" : false
   }
 }

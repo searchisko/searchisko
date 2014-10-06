@@ -6,6 +6,7 @@
     "jbossorg_jira": ["RF", "RFPL", "AJSF", "RFSBOX"],
     "jbossorg_sbs" : ["2024","2025","2289"],
     "jbossorg_mailing_list": ["richfaces"],
-    "jbossorg_project_info": "richfaces"
+    "jbossorg_project_info": "richfaces",
+    "product" : false
   }
 }
