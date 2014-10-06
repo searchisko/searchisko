@@ -1,34 +1,45 @@
 {
   "size" : 0,
   "query" : {
-    "filtered" : {
-      "query" : {
-        "match_all" : { }
-      },
-      "filter" : {
-        "and" : {
-          "filters" : [ {
-            "terms" : {
-              "sys_project" : [ "eap" ]
-            }
-          }, {
-            "terms" : {
-              "sys_type" : [ "issue" ]
-            }
-          }, {
-            "range" : {
-              "sys_activity_dates" : {
-                "from" : "1973-12-25T08:03:07.545Z",
-                "to" : null,
-                "include_lower" : true,
-                "include_upper" : true
-              }
-            }
-          } ]
+    "filtered" : {  
+		  "query" : {
+		    "filtered" : {
+		      "query" : {
+		        "match_all" : { }
+		      },
+		      "filter" : {
+		        "and" : {
+		          "filters" : [ {
+		            "terms" : {
+		              "sys_project" : [ "eap" ]
+		            }
+		          }, {
+		            "terms" : {
+		              "sys_type" : [ "issue" ]
+		            }
+		          }, {
+		            "range" : {
+		              "sys_activity_dates" : {
+		                "from" : "1973-12-25T08:03:07.545Z",
+		                "to" : null,
+		                "include_lower" : true,
+		                "include_upper" : true
+		              }
+		            }
+		          } ]
+		        }
+		      }
+		    }
+		  },
+	    "filter" : {
+        "missing" : {
+          "field" : "sys_visible_for_roles",
+          "null_value" : true,
+          "existence" : true
         }
       }
     }
-  },
+   },	  
   "facets" : {
     "activity_dates_histogram" : {
       "date_histogram" : {

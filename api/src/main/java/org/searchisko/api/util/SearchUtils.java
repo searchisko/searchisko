@@ -77,13 +77,15 @@ public class SearchUtils {
 	 */
 	public static List<String> safeList(List<String> values) {
 		List<String> safeValues = null;
-		for (String value : values) {
-			String sv = trimToNull(value);
-			if (sv != null) {
-				if (safeValues == null) {
-					safeValues = new ArrayList<>();
+		if (values != null) {
+			for (String value : values) {
+				String sv = trimToNull(value);
+				if (sv != null) {
+					if (safeValues == null) {
+						safeValues = new ArrayList<>();
+					}
+					safeValues.add(sv);
 				}
-				safeValues.add(sv);
 			}
 		}
 		return safeValues;
@@ -242,8 +244,10 @@ public class SearchUtils {
 	 * @param map to get value from
 	 * @param key in map to get value from
 	 * @return list of strings or null.
+	 * @throws SettingsException if value in json map is invalid
 	 */
-	public static List<String> getListOfStringsFromJsonMap(Map<String, Object> map, String key) {
+	@SuppressWarnings("unchecked")
+	public static List<String> getListOfStringsFromJsonMap(Map<String, Object> map, String key) throws SettingsException {
 		if (map == null)
 			return null;
 		try {
@@ -257,12 +261,7 @@ public class SearchUtils {
 				}
 				return null;
 			}
-			@SuppressWarnings("unchecked")
-			List<String> roles = (List<String>) o;
-			if (roles == null || roles.isEmpty())
-				return null;
-			else
-				return safeList(roles);
+			return safeList((List<String>) o);
 		} catch (ClassCastException e) {
 			throw new SettingsException("No String or Array of strings present in field '" + key);
 		}

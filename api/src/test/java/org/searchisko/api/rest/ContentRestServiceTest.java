@@ -42,6 +42,7 @@ import org.searchisko.api.testtools.TestUtils;
 import org.searchisko.persistence.service.ContentPersistenceService;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
@@ -70,6 +71,71 @@ public class ContentRestServiceTest extends ESRealClientTestBase {
 	private static final String INDEX_TYPE = "index_type";
 	private static final String INDEX_NAME = "index_name";
 	private static final List<Map<String, Object>> PREPROCESSORS = new ArrayList<Map<String, Object>>();
+
+	@SuppressWarnings("unchecked")
+	@Test
+	public void processFieldSysVisibleForRoles() {
+		ContentRestService tested = getTested(false);
+
+		Map<String, Object> content = new HashMap<>();
+
+		// case - no given field present at all
+		tested.processFieldSysVisibleForRoles(content);
+		Assert.assertEquals(0, content.size());
+
+		// case - empty list is removed
+		{
+			content.put(ContentObjectFields.SYS_VISIBLE_FOR_ROLES, new ArrayList<>());
+			tested.processFieldSysVisibleForRoles(content);
+			Assert.assertEquals(0, content.size());
+
+			ArrayList<String> l = new ArrayList<>();
+			l.add("");
+			content.put(ContentObjectFields.SYS_VISIBLE_FOR_ROLES, l);
+			tested.processFieldSysVisibleForRoles(content);
+			Assert.assertEquals(0, content.size());
+		}
+
+		// case - list is preserved, empty strings removed, strings trimmed
+		{
+			List<String> l = new ArrayList<>();
+			l.add("role1");
+			l.add("");
+			l.add("role2 ");
+			content.put(ContentObjectFields.SYS_VISIBLE_FOR_ROLES, l);
+			tested.processFieldSysVisibleForRoles(content);
+			Assert.assertEquals(1, content.size());
+			List<String> ret = (List<String>) content.get(ContentObjectFields.SYS_VISIBLE_FOR_ROLES);
+			Assert.assertEquals(2, ret.size());
+			Assert.assertTrue(ret.contains("role1"));
+			Assert.assertTrue(ret.contains("role2"));
+		}
+
+		// case - one string is converted to list
+		content.put(ContentObjectFields.SYS_VISIBLE_FOR_ROLES, "role1");
+		tested.processFieldSysVisibleForRoles(content);
+		Assert.assertEquals(1, content.size());
+		List<String> ret = (List<String>) content.get(ContentObjectFields.SYS_VISIBLE_FOR_ROLES);
+		Assert.assertEquals(1, ret.size());
+		Assert.assertTrue(ret.contains("role1"));
+
+		// case - bad type in data throws exception
+		try {
+			content.put(ContentObjectFields.SYS_VISIBLE_FOR_ROLES, new Integer(1));
+			tested.processFieldSysVisibleForRoles(content);
+			Assert.fail("BadFieldException expected");
+		} catch (BadFieldException e) {
+			// OK
+		}
+		try {
+			content.put(ContentObjectFields.SYS_VISIBLE_FOR_ROLES, new HashMap<>());
+			tested.processFieldSysVisibleForRoles(content);
+			Assert.fail("BadFieldException expected");
+		} catch (BadFieldException e) {
+			// OK
+		}
+
+	}
 
 	@Test
 	public void getTypeInfoWithManagePermissionCheck() {
@@ -262,6 +328,7 @@ public class ContentRestServiceTest extends ESRealClientTestBase {
 				indexDelete(INDEX_NAME);
 				content.clear();
 				content.put("test", "testvalue");
+				content.put(ContentObjectFields.SYS_VISIBLE_FOR_ROLES, "role1");
 				String sysId = tested.providerService.generateSysId(sys_content_type, "1");
 				Response r = assertResponseStatus(tested.pushContent(sys_content_type, "1", content), Response.Status.OK);
 				assertEquals("insert", ((Map<String, String>) r.getEntity()).get("status"));
@@ -281,6 +348,7 @@ public class ContentRestServiceTest extends ESRealClientTestBase {
 				assertEquals(sysId, doc.get(ContentObjectFields.SYS_ID));
 				assertNotNull(doc.get(ContentObjectFields.SYS_UPDATED));
 				assertEquals(null, doc.get(ContentObjectFields.SYS_TAGS));
+				assertEquals(TestUtils.createListOfStrings("role1"), doc.get(ContentObjectFields.SYS_VISIBLE_FOR_ROLES));
 				verify(tested.eventContentStored).fire(prepareContentStoredEventMatcher(sysId));
 				verifyNoMoreInteractions(tested.contentPersistenceService);
 			}
@@ -385,6 +453,7 @@ public class ContentRestServiceTest extends ESRealClientTestBase {
 				indexDelete(INDEX_NAME);
 				content.clear();
 				content.put("test", "testvalue");
+				content.put(ContentObjectFields.SYS_VISIBLE_FOR_ROLES, new ArrayList<String>());
 				content.put(ContentObjectFields.SYS_CONTENT_CONTENT_TYPE, "text/html");
 				Response r = assertResponseStatus(tested.pushContent(sys_content_type, "1", content), Response.Status.OK);
 				// verify enhancements called
@@ -404,6 +473,7 @@ public class ContentRestServiceTest extends ESRealClientTestBase {
 				String expectedContentId = tested.providerService.generateSysId(sys_content_type, "1");
 				assertEquals(expectedContentId, doc.get(ContentObjectFields.SYS_ID));
 				assertNotNull(doc.get(ContentObjectFields.SYS_UPDATED));
+				assertFalse(doc.containsKey(ContentObjectFields.SYS_VISIBLE_FOR_ROLES));
 				assertEquals(null, doc.get(ContentObjectFields.SYS_TAGS));
 				verify(tested.contentPersistenceService).store(tested.providerService.generateSysId(sys_content_type, "1"),
 						sys_content_type, content);

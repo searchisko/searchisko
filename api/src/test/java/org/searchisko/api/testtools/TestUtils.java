@@ -10,8 +10,10 @@ import java.io.IOException;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
@@ -155,9 +157,9 @@ public abstract class TestUtils {
 	}
 
 	/**
-	 * Assert passed in JSON string is same as JSON content of given file loaded from classpath.
-	 * JSONs are compared in NON_EXTENSIBLE way, this means array items do not have to be in the same
-	 * order but additional fields (extensibility) is considered a fail.
+	 * Assert passed in JSON string is same as JSON content of given file loaded from classpath. JSONs are compared in
+	 * NON_EXTENSIBLE way, this means array items do not have to be in the same order but additional fields
+	 * (extensibility) is considered a fail.
 	 * 
 	 * @param expectedJsonFilePath path to JSON file inside classpath
 	 * @param actualJsonString JSON content to assert for equality
@@ -165,7 +167,8 @@ public abstract class TestUtils {
 	 */
 	public static void assertJsonContentFromClasspathFile(String expectedJsonFilePath, String actualJsonString)
 			throws IOException, JSONException {
-		JSONAssert.assertEquals(readStringFromClasspathFile(expectedJsonFilePath), actualJsonString, JSONCompareMode.NON_EXTENSIBLE);
+		JSONAssert.assertEquals(readStringFromClasspathFile(expectedJsonFilePath), actualJsonString,
+				JSONCompareMode.NON_EXTENSIBLE);
 	}
 
 	/**
@@ -260,6 +263,16 @@ public abstract class TestUtils {
 
 	public static ArrayList<String> createListOfStrings(String... strings) {
 		ArrayList<String> ret = new ArrayList<>();
+		if (strings != null) {
+			for (String s : strings) {
+				ret.add(s);
+			}
+		}
+		return ret;
+	}
+
+	public static Set<String> createSetOfStrings(String... strings) {
+		Set<String> ret = new LinkedHashSet<>();
 		if (strings != null) {
 			for (String s : strings) {
 				ret.add(s);

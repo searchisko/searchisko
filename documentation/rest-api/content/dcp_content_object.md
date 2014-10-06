@@ -41,6 +41,14 @@ some of them are set during content push before pre-processing, thus they will b
   <td>Content identifier passed in by the provider, it must be unique for the given <code>sys_content_type</code>.</td>
 </tr>
 <tr>
+  <td>sys_visible_for_roles</td>
+  <td>false</td>
+  <td>Array of strings with user roles of users who can obtain this document over search REST API. 
+      User with `admin` role can see document even if not listed there. If field is not present 
+      or is empty then document is visible for all users. 
+      This setting is additive to the 'Content type level security' setting, you can only tighten visibility there, not to relax it.</td>
+</tr>
+<tr>
   <td>sys_updated</td>
   <td>yes</td>
   <td>Date of last content update in Searchisko - system field, always necessary, assigned in 'Content Push API'.</td>
@@ -205,6 +213,7 @@ It's defined only by content provider and must contain mandatory fields defined 
 	    "sys_content_id": "AS7-1254",
 	    "sys_id": "jbossorg_jira_issue-AS7-1254",
 	    "sys_type": "issue",
+	    "sys_visible_for_roles" : ["developer","employee"],
 	    "sys_title": "AS7-1254 - Set the port_range on JGroups stacks to 1",
 	    "sys_url_view": "https://issues.jboss.org/browse/AS7-1254",
 	    "sys_description": "Set the port_range on JGroups stacks to 1 to lock down the ports.",

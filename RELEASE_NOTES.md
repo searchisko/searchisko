@@ -6,13 +6,14 @@ This document contains high-level release notes. More details can be found in [m
 
 Improvements:
 
-- Additional roles for authenticated user [#137](https://github.com/searchisko/searchisko/issues/137), [#147](https://github.com/searchisko/searchisko/issues/147)
-- Support for 'Content type level' security [#142](https://github.com/searchisko/searchisko/issues/142)
-- Support for 'Field level' security [#150](https://github.com/searchisko/searchisko/issues/150)
+- security - additional roles for authenticated user [#137](https://github.com/searchisko/searchisko/issues/137), [#147](https://github.com/searchisko/searchisko/issues/147)
+- security - brand new Content security subsystem: 
+  - support for 'Content type level' security [#142](https://github.com/searchisko/searchisko/issues/142)
+  - support for 'Field level' security [#150](https://github.com/searchisko/searchisko/issues/150)
+- security - CORS support is now configurable so you can restrict Origins who can use REST API at all and as authenticated user [#160](https://github.com/searchisko/searchisko/issues/160)
 - Administrator can lock "Content manipulation API" during maintenance [#109](https://github.com/searchisko/searchisko/issues/109)
 - Added pagination support (from,size) on Feed API [#152](https://github.com/searchisko/searchisko/issues/152)
 - New task for syncing all uses from contributor profile provider [#141](https://github.com/searchisko/searchisko/issues/141)
-- CORS support is now configurable so you can restrict Origins who can use REST API [#160](https://github.com/searchisko/searchisko/issues/160)
  
 Internal:
 - Upgrade to elasticsearch 1.3.0 [#48](https://github.com/searchisko/searchisko/issues/48)

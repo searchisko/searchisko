@@ -1205,6 +1205,55 @@ public class SearchServiceTest extends SearchServiceTestBase {
 	}
 
 	@Test
+	public void applyContentLevelSecurityFilter() throws IOException, JSONException {
+
+		ConfigService configService = mockConfigurationService();
+		SearchService tested = getTested(configService);
+
+		// case - not logged in user
+		QueryBuilder qb = QueryBuilders.matchAllQuery();
+
+		{
+			Mockito.when(tested.authenticationUtilService.isAuthenticatedUser()).thenReturn(false);
+			QueryBuilder retqb = tested.applyContentLevelSecurityFilter(qb);
+			TestUtils.assertJsonContentFromClasspathFile("/search/query_dlsecurity_filter_anonym.json", retqb.toString());
+		}
+
+		// case - admin user
+		{
+			Mockito.reset(tested.authenticationUtilService);
+			Mockito.when(tested.authenticationUtilService.isUserInRole(Role.ADMIN)).thenReturn(true);
+			Mockito.when(tested.authenticationUtilService.isAuthenticatedUser()).thenReturn(true);
+
+			QueryBuilder retqb = tested.applyContentLevelSecurityFilter(qb);
+			TestUtils.assertJsonContentFromClasspathFile("/search/query_dlsecurity_filter_admin.json", retqb.toString());
+
+			Mockito.verify(tested.authenticationUtilService).isUserInRole(Role.ADMIN);
+			Mockito.verifyNoMoreInteractions(tested.authenticationUtilService);
+		}
+
+		// case - authenticated user with roles
+		{
+			Mockito.reset(tested.authenticationUtilService);
+			Mockito.when(tested.authenticationUtilService.isUserInRole(Role.ADMIN)).thenReturn(false);
+			Mockito.when(tested.authenticationUtilService.getUserRoles()).thenReturn(
+					TestUtils.createSetOfStrings("role1", "role2"));
+			Mockito.when(tested.authenticationUtilService.isAuthenticatedUser()).thenReturn(true);
+
+			QueryBuilder retqb = tested.applyContentLevelSecurityFilter(qb);
+			System.out.println(retqb);
+			TestUtils.assertJsonContentFromClasspathFile("/search/query_dlsecurity_filter_userwithroles.json",
+					retqb.toString());
+
+			Mockito.verify(tested.authenticationUtilService).isUserInRole(Role.ADMIN);
+			Mockito.verify(tested.authenticationUtilService).isAuthenticatedUser();
+			Mockito.verify(tested.authenticationUtilService).getUserRoles();
+			Mockito.verifyNoMoreInteractions(tested.authenticationUtilService);
+		}
+
+	}
+
+	@Test
 	public void selectActivityDatesHistogramInterval_common() throws ReflectiveOperationException {
 
 		ConfigService configService = mockConfigurationService();
