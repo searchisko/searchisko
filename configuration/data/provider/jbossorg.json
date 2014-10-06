@@ -24,7 +24,10 @@
 		          },{
 		            "idx_result_field" : "name",
 		            "target_field"     : "sys_project_name"
-	            }
+	              },{
+                    "idx_result_field" : "type_specific_code.product",
+                    "target_field"     : "product"
+                  }
 	          ]
           }
         },{ 
@@ -132,7 +135,10 @@
 		            "idx_result_field" : "name",
 		            "target_field"     : "sys_project_name",
 		            "value_default"    : "{project_name}"
-	            }
+	            },{
+                    "idx_result_field" : "type_specific_code.product",
+                    "target_field"     : "product"
+                }
             ]
           }
         },{ 
@@ -194,7 +200,10 @@
 	                    },{
 						            "idx_result_field" : "name",
 						            "target_field"     : "sys_project_name"
-					            }
+	                    },{
+                            "idx_result_field" : "type_specific_code.product",
+                            "target_field"     : "product"
+                        }
                     ]
                 } 
             },{ 
@@ -256,7 +265,10 @@
 	                    },{
 						            "idx_result_field" : "name",
 						            "target_field"     : "sys_project_name"
-					            }
+                        },{
+                            "idx_result_field" : "type_specific_code.product",
+                            "target_field"     : "product"
+                        }
                     ]
                 } 
             },{ 
