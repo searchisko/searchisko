@@ -251,6 +251,8 @@ public class SearchRestServiceTest {
 
 	}
 
+	// TODO #143 assert content level security reflected in search API
+
 	// /////////////////////////////// put search result use info ////////////////////////////////
 
 	@Test

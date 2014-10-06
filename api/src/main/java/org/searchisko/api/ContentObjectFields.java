@@ -14,6 +14,7 @@ public final class ContentObjectFields {
 
 	public static final String SYS_ID = "sys_id";
 	public static final String SYS_TYPE = "sys_type";
+	public static final String SYS_VISIBLE_FOR_ROLES = "sys_visible_for_roles";
 	public static final String SYS_PROJECT = "sys_project";
 	public static final String SYS_PROJECT_NAME = "sys_project_name";
 	public static final String SYS_CONTENT_ID = "sys_content_id";

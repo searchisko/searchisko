@@ -29,7 +29,9 @@ import org.elasticsearch.common.settings.SettingsException;
 import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.index.query.AndFilterBuilder;
 import org.elasticsearch.index.query.FilterBuilder;
+import org.elasticsearch.index.query.FilterBuilders;
 import org.elasticsearch.index.query.FilteredQueryBuilder;
+import org.elasticsearch.index.query.OrFilterBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.index.query.QueryFilterBuilder;
@@ -138,7 +140,8 @@ public class SearchService {
 		setSearchRequestIndicesAndTypes(querySettings, srb);
 
 		QueryBuilder qb_fulltext = prepareQueryBuilder(querySettings);
-		srb.setQuery(applyCommonFilters(parsedFilterConfigService.getSearchFiltersForRequest(), qb_fulltext));
+		srb.setQuery(applyContentLevelSecurityFilter(applyCommonFilters(
+				parsedFilterConfigService.getSearchFiltersForRequest(), qb_fulltext)));
 
 		parsedFilterConfigService.getSearchFiltersForRequest().put("fulltext_query", new QueryFilterBuilder(qb_fulltext)); // ??
 		handleFacetSettings(querySettings, parsedFilterConfigService.getSearchFiltersForRequest(), srb);
@@ -404,6 +407,39 @@ public class SearchService {
 		} else {
 			return qb;
 		}
+	}
+
+	/**
+	 * Apply "document level security" filtering to the query filter. See <a
+	 * href="https://github.com/searchisko/searchisko/issues/143">issue #134</a>
+	 * 
+	 * @param qb to apply additional filter to
+	 * @return new query filter with applied security filtering
+	 */
+	protected QueryBuilder applyContentLevelSecurityFilter(QueryBuilder qb) {
+
+		if (authenticationUtilService.isUserInRole(Role.ADMIN))
+			return qb;
+
+		List<FilterBuilder> filters = new ArrayList<>();
+
+		filters
+				.add(FilterBuilders.missingFilter(ContentObjectFields.SYS_VISIBLE_FOR_ROLES).existence(true).nullValue(true));
+
+		if (authenticationUtilService.isAuthenticatedUser()) {
+			Set<String> roles = authenticationUtilService.getUserRoles();
+			if (roles != null && !roles.isEmpty()) {
+				filters.add(FilterBuilders.termsFilter(ContentObjectFields.SYS_VISIBLE_FOR_ROLES, roles));
+			}
+		}
+
+		FilterBuilder securityFilter = null;
+		if (filters.size() == 1) {
+			securityFilter = filters.get(0);
+		} else {
+			securityFilter = new OrFilterBuilder(filters.toArray(new FilterBuilder[filters.size()]));
+		}
+		return new FilteredQueryBuilder(qb, securityFilter);
 	}
 
 	/**

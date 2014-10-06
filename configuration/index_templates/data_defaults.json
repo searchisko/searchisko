@@ -48,6 +48,7 @@
 				"sys_content_id"	: { "type": "string", "analyzer": "keyword" },
 				"sys_id"	: { "type": "string", "analyzer": "keyword" },
 				"sys_type"	: { "type": "string", "analyzer": "keyword", "store": "yes" },
+				"sys_visible_for_roles"	: { "type": "string",	"analyzer": "keyword", "store" : "no" },
 				"sys_title"	: { "type": "string", "store": "yes", "term_vector": "with_positions_offsets" },
 				"sys_url_view"	: { "type": "string", "store": "yes" },
 				"sys_description"	: { "type": "string", "store": "yes", "term_vector": "with_positions_offsets" },

@@ -1,0 +1,22 @@
+{
+  "filtered" : {
+    "query" : {
+      "match_all" : { }
+    },
+    "filter" : {
+      "or" : {
+        "filters" : [ {
+          "missing" : {
+            "field" : "sys_visible_for_roles",
+            "null_value" : true,
+            "existence" : true
+          }
+        }, {
+          "terms" : {
+            "sys_visible_for_roles" : [ "role1", "role2" ]
+          }
+        } ]
+      }
+    }
+  }
+}

@@ -187,4 +187,6 @@ public class FeedRestServiceTest {
 
 	}
 
+	// TODO #143 assert content level security reflected in feed API
+
 }

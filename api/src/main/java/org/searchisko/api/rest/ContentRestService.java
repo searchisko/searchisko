@@ -38,6 +38,7 @@ import org.elasticsearch.action.index.IndexRequestBuilder;
 import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
+import org.elasticsearch.common.settings.SettingsException;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.indices.IndexMissingException;
 import org.elasticsearch.search.sort.SortOrder;
@@ -334,6 +335,8 @@ public class ContentRestService extends RestServiceBase {
 		// Copy distinct data from content to normalized fields
 		content.put(ContentObjectFields.SYS_TAGS, content.get(ContentObjectFields.TAGS));
 
+		processFieldSysVisibleForRoles(content);
+
 		// Fill type of content from configuration
 		if (content.containsKey(ContentObjectFields.SYS_CONTENT)) {
 			content.put(ContentObjectFields.SYS_CONTENT_CONTENT_TYPE,
@@ -364,6 +367,19 @@ public class ContentRestService extends RestServiceBase {
 		IndexRequestBuilder irb = searchClientService.getClient().prepareIndex(indexName, indexType, sysContentId)
 				.setSource(content);
 		return new PushContentImplRet(irb, contentWarnings, sysContentId, contentId, content);
+	}
+
+	protected void processFieldSysVisibleForRoles(Map<String, Object> content) {
+		try {
+			List<String> vr = SearchUtils.getListOfStringsFromJsonMap(content, ContentObjectFields.SYS_VISIBLE_FOR_ROLES);
+			if (vr != null) {
+				content.put(ContentObjectFields.SYS_VISIBLE_FOR_ROLES, vr);
+			} else {
+				content.remove(ContentObjectFields.SYS_VISIBLE_FOR_ROLES);
+			}
+		} catch (SettingsException e) {
+			throw new BadFieldException(ContentObjectFields.SYS_VISIBLE_FOR_ROLES);
+		}
 	}
 
 	protected static final class PushContentImplRet {
