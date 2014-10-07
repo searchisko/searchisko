@@ -10,9 +10,14 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.logging.SimpleFormatter;
+import java.util.logging.StreamHandler;
 
 import org.apache.commons.io.IOUtils;
+import org.elasticsearch.common.joda.time.DateTime;
+import org.elasticsearch.common.joda.time.LocalDate;
 import org.elasticsearch.common.settings.SettingsException;
 import org.junit.Assert;
 import org.junit.Test;
@@ -34,12 +39,23 @@ public class Jive6ContributorProfileProviderTest {
 	public static void main(String[] args) {
 		Jive6ContributorProfileProvider provider = new Jive6ContributorProfileProvider();
 		provider.appConfiguration = new AppConfiguration("adp");
+		String providerUsername = "";
+		String providerPassword = "";
+
 		ContributorProfileProviderConfig contributorProfileProviderConfig = new ContributorProfileProviderConfig(
-				"https://developer.jboss.org", "test", null);
+				"https://developer.jboss.org", providerUsername, providerPassword);
 		provider.appConfiguration.setContributorProfileProviderConfig(contributorProfileProviderConfig);
 
 		provider.init();
+
+		// Set up logging
 		provider.log = Logger.getLogger(Jive6ContributorProfileProvider.class.getName());
+		provider.log.setLevel(Level.FINEST);
+
+		Logger rootLogger = Logger.getLogger("");
+		StreamHandler handler = new StreamHandler(System.out, new SimpleFormatter());
+		handler.setLevel(Level.FINEST);
+		rootLogger.addHandler(handler);
 
 		ContributorProfile profile = provider.getProfile("lkrzyzanek");
 		provider.destroy();
@@ -78,6 +94,9 @@ public class Jive6ContributorProfileProviderTest {
 		Assert.assertEquals(2, profile.getEmails().size());
 		Assert.assertTrue(profile.getEmails().contains("fake@fake.com"));
 		Assert.assertTrue(profile.getEmails().contains("fake2@fake.com"));
+
+		Assert.assertEquals(new DateTime(2014, 10, 25, 0, 0).toLocalDate(), new LocalDate(profile.getHireDate()));
+		Assert.assertEquals(new DateTime(2014, 11, 19, 0, 0).toLocalDate(), new LocalDate(profile.getLeaveDate()));
 
 		Map<String, Object> contributorProfile = profile.getProfileData();
 
