@@ -52,34 +52,35 @@ public class BasicAuthenticationFilter implements Filter {
 			// #158 - Do not consume http basic authentication header when user is already authenticated
 			log.log(Level.FINE, "Request already authenticated.");
 			chain.doFilter(req, resp);
-		} else {
-			Enumeration<String> authentication = request.getHeaders("Authorization");
-			while (authentication.hasMoreElements()) {
-				String auth = authentication.nextElement();
-				log.log(Level.FINEST, "Basic Authentication, examining: {0}", auth);
-				if (!auth.startsWith("Basic")) {
-					continue;
-				}
-				String hash = auth.substring(6);
+			return;
+		}
 
-				// Alternatively use org.jboss.resteasy.util.Base64
-				byte[] decoded = Base64.decodeBase64(hash);
-				String usernamePassword = new String(decoded);
+		Enumeration<String> authentication = request.getHeaders("Authorization");
+		while (authentication.hasMoreElements()) {
+			String auth = authentication.nextElement();
+			log.log(Level.FINEST, "Basic Authentication, examining: {0}", auth);
+			if (!auth.startsWith("Basic")) {
+				continue;
+			}
+			String hash = auth.substring(6);
 
-				int colon = usernamePassword.indexOf(':');
-				if (colon > 0) {
-					String username = usernamePassword.substring(0, colon);
-					String password = usernamePassword.substring(colon + 1, usernamePassword.length());
+			// Alternatively use org.jboss.resteasy.util.Base64
+			byte[] decoded = Base64.decodeBase64(hash);
+			String usernamePassword = new String(decoded);
 
-					log.log(Level.FINE, "Requiring Basic Authentication for username: {0}", username);
-					try {
-						request.login(username, password);
-						log.log(Level.FINE, "Authenticated request: {0}", request.getUserPrincipal());
-					} catch (final ServletException e) {
-						log.log(Level.FINE, "Custom authentication failed.", e);
-						response.sendError(HttpServletResponse.SC_FORBIDDEN, e.getMessage());
-						return;
-					}
+			int colon = usernamePassword.indexOf(':');
+			if (colon > 0) {
+				String username = usernamePassword.substring(0, colon);
+				String password = usernamePassword.substring(colon + 1, usernamePassword.length());
+
+				log.log(Level.FINE, "Requiring Basic Authentication for username: {0}", username);
+				try {
+					request.login(username, password);
+					log.log(Level.FINE, "Authenticated request: {0}", request.getUserPrincipal());
+				} catch (final ServletException e) {
+					log.log(Level.FINE, "Custom authentication failed.", e);
+					response.sendError(HttpServletResponse.SC_FORBIDDEN, e.getMessage());
+					return;
 				}
 			}
 		}

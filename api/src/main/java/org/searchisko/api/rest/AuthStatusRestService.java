@@ -12,7 +12,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.annotation.security.PermitAll;
-import javax.annotation.security.RolesAllowed;
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
 import javax.ws.rs.GET;
@@ -23,7 +22,6 @@ import javax.ws.rs.core.MediaType;
 
 import org.apache.commons.lang.StringUtils;
 import org.searchisko.api.rest.exception.NotAuthenticatedException;
-import org.searchisko.api.security.Role;
 import org.searchisko.api.service.AuthenticationUtilService;
 
 /**
@@ -49,7 +47,6 @@ public class AuthStatusRestService {
 	@Path("/status")
 	@Produces(MediaType.APPLICATION_JSON)
 	@PermitAll
-	@RolesAllowed({ Role.CONTRIBUTOR })
 	public Map<String, Object> authStatus(@QueryParam(RESPONSE_FIELD_ROLES) String rolesQp) {
 		boolean authenticated = false;
 		Map<String, Object> ret = new HashMap<>();
