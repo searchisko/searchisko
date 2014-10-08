@@ -41,6 +41,10 @@
 	<filter>
 		<filter-name>Basic Authentication Consumer Filter</filter-name>
 		<filter-class>org.searchisko.api.filter.BasicAuthenticationFilter</filter-class>
+		<init-param>
+			<param-name>excludedUrl</param-name>
+			<param-value>/auth/status</param-value>
+		</init-param>
 	</filter>
 
 	<!-- ###### Actual Roles request wrapper (#147) ###### -->

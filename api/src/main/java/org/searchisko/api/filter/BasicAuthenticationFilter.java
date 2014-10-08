@@ -20,7 +20,10 @@ import org.apache.commons.codec.binary.Base64;
 
 /**
  * Filter consuming HTTP Basic Authentication and if present then requires login.
- * HTTP Basic Challenge is handled on REST layer in ProviderHttpBasicAuthInterceptor or on Filter/Servlet level
+ * HTTP Basic Challenge is handled on REST layer in ProviderHttpBasicAuthInterceptor or on Filter/Servlet level.
+ * <p></p>
+ * Configuration parameters:<br/>
+ * - excludedUrl - URL ending with this value will be excluded
  *
  * @author Libor Krzyzanek
  * @see javax.servlet.http.HttpServletRequest#login(String, String)
@@ -31,9 +34,15 @@ public class BasicAuthenticationFilter implements Filter {
 	@Inject
 	protected Logger log;
 
+	public static final String PARAM_EXCLUDED_URL = "excludedUrl";
+
+	protected String excludedUrl;
+
 	@Override
 	public void init(FilterConfig filterConfig) throws ServletException {
 		log.log(Level.INFO, "Initializing HTTP Basic Authentication Filter");
+		setExcludedUrl(filterConfig.getInitParameter(PARAM_EXCLUDED_URL));
+		log.log(Level.FINE, "Excluded URL: {0}", excludedUrl);
 	}
 
 	@Override
@@ -46,6 +55,12 @@ public class BasicAuthenticationFilter implements Filter {
 			log.log(Level.FINEST, "Request headers: {0}", Collections.list(request.getHeaderNames()));
 			log.log(Level.FINEST, "Basic Authentication, authentications: {0}", Collections.list(request.getHeaders("Authorization")));
 			log.log(Level.FINEST, "Current principal: {0}", request.getUserPrincipal());
+		}
+
+		if (excludedUrl != null && request.getRequestURI().endsWith(excludedUrl)) {
+			log.log(Level.FINE, "URL ignored. URL: {0}", request.getRequestURI());
+			chain.doFilter(req, resp);
+			return;
 		}
 
 		if (request.getUserPrincipal() != null) {
@@ -90,5 +105,9 @@ public class BasicAuthenticationFilter implements Filter {
 	@Override
 	public void destroy() {
 
+	}
+
+	public void setExcludedUrl(String excludedUrl) {
+		this.excludedUrl = excludedUrl;
 	}
 }

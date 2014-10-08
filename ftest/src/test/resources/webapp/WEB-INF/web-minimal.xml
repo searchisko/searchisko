@@ -43,6 +43,7 @@
 	<filter>
 		<filter-name>Basic Authentication Consumer Filter</filter-name>
 		<filter-class>org.searchisko.api.filter.BasicAuthenticationFilter</filter-class>
+		<!-- excludedUrl parameter not present because filter is used for contributor authentication as well -->
 	</filter>
 
 	<!-- ###### CAS SSO begin ###### -->
