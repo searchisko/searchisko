@@ -2,6 +2,7 @@
     "jbossorg_blogpost" : {
         "_all" : {"enabled" : false},
         "properties" : {
+            "product" : {"type" : "boolean"},
             "tags" : {"type" : "string", "index" : "no"},
             "author" : {"type" : "string", "index" : "no"},
             "avatar_link" : {"type" : "string", "index" : "no"},

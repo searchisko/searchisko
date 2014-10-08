@@ -3,6 +3,7 @@
         "_all" : {"enabled" : true},
         "properties" : {
             "project_key" : {"type" : "string", "analyzer" : "keyword"},
+            "product" : {"type" : "boolean"},
             "source"      : {"type" : "string", "analyzer" : "keyword"},
             "project_name" : {"type" : "string", "index" : "no"},
             "issue_type" : {"type" : "string", "index" : "no"},

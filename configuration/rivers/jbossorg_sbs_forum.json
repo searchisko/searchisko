@@ -6,7 +6,7 @@
         "urlGetSpaces"					: "https://developer.jboss.org/data-api/spaces.jspa",
         "getSpacesResField"			: "spaces",
         "spacesIndexed" : "2154,2298,2301,2302,2306,2308,2313,2314,2316,2317,2321",
-        "username" 							: "dcp-sbs-integration",
+        "username"                                                     : "dcp-sbs-integration",
         "timeout"               : "20s",
         "indexUpdatePeriod"     : "10m",
         "indexFullUpdatePeriod" : "10d",
@@ -37,6 +37,7 @@
             "sys_content"           : {"remote_field" : "content"},
             "sys_content_content-type" : {"remote_field" : "prep_content_content-type"},
             "sys_content_plaintext" : {"remote_field" : "prep_content_plaintext"},
+            "product"               : {"remote_field" : "prep_product"},
             "tags"                  : {"remote_field" : "tags"},
             "sys_tags"              : {"remote_field" : "tags"},
             "authors"               : {"remote_field" : "authors", "value_filter" : "user"}
@@ -150,7 +151,10 @@
 	                    },{
 						            "idx_result_field" : "name",
 						            "target_field"     : "prep_project_name"
-					            }
+					    },{
+                            "idx_result_field" : "type_specific_code.product",
+                            "target_field"     : "prep_product"
+                        }
                     ]
                 } 
             },{ 

@@ -25,6 +25,7 @@
             "sys_activity_dates"    : {"jira_field" : "prep_activity_dates"},
             "sys_last_activity_date": {"jira_field" : "prep_last_activity_date"},
             "sys_project"           : {"jira_field" : "prep_project"},
+            "product"               : {"jira_field" : "prep_product"},
             "sys_project_name"      : {"jira_field" : "prep_project_name"},
             "sys_contributors"      : {"jira_field" : "prep_contributors"},
             "project_name"          : {"jira_field" : "fields.project.name"},
@@ -119,7 +120,10 @@
 						            "idx_result_field" : "name",
 						            "target_field"     : "prep_project_name",
 						            "value_default"    : "{fields.project.name}"
-					            }
+					    },{
+                            "idx_result_field" : "type_specific_code.product",
+                            "target_field"     : "prep_product"
+                        }
                     ]
                 } 
             },{ 

@@ -36,6 +36,7 @@
             "sys_content"           : {"remote_field" : "content"},
             "sys_content_content-type" : {"remote_field" : "prep_content_content-type"},
             "sys_content_plaintext" : {"remote_field" : "prep_content_plaintext"},
+            "product"               : {"remote_field" : "prep_product"},
             "tags"                  : {"remote_field" : "tags"},
             "sys_tags"              : {"remote_field" : "tags"},
             "authors"               : {"remote_field" : "authors", "value_filter" : "user"}
@@ -149,7 +150,10 @@
 	                    },{
 						            "idx_result_field" : "name",
 						            "target_field"     : "prep_project_name"
-					            }
+					    },{
+                            "idx_result_field" : "type_specific_code.product",
+                            "target_field"     : "prep_product"
+                        }
                     ]
                 } 
             },{ 
