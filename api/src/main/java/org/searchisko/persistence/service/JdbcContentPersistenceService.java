@@ -22,6 +22,8 @@ import java.util.logging.Logger;
 import javax.annotation.PostConstruct;
 import javax.ejb.LocalBean;
 import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.naming.NamingException;
@@ -80,6 +82,7 @@ public class JdbcContentPersistenceService implements ContentPersistenceService 
 	}
 
 	@Override
+	@TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
 	public void store(String id, String sysContentType, Map<String, Object> content) {
 		String tableName = getTableName(sysContentType);
 		ensureTableExists(tableName);
@@ -119,13 +122,15 @@ public class JdbcContentPersistenceService implements ContentPersistenceService 
 						jsonString, sysContentType, updated, id);
 			}
 		} catch (SQLException e) {
-			log.severe(String.format("Error while storing content in the DB -- %s", e.getMessage()));
+			log.severe(String.format("Error while storing content of type '" + sysContentType + "' with id '" + id
+					+ "' in the DB -- %s", e.getMessage()));
 			throw new RuntimeException(e);
 		}
 
 	}
 
 	@Override
+	@TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
 	public void delete(String id, String sysContentType) {
 		String tableName = getTableName(sysContentType);
 		if (!checkTableExists(tableName))
