@@ -120,6 +120,7 @@ public class JdbcContentPersistenceService implements ContentPersistenceService 
 			}
 		} catch (SQLException e) {
 			log.severe(String.format("Error while storing content in the DB -- %s", e.getMessage()));
+			throw new RuntimeException(e);
 		}
 
 	}
