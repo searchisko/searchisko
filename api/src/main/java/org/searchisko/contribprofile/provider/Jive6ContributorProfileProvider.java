@@ -6,6 +6,8 @@
 package org.searchisko.contribprofile.provider;
 
 import java.io.IOException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -13,6 +15,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.TimeZone;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -46,7 +49,7 @@ import org.searchisko.contribprofile.model.ContributorProfile;
  * Jive 6 implementation of Contributor Provider. <br/>
  * Documentation for Jive 6 REST API: https://developers.jivesoftware.com/api/v3/rest/PersonService.html Access to Jive
  * 6 has to be authenticated. See AppConfiguration
- * 
+ *
  * @author Libor Krzyzanek
  * @author Vlastimil Elias (velias at redhat dot com)
  */
@@ -61,6 +64,11 @@ public class Jive6ContributorProfileProvider implements ContributorProfileProvid
 	protected static final String DOMAIN_FACEBOOK_COM = "facebook.com";
 	protected static final String DOMAIN_GITHUB_COM = "github.com";
 	protected static final String DOMAIN_TWITTER_COM = "twitter.com";
+
+	protected static final String HIRE_DATE_KEY = "Hire Date";
+	protected static final String LEAVE_DATE_KEY = "Leaving Date";
+	protected static final String DATE_PATTERN = "MM/dd/yyyy";
+
 
 	@Inject
 	protected Logger log;
@@ -126,7 +134,7 @@ public class Jive6ContributorProfileProvider implements ContributorProfileProvid
 
 	/**
 	 * Get data from provider
-	 * 
+	 *
 	 * @param url
 	 * @param username
 	 * @param password
@@ -248,8 +256,11 @@ public class Jive6ContributorProfileProvider implements ContributorProfileProvid
 			fullName = (String) map.get("displayName");
 		}
 
+		Long hireDate = (Long) profileData.remove(HIRE_DATE_KEY);
+		Long leaveDate = (Long) profileData.remove(LEAVE_DATE_KEY);
+
 		ContributorProfile profile = new ContributorProfile((String) profileData.get(ContentObjectFields.SYS_ID), fullName,
-				primaryEmail, getEmails(emailsObject), typeSpecificCodes);
+				primaryEmail, getEmails(emailsObject), typeSpecificCodes, hireDate, leaveDate);
 
 		profile.setProfileData(profileData);
 
@@ -305,7 +316,8 @@ public class Jive6ContributorProfileProvider implements ContributorProfileProvid
 		List<Map<String, Object>> jiveProfile = (List<Map<String, Object>>) jiveObject.get("profile");
 		if (jiveProfile != null) {
 			for (Map<String, Object> p : jiveProfile) {
-				switch ((String) p.get(JIVE_PROFILE_NAME_KEY)) {
+				String profileNameKey = (String) p.get(JIVE_PROFILE_NAME_KEY);
+				switch (profileNameKey) {
 				case "Biography":
 					profileData.put("aboutMe", p.get(JIVE_PROFILE_VALUE_KEY));
 					profileData.put("sys_description", p.get(JIVE_PROFILE_VALUE_KEY));
@@ -336,6 +348,18 @@ public class Jive6ContributorProfileProvider implements ContributorProfileProvid
 					break;
 				case "Google Profile":
 					storeAccountInfo(accounts, DOMAIN_GOOGLE_COM, DCP_PROFILE_ACCOUNT_LINK, p.get(JIVE_PROFILE_VALUE_KEY));
+					break;
+				case HIRE_DATE_KEY:
+				case LEAVE_DATE_KEY:
+					String rawValue = (String) p.get(JIVE_PROFILE_VALUE_KEY);
+					SimpleDateFormat sdf = new SimpleDateFormat(DATE_PATTERN);
+					sdf.setTimeZone(TimeZone.getTimeZone("GMT"));
+					sdf.setLenient(false);
+					try {
+						profileData.put(profileNameKey, sdf.parse(rawValue).getTime());
+					} catch (ParseException e) {
+						// nothing to set
+					}
 					break;
 				}
 			}
@@ -373,7 +397,7 @@ public class Jive6ContributorProfileProvider implements ContributorProfileProvid
 
 	/**
 	 * Safe getter for <code>jive.profile</code> field value.
-	 * 
+	 *
 	 * @param jiveObject to get profile value from
 	 * @param jiveLabel <code>jive_label</code> for profile field value we can obtain
 	 * @return profile field value or null
@@ -399,7 +423,7 @@ public class Jive6ContributorProfileProvider implements ContributorProfileProvid
 
 	/**
 	 * Get list of email addresses from JIVE profile <code>emails</code> structure.
-	 * 
+	 *
 	 * @param emailsObject JIVE profile <code>emails</code> structure
 	 * @return list of emails. never null.
 	 */
@@ -436,7 +460,7 @@ public class Jive6ContributorProfileProvider implements ContributorProfileProvid
 
 	/**
 	 * Get primary email address from JIVE profile <code>emails</code> structure.
-	 * 
+	 *
 	 * @param emailsObject JIVE profile <code>emails</code> structure.
 	 * @return primary email address or null if not found
 	 */

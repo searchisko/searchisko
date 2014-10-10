@@ -80,6 +80,12 @@ throw 'allowIllegalResourceCall is false.';
     }, {
       "value" : "https://twitter.com/uname-tw",
       "jive_label" : "Twitter URL"
+    }, {
+      "value" : "10/25/2014",
+      "jive_label" : "Hire Date"
+    }, {
+      "value" : "11/19/2014",
+      "jive_label" : "Leaving Date"
     } ],
     "external" : false,
     "visible" : true,

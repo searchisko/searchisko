@@ -12,6 +12,8 @@
 					"fulltext" : { "type": "string", "index": "analyzed" }
 				}
 			},
+			"hire_date"     : { "type" : "date", "store" : true, "format" : "yyyy-MM-dd" },
+			"leave_date"    : { "type" : "date", "store" : true, "format" : "yyyy-MM-dd" },
 			"type_specific_code" : {
 				"type" : "object",
 				"properties" : {

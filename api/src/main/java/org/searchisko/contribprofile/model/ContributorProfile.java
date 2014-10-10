@@ -11,7 +11,7 @@ import java.util.Map;
 import org.searchisko.api.util.SearchUtils;
 
 /**
- * Model object for Contributor Profile data readed from remote profile provider.
+ * Model object for Contributor Profile data read from remote profile provider.
  * 
  * @author Libor Krzyzanek
  * @author Vlastimil Elias (velias at redhat dot com)
@@ -28,13 +28,22 @@ public class ContributorProfile {
 
 	private Map<String, List<String>> typeSpecificCodes;
 
+	private Long hireDate;
+
+	private Long leaveDate;
+
 	/**
 	 * <code>contributor_profile</code> JSON data structure.
 	 */
 	private Map<String, Object> profileData;
 
 	public ContributorProfile(String id, String fullName, String primaryEmail, List<String> emails,
-			Map<String, List<String>> typeSpecificCodes) {
+							  Map<String, List<String>> typeSpecificCodes) {
+		this(id, fullName, primaryEmail, emails, typeSpecificCodes, null, null);
+	}
+
+	public ContributorProfile(String id, String fullName, String primaryEmail, List<String> emails,
+			Map<String, List<String>> typeSpecificCodes, Long hireDate, Long leaveDate) {
 		super();
 		id = SearchUtils.trimToNull(id);
 		fullName = SearchUtils.trimToNull(fullName);
@@ -48,6 +57,8 @@ public class ContributorProfile {
 		this.primaryEmail = primaryEmail;
 		this.emails = emails;
 		this.typeSpecificCodes = typeSpecificCodes;
+		this.hireDate = hireDate;
+		this.leaveDate = leaveDate;
 	}
 
 	public Map<String, Object> getProfileData() {
@@ -78,10 +89,25 @@ public class ContributorProfile {
 		return id;
 	}
 
-	@Override
-	public String toString() {
-		return "ContributorProfile [id=" + id + ",primaryEmail=" + primaryEmail + ", fullName=" + fullName + ", emails="
-				+ emails + ", typeSpecificCodes=" + typeSpecificCodes + ", profileData=" + profileData + "]";
+	public Long getHireDate() {
+		return hireDate;
 	}
 
+	public Long getLeaveDate() {
+		return leaveDate;
+	}
+
+	@Override
+	public String toString() {
+		return "ContributorProfile{" +
+				"id='" + id + '\'' +
+				", primaryEmail='" + primaryEmail + '\'' +
+				", fullName='" + fullName + '\'' +
+				", emails=" + emails +
+				", typeSpecificCodes=" + typeSpecificCodes +
+				", hireDate=" + hireDate +
+				", leaveDate=" + leaveDate +
+				", profileData=" + profileData +
+				'}';
+	}
 }

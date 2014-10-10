@@ -5,12 +5,14 @@
  */
 package org.searchisko.api.service;
 
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TimeZone;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -100,6 +102,16 @@ public class ContributorService implements SearchableEntityService {
 	 * @see #getRolesByTypeSpecificCode(String, String)
 	 */
 	public static final String FIELD_ROLES = "roles";
+
+	/**
+	 * Contributor hire date
+	 */
+	public static final String FIELD_HIRE_DATE = "hire_date";
+
+	/**
+	 * Contributor leave date
+	 */
+	public static final String FIELD_LEAVE_DATE = "leave_date";
 
 	/**
 	 * Contributor document field containing Map structure with other unique identifiers used to map pushed data to the
@@ -551,7 +563,7 @@ public class ContributorService implements SearchableEntityService {
 	}
 
 	/**
-	 * Create or update Contributor record from {@link ContributorProfile} informations loaded from provider using type
+	 * Create or update Contributor record from {@link ContributorProfile} information loaded from provider using type
 	 * specific code.
 	 * <p>
 	 * A {@link ContributorCreatedEvent} or {@link ContributorUpdatedEvent} is fired for affected Contributor.
@@ -610,13 +622,24 @@ public class ContributorService implements SearchableEntityService {
 				contributorEntityId = contributorByEmail.getId();
 				contributorEntityContent = contributorByEmail.getSource();
 			} else {
-				contributorEntityContent = new HashMap<String, Object>();
+				contributorEntityContent = new HashMap<>();
 				contributorEntityContent.put(ContributorService.FIELD_CODE, contributorCode);
 			}
 		}
-
+		// Always update name, hire, leave date from profile
 		contributorEntityContent.put(FIELD_NAME, profile.getFullName());
 
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+		sdf.setTimeZone(TimeZone.getTimeZone("GMT"));
+		sdf.setLenient(false);
+		if (profile.getHireDate() != null) {
+			String value = sdf.format(profile.getHireDate());
+			contributorEntityContent.put(FIELD_HIRE_DATE, value);
+		}
+		if (profile.getLeaveDate() != null) {
+			String value = sdf.format(profile.getLeaveDate());
+			contributorEntityContent.put(FIELD_LEAVE_DATE, value);
+		}
 		Map<String, Object> newDataFromProfile = new HashMap<>();
 		newDataFromProfile.put(FIELD_EMAIL, profile.getEmails());
 		newDataFromProfile.put(FIELD_TYPE_SPECIFIC_CODE, profile.getTypeSpecificCodes());
