@@ -15,19 +15,21 @@ import org.junit.Test;
  */
 public class SecurityServiceTest {
 
+	@Test(expected = IllegalArgumentException.class)
+	public void main_noArguments() {
+		SecurityService.main(null);
+	}
+
+	@Test(expected = IllegalArgumentException.class)
+	public void main_badArguments() {
+		SecurityService.main(new String[] { "aa" });
+	}
+
+
 	@Test
 	public void main() {
-
-		// not NPE
-		SecurityService.main(null);
-
-		// no any exception
-		SecurityService.main(new String[] { "aa" });
-
-		// OK
 		SecurityService.main(new String[] { "provider1", "pwd" });
 		SecurityService.main(new String[] { "provider2", "pwd" });
-
 	}
 
 	@Test

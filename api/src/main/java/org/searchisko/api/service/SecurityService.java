@@ -5,6 +5,8 @@
  */
 package org.searchisko.api.service;
 
+import java.util.logging.Logger;
+
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Named;
 
@@ -26,14 +28,14 @@ public class SecurityService {
 	 * 
 	 * @param args - commandline arguments, username (provider name) as first parameter and password as second one.
 	 */
-	public static void main(String[] args) {
+	public static void main(String[] args) throws IllegalArgumentException {
 		if (args == null || args.length < 2) {
-			System.out
-					.println("You have to pass username (provider name) as first parameter and password as second one to obtain hash");
-			return;
+			throw new IllegalArgumentException("You have to pass username (provider name) as first parameter and password as second one to obtain hash");
 		}
+		Logger log = Logger.getLogger(SecurityService.class.getName());
+
 		SecurityService s = new SecurityService();
-		System.out.println("Hash for username (provider name) '" + args[0] + "' is: " + s.createPwdHash(args[0], args[1]));
+		log.info("Hash for username (provider name) '" + args[0] + "' is: " + s.createPwdHash(args[0], args[1]));
 	}
 
 	/**

@@ -1241,7 +1241,6 @@ public class SearchServiceTest extends SearchServiceTestBase {
 			Mockito.when(tested.authenticationUtilService.isAuthenticatedUser()).thenReturn(true);
 
 			QueryBuilder retqb = tested.applyContentLevelSecurityFilter(qb);
-			System.out.println(retqb);
 			TestUtils.assertJsonContentFromClasspathFile("/search/query_dlsecurity_filter_userwithroles.json",
 					retqb.toString());
 
