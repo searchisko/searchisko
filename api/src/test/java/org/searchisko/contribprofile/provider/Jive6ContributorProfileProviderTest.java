@@ -16,7 +16,6 @@ import java.util.logging.SimpleFormatter;
 import java.util.logging.StreamHandler;
 
 import org.apache.commons.io.IOUtils;
-import org.elasticsearch.common.joda.time.DateTime;
 import org.elasticsearch.common.joda.time.LocalDate;
 import org.elasticsearch.common.settings.SettingsException;
 import org.junit.Assert;
@@ -95,8 +94,8 @@ public class Jive6ContributorProfileProviderTest {
 		Assert.assertTrue(profile.getEmails().contains("fake@fake.com"));
 		Assert.assertTrue(profile.getEmails().contains("fake2@fake.com"));
 
-		Assert.assertEquals(new DateTime(2014, 10, 25, 0, 0).toLocalDate(), new LocalDate(profile.getHireDate()));
-		Assert.assertEquals(new DateTime(2014, 11, 19, 0, 0).toLocalDate(), new LocalDate(profile.getLeaveDate()));
+		Assert.assertEquals(new LocalDate(2014, 10, 25), new LocalDate(profile.getHireDate()));
+		Assert.assertEquals(new LocalDate(2014, 11, 19), new LocalDate(profile.getLeaveDate()));
 
 		Map<String, Object> contributorProfile = profile.getProfileData();
 
