@@ -7,16 +7,17 @@ package org.searchisko.contribprofile.provider;
 
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TimeZone;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
 import java.util.logging.StreamHandler;
 
 import org.apache.commons.io.IOUtils;
-import org.elasticsearch.common.joda.time.LocalDate;
 import org.elasticsearch.common.settings.SettingsException;
 import org.junit.Assert;
 import org.junit.Test;
@@ -94,8 +95,14 @@ public class Jive6ContributorProfileProviderTest {
 		Assert.assertTrue(profile.getEmails().contains("fake@fake.com"));
 		Assert.assertTrue(profile.getEmails().contains("fake2@fake.com"));
 
-		Assert.assertEquals(new LocalDate(2014, 10, 25), new LocalDate(profile.getHireDate()));
-		Assert.assertEquals(new LocalDate(2014, 11, 19), new LocalDate(profile.getLeaveDate()));
+		Calendar calendar = Calendar.getInstance();
+		calendar.setTimeZone(TimeZone.getTimeZone("GMT"));
+		calendar.set(Calendar.MILLISECOND, 0);
+
+		calendar.set(2014, Calendar.OCTOBER, 25, 0, 0, 0);
+		Assert.assertEquals(new Long(calendar.getTimeInMillis()), profile.getHireDate());
+		calendar.set(2014, Calendar.NOVEMBER, 19, 0, 0, 0);
+		Assert.assertEquals(new Long(calendar.getTimeInMillis()), profile.getLeaveDate());
 
 		Map<String, Object> contributorProfile = profile.getProfileData();
 
