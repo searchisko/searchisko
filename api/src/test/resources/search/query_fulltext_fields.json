@@ -1,5 +1,5 @@
 {
-    "query_string":{
+    "simple_query_string":{
         "query":"my query string",
         "fields":[
             "sys_description",

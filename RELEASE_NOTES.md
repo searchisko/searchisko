@@ -4,6 +4,11 @@ This document contains high-level release notes. More details can be found in [m
 
 ## 2.0.0
 
+Breaking:
+
+- Search API switched from `query_string_query` to `simple_query_string` type.
+ This change is needed to support improved security model. [#140](https://github.com/searchisko/searchisko/issues/140) 
+
 Improvements:
 
 - security - additional roles for authenticated user [#137](https://github.com/searchisko/searchisko/issues/137), [#147](https://github.com/searchisko/searchisko/issues/147)
@@ -17,6 +22,7 @@ Improvements:
 - New task for syncing all uses from contributor profile provider [#141](https://github.com/searchisko/searchisko/issues/141)
  
 Internal:
+
 - Upgrade to elasticsearch 1.3.0 [#48](https://github.com/searchisko/searchisko/issues/48)
 
 ## 1.1.1

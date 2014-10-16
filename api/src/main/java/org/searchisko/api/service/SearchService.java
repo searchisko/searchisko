@@ -35,7 +35,7 @@ import org.elasticsearch.index.query.OrFilterBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.index.query.QueryFilterBuilder;
-import org.elasticsearch.index.query.QueryStringQueryBuilder;
+import org.elasticsearch.index.query.SimpleQueryStringBuilder;
 import org.elasticsearch.search.facet.datehistogram.DateHistogramFacetBuilder;
 import org.elasticsearch.search.facet.terms.TermsFacetBuilder;
 import org.elasticsearch.search.sort.SortOrder;
@@ -313,7 +313,7 @@ public class SearchService {
 	/**
 	 * Prepare query builder based on query settings.
 	 * 
-	 * Under the hood it creates either {@link org.elasticsearch.index.query.QueryStringQueryBuilder} using fields
+	 * Under the hood it creates either {@link org.elasticsearch.index.query.SimpleQueryStringBuilder} using fields
 	 * configured in {@link ConfigService#CFGNAME_SEARCH_FULLTEXT_QUERY_FIELDS} config file or
 	 * {@link org.elasticsearch.index.query.MatchAllQueryBuilder} if query string is <code>null</code>.
 	 * 
@@ -322,7 +322,7 @@ public class SearchService {
 	 */
 	protected QueryBuilder prepareQueryBuilder(QuerySettings querySettings) {
 		if (querySettings.getQuery() != null) {
-			QueryStringQueryBuilder qb = QueryBuilders.queryString(querySettings.getQuery());
+			SimpleQueryStringBuilder qb = QueryBuilders.simpleQueryString(querySettings.getQuery());
 			Map<String, Object> fields = configService.get(ConfigService.CFGNAME_SEARCH_FULLTEXT_QUERY_FIELDS);
 			if (fields != null) {
 				for (String fieldName : fields.keySet()) {
