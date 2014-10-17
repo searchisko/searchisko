@@ -12,6 +12,9 @@ clear
 filename=$1
 
 sysurl=https://dcp-jbossorgdev.rhcloud.com
+if [ -n "${OPENSHIFT_JBOSSEAP_IP}" ]; then
+  sysurl=http://${OPENSHIFT_JBOSSEAP_IP}:8080
+fi
 if [ -n "$2" ]; then
   sysurl=$2
 fi
