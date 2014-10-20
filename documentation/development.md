@@ -161,7 +161,7 @@ to the `$EAP6HOME/standalone/deployments` folder.
 You can use [Eclipse with JBoss Tools](http://www.jboss.org/tools) or 
 [JBoss Developer Studio](https://devstudio.jboss.com) for this.
 
-The Searchisko REST API is then available at [`http://localhost:8080/v1/rest/`](http://localhost:8080/v1/rest/)  
+The Searchisko REST API is then available at [`http://localhost:8080/v2/rest/`](http://localhost:8080/v2/rest/)  
 The ElasticSearch search node REST API is available at [`http://localhost:15000/`](http://localhost:15000/)  
 
 **Note #1**: When you use the standard configuration of the embedded h2 database then data are lost
@@ -199,7 +199,7 @@ and add 'MySQL Database 5.5' cartridge into it.
 Then push content of this git repo (`git push openshift master` or `git push openshift {local_branch_name}:master` if working on branch)
 into the OpenShift application's git repo. Then Searchisko is built and deployed automatically.
 
-The Searchisko REST API is then available at `http://your_openshift_aplication_url/v1/rest/`  
+The Searchisko REST API is then available at `http://your_openshift_aplication_url/v2/rest/`  
 The ElasticSearch search node REST API is available only from gear shell at `http://$OPENSHIFT_JBOSSEAP_IP:15000/`,
 you have to use port forwarding to access it from outside.
 
@@ -227,7 +227,7 @@ After the Searchisko is deployed it's necessary to initialize it. Next initializ
    - contributors
 5. Update Contributor profiles by executing `update_contributor_profile` task, e.g.:
 
-		curl -X POST -H "Content-Type: application/json" --user jbossorg:jbossorgjbossorg https://your_openshift_aplication_url/v1/rest/tasks/task/update_contributor_profile -d '{"contributor_type_specific_code_type" : "jbossorg_username"}'
+		curl -X POST -H "Content-Type: application/json" --user jbossorg:jbossorgjbossorg https://your_openshift_aplication_url/v2/rest/tasks/task/update_contributor_profile -d '{"contributor_type_specific_code_type" : "jbossorg_username"}'
 
 6. Initialize ElasticSearch rivers if any used to collect data
 
@@ -259,7 +259,7 @@ In case you have already running instance and you'd like to create same instance
 7. Initialize Searchisko like from scratch. See section above
 8. Run task reindexation for each persisted content type. Example:
 
-		curl -X POST -H "Content-Type: application/json" --user jbossorg:jbossorgjbossorg https://your_openshift_aplication_url/v1/rest/tasks/task/reindex_from_persistence -d '{"sys_content_type" : "jbossorg_blog"}'
+		curl -X POST -H "Content-Type: application/json" --user jbossorg:jbossorgjbossorg https://your_openshift_aplication_url/v2/rest/tasks/task/reindex_from_persistence -d '{"sys_content_type" : "jbossorg_blog"}'
 
 To generate list of these commands from current configuration run
 

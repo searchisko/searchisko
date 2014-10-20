@@ -2,7 +2,7 @@
 
 ## This script uses system REST API to push contributors data
 ##
-## You can use first commandline parameter to change base URL of system API call (/v1/rest/... is appended automatically to this base URL)
+## You can use first commandline parameter to change base URL of system API call (/v2/rest/... is appended automatically to this base URL)
 ## You can use second commandline parameter to change system username
 ## You can use third commandline parameter to change system password
 
@@ -27,7 +27,7 @@ if [ -n "$3" ]; then
 fi
 
 outputfile=output.txt
-syscontributorapi=${sysurl}/v1/rest/contributor/
+syscontributorapi=${sysurl}/v2/rest/contributor/
 
 echo "Pushing Contributors to system API via ${syscontributorapi}"
 echo -n "" > $outputfile

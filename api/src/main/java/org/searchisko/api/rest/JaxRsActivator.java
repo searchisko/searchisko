@@ -18,7 +18,7 @@ import javax.ws.rs.core.Application;
  *
  * @author Libor Krzyzanek
  */
-@ApplicationPath("/v1/rest")
+@ApplicationPath("/v2/rest")
 public class JaxRsActivator extends Application {
 	/* class body intentionally left blank */
 }
