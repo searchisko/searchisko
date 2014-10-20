@@ -266,3 +266,12 @@ To generate list of these commands from current configuration run
         configuration/data/provider/print-persisted-content-types.py -U https://your_openshift_aplication_url
         or use -u and -p arguments to pass different username and password
 		configuration/data/provider/print-persisted-content-types.py -U https://your_openshift_aplication_url -u username -p password
+
+### Initialization from existing instance using Openshift backup/restore
+
+		rhc snapshot save searchisko1
+		rhc app create searchisko2 jbosseap-6 mysql-5.5 -g medium
+		rhc snapshot restore searchisko2 --filepath searchisko1.tar.gz
+		rhc app-deploy master --app searchisko2
+
+Note: app-deploy is needed because deployment replaces various variables by current Openshift values like `OPENSHIFT_MYSQL_DB_HOST` etc.
