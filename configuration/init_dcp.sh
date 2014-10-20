@@ -2,7 +2,7 @@
 
 ## This script uses Searchisko REST API to init DCP configurations only (no ES indices, no rivers)
 ##
-## You can use first commandline parameter to change base URL for Searchisko API call (/v1/rest/... is appended automatically to this base URL). If not present then OPENSHIFT_APP_DNS system property is be used. Default is http://localhost:8080
+## You can use first commandline parameter to change base URL for Searchisko API call (/v2/rest/... is appended automatically to this base URL). If not present then OPENSHIFT_APP_DNS system property is be used. Default is http://localhost:8080
 ## You can use second commandline parameter to change Searchisko admin username
 ## You can use third commandline parameter to change Searchisko admin password
 

@@ -17,7 +17,7 @@
 	<security-constraint>
 		<web-resource-collection>
 			<web-resource-name>REST api</web-resource-name>
-			<url-pattern>/v1/rest/*</url-pattern>
+			<url-pattern>/v2/rest/*</url-pattern>
 		</web-resource-collection>
 		<user-data-constraint>
 			<transport-guarantee>NONE</transport-guarantee>
@@ -131,28 +131,28 @@
 
 	<filter-mapping>
 		<filter-name>CORS Filter</filter-name>
-		<url-pattern>/v1/rest/*</url-pattern>
+		<url-pattern>/v2/rest/*</url-pattern>
 	</filter-mapping>
 
 	<filter-mapping>
 		<filter-name>CAS Single Sign Out Filter</filter-name>
-		<url-pattern>/v1/rest/auth/status</url-pattern>
+		<url-pattern>/v2/rest/auth/status</url-pattern>
 	</filter-mapping>
 	<filter-mapping>
 		<filter-name>CAS JAAS Authentication Filter</filter-name>
-		<url-pattern>/v1/rest/auth/status</url-pattern>
+		<url-pattern>/v2/rest/auth/status</url-pattern>
 	</filter-mapping>
 	<filter-mapping>
 		<filter-name>CAS Authentication Filter</filter-name>
-		<url-pattern>/v1/rest/auth/status</url-pattern>
+		<url-pattern>/v2/rest/auth/status</url-pattern>
 	</filter-mapping>
 	<filter-mapping>
 		<filter-name>Search ES Filter</filter-name>
-		<url-pattern>/v1/rest/sys/es/search/*</url-pattern>
+		<url-pattern>/v2/rest/sys/es/search/*</url-pattern>
 	</filter-mapping>
 	<filter-mapping>
 		<filter-name>Stats ES Filter</filter-name>
-		<url-pattern>/v1/rest/sys/es/stats/*</url-pattern>
+		<url-pattern>/v2/rest/sys/es/stats/*</url-pattern>
 	</filter-mapping>
 
 	<listener>

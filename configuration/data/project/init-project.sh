@@ -3,7 +3,7 @@
 ## This script uses Searchisko REST API to push one project data
 ##
 ## You have to use first commandline parameter to define project configuration json file to upload
-## You can use second commandline parameter to change base URL of system API call (/v1/rest/... is appended automatically to this base URL)
+## You can use second commandline parameter to change base URL of system API call (/v2/rest/... is appended automatically to this base URL)
 ## You can use third commandline parameter to change system username
 ## You can use fourth commandline parameter to change system password
 
@@ -30,7 +30,7 @@ if [ -n "$4" ]; then
 fi
 
 outputfile=output.txt
-sysprojectapi=${sysurl}/v1/rest/project/
+sysprojectapi=${sysurl}/v2/rest/project/
 
 code="${filename%.*}"
 

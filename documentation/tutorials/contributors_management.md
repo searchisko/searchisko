@@ -44,7 +44,7 @@ Jive running at developer.jboss.org is used as profile provider for **DCP**, jbo
 
 Contributor and 'Contributor profile' is created/updated from 'Profile provider' in these cases:
 
-* Contributor authenticates against Searchisko using [REST API's `/v1/rest/auth/status` operation](http://docs.jbossorg.apiary.io/#userauthenticationstatusapi) - jboss.org SSO session is used for **DCP** 
+* Contributor authenticates against Searchisko using [REST API's `/v2/rest/auth/status` operation](http://docs.jbossorg.apiary.io/#userauthenticationstatusapi) - jboss.org SSO session is used for **DCP** 
 * Searchisko administrator runs `update_contributor_profile` [Task](http://docs.jbossorg.apiary.io/#managementapicontentreindexationtasks) 
 
 
@@ -61,7 +61,7 @@ You can use `/contributor/search` operation to check this.
 You can also use `update_contributor_profile` admin task to create Contributor and relevant 'Contributor profile' from 'Profile provider', eg.:
 
 ````
-POST /v1/rest/tasks/task/update_contributor_profile
+POST /v2/rest/tasks/task/update_contributor_profile
 {
   "contributor_type_specific_code_type" : "jbossorg_username",
   "contributor_type_specific_code_value" : ["jdoyle","quimby","homers"]
@@ -88,7 +88,7 @@ You can't change Contributor's `code` by this method not to break data consisten
 You can also use `update_contributor_profile` admin task to update Contributor and relevant 'Contributor profile' from 'Profile provider', eg.:
 
 ````
-POST /v1/rest/tasks/task/update_contributor_profile
+POST /v2/rest/tasks/task/update_contributor_profile
 {
   "contributor_type_specific_code_type" : "jbossorg_username",
   "contributor_type_specific_code_value" : ["jdoyle","quimby","homers"]
@@ -112,7 +112,7 @@ You can use `update_contributor_profile` admin task to bulk
 update all Contributor with indicated `type_specific_code` and create/update relevant 'Contributor profile's from 'Profile provider'. eg.:
 
 ````
-POST /v1/rest/tasks/task/update_contributor_profile
+POST /v2/rest/tasks/task/update_contributor_profile
 {
   "contributor_type_specific_code_type" : "jbossorg_username"
 }

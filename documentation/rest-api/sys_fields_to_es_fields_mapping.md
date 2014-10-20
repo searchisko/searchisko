@@ -62,11 +62,11 @@ Now, in Searchisko documents live under differently organized (modelled) namespa
 An authenticated authority that is allowed to push new content (documents) into Searchisko is called a [content provider](management/content_provider.md) and its code goes into `sys_content_provider` field in every indexed document.
 Each content provider can create documents of predefined types (list of predefined document types is part of content provider definition). This document type goes into `sys_content_type` field.
 
-When you [post](http://docs.jbossorg.apiary.io/#post-%2Fv1%2Frest%2Fcontent%2F%7Bsys_content_type%7D%2F%7Bsys_content_id%7D)
+When you [post](http://docs.jbossorg.apiary.io/#post-%2Fv2%2Frest%2Fcontent%2F%7Bsys_content_type%7D%2F%7Bsys_content_id%7D)
 a document into Searchisko you use the following notation:
 
 ```
-curl --user ${username}:${password} -X POST <host>:<port>/v1/rest/content/{sys_content_type}/{sys_content_id} -d@json_file_name.json
+curl --user ${username}:${password} -X POST <host>:<port>/v2/rest/content/{sys_content_type}/{sys_content_id} -d@json_file_name.json
 ```
 where:
 
@@ -79,7 +79,7 @@ Part of the document type definition within content provider configuration are n
 When you index such document into Searchisko and [_search_](http://docs.jbossorg.apiary.io/#searchapi) for it later:
 
 ```
-https://dcp-jbossorgdev.rhcloud.com/v1/rest/search?query=sys_id:jbossorg_sbs_forum-158696&field=_source
+https://dcp-jbossorgdev.rhcloud.com/v2/rest/search?query=sys_id:jbossorg_sbs_forum-158696&field=_source
 ```
 the response will look similar to the following:
 

@@ -109,20 +109,20 @@ public class ESProxyFilterTest {
 
 		Assert.assertEquals("http://12.5.6.87:9200", tested.rewriteRequestUrl(servletRequest, targetUri));
 
-		Mockito.when(servletRequest.getRequestURI()).thenReturn("/v1/rest/sys/es/search");
+		Mockito.when(servletRequest.getRequestURI()).thenReturn("/v2/rest/sys/es/search");
 		Assert.assertEquals("http://12.5.6.87:9200", tested.rewriteRequestUrl(servletRequest, targetUri));
 
-		Mockito.when(servletRequest.getRequestURI()).thenReturn("/v1/rest/sys/es/search/");
+		Mockito.when(servletRequest.getRequestURI()).thenReturn("/v2/rest/sys/es/search/");
 		Assert.assertEquals("http://12.5.6.87:9200", tested.rewriteRequestUrl(servletRequest, targetUri));
 
-		Mockito.when(servletRequest.getRequestURI()).thenReturn("/v1/rest/sys/es/search/_all");
+		Mockito.when(servletRequest.getRequestURI()).thenReturn("/v2/rest/sys/es/search/_all");
 		Assert.assertEquals("http://12.5.6.87:9200/_all", tested.rewriteRequestUrl(servletRequest, targetUri));
 
-		Mockito.when(servletRequest.getRequestURI()).thenReturn("/v1/rest/sys/es/stats/_all/mytype");
+		Mockito.when(servletRequest.getRequestURI()).thenReturn("/v2/rest/sys/es/stats/_all/mytype");
 		Assert.assertEquals("http://12.5.6.87:9200/_all/mytype", tested.rewriteRequestUrl(servletRequest, targetUri));
 
 		// case - some context is added
-		Mockito.when(servletRequest.getRequestURI()).thenReturn("/context/v1/rest/sys/es/stats/_all/mytype");
+		Mockito.when(servletRequest.getRequestURI()).thenReturn("/context/v2/rest/sys/es/stats/_all/mytype");
 		Assert.assertEquals("http://12.5.6.87:9200/_all/mytype", tested.rewriteRequestUrl(servletRequest, targetUri));
 	}
 

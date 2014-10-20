@@ -2,7 +2,7 @@
 
 ## This script uses both Searchisko REST API and Elasticsearch http API to init Elasticsearch indices and DCP configurations. No rivers are installed.
 ##
-## You can use first commandline parameter to change base URL for Searchisko API call (/v1/rest/... is appended automatically to this base URL). If not present then OPENSHIFT_APP_DNS system property is be used. Default is http://localhost:8080
+## You can use first commandline parameter to change base URL for Searchisko API call (/v2/rest/... is appended automatically to this base URL). If not present then OPENSHIFT_APP_DNS system property is be used. Default is http://localhost:8080
 ## You can use second commandline parameter to change Searchisko admin username
 ## You can use third commandline parameter to change Searchisko admin password
 ## You can use fourth commandline parameter to define Elasticsearch http connector URL base. If not present then OPENSHIFT_JBOSSEAP_IP system property can be used to define IP/domainname part of URL (http protocol and port 15000 is used in this case). If not defined then default is: http://localhost:15000

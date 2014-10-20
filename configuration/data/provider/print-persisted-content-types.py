@@ -33,8 +33,8 @@ print "Get All Content Types with persist enabled"
 print "URL: ", url
 print "Username: ", username
 
-task_api = url + "/v1/rest/tasks/task/reindex_from_persistence"
-providers_api = url + "/v1/rest/provider/"
+task_api = url + "/v2/rest/tasks/task/reindex_from_persistence"
+providers_api = url + "/v2/rest/provider/"
 
 request = urllib2.Request(providers_api)
 base64string = base64.encodestring('%s:%s' % (username, password)).replace('\n', '')

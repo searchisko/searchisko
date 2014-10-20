@@ -1,6 +1,6 @@
-HOST: http://dcp.jboss.org/v1
+HOST: http://dcp.jboss.org/v2
 
---- Searchisko API v1 ---
+--- Searchisko API v2 ---
 ---
 # Overview
 
@@ -917,7 +917,7 @@ GET /rest/feed{?project,contributor,sys_type,tag,type,content_provider,query,sor
 	<?xml version="1.0" encoding="utf-8"?>
 	<feed xmlns="http://www.w3.org/2005/Atom">
 	  <title>DCP whole content feed</title>
-	  <id>http://dcp.org/v1/rest/feed</id>
+	  <id>http://dcp.org/v2/rest/feed</id>
 	  <updated>2012-12-06T06:34:55.000Z</updated>
 	  <generator>DCP</generator>
 	  <entry>
@@ -2014,7 +2014,7 @@ GET /rest/sys/auditlog{?operation,path,username,usertype,id,from,size,sort}
                 "operation": "GET",
                 "username": null,
                 "user_type": null,
-                "path": "/v1/rest/sys/info",
+                "path": "/v2/rest/sys/info",
                 "type": "audit",
                 "date": "2014-05-27T12:13:38.258Z"
             }
@@ -2027,7 +2027,7 @@ GET /rest/sys/auditlog{?operation,path,username,usertype,id,from,size,sort}
                 "operation": "GET",
                 "username": "jbossorg",
                 "user_type": "PROVIDER",
-                "path": "/v1/rest/sys/info",
+                "path": "/v2/rest/sys/info",
                 "type": "audit",
                 "date": "2014-05-27T12:14:01.646Z"
             }
