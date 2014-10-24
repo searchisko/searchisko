@@ -69,6 +69,7 @@ import static org.searchisko.api.rest.search.ConfigParseUtil.parseAggregationTyp
 public class SearchService {
 
 	public static final String CFGNAME_FIELD_VISIBLE_FOR_ROLES = "field_visible_for_roles";
+	public static final String CFGNAME_SOURCE_FILTERING_FOR_ROLES = "source_filtering_for_roles";
 
 	@Inject
 	protected SearchClientService searchClientService;
@@ -696,6 +697,7 @@ public class SearchService {
 		List<String> fields = null;
 
 		if (querySettings.getFields() != null) {
+			// TODO do not allow to use * there!
 			fields = querySettings.getFields();
 		} else {
 			try {
@@ -707,6 +709,7 @@ public class SearchService {
 
 		}
 
+		boolean isSourceReturned = false;
 		if (fields != null && !fields.isEmpty()) {
 			if (cf != null) {
 				@SuppressWarnings("unchecked")
@@ -719,6 +722,9 @@ public class SearchService {
 						if (roles != null && !roles.isEmpty()) {
 							if (authenticationUtilService.isUserInAnyOfRoles(false, roles)) {
 								fieldsFiltered.add(field);
+								if ("_source".equals(field.toLowerCase())) {
+									isSourceReturned = true;
+								}
 							}
 						} else {
 							fieldsFiltered.add(field);
@@ -732,8 +738,33 @@ public class SearchService {
 			}
 
 			srb.addFields((fields).toArray(new String[fields.size()]));
+		} else {
+			isSourceReturned = true;
 		}
 
+		if (isSourceReturned) {
+			handleSearchRequestFieldsSourceExcludes(srb, cf);
+		}
+
+	}
+
+	protected void handleSearchRequestFieldsSourceExcludes(SearchRequestBuilder srb, Map<String, Object> cf) {
+		@SuppressWarnings("unchecked")
+		Map<String, Object> cfgExcludes = (Map<String, Object>) cf.get(CFGNAME_SOURCE_FILTERING_FOR_ROLES);
+		if (cfgExcludes != null && !cfgExcludes.isEmpty() && !authenticationUtilService.isUserInRole(Role.ADMIN)) {
+			List<String> excludes = new ArrayList<>();
+			for (String exclude : cfgExcludes.keySet()) {
+				List<String> roles = SearchUtils.getListOfStringsFromJsonMap(cfgExcludes, exclude);
+				if (roles != null && !roles.isEmpty()) {
+					if (!authenticationUtilService.isUserInAnyOfRoles(false, roles)) {
+						excludes.add(exclude);
+					}
+				}
+			}
+			if (excludes != null && !excludes.isEmpty()) {
+				srb.setFetchSource(null, excludes.toArray(new String[excludes.size()]));
+			}
+		}
 	}
 
 	/**
