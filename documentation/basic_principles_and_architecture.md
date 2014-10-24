@@ -183,7 +183,7 @@ This component allows a user to retrieve/search content from the platform. It is
 used by both the JBoss Community Team developed websites (http://search.jboss.org
 and http://planet.jboss.org) and third-party/project team developed websites.
 
-The current search API supports a predefined set of filters and facets. The full ElasticSearch search 
+The current search API supports a predefined set of filters and aggregations. The full ElasticSearch search 
 API should be provided in the future but we need to first investigate whether or not this could
 introduce security concerns, eg. harvesting of email addresses, denial of service attacks, etc...
 

@@ -82,14 +82,14 @@ public class SearchRestServiceTest {
 			Mockito.when(
 					tested.searchService.performSearch(Mockito.eq(qs), Mockito.notNull(String.class),
 							Mockito.eq(StatsRecordType.SEARCH))).thenReturn(sr);
-			Mockito.when(tested.searchService.getIntervalValuesForDateHistogramFacets(Mockito.eq(qs))).thenReturn(
+			Mockito.when(tested.searchService.getIntervalValuesForDateHistogramAggregations(Mockito.eq(qs))).thenReturn(
 					new HashMap<String, String>());
 			Object response = tested.search(uriInfo);
 			Mockito.verify(uriInfo).getQueryParameters();
 			Mockito.verify(tested.querySettingsParser).parseUriParams(qp);
 			Mockito.verify(tested.searchService).performSearch(Mockito.eq(qs), Mockito.notNull(String.class),
 					Mockito.eq(StatsRecordType.SEARCH));
-			Mockito.verify(tested.searchService).getIntervalValuesForDateHistogramFacets(Mockito.eq(qs));
+			Mockito.verify(tested.searchService).getIntervalValuesForDateHistogramAggregations(Mockito.eq(qs));
 			Mockito.verifyNoMoreInteractions(tested.searchService);
 			TestUtils.assetStreamingOutputContentRegexp("\\{\"uuid\":\".+\",\"testfield\":\"testvalue\"\\}", response);
 		}

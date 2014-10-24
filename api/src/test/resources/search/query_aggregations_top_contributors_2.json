@@ -1,0 +1,56 @@
+{
+  "aggregations" : {
+    "top_contributors" : {
+      "global" : { },
+      "aggregations" : {
+        "top_contributors_filter" : {
+          "filter" : {
+            "and" : {
+              "filters" : [ {
+                "terms" : {
+                  "sys_tags" : [ "tag2", "tag1" ]
+                }
+              } ]
+            }
+          },
+          "aggregations" : {
+            "top_contributors_buckets" : {
+              "terms" : {
+                "field" : "sys_contributors",
+                "size" : 100
+              }
+            }
+          }
+        }
+      }
+    },
+    "top_contributors_selected" : {
+      "global" : { },
+      "aggregations" : {
+        "top_contributors_selected_filter" : {
+          "filter" : {
+            "and" : {
+              "filters" : [ {
+                "terms" : {
+                  "sys_contributors" : [ "John Doe <john@doe.org>" ]
+                }
+              }, {
+                "terms" : {
+                  "sys_tags" : [ "tag2", "tag1" ]
+                }
+              } ]
+            }
+          },
+          "aggregations" : {
+            "top_contributors_selected_buckets" : {
+              "terms" : {
+                "field" : "sys_contributors",
+                "size" : 30
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

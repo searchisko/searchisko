@@ -8,22 +8,22 @@ package org.searchisko.api.rest.search;
 import java.util.Map;
 
 /**
- * Parsed facet configuration.
+ * Parsed aggregation configuration.
  *
  * @author Lukas Vlcek
  * @since 1.0.2
  */
-public class SemiParsedFacetConfig {
+public class SemiParsedAggregationConfig {
 
 	/**
-	 * Supported facet types.
+	 * Supported aggregation types.
 	 */
-	public static enum FacetType {
+	public static enum AggregationType {
 		TERMS("terms"), DATE_HISTOGRAM("date_histogram");
 
 		private String type;
 
-		private FacetType(String type) {
+		private AggregationType(String type) {
 			this.type = type;
 		}
 
@@ -33,27 +33,27 @@ public class SemiParsedFacetConfig {
 		}
 	}
 
-	private String facetName;
-	private String facetType;
+	private String aggregationName;
+	private String aggregationType;
 	private String fieldName;
 	private Map<String, Object> optionalSettings;
 	private boolean filtered = false;
 	private int filteredSize = 0;
 
-	public void setFacetName(String value) {
-		this.facetName = value;
+	public void setAggregationName(String value) {
+		this.aggregationName = value;
 	}
 
-	public String getFacetName() {
-		return this.facetName;
+	public String getAggregationName() {
+		return this.aggregationName;
 	}
 
-	public void setFacetType(String value) {
-		this.facetType = value;
+	public void setAggregationType(String value) {
+		this.aggregationType = value;
 	}
 
-	public String getFacetType() {
-		return this.facetType;
+	public String getAggregationType() {
+		return this.aggregationType;
 	}
 
 	public void setFieldName(String value) {

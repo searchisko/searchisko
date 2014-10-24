@@ -1,0 +1,43 @@
+{
+  "aggregations" : {
+    "activity_dates_histogram" : {
+      "date_histogram" : {
+        "field" : "sys_activity_dates",
+        "interval" : "month"
+      }
+    },
+    "per_project_counts" : {
+      "global" : { },
+      "aggregations" : {
+        "per_project_counts_buckets" : {
+          "terms" : {
+            "field" : "sys_project",
+            "size" : 500
+          }
+        }
+      }
+    },
+    "tag_cloud" : {
+      "global" : { },
+      "aggregations" : {
+        "tag_cloud_buckets" : {
+          "terms" : {
+            "field" : "sys_tags",
+            "size" : 50
+          }
+        }
+      }
+    },
+    "top_contributors" : {
+      "global" : { },
+      "aggregations" : {
+        "top_contributors_buckets" : {
+          "terms" : {
+            "field" : "sys_contributors",
+            "size" : 100
+          }
+        }
+      }
+    }
+  }
+}

@@ -337,8 +337,8 @@ public class StatsClientService extends ElasticsearchClientService {
 			}
 			if (querySettings.getFields() != null && !querySettings.getFields().isEmpty())
 				source.put("query_fields", querySettings.getFields());
-			if (querySettings.getFacets() != null && !querySettings.getFacets().isEmpty())
-				source.put("query_facets", querySettings.getFacets());
+			if (querySettings.getAggregations() != null && !querySettings.getAggregations().isEmpty())
+				source.put("query_aggregations", querySettings.getAggregations());
 			if (querySettings.getSortBy() != null)
 				source.put("query_sortBy", querySettings.getSortBy().toString());
 			if (querySettings.getFrom() != null)

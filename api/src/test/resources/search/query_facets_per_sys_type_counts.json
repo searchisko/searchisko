@@ -1,1 +1,0 @@
-{"facets":{"per_sys_type_counts":{"terms":{"field":"sys_type","size":20},"global":true}}}

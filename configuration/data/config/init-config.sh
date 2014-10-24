@@ -4,7 +4,7 @@
 ##   - query fields (including boost value)
 ##   - response fields
 ##   - highlight fields
-##   - facet fields
+##   - aggregation fields
 ##   - filter fields
 ##
 ## You can use first commandline parameter to change base URL of system API call (/v2/rest/... is appended automatically to this base URL)

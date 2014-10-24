@@ -45,7 +45,7 @@ public class ResourcesTest {
 			// OK
 		}
 
-		// case - facet context initialized
+		// case - faces context initialized
 		try {
 			FacesContext fcMock = Mockito.mock(FacesContext.class);
 			FacesContextMock.setCurrentInstanceImpl(fcMock);

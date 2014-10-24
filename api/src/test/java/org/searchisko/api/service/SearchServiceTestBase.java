@@ -58,8 +58,8 @@ public abstract class SearchServiceTestBase {
 
 	protected ConfigService mockConfigurationService() {
 		ConfigService configService = Mockito.mock(ConfigService.class);
-		Map<String, Object> cfg = TestUtils.loadJSONFromClasspathFile("/search/search_fulltext_facets_fields.json");
-		Mockito.when(configService.get(ConfigService.CFGNAME_SEARCH_FULLTEXT_FACETS_FIELDS)).thenReturn(cfg);
+		Map<String, Object> cfg = TestUtils.loadJSONFromClasspathFile("/search/search_fulltext_aggregations_fields.json");
+		Mockito.when(configService.get(ConfigService.CFGNAME_SEARCH_FULLTEXT_AGGREGATIONS_FIELDS)).thenReturn(cfg);
 		Map<String, Object> cfg2 = TestUtils.loadJSONFromClasspathFile("/search/search_fulltext_filter_fields.json");
 		Mockito.when(configService.get(ConfigService.CFGNAME_SEARCH_FULLTEXT_FILTER_FIELDS)).thenReturn(cfg2);
 		return configService;

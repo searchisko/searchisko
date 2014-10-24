@@ -1,0 +1,15 @@
+{
+  "aggregations" : {
+    "per_sys_type_counts" : {
+      "global" : { },
+      "aggregations" : {
+        "per_sys_type_counts_buckets" : {
+          "terms" : {
+            "field" : "sys_type",
+            "size" : 20
+          }
+        }
+      }
+    }
+  }
+}

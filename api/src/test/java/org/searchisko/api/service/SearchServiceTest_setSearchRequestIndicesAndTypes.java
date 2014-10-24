@@ -250,7 +250,7 @@ public class SearchServiceTest_setSearchRequestIndicesAndTypes extends SearchSer
 			Mockito.verifyNoMoreInteractions(searchRequestBuilderMock);
 		}
 
-		// case - sys_type filter used with multiple values, no facet
+		// case - sys_type filter used with multiple values, no aggregation
 		{
 			Mockito.reset(tested.providerService, searchRequestBuilderMock, tested.indexNamesCache);
 			Mockito.when(tested.indexNamesCache.get(Mockito.anyString())).thenReturn(null);
@@ -273,7 +273,7 @@ public class SearchServiceTest_setSearchRequestIndicesAndTypes extends SearchSer
 			Mockito.verifyNoMoreInteractions(searchRequestBuilderMock);
 		}
 
-		// case - sys_type filter used with PER_SYS_TYPE_COUNTS facet. 'cosi' indexes are not included because
+		// case - sys_type filter used with PER_SYS_TYPE_COUNTS aggregation. 'cosi' indexes are not included because
 		// "search_all_excluded" : "true"
 		{
 			Mockito.reset(tested.providerService, searchRequestBuilderMock, tested.indexNamesCache);
@@ -282,7 +282,7 @@ public class SearchServiceTest_setSearchRequestIndicesAndTypes extends SearchSer
 			sysTypesRequested.add("issue");
 			filters.acknowledgeUrlFilterCandidate("sys_type", new ArrayList<>(sysTypesRequested));
 			tested.parsedFilterConfigService.prepareFiltersForRequest(filters);
-			querySettings.addFacet("per_sys_type_counts");
+			querySettings.addAggregation("per_sys_type_counts");
 			mockProviderConfiguration(tested, "/search/provider_1.json", "/search/provider_2.json");
 
 			tested.setSearchRequestIndicesAndTypes(querySettings, searchRequestBuilderMock);
@@ -294,10 +294,10 @@ public class SearchServiceTest_setSearchRequestIndicesAndTypes extends SearchSer
 			Mockito.verify(searchRequestBuilderMock).setIndices("idx_provider1_issue", "idx_provider1_mailing1",
 					"idx_provider1_mailing2", "idx_provider2_issue1", "idx_provider2_issue2", "idx_provider2_mailing");
 			Mockito.verifyNoMoreInteractions(searchRequestBuilderMock);
-			querySettings.getFacets().clear();
+			querySettings.getAggregations().clear();
 		}
 
-		// case - sys_type filter used with PER_SYS_TYPE_COUNTS facet. 'cosi' indexes included even
+		// case - sys_type filter used with PER_SYS_TYPE_COUNTS aggregation. 'cosi' indexes included even
 		// "search_all_excluded" : "true" because requested
 		{
 			Mockito.reset(tested.providerService, searchRequestBuilderMock, tested.indexNamesCache);
@@ -307,7 +307,7 @@ public class SearchServiceTest_setSearchRequestIndicesAndTypes extends SearchSer
 			sysTypesRequested.add("cosi");
 			filters.acknowledgeUrlFilterCandidate("sys_type", new ArrayList<>(sysTypesRequested));
 			tested.parsedFilterConfigService.prepareFiltersForRequest(filters);
-			querySettings.addFacet("per_sys_type_counts");
+			querySettings.addAggregation("per_sys_type_counts");
 			mockProviderConfiguration(tested, "/search/provider_1.json", "/search/provider_2.json");
 
 			tested.setSearchRequestIndicesAndTypes(querySettings, searchRequestBuilderMock);
@@ -320,7 +320,7 @@ public class SearchServiceTest_setSearchRequestIndicesAndTypes extends SearchSer
 					"idx_provider1_mailing2", "idx_provider1_cosi1", "idx_provider1_cosi2", "idx_provider2_issue1",
 					"idx_provider2_issue2", "idx_provider2_mailing", "idx_provider2_cosi1", "idx_provider2_cosi2");
 			Mockito.verifyNoMoreInteractions(searchRequestBuilderMock);
-			querySettings.getFacets().clear();
+			querySettings.getAggregations().clear();
 		}
 
 		// case - sys_type filter used with multiple values - cache hit

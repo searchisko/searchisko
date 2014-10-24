@@ -36,8 +36,12 @@ import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.index.query.QueryFilterBuilder;
 import org.elasticsearch.index.query.SimpleQueryStringBuilder;
-import org.elasticsearch.search.facet.datehistogram.DateHistogramFacetBuilder;
-import org.elasticsearch.search.facet.terms.TermsFacetBuilder;
+import org.elasticsearch.search.aggregations.AggregationBuilders;
+import org.elasticsearch.search.aggregations.bucket.filter.FilterAggregationBuilder;
+import org.elasticsearch.search.aggregations.bucket.global.GlobalBuilder;
+import org.elasticsearch.search.aggregations.bucket.histogram.DateHistogram;
+import org.elasticsearch.search.aggregations.bucket.histogram.DateHistogramBuilder;
+import org.elasticsearch.search.aggregations.bucket.terms.TermsBuilder;
 import org.elasticsearch.search.sort.SortOrder;
 import org.searchisko.api.ContentObjectFields;
 import org.searchisko.api.cache.IndexNamesCache;
@@ -45,12 +49,12 @@ import org.searchisko.api.model.QuerySettings;
 import org.searchisko.api.model.SortByValue;
 import org.searchisko.api.model.TimeoutConfiguration;
 import org.searchisko.api.rest.exception.NotAuthorizedException;
-import org.searchisko.api.rest.search.SemiParsedFacetConfig;
+import org.searchisko.api.rest.search.SemiParsedAggregationConfig;
 import org.searchisko.api.security.Role;
 import org.searchisko.api.service.ProviderService.ProviderContentTypeInfo;
 import org.searchisko.api.util.SearchUtils;
 
-import static org.searchisko.api.rest.search.ConfigParseUtil.parseFacetType;
+import static org.searchisko.api.rest.search.ConfigParseUtil.parseAggregationType;
 
 /**
  * Search business logic service.
@@ -144,7 +148,7 @@ public class SearchService {
 				parsedFilterConfigService.getSearchFiltersForRequest(), qb_fulltext)));
 
 		parsedFilterConfigService.getSearchFiltersForRequest().put("fulltext_query", new QueryFilterBuilder(qb_fulltext)); // ??
-		handleFacetSettings(querySettings, parsedFilterConfigService.getSearchFiltersForRequest(), srb);
+		handleAggregationSettings(querySettings, parsedFilterConfigService.getSearchFiltersForRequest(), srb);
 
 		setSearchRequestSort(querySettings, srb);
 		setSearchRequestHighlight(querySettings, srb);
@@ -163,7 +167,7 @@ public class SearchService {
 	 * 
 	 * @param querySettings to
 	 * @param srb ES search request builder to add searched indices and types to
-	 * @param NotAuthorizedException if current user has not permission to any of content he requested.
+	 * @throws  NotAuthorizedException if current user has not permission to any of content he requested.
 	 * 
 	 */
 	protected void setSearchRequestIndicesAndTypes(QuerySettings querySettings, SearchRequestBuilder srb)
@@ -207,17 +211,17 @@ public class SearchService {
 				Set<String> fn = parsedFilterConfigService.getFilterNamesForDocumentField(ContentObjectFields.SYS_TYPE);
 				sysTypesRequested = querySettings.getFilters().getFilterCandidateValues(fn);
 			}
-			boolean isSysTypeFacet = (querySettings.getFacets() != null && querySettings.getFacets().contains(
-					getFacetNameUsingSysTypeField()));
+			boolean isSysTypeAggregation = (querySettings.getAggregations() != null && querySettings.getAggregations().contains(
+					getAggregationNameUsingSysTypeField()));
 
 			// #142 - we can't cache for authenticated users due content type level security
 			String indexNameCacheKey = null;
 			if (!authenticationUtilService.isAuthenticatedUser()) {
-				indexNameCacheKey = prepareIndexNamesCacheKey(sysTypesRequested, isSysTypeFacet);
+				indexNameCacheKey = prepareIndexNamesCacheKey(sysTypesRequested, isSysTypeAggregation);
 				allQueryIndices = indexNamesCache.get(indexNameCacheKey);
 			}
 			if (allQueryIndices == null) {
-				allQueryIndices = prepareIndexNamesForSysType(sysTypesRequested, isSysTypeFacet);
+				allQueryIndices = prepareIndexNamesForSysType(sysTypesRequested, isSysTypeAggregation);
 				if (indexNameCacheKey != null) {
 					indexNamesCache.put(indexNameCacheKey, allQueryIndices);
 				}
@@ -242,15 +246,15 @@ public class SearchService {
 	 * Prepare key for indexName cache.
 	 * 
 	 * @param sysTypesRequested to prepare key for
-	 * @param isSysTypeFacet
+	 * @param isSysTypeAggregation
 	 * @return key value (never null)
 	 */
-	protected static String prepareIndexNamesCacheKey(Set<String> sysTypesRequested, boolean isSysTypeFacet) {
+	protected static String prepareIndexNamesCacheKey(Set<String> sysTypesRequested, boolean isSysTypeAggregation) {
 		if (sysTypesRequested == null || sysTypesRequested.isEmpty())
-			return "_all||" + isSysTypeFacet;
+			return "_all||" + isSysTypeAggregation;
 
 		if (sysTypesRequested.size() == 1) {
-			return sysTypesRequested.iterator().next() + "||" + isSysTypeFacet;
+			return sysTypesRequested.iterator().next() + "||" + isSysTypeAggregation;
 		}
 
 		List<String> ordered = new ArrayList<>(sysTypesRequested);
@@ -259,11 +263,11 @@ public class SearchService {
 		for (String k : ordered) {
 			sb.append(k).append("|");
 		}
-		sb.append("|").append(isSysTypeFacet);
+		sb.append("|").append(isSysTypeAggregation);
 		return sb.toString();
 	}
 
-	private Set<String> prepareIndexNamesForSysType(Set<String> sysTypesRequested, boolean isSysTypeFacet) {
+	private Set<String> prepareIndexNamesForSysType(Set<String> sysTypesRequested, boolean isSysTypeAggregation) {
 		if (sysTypesRequested != null && sysTypesRequested.isEmpty())
 			sysTypesRequested = null;
 		Set<String> indexNames = new LinkedHashSet<>();
@@ -284,7 +288,7 @@ public class SearchService {
 						if (roles == null || authenticationUtilService.isUserInAnyOfRoles(true, roles)) {
 							String sysType = ProviderService.extractSysType(typeDef, typeName);
 							if ((sysTypesRequested == null && !ProviderService.extractSearchAllExcluded(typeDef))
-									|| (sysTypesRequested != null && ((isSysTypeFacet && !ProviderService
+									|| (sysTypesRequested != null && ((isSysTypeAggregation && !ProviderService
 											.extractSearchAllExcluded(typeDef)) || sysTypesRequested.contains(sysType)))) {
 								indexNames.addAll(Arrays.asList(ProviderService.extractSearchIndices(typeDef, typeName)));
 							} else if (sysTypesRequested == null || sysTypesRequested.contains(sysType)) {
@@ -446,41 +450,47 @@ public class SearchService {
 	 * @param querySettings
 	 * @param srb
 	 */
-	protected void handleFacetSettings(QuerySettings querySettings, Map<String, FilterBuilder> searchFilters,
-			SearchRequestBuilder srb) {
-		Map<String, Object> configuredFacets = configService.get(ConfigService.CFGNAME_SEARCH_FULLTEXT_FACETS_FIELDS);
-		Set<String> requestedFacets = querySettings.getFacets();
-		if (configuredFacets != null && !configuredFacets.isEmpty() && requestedFacets != null
-				&& !requestedFacets.isEmpty()) {
-			for (String requestedFacet : requestedFacets) {
-				Object facetConfig = configuredFacets.get(requestedFacet);
-				if (facetConfig != null) {
-					SemiParsedFacetConfig parsedFacetConfig = parseFacetType(facetConfig, requestedFacet);
-					// terms facet
-					if (SemiParsedFacetConfig.FacetType.TERMS.toString().equals(parsedFacetConfig.getFacetType())) {
+	protected void handleAggregationSettings(QuerySettings querySettings, Map<String, FilterBuilder> searchFilters,
+											 SearchRequestBuilder srb) {
+		Map<String, Object> configuredAggregations = configService.get(ConfigService.CFGNAME_SEARCH_FULLTEXT_AGGREGATIONS_FIELDS);
+		Set<String> requestedAggregations = querySettings.getAggregations();
+		if (configuredAggregations != null && !configuredAggregations.isEmpty() && requestedAggregations != null
+				&& !requestedAggregations.isEmpty()) {
+			for (String requestedAggregation : requestedAggregations) {
+				Object aggregationConfig = configuredAggregations.get(requestedAggregation);
+				if (aggregationConfig != null) {
+					SemiParsedAggregationConfig parsedAggregationConfig = parseAggregationType(aggregationConfig, requestedAggregation);
+					// terms aggregation
+					if (SemiParsedAggregationConfig.AggregationType.TERMS.toString().equals(parsedAggregationConfig.getAggregationType())) {
 						int size;
 						try {
-							size = (int) parsedFacetConfig.getOptionalSettings().get("size");
+							size = (int) parsedAggregationConfig.getOptionalSettings().get("size");
 						} catch (Exception e) {
-							throw new SettingsException("Incorrect configuration of fulltext search facet field '" + requestedFacet
-									+ "' in configuration document " + ConfigService.CFGNAME_SEARCH_FULLTEXT_FACETS_FIELDS
+							throw new SettingsException("Incorrect configuration of fulltext search aggregation field '" + requestedAggregation
+									+ "' in configuration document " + ConfigService.CFGNAME_SEARCH_FULLTEXT_AGGREGATIONS_FIELDS
 									+ ": Invalid value of [size] field.");
 						}
-						srb.addFacet(createTermsFacetBuilder(requestedFacet, parsedFacetConfig.getFieldName(), size, searchFilters));
-						if (searchFilters != null && searchFilters.containsKey(parsedFacetConfig.getFieldName())) {
-							if (parsedFacetConfig.isFiltered()) {
-								// we filter over contributors so we have to add second facet which provide numbers for these
-								// contributors because they can be out of normal facet due count limitation
-								TermsFacetBuilder tb = new TermsFacetBuilder(requestedFacet + "_filter")
-										.field(parsedFacetConfig.getFieldName()).size(parsedFacetConfig.getFilteredSize()).global(true)
-										.facetFilter(new AndFilterBuilder(filtersMapToArray(searchFilters)));
-								srb.addFacet(tb);
+
+						srb.addAggregation(createTermsBuilder(requestedAggregation, parsedAggregationConfig.getFieldName(), size, searchFilters, true));
+						if (searchFilters != null && searchFilters.containsKey(parsedAggregationConfig.getFieldName())) {
+							if (parsedAggregationConfig.isFiltered()) {
+								// we filter over contributors so we have to add second aggregation which provide more accurate numbers for selected
+								// contributors because they can be out of normal aggregation due size limit
+								srb.addAggregation(createTermsBuilder(
+										requestedAggregation+"_selected", parsedAggregationConfig.getFieldName(),
+												parsedAggregationConfig.getFilteredSize(), searchFilters, false)
+								);
 							}
 						}
-						// date histogram facet
-					} else if (SemiParsedFacetConfig.FacetType.DATE_HISTOGRAM.toString().equals(parsedFacetConfig.getFacetType())) {
-						srb.addFacet(new DateHistogramFacetBuilder(requestedFacet).field(parsedFacetConfig.getFieldName())
-								.interval(getDateHistogramFacetInterval(parsedFacetConfig.getFieldName())));
+
+					// date histogram aggregation
+					} else if (SemiParsedAggregationConfig.AggregationType.DATE_HISTOGRAM.toString().equals(parsedAggregationConfig.getAggregationType())) {
+						DateHistogramBuilder dhb = AggregationBuilders.dateHistogram(requestedAggregation);
+						DateHistogram.Interval i = new DateHistogram.Interval(
+								getDateHistogramAggregationInterval(parsedAggregationConfig.getFieldName())
+						);
+						dhb.field(parsedAggregationConfig.getFieldName()).interval(i);
+						srb.addAggregation(dhb);
 					}
 				}
 			}
@@ -488,19 +498,19 @@ public class SearchService {
 	}
 
 	/**
-	 * Return (the first) name of fact that is built on top of "sys_type" field.
+	 * Return (the first) name of aggregation that is built on top of "sys_type" field.
 	 * 
-	 * @return (the first) name of fact that is built on top of "sys_type" field.
+	 * @return (the first) name of aggregation that is built on top of "sys_type" field.
 	 */
-	private String getFacetNameUsingSysTypeField() {
-		Map<String, Object> configuredFacets = configService.get(ConfigService.CFGNAME_SEARCH_FULLTEXT_FACETS_FIELDS);
-		if (configuredFacets != null && !configuredFacets.isEmpty()) {
-			for (String facetName : configuredFacets.keySet()) {
-				Object facetConfig = configuredFacets.get(facetName);
-				if (facetConfig != null) {
-					SemiParsedFacetConfig config = parseFacetType(facetConfig, facetName);
+	private String getAggregationNameUsingSysTypeField() {
+		Map<String, Object> configuredAggregations = configService.get(ConfigService.CFGNAME_SEARCH_FULLTEXT_AGGREGATIONS_FIELDS);
+		if (configuredAggregations != null && !configuredAggregations.isEmpty()) {
+			for (String aggregationName : configuredAggregations.keySet()) {
+				Object aggregationConfig = configuredAggregations.get(aggregationName);
+				if (aggregationConfig != null) {
+					SemiParsedAggregationConfig config = parseAggregationType(aggregationConfig, aggregationName);
 					if (ContentObjectFields.SYS_TYPE.equals(config.getFieldName())) {
-						return facetName;
+						return aggregationName;
 					}
 				}
 			}
@@ -509,23 +519,23 @@ public class SearchService {
 	}
 
 	/**
-	 * For given set of facet names it returns only those using "date_histogram" facet type. It also returns name of their
-	 * document filed.
+	 * For given set of aggregation names it returns only those using "date_histogram" aggregation type.
+	 * It also returns name of their document filed.
 	 * 
-	 * @param facetNames set of facet names to filter
-	 * @return only those facets names using "date_histogram" facet type
+	 * @param aggregationNames set of aggregation names to filter
+	 * @return only those aggregation names using "date_histogram" aggregation type
 	 */
-	private Map<String, String> filterFacetNamesUsingDateHistogramFacetType(Set<String> facetNames) {
+	private Map<String, String> filterAggregationNamesUsingDateHistogramAggregationType(Set<String> aggregationNames) {
 		Map<String, String> result = new HashMap<>();
-		if (facetNames.size() > 0) {
-			Map<String, Object> configuredFacets = configService.get(ConfigService.CFGNAME_SEARCH_FULLTEXT_FACETS_FIELDS);
-			if (configuredFacets != null && !configuredFacets.isEmpty()) {
-				for (String facetName : configuredFacets.keySet()) {
-					Object facetConfig = configuredFacets.get(facetName);
-					if (facetConfig != null) {
-						SemiParsedFacetConfig config = parseFacetType(facetConfig, facetName);
-						if (SemiParsedFacetConfig.FacetType.DATE_HISTOGRAM.toString().equals(config.getFacetType())) {
-							result.put(facetName, config.getFieldName());
+		if (aggregationNames.size() > 0) {
+			Map<String, Object> configuredAggregations = configService.get(ConfigService.CFGNAME_SEARCH_FULLTEXT_AGGREGATIONS_FIELDS);
+			if (configuredAggregations != null && !configuredAggregations.isEmpty()) {
+				for (String aggregationName : configuredAggregations.keySet()) {
+					Object aggregationConfig = configuredAggregations.get(aggregationName);
+					if (aggregationConfig != null) {
+						SemiParsedAggregationConfig config = parseAggregationType(aggregationConfig, aggregationName);
+						if (SemiParsedAggregationConfig.AggregationType.DATE_HISTOGRAM.toString().equals(config.getAggregationType())) {
+							result.put(aggregationName, config.getFieldName());
 						}
 					}
 				}
@@ -535,36 +545,84 @@ public class SearchService {
 	}
 
 	/**
-	 * Get interval values for Date Histogram facets.
+	 * Get interval values for Date Histogram aggregations.
 	 * 
 	 * @param querySettings for search
 	 * @return map with additional fields, never null
 	 */
-	public Map<String, String> getIntervalValuesForDateHistogramFacets(QuerySettings querySettings) {
+	public Map<String, String> getIntervalValuesForDateHistogramAggregations(QuerySettings querySettings) {
 		Map<String, String> ret = new HashMap<>();
-		Set<String> facets = querySettings.getFacets();
-		if (facets != null && !facets.isEmpty()) {
-			Map<String, String> dateHistogramFacets = filterFacetNamesUsingDateHistogramFacetType(facets);
-			for (String facetName : dateHistogramFacets.keySet()) {
-				String interval = getDateHistogramFacetInterval(dateHistogramFacets.get(facetName));
+		Set<String> aggregations = querySettings.getAggregations();
+		if (aggregations != null && !aggregations.isEmpty()) {
+			Map<String, String> dateHistogramAggregations = filterAggregationNamesUsingDateHistogramAggregationType(aggregations);
+			for (String aggregationName : dateHistogramAggregations.keySet()) {
+				String interval = getDateHistogramAggregationInterval(dateHistogramAggregations.get(aggregationName));
 				if (interval != null) {
-					ret.put(facetName + "_interval", interval);
+					ret.put(aggregationName + "_interval", interval);
 				}
 			}
 		}
 		return ret;
 	}
 
-	protected TermsFacetBuilder createTermsFacetBuilder(String facetName, String facetField, int size,
-			Map<String, FilterBuilder> searchFilters) {
-
-		TermsFacetBuilder tb = new TermsFacetBuilder(facetName).field(facetField).size(size).global(true);
+	/**
+	 * Create "terms aggregation" which can be [optionally] nested in "filtered aggregation" if any filters
+	 * are used and always nested in "global filter".
+	 *
+	 * Nesting of aggregations. First comes the global aggregation, first-level nested
+	 * is filter aggregation and second-level nested is terms aggregation.
+	 * <pre>
+	 *   {
+	 *     "aggs" : {
+	 *       "aggregationName" : {
+	 *         "global" : {},
+	 *         // if any filters from searchFilters apply
+	 *         "aggs" : {
+	 *           "aggregationName_filter" : {
+	 *             "filter" : { _filters_ },
+	 *             // buckets
+	 *             "aggs" : {
+	 *               "aggregationName_buckets" : {
+	 *                 "terms" : {
+	 *                   "field" : ... ,
+	 *                   "size" : ...
+	 *                 }
+	 *               }
+	 *             }
+	 *           }
+	 *         }
+	 *       }
+	 *     }
+	 *   }
+	 * </pre>
+	 *
+	 * @param aggregationName top level name of the aggregation
+	 * @param aggregationField index field the aggregation buckets are calculated for
+	 * @param size
+	 * @param searchFilters used filters
+	 * @param excluding if true then filters on top of aggregationField are excluded from searchFilters
+	 * @return GlobalBuilder
+	 */
+	protected GlobalBuilder createTermsBuilder(String aggregationName, String aggregationField, int size,
+											   Map<String, FilterBuilder> searchFilters, boolean excluding) {
+		FilterAggregationBuilder fab = null;
 		if (searchFilters != null && !searchFilters.isEmpty()) {
-			FilterBuilder[] fb = filtersMapToArrayExcluding(searchFilters, facetField);
-			if (fb != null && fb.length > 0)
-				tb.facetFilter(new AndFilterBuilder(fb));
+			FilterBuilder[] fb = excluding ? filtersMapToArrayExcluding(searchFilters, aggregationField) :
+					filtersMapToArray(searchFilters);
+			if (fb != null && fb.length > 0) {
+				if (fab == null) fab = AggregationBuilders.filter(aggregationName + "_filter");
+				fab.filter(new AndFilterBuilder(fb));
+			}
 		}
-		return tb;
+		TermsBuilder tb = AggregationBuilders.terms(aggregationName+"_buckets").field(aggregationField).size(size);
+		GlobalBuilder gb = AggregationBuilders.global(aggregationName);
+		if (fab != null) {
+			fab.subAggregation(tb);
+			gb.subAggregation(fab);
+		} else {
+			gb.subAggregation(tb);
+		}
+		return gb;
 	}
 
 	/**
@@ -572,7 +630,7 @@ public class SearchService {
 	 * @param fieldName
 	 * @return interval value or null
 	 */
-	protected String getDateHistogramFacetInterval(String fieldName) {
+	protected String getDateHistogramAggregationInterval(String fieldName) {
 		String defaultValue = "month";
 		if (parsedFilterConfigService.isCacheInitialized()) {
 			ParsedFilterConfigService.IntervalRange ir = parsedFilterConfigService.getRangeFiltersIntervals().get(fieldName);

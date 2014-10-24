@@ -1,37 +1,39 @@
 {
   "size" : 0,
   "query" : {
-    "filtered" : {  
-		  "query" : {
-		    "filtered" : {
-		      "query" : {
-		        "match_all" : { }
-		      },
-		      "filter" : {
-		        "and" : {
-		          "filters" : [ {
-		            "terms" : {
-		              "sys_project" : [ "eap" ]
-		            }
-		          }, {
-		            "terms" : {
-		              "sys_type" : [ "issue" ]
-		            }
-		          }, {
-		            "range" : {
-		              "sys_activity_dates" : {
-		                "from" : "1973-12-25T08:03:07.545Z",
-		                "to" : null,
-		                "include_lower" : true,
-		                "include_upper" : true
-		              }
-		            }
-		          } ]
-		        }
-		      }
-		    }
-		  },
-	    "filter" : {
+    "filtered" : {
+      "query" : {
+        "filtered" : {
+          "query" : {
+            "simple_query_string" : {
+              "query" : "This is client query"
+            }
+          },
+          "filter" : {
+            "and" : {
+              "filters" : [ {
+                "terms" : {
+                  "sys_project" : [ "eap" ]
+                }
+              }, {
+                "terms" : {
+                  "sys_type" : [ "issue" ]
+                }
+              }, {
+                "range" : {
+                  "sys_activity_dates" : {
+                    "from" : "1973-12-25T08:03:07.545Z",
+                    "to" : null,
+                    "include_lower" : true,
+                    "include_upper" : true
+                  }
+                }
+              } ]
+            }
+          }
+        }
+      },
+      "filter" : {
         "missing" : {
           "field" : "sys_visible_for_roles",
           "null_value" : true,
@@ -39,12 +41,90 @@
         }
       }
     }
-   },	  
-  "facets" : {
+  },
+  "aggregations" : {
     "activity_dates_histogram" : {
       "date_histogram" : {
         "field" : "sys_activity_dates",
         "interval" : "month"
+      }
+    },
+    "per_project_counts" : {
+      "global" : { },
+      "aggregations" : {
+        "per_project_counts_filter" : {
+          "filter" : {
+            "and" : {
+              "filters" : [ {
+                "terms" : {
+                  "sys_type" : [ "issue" ]
+                }
+              }, {
+                "range" : {
+                  "sys_activity_dates" : {
+                    "from" : "1973-12-25T08:03:07.545Z",
+                    "to" : null,
+                    "include_lower" : true,
+                    "include_upper" : true
+                  }
+                }
+              }, {
+                "query" : {
+                  "simple_query_string" : {
+                    "query" : "This is client query"
+                  }
+                }
+              } ]
+            }
+          },
+          "aggregations" : {
+            "per_project_counts_buckets" : {
+              "terms" : {
+                "field" : "sys_project",
+                "size" : 500
+              }
+            }
+          }
+        }
+      }
+    },
+    "per_sys_type_counts" : {
+      "global" : { },
+      "aggregations" : {
+        "per_sys_type_counts_filter" : {
+          "filter" : {
+            "and" : {
+              "filters" : [ {
+                "terms" : {
+                  "sys_project" : [ "eap" ]
+                }
+              }, {
+                "range" : {
+                  "sys_activity_dates" : {
+                    "from" : "1973-12-25T08:03:07.545Z",
+                    "to" : null,
+                    "include_lower" : true,
+                    "include_upper" : true
+                  }
+                }
+              }, {
+                "query" : {
+                  "simple_query_string" : {
+                    "query" : "This is client query"
+                  }
+                }
+              } ]
+            }
+          },
+          "aggregations" : {
+            "per_sys_type_counts_buckets" : {
+              "terms" : {
+                "field" : "sys_type",
+                "size" : 20
+              }
+            }
+          }
+        }
       }
     }
   }

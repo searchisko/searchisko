@@ -1,5 +1,5 @@
 {
-    "query_facets":[
+    "query_aggregations":[
         "activity_dates_histogram",
         "tag_cloud"
     ],

@@ -157,8 +157,8 @@ public class StatsClientServiceTest {
 		Mockito.reset(tested.client);
 		qs.setQuery("my query");
 		qs.setQueryHighlight(true);
-		qs.addFacet("activity_dates_histogram");
-		qs.addFacet("tag_cloud");
+		qs.addAggregation("activity_dates_histogram");
+		qs.addAggregation("tag_cloud");
 		qs.addField("_id");
 		qs.addField("_source");
 		qs.setSortBy(SortByValue.NEW);
@@ -271,8 +271,8 @@ public class StatsClientServiceTest {
 		Mockito.reset(tested.client);
 		qs.setQuery("my query");
 		qs.setQueryHighlight(true);
-		qs.addFacet("activity_dates_histogram");
-		qs.addFacet("tag_cloud");
+		qs.addAggregation("activity_dates_histogram");
+		qs.addAggregation("tag_cloud");
 		qs.addField("_id");
 		qs.addField("_source");
 		qs.setSortBy(SortByValue.NEW);

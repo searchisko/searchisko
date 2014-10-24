@@ -76,13 +76,13 @@ public class QuerySettingsParser {
 			settings.setSortBy(SortByValue.parseRequestParameterValue(params.getFirst(key)));
 		}
 
-		// process facets
-		for (String key = QuerySettings.FACETS_KEY; paramKeys.contains(key); paramKeys.remove(key)) {
-			List<String> facetKeys = params.get(key);
-			if (facetKeys != null) {
-				for (String fpv : facetKeys) {
-					if (fpv != null && !fpv.trim().isEmpty()) {
-						settings.addFacet(fpv);
+		// process aggregations
+		for (String key = QuerySettings.AGGREGATION_KEY; paramKeys.contains(key); paramKeys.remove(key)) {
+			List<String> aggregationKeys = params.get(key);
+			if (aggregationKeys != null) {
+				for (String key_ : aggregationKeys) {
+					if (key_ != null && !key_.trim().isEmpty()) {
+						settings.addAggregation(key_);
 					}
 				}
 			}

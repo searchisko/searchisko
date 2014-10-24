@@ -83,8 +83,8 @@ public class QuerySettingsParserTest {
 			params.add(ACTIVITY_DATE_INTERVAL_KEY, "week");
 			params.add(ACTIVITY_DATE_FROM_KEY, "2013-01-26T20:32:36.456Z");
 			params.add(ACTIVITY_DATE_TO_KEY, "2013-01-26T20:32:46.456+0100");
-			params.add(QuerySettings.FACETS_KEY, "per_project_counts");
-			params.add(QuerySettings.FACETS_KEY, "activity_dates_histogram");
+			params.add(QuerySettings.AGGREGATION_KEY, "per_project_counts");
+			params.add(QuerySettings.AGGREGATION_KEY, "activity_dates_histogram");
 			QuerySettings ret = tested.parseUriParams(params);
 			Assert.assertNotNull(ret);
 			// note - we test here query is sanitized in settings!
@@ -108,7 +108,7 @@ public class QuerySettingsParserTest {
 			String expectedQuery, SortByValue expectedSortBy, String expectedFilterProjects, Integer expectedFilterStart,
 			Integer expectedFilterCount, String expectedFilterTags, String expectedSysProvider, String expectedContributors,
 			PastIntervalValue expectedADInterval, String expectedADFrom, String expectedADTo, String expectedFields,
-			boolean expectedQueryHighlight, String expectedFacets) {
+			boolean expectedQueryHighlight, String expectedAggregations) {
 
 		Assert.assertEquals(expectedQuery, qs.getQuery());
 		Assert.assertEquals(expectedQueryHighlight, qs.isQueryHighlight());
@@ -116,7 +116,7 @@ public class QuerySettingsParserTest {
 		Assert.assertEquals(expectedFilterStart, qs.getFrom());
 		Assert.assertEquals(expectedFilterCount, qs.getSize());
 		TestUtils.assertEqualsListValue(expectedFields, qs.getFields());
-		assertEqualsFacetValueList(expectedFacets, qs.getFacets());
+		assertEqualsAggregationValueList(expectedAggregations, qs.getAggregations());
 
 		QuerySettings.Filters filters = qs.getFilters();
 		Assert.assertNotNull("Filters instance expected not null", filters);
@@ -131,7 +131,7 @@ public class QuerySettingsParserTest {
 		TestUtils.assertEqualsListValue(expectedADTo, filters.getFilterCandidateValues(ACTIVITY_DATE_TO_KEY));
 	}
 
-	private void assertEqualsFacetValueList(String expectedValuesCommaSeparated, Set<String> actualValue) {
+	private void assertEqualsAggregationValueList(String expectedValuesCommaSeparated, Set<String> actualValue) {
 
 		if (expectedValuesCommaSeparated == null) {
 			Assert.assertNull(actualValue);
@@ -347,21 +347,21 @@ public class QuerySettingsParserTest {
 	}
 
 	@Test
-	public void parseUriParams_facet() {
+	public void parseUriParams_aggregation() {
 		QuerySettingsParser tested = getTested();
 		{
 			MultivaluedMap<String, String> params = new MultivaluedMapImpl<>();
-			params.add(QuerySettings.FACETS_KEY, "activity_dates_histogram");
+			params.add(QuerySettings.AGGREGATION_KEY, "activity_dates_histogram");
 			QuerySettings ret = tested.parseUriParams(params);
 			Assert.assertNotNull(ret);
-			Assert.assertTrue(ret.getFacets().contains("activity_dates_histogram"));
+			Assert.assertTrue(ret.getAggregations().contains("activity_dates_histogram"));
 		}
 		{
 			MultivaluedMap<String, String> params = new MultivaluedMapImpl<>();
-			params.add(QuerySettings.FACETS_KEY, " ");
+			params.add(QuerySettings.AGGREGATION_KEY, " ");
 			QuerySettings ret = tested.parseUriParams(params);
 			Assert.assertNotNull(ret);
-			Assert.assertNull(ret.getFacets());
+			Assert.assertNull(ret.getAggregations());
 		}
 	}
 

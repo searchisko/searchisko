@@ -1,0 +1,10 @@
+{
+  "aggregations" : {
+    "activity_dates_histogram" : {
+      "date_histogram" : {
+        "field" : "sys_activity_dates",
+        "interval" : "hour"
+      }
+    }
+  }
+}

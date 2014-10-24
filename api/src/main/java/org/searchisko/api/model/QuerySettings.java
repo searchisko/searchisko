@@ -134,9 +134,9 @@ public class QuerySettings {
 
 	public static final String FIELDS_KEY = "field";
 
-	private Set<String> facets;
+	private Set<String> aggregations;
 
-	public static final String FACETS_KEY = "facet";
+	public static final String AGGREGATION_KEY = "agg";
 
 	/**
 	 * Results Paging - start index
@@ -224,16 +224,16 @@ public class QuerySettings {
 		this.queryHighlight = queryHighlight;
 	}
 
-	public Set<String> getFacets() {
-		return facets;
+	public Set<String> getAggregations() {
+		return aggregations;
 	}
 
-	public void addFacet(String value) {
+	public void addAggregation(String value) {
 		if (value == null)
 			return;
-		if (facets == null)
-			facets = new LinkedHashSet<>();
-		facets.add(value);
+		if (aggregations == null)
+			aggregations = new LinkedHashSet<>();
+		aggregations.add(value);
 	}
 
 	public void setFrom(Integer from) {
@@ -252,9 +252,9 @@ public class QuerySettings {
 		this.size = size;
 	}
 
-	public void clearFacets() {
-		if (facets != null)
-			facets.clear();
+	public void clearAggregations() {
+		if (aggregations != null)
+			aggregations.clear();
 	}
 
 	public void clearFields() {
@@ -265,7 +265,7 @@ public class QuerySettings {
 	@Override
 	public String toString() {
 		return "QuerySettings [filters=" + filters + ", query=" + query + ", queryHighlight=" + queryHighlight + ", field="
-				+ fields + ", facet=" + facets + ", sortBy=" + sortBy + "]";
+				+ fields + ", aggregations=" + aggregations + ", sortBy=" + sortBy + "]";
 	}
 
 }

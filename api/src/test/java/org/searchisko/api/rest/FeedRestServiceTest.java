@@ -86,7 +86,7 @@ public class FeedRestServiceTest {
 			Assert.assertNull(qs.getFilters().getFilterCandidateValues(ACTIVITY_DATE_INTERVAL_KEY));
 
 			// assert preserved fields
-			Assert.assertEquals(null, qs.getFacets());
+			Assert.assertEquals(null, qs.getAggregations());
 			Assert.assertNull(qs.getFilters().getFilterCandidateValues(CONTENT_TYPE_KEY));
 			Assert.assertNull(qs.getFilters().getFilterCandidateValues(SYS_CONTENT_PROVIDER));
 			Assert.assertNull(qs.getFilters().getFilterCandidateValues(CONTRIBUTORS_KEY));
@@ -98,7 +98,7 @@ public class FeedRestServiceTest {
 		// case - set and reset some values on nonempty QuerySettings
 		{
 			QuerySettings qs = new QuerySettings();
-			qs.addFacet("testfacet");
+			qs.addAggregation("testagg");
 			qs.addField("field1");
 			qs.addField("field2");
 			qs.setQueryHighlight(true);
@@ -117,7 +117,7 @@ public class FeedRestServiceTest {
 			tested.patchQuerySettings(qs);
 
 			// assert patched fields
-			Assert.assertEquals(0, qs.getFacets().size());
+			Assert.assertEquals(0, qs.getAggregations().size());
 			Assert.assertEquals(false, qs.isQueryHighlight());
 			Assert.assertEquals(SortByValue.NEW, qs.getSortBy());
 			Assert.assertEquals(9, qs.getFields().size());
@@ -129,7 +129,7 @@ public class FeedRestServiceTest {
 			Assert.assertEquals(new Integer(50), qs.getFrom());
 			Assert.assertEquals(new Integer(150), qs.getSize());
 			Assert.assertEquals("Querry", qs.getQuery());
-			Assert.assertEquals(0, qs.getFacets().size());
+			Assert.assertEquals(0, qs.getAggregations().size());
 			Assert.assertEquals(1, qs.getFilters().getFilterCandidateValues(CONTENT_TYPE_KEY).size());
 			Assert.assertEquals("ct", qs.getFilters().getFilterCandidateValues(CONTENT_TYPE_KEY).get(0));
 			Assert.assertEquals(1, qs.getFilters().getFilterCandidateValues(SYS_CONTENT_PROVIDER).size());

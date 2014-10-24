@@ -2,7 +2,7 @@
     "filter.activity_date_from":[
 		"1990-09-30T00:07:45.465Z"
 	],
-    "query_facets":[
+    "query_aggregations":[
         "activity_dates_histogram",
         "tag_cloud"
     ],

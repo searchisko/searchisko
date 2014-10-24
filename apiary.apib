@@ -439,7 +439,7 @@ Search contributions based on input parameters
 * `query_highlight` when set to `true` and full text search is used over `query` param, then results contains data with query matches highlighted by `<span class='hlt'>***</span>`.
 * `from` start index or returned entries. Default value is 0. Useful together with `size` for results pagination.
 * `size` maximal number of returned entries. Default is 10, maximal value is 500.
-* `field` you can use this param multiple times to specify which [fields](http://www.elasticsearch.org/guide/en/elasticsearch/reference/0.90/search-request-fields.html) from search index will be returned in results. If not used then predefined set of basic `sys_xx` fields is returned. If you want complete documents use `_source` value for this param. Be careful about performance impact of this param, consult DCP administrators if necessary!
+* `field` you can use this param multiple times to specify which [fields](http://www.elasticsearch.org/guide/en/elasticsearch/reference/1.3/search-request-fields.html) from search index will be returned in results. If not used then predefined set of basic `sys_xx` fields is returned. If you want complete documents use `_source` value for this param. Be careful about performance impact of this param, consult DCP administrators if necessary!
 
 ###### Sorting
 
@@ -448,18 +448,18 @@ Search contributions based on input parameters
   * `new` - to sort from newest to oldest activity
   * `new-create` - to sort from newest to oldest by creation
 
-###### Facets
+###### Aggregations
 
-* `facet` URL parameter can be used to specify name of [facet](http://www.elasticsearch.org/guide/en/elasticsearch/reference/0.90/search-facets.html) you want to include in response. This param can be used multiple times to get more facet data in the response. List of available facets is configurable (see [Management API](#managementapiconfiguration)). [Current configuration](https://github.com/searchisko/searchisko/blob/master/configuration/data/config/search_fulltext_facets_fields.json) enables the following facets:
-  * `top_contributors` - add [terms facet][] for `sys_contributors` field.
-  * `activity_dates_histogram` - add [date histogram facet][] for `sys_activity_dates` field.
-  * `per_project_counts` - add [terms facet][] for `sys_project` field.
-  * `per_sys_type_counts` - add [terms facet][] for `sys_type` field.
-  * `tag_cloud` - add [terms facet][] for `sys_tags` field.
+* `agg` URL parameter can be used to specify name of [aggregation](http://www.elasticsearch.org/guide/en/elasticsearch/reference/1.3/search-aggregations.html) you want to include in response. This param can be used multiple times to get more aggregations data in the response. List of available aggregations is configurable (see [Management API](#managementapiconfiguration)). [Current configuration](https://github.com/searchisko/searchisko/blob/master/configuration/data/config/search_fulltext_aggregations_fields.json) enables the following aggregations:
+  * `top_contributors` - add [terms agg][] for `sys_contributors` field.
+  * `activity_dates_histogram` - add [date histogram agg][] for `sys_activity_dates` field.
+  * `per_project_counts` - add [terms agg][] for `sys_project` field.
+  * `per_sys_type_counts` - add [terms agg][] for `sys_type` field.
+  * `tag_cloud` - add [terms agg][] for `sys_tags` field.
 
 ###### Filtering
 
-You can specify name of [filter](http://www.elasticsearch.org/guide/en/elasticsearch/reference/0.90/query-dsl-filters.html)s you want to filter by. List of available filters is configurable (see [Management API](#managementapiconfiguration)). [Current configuration](https://github.com/searchisko/searchisko/blob/master/configuration/data/config/search_fulltext_filter_fields.json) enables the following filters:
+You can specify name of [filter](http://www.elasticsearch.org/guide/en/elasticsearch/reference/1.3/query-dsl-filters.html)s you want to filter by. List of available filters is configurable (see [Management API](#managementapiconfiguration)). [Current configuration](https://github.com/searchisko/searchisko/blob/master/configuration/data/config/search_fulltext_filter_fields.json) enables the following filters:
 
  * `content_provider` - filters result only to data provided by specified provider `sys_content_provider` field
  * `type` - filters result only to specific `sys_content_type`
@@ -473,11 +473,11 @@ You can specify name of [filter](http://www.elasticsearch.org/guide/en/elasticse
 
 For more information about configuration formats see:
 
-* [Configuration of fields which are allowed for facet execution](https://github.com/searchisko/searchisko/blob/master/documentation/rest-api/management/config_search_fulltext_facets_fields.md).
+* [Configuration of fields which are allowed for aggregations execution](https://github.com/searchisko/searchisko/blob/master/documentation/rest-api/management/config_search_fulltext_aggregations_fields.md).
 * [Configuration of fields which are allowed for filters](https://github.com/searchisko/searchisko/blob/master/documentation/rest-api/management/config_search_fulltext_filter_fields.md).
 
-[terms facet]: http://www.elasticsearch.org/guide/en/elasticsearch/reference/0.90/search-facets-terms-facet.html
-[date histogram facet]: http://www.elasticsearch.org/guide/en/elasticsearch/reference/0.90/search-facets-date-histogram-facet.html
+[terms agg]: http://www.elasticsearch.org/guide/en/elasticsearch/reference/1.3/search-aggregations-bucket-terms-aggregation.html
+[date histogram agg]: http://www.elasticsearch.org/guide/en/elasticsearch/reference/1.3/search-aggregations-bucket-datehistogram-aggregation.html
 
 ##### Response content
 
@@ -520,7 +520,7 @@ For more information about configuration formats see:
        }
      ]
    },
-   "facets": {
+   "aggregations": {
      ...
    }
 }
@@ -535,9 +535,9 @@ Description of important response fields:
 * `hits/hits/_id` unique identifier of document in Searchisko
 * `hits/hits/fields` document fields, see `field` request parameter
 * `hits/hits/highlight` highlights of fulltext matching in given document, see `query_highlight` request parameter
-* `facets` values from facets, see `facet` request parameter
+* `aggregations` values from aggregations, see `agg` request parameter
 
-GET /rest/search{?query,query_highlight,sortBy,from,size,facet,field,content_provider,type,sys_type,tag,project,activity_date_interval,activity_date_from,activity_date_to,contributor}
+GET /rest/search{?query,query_highlight,sortBy,from,size,agg,field,content_provider,type,sys_type,tag,project,activity_date_interval,activity_date_from,activity_date_to,contributor}
 < 200
 < Content-Type: application/json
 < Access-Control-Allow-Origin: *
@@ -775,8 +775,8 @@ Can suggest project names based on user query.
 
 Get suggestions for project name. The response contains two response parts:
 
-* the first one contains documents matching the query using [ngrams](http://www.elasticsearch.org/guide/en/elasticsearch/reference/0.90/analysis-ngram-tokenfilter.html#analysis-ngram-tokenfilter) and [edgengram](http://www.elasticsearch.org/guide/en/elasticsearch/reference/0.90/analysis-edgengram-tokenfilter.html#analysis-edgengram-tokenfilter) token filters (i.e. exact substring match)
-* the second contains documents matching the query using [fuzzy like this query](http://www.elasticsearch.org/guide/en/elasticsearch/reference/0.90/query-dsl-flt-query.html#query-dsl-flt-query)
+* the first one contains documents matching the query using [ngrams](http://www.elasticsearch.org/guide/en/elasticsearch/reference/1.3/analysis-ngram-tokenfilter.html#analysis-ngram-tokenfilter) and [edgengram](http://www.elasticsearch.org/guide/en/elasticsearch/reference/1.3/analysis-edgengram-tokenfilter.html) token filters (i.e. exact substring match)
+* the second contains documents matching the query using [fuzzy like this query](http://www.elasticsearch.org/guide/en/elasticsearch/reference/1.3/query-dsl-flt-query.html#query-dsl-flt-query)
 
 The recommendation is that clients should look for good suggestion candidates in the first response (they should be more relevant then the second response).
 The second response should be used for "Did you mean?" scenario or as a fallback if the first response is empty.
@@ -785,7 +785,7 @@ The second response should be used for "Did you mean?" scenario or as a fallback
 
 * `query` is mandatory parameter and is used to generate suggestions.
 * `size` of returned result array. Default is 5. Note are two arrays returned in the response. Max value is 100.
-* `field` you can use this param multiple times to specify which [fields](http://www.elasticsearch.org/guide/en/elasticsearch/reference/0.90/search-request-fields.html) from search index will be returned in results. Fields `sys_project` and `sys_project_name` are always returned as a part of response. Using `field` parameter you can define additional fields to return. If you want complete documents use `_source` value for this param. Be careful about performance impact of this param, consult DCP administrators if necessary!
+* `field` you can use this param multiple times to specify which [fields](http://www.elasticsearch.org/guide/en/elasticsearch/reference/1.3/search-request-fields.html) from search index will be returned in results. Fields `sys_project` and `sys_project_name` are always returned as a part of response. Using `field` parameter you can define additional fields to return. If you want complete documents use `_source` value for this param. Be careful about performance impact of this param, consult DCP administrators if necessary!
 
 GET /rest/suggestions/project{?query,size,field}
 < 200

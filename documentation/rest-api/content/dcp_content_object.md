@@ -56,7 +56,7 @@ some of them are set during content push before pre-processing, thus they will b
 <tr>
   <td>sys_project</td>
   <td/>
-  <td>Normalized Searchisko wide identifier of the project - system field - it is used for the project facet and filter in the Search API.</td>
+  <td>Normalized Searchisko wide identifier of the project - system field - it is used for the project aggregations and filtering in the Search API.</td>
 </tr>
 <tr>
   <td>sys_project_name</td>
@@ -66,12 +66,12 @@ some of them are set during content push before pre-processing, thus they will b
 <tr>
   <td>sys_contributors</td>
   <td/>
-  <td>Array of contributing persons, no duplicities in array, persons identifiers normalized during push into Searchisko - each person represented as string <code>Name Surname <primaryemail@email.com></code> - in Search API used for persons facet and filter.</td>
+  <td>Array of contributing persons, no duplicities in array, persons identifiers normalized during push into Searchisko - each person represented as string <code>Name Surname <primaryemail@email.com></code> - in Search API used for contributors aggregations and filtering.</td>
 </tr>
 <tr>
   <td>sys_activity_dates</td>
   <td/>
-  <td>Array of timestamps (ISO string) representing some activity on the content (when the content was created or changed etc. in source system) - in the Search API used for the time facet and filter.</td>
+  <td>Array of timestamps (ISO string) representing some activity on the content (when the content was created or changed etc. in source system) - in the Search API used for the time aggregations and filtering.</td>
 </tr>
 <tr>
   <td>sys_created</td>
@@ -116,7 +116,7 @@ some of them are set during content push before pre-processing, thus they will b
 <tr>
   <td>sys_tags</td>
   <td>yes</td>
-  <td>Array of tags (Strings) - in the Search API used for facet (tag cloud) and filter - it is not directly pushed by the content provider because we plan a mechanism for additional user defined tags, so we need to rewrite this field internally. The content provider should use <code>tags</code> field instead.</td>
+  <td>Array of tags (Strings) - in the Search API used for aggregations (tag cloud) and filtering - it is not directly pushed by the content provider because we plan a mechanism for additional user defined tags, so we need to rewrite this field internally. The content provider should use <code>tags</code> field instead.</td>
 </tr>
 <tr>
   <td>tags</td>

@@ -112,7 +112,7 @@ public class FeedRestService extends RestServiceBase {
 	 * @param querySettings
 	 */
 	protected void patchQuerySettings(QuerySettings querySettings) {
-		querySettings.clearFacets();
+		querySettings.clearAggregations();
 		querySettings.setQueryHighlight(false);
 		querySettings.clearFields();
 

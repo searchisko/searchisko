@@ -15,7 +15,7 @@ import org.elasticsearch.common.settings.SettingsException;
 import org.searchisko.api.service.ConfigService;
 
 /**
- * Utility class that can parse facet and filter configurations.
+ * Utility class that can parse aggregation and filter configurations.
  * 
  * @author Lukas Vlcek
  * @since 1.0.2
@@ -23,14 +23,14 @@ import org.searchisko.api.service.ConfigService;
 public class ConfigParseUtil {
 
 	// All filters allow to set "_cache" and "_cache_key"
-	// @see http://www.elasticsearch.org/guide/en/elasticsearch/reference/0.90/query-dsl-filters.html#caching
+	// @see http://www.elasticsearch.org/guide/en/elasticsearch/reference/1.3/query-dsl-filters.html#caching
 	private static final String FILTER_CACHE = "_cache";
 	private static final String FILTER_CACHE_KEY = "_cache_key";
 	private static final String FILTER_CACHE_KEY_ALIAS = "_cacheKey"; // alias found in the ES codebase
 
 	// Each filter (and query since 0.90.4) can accept "_name"
 	// @see
-	// http://www.elasticsearch.org/guide/en/elasticsearch/reference/0.90/search-request-named-queries-and-filters.html#search-request-named-queries-and-filters
+	// http://www.elasticsearch.org/guide/en/elasticsearch/reference/1.3/search-request-named-queries-and-filters.html#search-request-named-queries-and-filters
 	private static final String FILTER_NAME = "_name";
 
 	// Searchisko custom field
@@ -83,12 +83,12 @@ public class ConfigParseUtil {
 				conf.setFilterName(filterName);
 
 				final String key = map.containsKey(TERMS_FILTER_TYPE) ? TERMS_FILTER_TYPE : TERMS_FILTER_TYPE_ALIAS;
-				Map<String, Object> termsFacetConfig = (Map<String, Object>) map.get(key);
-				setOptionalSettings(termsFacetConfig, config);
-				Set<String> termsFacetConfigKeys = termsFacetConfig.keySet();
-				termsFacetConfigKeys.removeAll(OPTIONAL_SETTINGS);
-				if (termsFacetConfigKeys.size() == 1) {
-					conf.setFieldName(termsFacetConfigKeys.iterator().next());
+				Map<String, Object> termsAggregationConfig = (Map<String, Object>) map.get(key);
+				setOptionalSettings(termsAggregationConfig, config);
+				Set<String> termsAggregationConfigKeys = termsAggregationConfig.keySet();
+				termsAggregationConfigKeys.removeAll(OPTIONAL_SETTINGS);
+				if (termsAggregationConfigKeys.size() == 1) {
+					conf.setFieldName(termsAggregationConfigKeys.iterator().next());
 				} else {
 					throw new SettingsException("Invalid configuration of fulltext search filter field '" + filterName
 							+ "' in configuration document " + ConfigService.CFGNAME_SEARCH_FULLTEXT_FILTER_FIELDS
@@ -106,14 +106,14 @@ public class ConfigParseUtil {
 				SemiParsedRangeFilterConfig conf = (SemiParsedRangeFilterConfig) config;
 				conf.setFilterName(filterName);
 
-				Map<String, Object> rangeFacetConfig = (Map<String, Object>) map.get(RANGE_FILTER_TYPE);
-				setOptionalSettings(rangeFacetConfig, config);
-				Set<String> rangeFacetConfigKeys = rangeFacetConfig.keySet();
-				rangeFacetConfigKeys.removeAll(OPTIONAL_SETTINGS);
-				if (rangeFacetConfigKeys.size() == 1) {
-					String fieldName = rangeFacetConfigKeys.iterator().next();
+				Map<String, Object> rangeAggregationConfig = (Map<String, Object>) map.get(RANGE_FILTER_TYPE);
+				setOptionalSettings(rangeAggregationConfig, config);
+				Set<String> rangeAggregationConfigKeys = rangeAggregationConfig.keySet();
+				rangeAggregationConfigKeys.removeAll(OPTIONAL_SETTINGS);
+				if (rangeAggregationConfigKeys.size() == 1) {
+					String fieldName = rangeAggregationConfigKeys.iterator().next();
 					conf.setFieldName(fieldName);
-					Map<String, Object> rangeConfig = (Map<String, Object>) rangeFacetConfig.get(fieldName);
+					Map<String, Object> rangeConfig = (Map<String, Object>) rangeAggregationConfig.get(fieldName);
 					if (rangeConfig.containsKey(RANGE_FILTER_GTE) && !rangeConfig.containsKey(RANGE_FILTER_LTE)) {
 						conf.setGte((String) rangeConfig.get(RANGE_FILTER_GTE));
 					} else if (rangeConfig.containsKey(RANGE_FILTER_LTE) && !rangeConfig.containsKey(RANGE_FILTER_GTE)) {
@@ -176,52 +176,52 @@ public class ConfigParseUtil {
 	}
 
 	/**
-	 * Parse facet type.
+	 * Parse aggregation type.
 	 * 
-	 * @param facetConfig
-	 * @param facetName
+	 * @param aggregationConfig
+	 * @param aggregationName
 	 * @return
 	 */
 	@SuppressWarnings("unchecked")
-	public static SemiParsedFacetConfig parseFacetType(final Object facetConfig, final String facetName) {
+	public static SemiParsedAggregationConfig parseAggregationType(final Object aggregationConfig, final String aggregationName) {
 		try {
-			Map<String, Object> map = (Map<String, Object>) facetConfig;
+			Map<String, Object> map = (Map<String, Object>) aggregationConfig;
 			if (map.isEmpty() || (map.size() > 1 && !map.containsKey("_filtered"))
 					|| (map.size() > 2 && map.containsKey("_filtered"))) {
-				throw new SettingsException("Invalid configuration of fulltext search facet field '" + facetName
-						+ "' in configuration document " + ConfigService.CFGNAME_SEARCH_FULLTEXT_FACETS_FIELDS
-						+ ": Multiple facet type is not allowed.");
+				throw new SettingsException("Invalid configuration of fulltext search aggregation field '" + aggregationName
+						+ "' in configuration document " + ConfigService.CFGNAME_SEARCH_FULLTEXT_AGGREGATIONS_FIELDS
+						+ ": Multiple aggregation type is not allowed.");
 			}
-			SemiParsedFacetConfig config = new SemiParsedFacetConfig();
-			config.setFacetName(facetName);
+			SemiParsedAggregationConfig config = new SemiParsedAggregationConfig();
+			config.setAggregationName(aggregationName);
 			for (String key : map.keySet()) {
 				if ("_filtered".equals(key)) {
 					Map<String, Object> filtered = (Map<String, Object>) map.get(key);
 					config.setFilteredSize((Integer) filtered.get("size"));
-					config.setFiltered(config.getFilteredSize() > 0 ? true : false);
+					config.setFiltered(config.getFilteredSize() > 0);
 				} else {
-					config.setFacetType(key);
+					config.setAggregationType(key);
 				}
 			}
 			// get map one level deeper
-			map = (Map<String, Object>) map.get(config.getFacetType());
+			map = (Map<String, Object>) map.get(config.getAggregationType());
 			if (!map.containsKey("field") || map.isEmpty()) {
-				throw new SettingsException("Invalid configuration of fulltext search facet field '" + facetName
-						+ "' in configuration document " + ConfigService.CFGNAME_SEARCH_FULLTEXT_FACETS_FIELDS
+				throw new SettingsException("Invalid configuration of fulltext search aggregation field '" + aggregationName
+						+ "' in configuration document " + ConfigService.CFGNAME_SEARCH_FULLTEXT_AGGREGATIONS_FIELDS
 						+ ": Missing required [field] field.");
 			}
 			String fieldName = (String) map.get("field");
 			if (fieldName == null || fieldName.isEmpty()) {
-				throw new SettingsException("Invalid configuration of fulltext search facet field '" + facetName
-						+ "' in configuration document " + ConfigService.CFGNAME_SEARCH_FULLTEXT_FACETS_FIELDS
+				throw new SettingsException("Invalid configuration of fulltext search aggregation field '" + aggregationName
+						+ "' in configuration document " + ConfigService.CFGNAME_SEARCH_FULLTEXT_AGGREGATIONS_FIELDS
 						+ ": Invalid [field] field value.");
 			}
 			config.setFieldName(fieldName);
 			config.setOptionalSettings(map);
 			return config;
 		} catch (ClassCastException e) {
-			throw new SettingsException("Invalid configuration of fulltext search facet field '" + facetName
-					+ "' in configuration document " + ConfigService.CFGNAME_SEARCH_FULLTEXT_FACETS_FIELDS + ".");
+			throw new SettingsException("Invalid configuration of fulltext search aggregation field '" + aggregationName
+					+ "' in configuration document " + ConfigService.CFGNAME_SEARCH_FULLTEXT_AGGREGATIONS_FIELDS + ".");
 		}
 	}
 }

@@ -1,0 +1,259 @@
+{
+  "aggregations" : {
+    "activity_dates_histogram" : {
+      "date_histogram" : {
+        "field" : "sys_activity_dates",
+        "interval" : "minute"
+      }
+    },
+    "per_sys_type_counts" : {
+      "global" : { },
+      "aggregations" : {
+        "per_sys_type_counts_filter" : {
+          "filter" : {
+            "and" : {
+              "filters" : [ {
+                "terms" : {
+                  "sys_project" : [ "my_project", "my_project_2" ]
+                }
+              }, {
+                "terms" : {
+                  "sys_content_provider" : [ "my_sys_content_provider" ]
+                }
+              }, {
+                "range" : {
+                  "sys_activity_dates" : {
+                    "from" : "1970-01-01T00:01:40.000Z",
+                    "to" : "1970-01-01T00:01:40.200Z",
+                    "include_lower" : true,
+                    "include_upper" : true
+                  }
+                }
+              }, {
+                "terms" : {
+                  "sys_tags" : [ "tag2", "tag1" ]
+                }
+              }, {
+                "terms" : {
+                  "sys_contributors" : [ "my_contributor_2", "my_contributor_1" ]
+                }
+              }, {
+                "terms" : {
+                  "sys_content_type" : [ "my_content_type" ]
+                }
+              } ]
+            }
+          },
+          "aggregations" : {
+            "per_sys_type_counts_buckets" : {
+              "terms" : {
+                "field" : "sys_type",
+                "size" : 20
+              }
+            }
+          }
+        }
+      }
+    },
+    "per_project_counts" : {
+      "global" : { },
+      "aggregations" : {
+        "per_project_counts_filter" : {
+          "filter" : {
+            "and" : {
+              "filters" : [ {
+                "terms" : {
+                  "sys_content_provider" : [ "my_sys_content_provider" ]
+                }
+              }, {
+                "range" : {
+                  "sys_activity_dates" : {
+                    "from" : "1970-01-01T00:01:40.000Z",
+                    "to" : "1970-01-01T00:01:40.200Z",
+                    "include_lower" : true,
+                    "include_upper" : true
+                  }
+                }
+              }, {
+                "terms" : {
+                  "sys_tags" : [ "tag2", "tag1" ]
+                }
+              }, {
+                "terms" : {
+                  "sys_contributors" : [ "my_contributor_2", "my_contributor_1" ]
+                }
+              }, {
+                "terms" : {
+                  "sys_type" : [ "my_sys_type_2", "my_sys_type" ]
+                }
+              }, {
+                "terms" : {
+                  "sys_content_type" : [ "my_content_type" ]
+                }
+              } ]
+            }
+          },
+          "aggregations" : {
+            "per_project_counts_buckets" : {
+              "terms" : {
+                "field" : "sys_project",
+                "size" : 500
+              }
+            }
+          }
+        }
+      }
+    },
+    "tag_cloud" : {
+      "global" : { },
+      "aggregations" : {
+        "tag_cloud_filter" : {
+          "filter" : {
+            "and" : {
+              "filters" : [ {
+                "terms" : {
+                  "sys_project" : [ "my_project", "my_project_2" ]
+                }
+              }, {
+                "terms" : {
+                  "sys_content_provider" : [ "my_sys_content_provider" ]
+                }
+              }, {
+                "range" : {
+                  "sys_activity_dates" : {
+                    "from" : "1970-01-01T00:01:40.000Z",
+                    "to" : "1970-01-01T00:01:40.200Z",
+                    "include_lower" : true,
+                    "include_upper" : true
+                  }
+                }
+              }, {
+                "terms" : {
+                  "sys_contributors" : [ "my_contributor_2", "my_contributor_1" ]
+                }
+              }, {
+                "terms" : {
+                  "sys_type" : [ "my_sys_type_2", "my_sys_type" ]
+                }
+              }, {
+                "terms" : {
+                  "sys_content_type" : [ "my_content_type" ]
+                }
+              } ]
+            }
+          },
+          "aggregations" : {
+            "tag_cloud_buckets" : {
+              "terms" : {
+                "field" : "sys_tags",
+                "size" : 50
+              }
+            }
+          }
+        }
+      }
+    },
+    "top_contributors" : {
+      "global" : { },
+      "aggregations" : {
+        "top_contributors_filter" : {
+          "filter" : {
+            "and" : {
+              "filters" : [ {
+                "terms" : {
+                  "sys_project" : [ "my_project", "my_project_2" ]
+                }
+              }, {
+                "terms" : {
+                  "sys_content_provider" : [ "my_sys_content_provider" ]
+                }
+              }, {
+                "range" : {
+                  "sys_activity_dates" : {
+                    "from" : "1970-01-01T00:01:40.000Z",
+                    "to" : "1970-01-01T00:01:40.200Z",
+                    "include_lower" : true,
+                    "include_upper" : true
+                  }
+                }
+              }, {
+                "terms" : {
+                  "sys_tags" : [ "tag2", "tag1" ]
+                }
+              }, {
+                "terms" : {
+                  "sys_type" : [ "my_sys_type_2", "my_sys_type" ]
+                }
+              }, {
+                "terms" : {
+                  "sys_content_type" : [ "my_content_type" ]
+                }
+              } ]
+            }
+          },
+          "aggregations" : {
+            "top_contributors_buckets" : {
+              "terms" : {
+                "field" : "sys_contributors",
+                "size" : 100
+              }
+            }
+          }
+        }
+      }
+    },
+    "top_contributors_selected" : {
+      "global" : { },
+      "aggregations" : {
+        "top_contributors_selected_filter" : {
+          "filter" : {
+            "and" : {
+              "filters" : [ {
+                "terms" : {
+                  "sys_project" : [ "my_project", "my_project_2" ]
+                }
+              }, {
+                "terms" : {
+                  "sys_content_provider" : [ "my_sys_content_provider" ]
+                }
+              }, {
+                "range" : {
+                  "sys_activity_dates" : {
+                    "from" : "1970-01-01T00:01:40.000Z",
+                    "to" : "1970-01-01T00:01:40.200Z",
+                    "include_lower" : true,
+                    "include_upper" : true
+                  }
+                }
+              }, {
+                "terms" : {
+                  "sys_tags" : [ "tag2", "tag1" ]
+                }
+              }, {
+                "terms" : {
+                  "sys_contributors" : [ "my_contributor_2", "my_contributor_1" ]
+                }
+              }, {
+                "terms" : {
+                  "sys_type" : [ "my_sys_type_2", "my_sys_type" ]
+                }
+              }, {
+                "terms" : {
+                  "sys_content_type" : [ "my_content_type" ]
+                }
+              } ]
+            }
+          },
+          "aggregations" : {
+            "top_contributors_selected_buckets" : {
+              "terms" : {
+                "field" : "sys_contributors",
+                "size" : 30
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

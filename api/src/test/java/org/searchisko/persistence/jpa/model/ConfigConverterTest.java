@@ -12,6 +12,8 @@ import java.util.Map;
 import org.junit.Test;
 import org.searchisko.api.testtools.TestUtils;
 
+import static org.junit.Assert.assertEquals;
+
 /**
  * Unit test for {@link ConfigConverter}
  * 
@@ -33,6 +35,7 @@ public class ConfigConverterTest {
 
 		Config c = converter.convertToModel("search_fulltext_highlight_fields", data);
 
+		assertEquals("search_fulltext_highlight_fields", c.getName());
 		TestUtils.assertJsonContent("{\"sys_title\":{" + "\"fragment_size\":\"-1\"," + "\"number_of_fragments\":\"0\","
 				+ "\"fragment_offset\":\"0\"" + "}}", c.getValue());
 	}
@@ -44,13 +47,14 @@ public class ConfigConverterTest {
 		Map<String, Object> terms = new HashMap<>();
 		terms.put("field", "sys_contributors");
 		terms.put("size", 20);
-		Map<String, Object> facetType = new HashMap<>();
-		facetType.put("terms", terms);
+		Map<String, Object> aggregationType = new HashMap<>();
+		aggregationType.put("terms", terms);
 		Map<String, Object> configObject = new HashMap<>();
-		configObject.put("top_contributors", facetType);
+		configObject.put("top_contributors", aggregationType);
 
-		Config c = converter.convertToModel("search_fulltext_facets_fields", configObject);
+		Config c = converter.convertToModel("search_fulltext_aggregations_fields", configObject);
 
+		assertEquals("search_fulltext_aggregations_fields", c.getName());
 		TestUtils.assertJsonContent("{\"top_contributors\":{\"terms\":{\"field\":\"sys_contributors\",\"size\":20}}}",
 				c.getValue());
 	}
