@@ -18,6 +18,7 @@ import java.util.Set;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.common.joda.time.DateTime;
+import org.elasticsearch.common.joda.time.DateTimeZone;
 import org.elasticsearch.common.settings.SettingsException;
 import org.elasticsearch.index.query.FilterBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
@@ -1271,8 +1272,8 @@ public class SearchServiceTest extends SearchServiceTestBase {
 		// case - activity date interval precedence against from/to
 		filters.acknowledgeUrlFilterCandidate("activity_date_interval", PastIntervalValue.YEAR.toString());
 		filters.acknowledgeUrlFilterCandidate("activity_date_from",
-				new DateTime().minus(1000000).toString(DATE_TIME_FORMATTER_UTC));
-		filters.acknowledgeUrlFilterCandidate("activity_date_to", new DateTime().toString(DATE_TIME_FORMATTER_UTC));
+				new DateTime(DateTimeZone.UTC).minus(1000000).toString(DATE_TIME_FORMATTER_UTC));
+		filters.acknowledgeUrlFilterCandidate("activity_date_to", new DateTime(DateTimeZone.UTC).toString(DATE_TIME_FORMATTER_UTC));
 		tested.parsedFilterConfigService.prepareFiltersForRequest(filters);
 		Assert.assertEquals("week", tested.getDateHistogramFacetInterval(fieldName));
 	}
@@ -1319,19 +1320,19 @@ public class SearchServiceTest extends SearchServiceTestBase {
 		// case - no from defined, so always month
 		filters.forgetUrlFilterCandidate("activity_date_from", "activity_date_to");
 		filters.acknowledgeUrlFilterCandidate("activity_date_from");
-		filters.acknowledgeUrlFilterCandidate("activity_date_to", new DateTime().toString(DATE_TIME_FORMATTER_UTC));
+		filters.acknowledgeUrlFilterCandidate("activity_date_to", new DateTime(DateTimeZone.UTC).toString(DATE_TIME_FORMATTER_UTC));
 		tested.parsedFilterConfigService.prepareFiltersForRequest(filters);
 		Assert.assertEquals("month", tested.getDateHistogramFacetInterval(fieldName));
 
 		filters.forgetUrlFilterCandidate("activity_date_from", "activity_date_to");
 		filters.acknowledgeUrlFilterCandidate("activity_date_to",
-				new DateTime().minusYears(10).toString(DATE_TIME_FORMATTER_UTC));
+				new DateTime(DateTimeZone.UTC).minusYears(10).toString(DATE_TIME_FORMATTER_UTC));
 		tested.parsedFilterConfigService.prepareFiltersForRequest(filters);
 		Assert.assertEquals("month", tested.getDateHistogramFacetInterval(fieldName));
 
 		// case - no to defined means current timestamp is used
 		filters.forgetUrlFilterCandidate("activity_date_from", "activity_date_to");
-		filters.acknowledgeUrlFilterCandidate("activity_date_from", new DateTime().toString(DATE_TIME_FORMATTER_UTC));
+		filters.acknowledgeUrlFilterCandidate("activity_date_from", new DateTime(DateTimeZone.UTC).toString(DATE_TIME_FORMATTER_UTC));
 		filters.acknowledgeUrlFilterCandidate("activity_date_to");
 		tested.parsedFilterConfigService.prepareFiltersForRequest(filters);
 		Assert.assertEquals("minute", tested.getDateHistogramFacetInterval(fieldName));
@@ -1339,21 +1340,21 @@ public class SearchServiceTest extends SearchServiceTestBase {
 		// clear cache
 		filters.forgetUrlFilterCandidate("activity_date_from", "activity_date_to");
 		filters.acknowledgeUrlFilterCandidate("activity_date_from",
-				new DateTime().minusHours(1).plusMillis(100).toString(DATE_TIME_FORMATTER_UTC));
+				new DateTime(DateTimeZone.UTC).minusHours(1).plusMillis(100).toString(DATE_TIME_FORMATTER_UTC));
 		tested.parsedFilterConfigService.prepareFiltersForRequest(filters);
 		Assert.assertEquals("minute", tested.getDateHistogramFacetInterval(fieldName));
 		filters.acknowledgeUrlFilterCandidate("activity_date_from",
-				new DateTime().minusHours(1).minusMillis(100).toString(DATE_TIME_FORMATTER_UTC));
+				new DateTime(DateTimeZone.UTC).minusHours(1).minusMillis(100).toString(DATE_TIME_FORMATTER_UTC));
 		tested.parsedFilterConfigService.prepareFiltersForRequest(filters);
 		Assert.assertEquals("hour", tested.getDateHistogramFacetInterval(fieldName));
 
 		filters.forgetUrlFilterCandidate("activity_date_from", "activity_date_to");
 		filters.acknowledgeUrlFilterCandidate("activity_date_from",
-				new DateTime().minusDays(2).plusMillis(100).toString(DATE_TIME_FORMATTER_UTC));
+				new DateTime(DateTimeZone.UTC).minusDays(2).plusMillis(100).toString(DATE_TIME_FORMATTER_UTC));
 		tested.parsedFilterConfigService.prepareFiltersForRequest(filters);
 		Assert.assertEquals("hour", tested.getDateHistogramFacetInterval(fieldName));
 		filters.acknowledgeUrlFilterCandidate("activity_date_from",
-				new DateTime().minusDays(2).minusMillis(100).toString(DATE_TIME_FORMATTER_UTC));
+				new DateTime(DateTimeZone.UTC).minusDays(2).minusMillis(100).toString(DATE_TIME_FORMATTER_UTC));
 		tested.parsedFilterConfigService.prepareFiltersForRequest(filters);
 		Assert.assertEquals("day", tested.getDateHistogramFacetInterval(fieldName));
 
@@ -1369,10 +1370,10 @@ public class SearchServiceTest extends SearchServiceTestBase {
 
 		filters.forgetUrlFilterCandidate("activity_date_from", "activity_date_to");
 		filters.acknowledgeUrlFilterCandidate("activity_date_from",
-				new DateTime().minusDays(366).plusMillis(100).toString(DATE_TIME_FORMATTER_UTC));
+				new DateTime(DateTimeZone.UTC).minusDays(366).plusMillis(100).toString(DATE_TIME_FORMATTER_UTC));
 		tested.parsedFilterConfigService.prepareFiltersForRequest(filters);
 		Assert.assertEquals("week", tested.getDateHistogramFacetInterval(fieldName));
-		filters.acknowledgeUrlFilterCandidate("activity_date_from", new DateTime().minusDays(366).minusMillis(100)
+		filters.acknowledgeUrlFilterCandidate("activity_date_from", new DateTime(DateTimeZone.UTC).minusDays(366).minusMillis(100)
 				.toString(DATE_TIME_FORMATTER_UTC));
 		tested.parsedFilterConfigService.prepareFiltersForRequest(filters);
 		Assert.assertEquals("month", tested.getDateHistogramFacetInterval(fieldName));
