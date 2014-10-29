@@ -1,5 +1,7 @@
 # Searchisko
 
+![Travis master build status](https://travis-ci.org/searchisko/searchisko.svg?branch=master)
+
 **Searchisko** is an open source project that allows to build a service
 to index, search, retrieve and aggregate content from configurable resources.
 
