@@ -48,6 +48,7 @@ import org.searchisko.api.cache.IndexNamesCache;
 import org.searchisko.api.model.QuerySettings;
 import org.searchisko.api.model.SortByValue;
 import org.searchisko.api.model.TimeoutConfiguration;
+import org.searchisko.api.rest.exception.BadFieldException;
 import org.searchisko.api.rest.exception.NotAuthorizedException;
 import org.searchisko.api.rest.search.SemiParsedAggregationConfig;
 import org.searchisko.api.security.Role;
@@ -687,8 +688,17 @@ public class SearchService {
 	}
 
 	/**
-	 * @param querySettings
-	 * @param srb request builder to set response content for
+	 * Handle which fields will be available in search response, including field level security (issue #150) and _source
+	 * filtering (issue #184).
+	 * 
+	 * @param querySettings to get info about requested fields from
+	 * @param srb request builder to set response content into
+	 * @see <a
+	 *      href="http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/search-request-fields.html">Elasticsearch
+	 *      - Fields</a>
+	 * @see <a
+	 *      href="http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/search-request-source-filtering.html">Elasticsearch
+	 *      - Source Filtering</a>
 	 */
 	protected void setSearchRequestFields(QuerySettings querySettings, SearchRequestBuilder srb) {
 
@@ -697,8 +707,10 @@ public class SearchService {
 		List<String> fields = null;
 
 		if (querySettings.getFields() != null) {
-			// TODO do not allow to use * there!
 			fields = querySettings.getFields();
+			if (fields != null && fields.contains("*")) {
+				throw new BadFieldException(QuerySettings.FIELDS_KEY, "value * is invalid");
+			}
 		} else {
 			try {
 				fields = SearchUtils.getListOfStringsFromJsonMap(cf, ConfigService.CFGNAME_SEARCH_RESPONSE_FIELDS);
@@ -722,9 +734,6 @@ public class SearchService {
 						if (roles != null && !roles.isEmpty()) {
 							if (authenticationUtilService.isUserInAnyOfRoles(false, roles)) {
 								fieldsFiltered.add(field);
-								if ("_source".equals(field.toLowerCase())) {
-									isSourceReturned = true;
-								}
 							}
 						} else {
 							fieldsFiltered.add(field);
@@ -737,18 +746,24 @@ public class SearchService {
 				}
 			}
 
+			for (String field : fields) {
+				if ("_source".equals(field.toLowerCase())) {
+					isSourceReturned = true;
+				}
+			}
+
 			srb.addFields((fields).toArray(new String[fields.size()]));
 		} else {
 			isSourceReturned = true;
 		}
 
-		if (isSourceReturned) {
+		if (isSourceReturned && cf != null) {
 			handleSearchRequestFieldsSourceExcludes(srb, cf);
 		}
 
 	}
 
-	protected void handleSearchRequestFieldsSourceExcludes(SearchRequestBuilder srb, Map<String, Object> cf) {
+	private void handleSearchRequestFieldsSourceExcludes(SearchRequestBuilder srb, Map<String, Object> cf) {
 		@SuppressWarnings("unchecked")
 		Map<String, Object> cfgExcludes = (Map<String, Object>) cf.get(CFGNAME_SOURCE_FILTERING_FOR_ROLES);
 		if (cfgExcludes != null && !cfgExcludes.isEmpty() && !authenticationUtilService.isUserInRole(Role.ADMIN)) {
