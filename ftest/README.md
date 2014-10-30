@@ -58,12 +58,15 @@ Running tests
 
 You can run individual test in you IDE or use maven to run all tests in project root (not in ftest directory)
 
-Maven (integration test only):
+Maven - integration test only:
 
 	mvn test -Pskiptests,integration-tests
+	
+Maven - specific integration test class:
+	
+    mvn test -Pskiptests,integration-tests -Dtest=ProjectRestServiceTest
 
-
-Maven (unit test in API module and integration tests)
+Maven - unit test in API module and integration tests:
 
 	mvn test -Pintegration-tests
 

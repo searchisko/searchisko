@@ -35,5 +35,5 @@ Example of project configuration:
 	}
 	
 This information is not considered as public! If you have 
-to have some some public project informations (aka project profile), then simply create 
+to have some public project information (aka project profile), then simply create
 necessary Content type and fill it with public data - eg. see [`project_info`](../content/project_info.md) content type.	

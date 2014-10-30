@@ -431,7 +431,7 @@ Search API
 This part of the API is used by all systems that need to use [content](https://github.com/searchisko/searchisko/tree/master/documentation/rest-api/) stored in Searchisko.
 --
 
-Search contributions based on input parameters
+Search content based on input parameters
 
 ##### Request parameters
 
@@ -462,8 +462,8 @@ Search contributions based on input parameters
 You can specify name of [filter](http://www.elasticsearch.org/guide/en/elasticsearch/reference/1.4/query-dsl-filters.html)s you want to filter by. List of available filters is configurable (see [Management API](#managementapiconfiguration)). [Current configuration](https://github.com/searchisko/searchisko/blob/master/configuration/data/config/search_fulltext_filter_fields.json) enables the following filters:
 
  * `content_provider` - filters result only to data provided by specified provider `sys_content_provider` field
- * `type` - filters result only to specific `sys_content_type`
- * `sys_type` - filters result only to specific `sys_type`, This param can be used multiple times to get results for more types.
+ * `type` - filters result only to specific `sys_content_type`. This param can be used multiple times to get results for more `type`s.
+ * `sys_type` - filters result only to specific `sys_type`. This param can be used multiple times to get results for more `sys_type`s.
  * `tag` - filters result to specific tag defined in `sys_tags` field. This param can be used multiple times to get results for more tags.
  * `project` - filters result to specific project defined in `sys_project` field. This param can be used multiple times to get results for more projects.
  * `activity_date_interval` - filters results only for data with some activity in defined period before now. Available values `year`, `quarter`, `month`, `week`, `day`.
@@ -558,6 +558,36 @@ GET /rest/search{?query,query_highlight,sortBy,from,size,agg,field,content_provi
 }
 
 
+Search content using [registered query](#managementapiregisteredqueries) and pass parameter values into templates.
+
+##### Request parameters
+
+ * `content_provider` - filters result only to data provided by specified provider `sys_content_provider` field
+ * `type` - filters result only to specific `sys_content_type`. This param can be used multiple times to get results for more `type`s.
+ * `sys_type` - filters result only to specific `sys_type`. This param can be used multiple times to get results for more `sys_type`s.
+ * Any other parameters are passed into search template as params.
+
+GET /rest/search/query{?content_provider,type,sys_type}
+< 200
+< Content-Type: application/json
+< Access-Control-Allow-Origin: *
+{
+  "uuid" : "f87e7875-85a1-42e3-a39e-e64d3f0e155d",
+  "took":3,
+  "timed_out":false,
+  "_shards":{
+    "total":5,
+    "successful":5,
+    "failed":0
+   },
+   "hits":{
+     "total":393,
+     "max_score":null,
+     "hits":[]
+   }
+}
+
+
 Write statistics record about hit returned in search response was "useful" for
 user, eg. user clicked URL related with given hit or viewed hit detail. 
 These statistics records may be analyzed later to improve fulltext search engine 
@@ -576,6 +606,20 @@ PUT /rest/search/{search_result_uuid}/{hit_id}{?session_id}
 < 200
 < Access-Control-Allow-Origin: *
 
+
+Execute **Registered Query** using provided URL parameters.
+
+##### Request parameters
+
+ * `registered_query_id` id of registered query
+ * `params` all these URL params will be passed into query template. There are only two exceptions:
+   `type` and `sys_type` - these two are not passed into query template but are used to _filter_
+   internal indices and types the query is executed against. They have the same meaning as in Search API.
+
+GET /rest/search/{registered_query_id}{?params}
+< 200
+< Content-Type: application/json
+< Access-Control-Allow-Origin: *
 
 --
 Suggestions API - query
@@ -1679,6 +1723,73 @@ POST /rest/contributor/{idFrom}/mergeTo/{idTo}
 Delete contributor configuration with given `id`.
 DELETE /rest/contributor/{id}
 < 200
+
+
+--
+Management API - registered queries
+
+This part of the API is used by 'Searchisko administrators' to manage registered queries.
+--
+
+Get all registered queries.
+
+GET /rest/query
+< 200
+< Content-Type: application/json
+{
+  "id" : "query_name",
+  "description" : "Template description",
+  "roles" : [ "role1", "role2" ],
+  "template" : {}
+}
+
+
+Get registered query using its id.
+
+GET /rest/query/{id}
+< 200
+< Content-Type: application/json
+{
+  "id" : "query_name",
+  "description" : "Template description",
+  "roles" : [ "role1", "role2" ],
+  "template" : {}
+}
+
+
+Create new registered query.
+
+POST /rest/query
+< 200
+< Content-Type: application/json
+{
+  "id" : "query_name",
+  "description" : "Template description",
+  "roles" : [ "role1", "role2" ],
+  "template" : {}
+}
+
+
+Update (or create) register query.
+
+POST /rest/query/{id}
+< 200
+< Content-Type: application/json
+{
+  "id" : "query_name",
+  "description" : "Template description",
+  "roles" : [ "role1", "role2" ],
+  "template" : {}
+}
+
+
+Delete registered query using its id.
+
+DELETE /rest/query/{id}
+< 200
+< Content-Type: plain/text
+OK
+
 
 
 --

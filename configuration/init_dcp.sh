@@ -45,4 +45,8 @@ pushd data/contributor/
 ./init-contributors.sh ${searchiskourl} ${searchiskousername} ${searchiskopassword}
 popd
 
+pushd data/query/
+./init-queries.sh ${searchiskourl} ${searchiskousername} ${searchiskopassword}
+popd
+
 echo FINISHED!

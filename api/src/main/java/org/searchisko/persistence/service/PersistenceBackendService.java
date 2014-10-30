@@ -19,14 +19,7 @@ import javax.persistence.EntityManager;
 
 import org.searchisko.api.service.AppConfigurationService;
 import org.searchisko.api.service.ProviderService;
-import org.searchisko.persistence.jpa.model.Config;
-import org.searchisko.persistence.jpa.model.ConfigConverter;
-import org.searchisko.persistence.jpa.model.Contributor;
-import org.searchisko.persistence.jpa.model.ContributorConverter;
-import org.searchisko.persistence.jpa.model.Project;
-import org.searchisko.persistence.jpa.model.ProjectConverter;
-import org.searchisko.persistence.jpa.model.Provider;
-import org.searchisko.persistence.jpa.model.ProviderConverter;
+import org.searchisko.persistence.jpa.model.*;
 
 /**
  * Service for persistence backend. It produces {@link EntityService}s for distinct types of entities Searchisko needs
@@ -88,7 +81,6 @@ public class PersistenceBackendService {
 	@ApplicationScoped
 	public EntityService produceContributorService() {
 		return new JpaEntityService<>(em, new ContributorConverter(), Contributor.class);
-
 	}
 
 	@Produces
@@ -96,7 +88,13 @@ public class PersistenceBackendService {
 	@ApplicationScoped
 	public EntityService produceConfigService() {
 		return new JpaEntityService<>(em, new ConfigConverter(), Config.class);
+	}
 
+	@Produces
+	@Named("queryServiceBackend")
+	@ApplicationScoped
+	public EntityService produceQueryService() {
+		return new JpaEntityService<>(em, new QueryConverter(), Query.class);
 	}
 
 }

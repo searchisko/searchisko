@@ -43,6 +43,7 @@ import static org.hamcrest.Matchers.isEmptyOrNullString;
 public class SearchRestServiceTest {
 
 	public static final String SEARCH_REST_API = DeploymentHelpers.DEFAULT_REST_VERSION + "search";
+	public static final String QUERY_REST_API = DeploymentHelpers.DEFAULT_REST_VERSION + "query";
 
 	@Deployment(testable = false)
 	public static WebArchive createDeployment() throws IOException {
@@ -93,7 +94,7 @@ public class SearchRestServiceTest {
 
 	@Test
 	@InSequence(32)
-	public void assertNoStarAllovedForFiled() throws MalformedURLException {
+	public void assertNoStarAllowedForFiled() throws MalformedURLException {
 		// Bad Request must be returned
 		given().contentType(ContentType.JSON).expect().log().ifValidationFails().statusCode(400)
 				.contentType(ContentType.JSON).when().get(new URL(context, SEARCH_REST_API + "?field=*").toExternalForm());
@@ -216,7 +217,7 @@ public class SearchRestServiceTest {
 	@InSequence(52)
 	public void assertFlsSearchAllInsertedContent_anonymHasNoPermissionToField() throws MalformedURLException {
 
-		// anonym can get 'data' but not 'data2' nor 'data3' field
+		// anonymous can get 'data' but not 'data2' nor 'data3' field
 		given().expect().log().ifValidationFails().statusCode(200).contentType(ContentType.JSON)
 				.body("hits.hits[0].fields.data[0]", is("test")).body("hits.hits[0].fields.data2", isEmptyOrNullString())
 				.body("hits.hits[0].fields.data3", isEmptyOrNullString()).when()
@@ -419,5 +420,4 @@ public class SearchRestServiceTest {
 				.body(is("statistics record accepted")).when()
 				.put(new URL(context, SEARCH_REST_API + "/{search_result_uuid}/{hit_id}").toExternalForm());
 	}
-
 }

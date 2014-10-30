@@ -26,7 +26,7 @@ public class ProviderConverterTest {
 	@Test
 	public void convertToModel() throws IOException {
 		ProviderConverter converter = new ProviderConverter();
-		Map<String, Object> data = new HashMap<String, Object>();
+		Map<String, Object> data = new HashMap<>();
 		data.put(ProviderService.NAME, "jbossorg");
 		data.put(ProviderService.SUPER_PROVIDER, true);
 

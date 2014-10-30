@@ -9,14 +9,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Date;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.TimeZone;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -27,11 +20,14 @@ import org.elasticsearch.common.joda.time.LocalDateTime;
 import org.elasticsearch.common.joda.time.format.ISODateTimeFormat;
 import org.elasticsearch.common.settings.SettingsException;
 
+import javax.ws.rs.core.MultivaluedMap;
+
 /**
  * Distinct utility methods.
  * 
  * @author Libor Krzyzanek
  * @author Vlastimil Elias (velias at redhat dot com)
+ * @author Lukas Vlcek
  */
 public class SearchUtils {
 
@@ -219,7 +215,7 @@ public class SearchUtils {
 	 * @param map to get Integer value from
 	 * @param key in map to get value from
 	 * @return Integer value if found. <code>null</code> if value is not present in map.
-	 * @throws NumberFormatException if valu from map is not convertible to integer number
+	 * @throws NumberFormatException if value from map is not convertible to integer number
 	 */
 	public static Integer getIntegerFromJsonMap(Map<String, Object> map, String key) throws NumberFormatException {
 		if (map == null)
@@ -343,6 +339,21 @@ public class SearchUtils {
 				}
 			}
 		}
+	}
+
+	/**
+	 * Convert URL params format to type that is required by internal Elasticsearch API.
+	 *
+	 * @param params URL parameters
+	 * @return
+	 */
+	public static Map<String, Object> collapseURLParams(MultivaluedMap<String, String> params) {
+		Map output = new HashMap<>();
+		for (String key: params.keySet()) {
+			List values = params.get(key);
+			output.put(key, values.size() == 1 ? values.get(0) : values.toArray());
+		}
+		return output;
 	}
 
 }

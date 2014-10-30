@@ -16,6 +16,7 @@ DCP initialization steps:
    - `data/config/init_config.sh`
    - `data/project/init_projects.sh`
    - `data/contributor/init-contributors.sh`
+   - `data/query/init-queries.sh`
 6. Initialize Elasticsearch rivers - `rivers/init_rivers.sh` 
 
 Note: each .sh script accepts commandline parameters which allows to configure 
@@ -67,7 +68,7 @@ given script. Steps 2 - 5 can be performed by top level `init_all_noriver.sh` sc
 		cd ~/app-root/repo/configuration
 		./init_all_noriver.sh http://${OPENSHIFT_JBOSSEAP_IP}:8080
 
-5.5 Push other init data
+	* Optionally push other init data
 
         # If you have any additional init data, push them.
         # For example if you have list of contributors or passwords for rivers.

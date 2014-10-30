@@ -50,6 +50,7 @@ descriptions of document structures for the management API:
 + [content provider](management/content_provider.md) - document type used by 'Management API - content providers'
 + [project](management/project.md) - document type used by 'Management API - projects'
 + [contributor](management/contributor.md) - document type used by 'Management API - contributors'
++ [query](management/query.md) - document type used by 'Management API - registered queries'
 + [config_*](management)  - document types used by 'Management API - configuration' to configure Searchisko instance
 
 ## Authentication and Roles based REST API security

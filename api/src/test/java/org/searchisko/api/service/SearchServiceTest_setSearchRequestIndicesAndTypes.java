@@ -50,7 +50,7 @@ public class SearchServiceTest_setSearchRequestIndicesAndTypes extends SearchSer
 			Mockito.when(tested.indexNamesCache.get(Mockito.anyString())).thenReturn(null);
 			List<Map<String, Object>> mockedProvidersList = new ArrayList<>();
 			Mockito.when(tested.providerService.getAll()).thenReturn(mockedProvidersList);
-			tested.setSearchRequestIndicesAndTypes(querySettings, searchRequestBuilderMock);
+			tested.setSearchRequestIndicesAndTypes(querySettings.getFilters(), querySettings.getAggregations(), searchRequestBuilderMock);
 			Assert.fail("SettingsException expected");
 		} catch (SettingsException e) {
 			Mockito.verify(tested.indexNamesCache).get("_all||false");
@@ -64,7 +64,7 @@ public class SearchServiceTest_setSearchRequestIndicesAndTypes extends SearchSer
 			Mockito.when(tested.indexNamesCache.get(Mockito.anyString())).thenReturn(null);
 			mockProviderConfiguration(tested, "/search/provider_1.json", "/search/provider_2.json");
 
-			tested.setSearchRequestIndicesAndTypes(querySettings, searchRequestBuilderMock);
+			tested.setSearchRequestIndicesAndTypes(querySettings.getFilters(), querySettings.getAggregations(), searchRequestBuilderMock);
 			Mockito.verify(tested.indexNamesCache).get("_all||false");
 			Mockito.verify(tested.providerService).getAll();
 			Mockito.verify(searchRequestBuilderMock).setIndices("idx_provider1_issue", "idx_provider1_mailing1",
@@ -80,7 +80,7 @@ public class SearchServiceTest_setSearchRequestIndicesAndTypes extends SearchSer
 			si.add("idx_provider1_issue");
 			Mockito.when(tested.indexNamesCache.get(Mockito.anyString())).thenReturn(si);
 
-			tested.setSearchRequestIndicesAndTypes(querySettings, searchRequestBuilderMock);
+			tested.setSearchRequestIndicesAndTypes(querySettings.getFilters(), querySettings.getAggregations(), searchRequestBuilderMock);
 			Mockito.verify(tested.indexNamesCache).get("_all||false");
 			Mockito.verify(searchRequestBuilderMock).setIndices("idx_provider1_issue");
 			Mockito.verifyNoMoreInteractions(searchRequestBuilderMock, tested.providerService, tested.indexNamesCache);
@@ -111,7 +111,7 @@ public class SearchServiceTest_setSearchRequestIndicesAndTypes extends SearchSer
 			filters.acknowledgeUrlFilterCandidate("type", "provider1_issue");
 			tested.parsedFilterConfigService.prepareFiltersForRequest(filters);
 
-			tested.setSearchRequestIndicesAndTypes(querySettings, searchRequestBuilderMock);
+			tested.setSearchRequestIndicesAndTypes(querySettings.getFilters(), querySettings.getAggregations(), searchRequestBuilderMock);
 			Mockito.verifyZeroInteractions(tested.indexNamesCache);
 			Mockito.verify(searchRequestBuilderMock).setIndices("idx_provider1_issue");
 			Mockito.verify(searchRequestBuilderMock).setTypes("t_provider1_issue");
@@ -126,7 +126,7 @@ public class SearchServiceTest_setSearchRequestIndicesAndTypes extends SearchSer
 			filters.acknowledgeUrlFilterCandidate("type", "provider1_mailing");
 			tested.parsedFilterConfigService.prepareFiltersForRequest(filters);
 
-			tested.setSearchRequestIndicesAndTypes(querySettings, searchRequestBuilderMock);
+			tested.setSearchRequestIndicesAndTypes(querySettings.getFilters(), querySettings.getAggregations(), searchRequestBuilderMock);
 			Mockito.verifyZeroInteractions(tested.indexNamesCache);
 			Mockito.verify(searchRequestBuilderMock).setIndices("idx_provider1_mailing1", "idx_provider1_mailing2");
 			Mockito.verify(searchRequestBuilderMock).setTypes("t_provider1_mailing");
@@ -141,7 +141,7 @@ public class SearchServiceTest_setSearchRequestIndicesAndTypes extends SearchSer
 			filters.acknowledgeUrlFilterCandidate("type", "provider1_cosi");
 			tested.parsedFilterConfigService.prepareFiltersForRequest(filters);
 
-			tested.setSearchRequestIndicesAndTypes(querySettings, searchRequestBuilderMock);
+			tested.setSearchRequestIndicesAndTypes(querySettings.getFilters(), querySettings.getAggregations(), searchRequestBuilderMock);
 			Mockito.verifyZeroInteractions(tested.indexNamesCache);
 			Mockito.verify(searchRequestBuilderMock).setIndices("idx_provider1_cosi1", "idx_provider1_cosi2");
 			Mockito.verify(searchRequestBuilderMock).setTypes("t_provider1_cosi");
@@ -157,7 +157,7 @@ public class SearchServiceTest_setSearchRequestIndicesAndTypes extends SearchSer
 			tested.parsedFilterConfigService.prepareFiltersForRequest(filters);
 
 			try {
-				tested.setSearchRequestIndicesAndTypes(querySettings, searchRequestBuilderMock);
+				tested.setSearchRequestIndicesAndTypes(querySettings.getFilters(), querySettings.getAggregations(), searchRequestBuilderMock);
 				Assert.fail("IllegalArgumentException expected");
 			} catch (IllegalArgumentException e) {
 				Assert.assertEquals("Unsupported content type", e.getMessage());
@@ -197,7 +197,7 @@ public class SearchServiceTest_setSearchRequestIndicesAndTypes extends SearchSer
 
 			mockProviderConfiguration(tested, "/search/provider_1.json", "/search/provider_2.json");
 
-			tested.setSearchRequestIndicesAndTypes(querySettings, searchRequestBuilderMock);
+			tested.setSearchRequestIndicesAndTypes(querySettings.getFilters(), querySettings.getAggregations(), searchRequestBuilderMock);
 			Mockito.verify(tested.indexNamesCache).get(SearchService.prepareIndexNamesCacheKey(sysTypesRequested, false));
 			Mockito.verify(tested.indexNamesCache).put(
 					Mockito.eq(SearchService.prepareIndexNamesCacheKey(sysTypesRequested, false)), Mockito.anySet());
@@ -219,7 +219,7 @@ public class SearchServiceTest_setSearchRequestIndicesAndTypes extends SearchSer
 
 			mockProviderConfiguration(tested, "/search/provider_1.json", "/search/provider_2.json");
 			try {
-				tested.setSearchRequestIndicesAndTypes(querySettings, searchRequestBuilderMock);
+				tested.setSearchRequestIndicesAndTypes(querySettings.getFilters(), querySettings.getAggregations(), searchRequestBuilderMock);
 				Assert.fail("IllegalArgumentException expected");
 			} catch (IllegalArgumentException e) {
 				Assert.assertEquals("Unsupported content sys_type", e.getMessage());
@@ -239,7 +239,7 @@ public class SearchServiceTest_setSearchRequestIndicesAndTypes extends SearchSer
 			tested.parsedFilterConfigService.prepareFiltersForRequest(filters);
 			mockProviderConfiguration(tested, "/search/provider_1.json", "/search/provider_2.json");
 
-			tested.setSearchRequestIndicesAndTypes(querySettings, searchRequestBuilderMock);
+			tested.setSearchRequestIndicesAndTypes(querySettings.getFilters(), querySettings.getAggregations(), searchRequestBuilderMock);
 			Mockito.verify(tested.indexNamesCache).get(SearchService.prepareIndexNamesCacheKey(sysTypesRequested, false));
 			Mockito.verify(tested.indexNamesCache).put(
 					Mockito.eq(SearchService.prepareIndexNamesCacheKey(sysTypesRequested, false)), Mockito.anySet());
@@ -261,7 +261,7 @@ public class SearchServiceTest_setSearchRequestIndicesAndTypes extends SearchSer
 			tested.parsedFilterConfigService.prepareFiltersForRequest(filters);
 			mockProviderConfiguration(tested, "/search/provider_1.json", "/search/provider_2.json");
 
-			tested.setSearchRequestIndicesAndTypes(querySettings, searchRequestBuilderMock);
+			tested.setSearchRequestIndicesAndTypes(querySettings.getFilters(), querySettings.getAggregations(), searchRequestBuilderMock);
 			Mockito.verify(tested.indexNamesCache).get(SearchService.prepareIndexNamesCacheKey(sysTypesRequested, false));
 			Mockito.verify(tested.indexNamesCache).put(
 					Mockito.eq(SearchService.prepareIndexNamesCacheKey(sysTypesRequested, false)), Mockito.anySet());
@@ -285,7 +285,7 @@ public class SearchServiceTest_setSearchRequestIndicesAndTypes extends SearchSer
 			querySettings.addAggregation("per_sys_type_counts");
 			mockProviderConfiguration(tested, "/search/provider_1.json", "/search/provider_2.json");
 
-			tested.setSearchRequestIndicesAndTypes(querySettings, searchRequestBuilderMock);
+			tested.setSearchRequestIndicesAndTypes(querySettings.getFilters(), querySettings.getAggregations(), searchRequestBuilderMock);
 			Mockito.verify(tested.indexNamesCache).get(SearchService.prepareIndexNamesCacheKey(sysTypesRequested, true));
 			Mockito.verify(tested.indexNamesCache).put(
 					Mockito.eq(SearchService.prepareIndexNamesCacheKey(sysTypesRequested, true)), Mockito.anySet());
@@ -310,7 +310,7 @@ public class SearchServiceTest_setSearchRequestIndicesAndTypes extends SearchSer
 			querySettings.addAggregation("per_sys_type_counts");
 			mockProviderConfiguration(tested, "/search/provider_1.json", "/search/provider_2.json");
 
-			tested.setSearchRequestIndicesAndTypes(querySettings, searchRequestBuilderMock);
+			tested.setSearchRequestIndicesAndTypes(querySettings.getFilters(), querySettings.getAggregations(), searchRequestBuilderMock);
 			Mockito.verify(tested.indexNamesCache).get(SearchService.prepareIndexNamesCacheKey(sysTypesRequested, true));
 			Mockito.verify(tested.indexNamesCache).put(
 					Mockito.eq(SearchService.prepareIndexNamesCacheKey(sysTypesRequested, true)), Mockito.anySet());
@@ -338,7 +338,7 @@ public class SearchServiceTest_setSearchRequestIndicesAndTypes extends SearchSer
 			tested.parsedFilterConfigService.prepareFiltersForRequest(filters);
 			mockProviderConfiguration(tested, "/search/provider_1.json", "/search/provider_2.json");
 
-			tested.setSearchRequestIndicesAndTypes(querySettings, searchRequestBuilderMock);
+			tested.setSearchRequestIndicesAndTypes(querySettings.getFilters(), querySettings.getAggregations(), searchRequestBuilderMock);
 
 			Mockito.verify(tested.indexNamesCache).get(SearchService.prepareIndexNamesCacheKey(sysTypesRequested, false));
 			Mockito.verifyNoMoreInteractions(tested.indexNamesCache);
@@ -371,7 +371,7 @@ public class SearchServiceTest_setSearchRequestIndicesAndTypes extends SearchSer
 			mockProviderConfiguration(tested, "/search/provider_1.json", "/search/provider_2.json");
 			mockAuthenticatedUserWithRole(tested, null);
 
-			tested.setSearchRequestIndicesAndTypes(querySettings, searchRequestBuilderMock);
+			tested.setSearchRequestIndicesAndTypes(querySettings.getFilters(), querySettings.getAggregations(), searchRequestBuilderMock);
 
 			Mockito.verify(tested.providerService).getAll();
 			Mockito.verify(searchRequestBuilderMock).setIndices("idx_provider1_issue", "idx_provider1_mailing1",
@@ -388,7 +388,7 @@ public class SearchServiceTest_setSearchRequestIndicesAndTypes extends SearchSer
 
 			mockProviderConfiguration(tested, "/search/provider_1.json", "/search/provider_2.json");
 
-			tested.setSearchRequestIndicesAndTypes(querySettings, searchRequestBuilderMock);
+			tested.setSearchRequestIndicesAndTypes(querySettings.getFilters(), querySettings.getAggregations(), searchRequestBuilderMock);
 
 			Mockito.verify(tested.providerService).getAll();
 			Mockito.verify(searchRequestBuilderMock).setIndices("idx_provider1_issue", "idx_provider1_mailing1",
@@ -405,7 +405,7 @@ public class SearchServiceTest_setSearchRequestIndicesAndTypes extends SearchSer
 
 			mockProviderConfiguration(tested, "/search/provider_1.json", "/search/provider_2.json");
 
-			tested.setSearchRequestIndicesAndTypes(querySettings, searchRequestBuilderMock);
+			tested.setSearchRequestIndicesAndTypes(querySettings.getFilters(), querySettings.getAggregations(), searchRequestBuilderMock);
 
 			Mockito.verify(tested.providerService).getAll();
 			Mockito.verify(searchRequestBuilderMock).setIndices("idx_provider1_issue", "idx_provider1_mailing1",
@@ -423,7 +423,7 @@ public class SearchServiceTest_setSearchRequestIndicesAndTypes extends SearchSer
 
 			mockProviderConfiguration(tested, "/search/provider_1.json", "/search/provider_2.json");
 
-			tested.setSearchRequestIndicesAndTypes(querySettings, searchRequestBuilderMock);
+			tested.setSearchRequestIndicesAndTypes(querySettings.getFilters(), querySettings.getAggregations(), searchRequestBuilderMock);
 
 			Mockito.verify(tested.providerService).getAll();
 			Mockito.verify(searchRequestBuilderMock).setIndices("idx_provider1_issue", "idx_provider1_mailing1",
@@ -459,7 +459,7 @@ public class SearchServiceTest_setSearchRequestIndicesAndTypes extends SearchSer
 			tested.parsedFilterConfigService.prepareFiltersForRequest(filters);
 
 			try {
-				tested.setSearchRequestIndicesAndTypes(querySettings, searchRequestBuilderMock);
+				tested.setSearchRequestIndicesAndTypes(querySettings.getFilters(), querySettings.getAggregations(), searchRequestBuilderMock);
 				Assert.fail("NotAuthorizedException expected");
 			} catch (NotAuthorizedException e) {
 				Mockito.verifyNoMoreInteractions(searchRequestBuilderMock, tested.indexNamesCache);
@@ -474,7 +474,7 @@ public class SearchServiceTest_setSearchRequestIndicesAndTypes extends SearchSer
 			tested.parsedFilterConfigService.prepareFiltersForRequest(filters);
 
 			try {
-				tested.setSearchRequestIndicesAndTypes(querySettings, searchRequestBuilderMock);
+				tested.setSearchRequestIndicesAndTypes(querySettings.getFilters(), querySettings.getAggregations(), searchRequestBuilderMock);
 				Assert.fail("NotAuthorizedException expected");
 			} catch (NotAuthorizedException e) {
 				Mockito.verifyNoMoreInteractions(searchRequestBuilderMock, tested.indexNamesCache);
@@ -491,7 +491,7 @@ public class SearchServiceTest_setSearchRequestIndicesAndTypes extends SearchSer
 			filters.acknowledgeUrlFilterCandidate("type", "provider1_issue_secure");
 			tested.parsedFilterConfigService.prepareFiltersForRequest(filters);
 
-			tested.setSearchRequestIndicesAndTypes(querySettings, searchRequestBuilderMock);
+			tested.setSearchRequestIndicesAndTypes(querySettings.getFilters(), querySettings.getAggregations(), searchRequestBuilderMock);
 
 			Mockito.verify(searchRequestBuilderMock).setIndices("idx_provider1_issue_secure");
 			Mockito.verify(searchRequestBuilderMock).setTypes("t_provider1_issue_secure");
@@ -508,7 +508,7 @@ public class SearchServiceTest_setSearchRequestIndicesAndTypes extends SearchSer
 			filters.acknowledgeUrlFilterCandidate("type", "provider2_issue_secure");
 			tested.parsedFilterConfigService.prepareFiltersForRequest(filters);
 
-			tested.setSearchRequestIndicesAndTypes(querySettings, searchRequestBuilderMock);
+			tested.setSearchRequestIndicesAndTypes(querySettings.getFilters(), querySettings.getAggregations(), searchRequestBuilderMock);
 
 			Mockito.verify(searchRequestBuilderMock).setIndices("idx_provider2_issue_secure");
 			Mockito.verify(searchRequestBuilderMock).setTypes("t_provider2_issue_secure");
@@ -525,7 +525,7 @@ public class SearchServiceTest_setSearchRequestIndicesAndTypes extends SearchSer
 			filters.acknowledgeUrlFilterCandidate("type", "provider1_issue_secure");
 			tested.parsedFilterConfigService.prepareFiltersForRequest(filters);
 
-			tested.setSearchRequestIndicesAndTypes(querySettings, searchRequestBuilderMock);
+			tested.setSearchRequestIndicesAndTypes(querySettings.getFilters(), querySettings.getAggregations(), searchRequestBuilderMock);
 
 			Mockito.verify(searchRequestBuilderMock).setIndices("idx_provider1_issue_secure");
 			Mockito.verify(searchRequestBuilderMock).setTypes("t_provider1_issue_secure");
@@ -543,7 +543,7 @@ public class SearchServiceTest_setSearchRequestIndicesAndTypes extends SearchSer
 			tested.parsedFilterConfigService.prepareFiltersForRequest(filters);
 
 			try {
-				tested.setSearchRequestIndicesAndTypes(querySettings, searchRequestBuilderMock);
+				tested.setSearchRequestIndicesAndTypes(querySettings.getFilters(), querySettings.getAggregations(), searchRequestBuilderMock);
 				Assert.fail("IllegalArgumentException expected");
 			} catch (IllegalArgumentException e) {
 				Assert.assertEquals("Unsupported content type", e.getMessage());
@@ -582,7 +582,7 @@ public class SearchServiceTest_setSearchRequestIndicesAndTypes extends SearchSer
 			mockProviderConfiguration(tested, "/search/provider_1.json", "/search/provider_2.json");
 			mockAuthenticatedUserWithRole(tested, "ROLE2");
 
-			tested.setSearchRequestIndicesAndTypes(querySettings, searchRequestBuilderMock);
+			tested.setSearchRequestIndicesAndTypes(querySettings.getFilters(), querySettings.getAggregations(), searchRequestBuilderMock);
 
 			Mockito.verify(tested.providerService).getAll();
 			Mockito.verify(searchRequestBuilderMock).setIndices("idx_provider1_issue", "idx_provider2_issue1",
@@ -603,7 +603,7 @@ public class SearchServiceTest_setSearchRequestIndicesAndTypes extends SearchSer
 			mockProviderConfiguration(tested, "/search/provider_1.json", "/search/provider_2.json");
 			mockAuthenticatedUserWithRole(tested, "ROLE1");
 
-			tested.setSearchRequestIndicesAndTypes(querySettings, searchRequestBuilderMock);
+			tested.setSearchRequestIndicesAndTypes(querySettings.getFilters(), querySettings.getAggregations(), searchRequestBuilderMock);
 
 			Mockito.verify(tested.providerService).getAll();
 			Mockito.verify(searchRequestBuilderMock).setIndices("idx_provider1_issue", "idx_provider1_issue_secure",
@@ -624,7 +624,7 @@ public class SearchServiceTest_setSearchRequestIndicesAndTypes extends SearchSer
 			mockProviderConfiguration(tested, "/search/provider_1.json", "/search/provider_2.json");
 			mockAuthenticatedUserWithRole(tested, Role.ADMIN);
 
-			tested.setSearchRequestIndicesAndTypes(querySettings, searchRequestBuilderMock);
+			tested.setSearchRequestIndicesAndTypes(querySettings.getFilters(), querySettings.getAggregations(), searchRequestBuilderMock);
 
 			Mockito.verify(tested.providerService).getAll();
 			Mockito.verify(searchRequestBuilderMock).setIndices("idx_provider1_issue", "idx_provider1_issue_secure",
@@ -646,7 +646,7 @@ public class SearchServiceTest_setSearchRequestIndicesAndTypes extends SearchSer
 			mockAuthenticatedUserWithRole(tested, Role.ADMIN);
 
 			try {
-				tested.setSearchRequestIndicesAndTypes(querySettings, searchRequestBuilderMock);
+				tested.setSearchRequestIndicesAndTypes(querySettings.getFilters(), querySettings.getAggregations(), searchRequestBuilderMock);
 				Assert.fail("IllegalArgumentException expected");
 			} catch (IllegalArgumentException e) {
 				Assert.assertEquals("Unsupported content sys_type", e.getMessage());

@@ -36,6 +36,7 @@ import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.index.query.QueryFilterBuilder;
 import org.elasticsearch.index.query.SimpleQueryStringBuilder;
+import org.elasticsearch.script.ScriptService;
 import org.elasticsearch.search.aggregations.AggregationBuilders;
 import org.elasticsearch.search.aggregations.bucket.filter.FilterAggregationBuilder;
 import org.elasticsearch.search.aggregations.bucket.global.GlobalBuilder;
@@ -143,7 +144,7 @@ public class SearchService {
 			}
 		}
 
-		setSearchRequestIndicesAndTypes(querySettings, srb);
+		setSearchRequestIndicesAndTypes(querySettings.getFilters(), querySettings.getAggregations(), srb);
 
 		QueryBuilder qb_fulltext = prepareQueryBuilder(querySettings);
 		srb.setQuery(applyContentLevelSecurityFilter(applyCommonFilters(
@@ -166,19 +167,21 @@ public class SearchService {
 	 * <strong>SECURITY NOTE:</strong> this method plays crucial role for "content type level security"! It fills search
 	 * request builder with indices and types for content types user has permission to only. So this method MUST BE used
 	 * for each search requests for common users! This method uses {@link AuthenticationUtilService}.
-	 * 
-	 * @param querySettings to
+	 *
+	 * @param filters request filters
+	 * @param aggregations request aggregations
 	 * @param srb ES search request builder to add searched indices and types to
-	 * @throws  NotAuthorizedException if current user has not permission to any of content he requested.
+	 * @throws NotAuthorizedException if current user has not permission to any of content he requested.
 	 * 
 	 */
-	protected void setSearchRequestIndicesAndTypes(QuerySettings querySettings, SearchRequestBuilder srb)
+	protected void setSearchRequestIndicesAndTypes(QuerySettings.Filters filters, Set<String> aggregations,
+												   SearchRequestBuilder srb)
 			throws NotAuthorizedException {
 
 		Set<String> contentTypes = null;
-		if (querySettings.getFilters() != null && querySettings.getFilters().getFilterCandidatesKeys().size() > 0) {
+		if (filters != null && filters.getFilterCandidatesKeys().size() > 0) {
 			Set<String> fn = parsedFilterConfigService.getFilterNamesForDocumentField(ContentObjectFields.SYS_CONTENT_TYPE);
-			contentTypes = querySettings.getFilters().getFilterCandidateValues(fn);
+			contentTypes = filters.getFilterCandidateValues(fn);
 		}
 
 		Set<String> allQueryIndices = null;
@@ -209,11 +212,11 @@ public class SearchService {
 			}
 		} else {
 			Set<String> sysTypesRequested = null;
-			if (querySettings.getFilters() != null && querySettings.getFilters().getFilterCandidatesKeys().size() > 0) {
+			if (filters != null && filters.getFilterCandidatesKeys().size() > 0) {
 				Set<String> fn = parsedFilterConfigService.getFilterNamesForDocumentField(ContentObjectFields.SYS_TYPE);
-				sysTypesRequested = querySettings.getFilters().getFilterCandidateValues(fn);
+				sysTypesRequested = filters.getFilterCandidateValues(fn);
 			}
-			boolean isSysTypeAggregation = (querySettings.getAggregations() != null && querySettings.getAggregations().contains(
+			boolean isSysTypeAggregation = (aggregations != null && aggregations.contains(
 					getAggregationNameUsingSysTypeField()));
 
 			// #142 - we can't cache for authenticated users due content type level security
@@ -597,7 +600,7 @@ public class SearchService {
 	 *
 	 * @param aggregationName top level name of the aggregation
 	 * @param aggregationField index field the aggregation buckets are calculated for
-	 * @param size
+	 * @param size terms field size
 	 * @param searchFilters used filters
 	 * @param excluding if true then filters on top of aggregationField are excluded from searchFilters
 	 * @return GlobalBuilder
@@ -609,7 +612,7 @@ public class SearchService {
 			FilterBuilder[] fb = excluding ? filtersMapToArrayExcluding(searchFilters, aggregationField) :
 					filtersMapToArray(searchFilters);
 			if (fb != null && fb.length > 0) {
-				if (fab == null) fab = AggregationBuilders.filter(aggregationName + "_filter");
+				fab = AggregationBuilders.filter(aggregationName + "_filter");
 				fab.filter(new AndFilterBuilder(fb));
 			}
 		}
@@ -625,7 +628,8 @@ public class SearchService {
 	}
 
 	/**
-	 * 
+	 * TODO
+	 *
 	 * @param fieldName
 	 * @return interval value or null
 	 */
@@ -808,7 +812,7 @@ public class SearchService {
 	 * @return true if validation was successful so record was written
 	 */
 	public boolean writeSearchHitUsedStatisticsRecord(String uuid, String contentId, String sessionId) {
-		Map<String, Object> conditions = new HashMap<String, Object>();
+		Map<String, Object> conditions = new HashMap<>();
 		conditions.put(StatsClientService.FIELD_RESPONSE_UUID, uuid);
 		conditions.put(StatsClientService.FIELD_HITS_ID, contentId);
 		if (statsClientService.checkStatisticsRecordExists(StatsRecordType.SEARCH, conditions)) {
@@ -819,5 +823,27 @@ public class SearchService {
 		} else {
 			return false;
 		}
+	}
+
+	/**
+	 * Perform Search Template query.
+	 *
+	 * Search Templates do not accept multiple values per key, see
+	 * https://github.com/elasticsearch/elasticsearch/pull/8255
+	 *
+	 * @param templateName name of registered query
+	 * @param templateParams parameters and values to pass into Mustache template
+	 * @return search response
+	 */
+	public SearchResponse performSearchTemplate(String templateName, Map<String, Object> templateParams) {
+
+		SearchRequestBuilder srb = new SearchRequestBuilder(searchClientService.getClient());
+		setSearchRequestIndicesAndTypes(null, null, srb);
+		setSearchRequestIndicesAndTypes(null, null, srb);
+
+		srb.setTemplateName(templateName).setTemplateType(ScriptService.ScriptType.INDEXED)
+				.setTemplateParams(templateParams);
+
+		return srb.get();
 	}
 }

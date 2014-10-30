@@ -88,7 +88,7 @@ public class QuerySettings {
 		 * Generally, client can send multiple values for one parameter name.
 		 *
 		 * @param urlParamName first value for given parameter name or null
-		 * @return
+		 * @return first value for filter candidate or null
 		 */
 		public String getFirstValueForFilterCandidate(String urlParamName) {
 			if (acknowledgedFilterCandidates.containsKey(urlParamName) &&
