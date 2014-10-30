@@ -353,9 +353,6 @@ public class SearchService {
 	/**
 	 * @param querySettings
 	 * @param srb
-	 * @see <a
-	 *      href="http://www.elasticsearch.org/guide/en/elasticsearch/reference/0.90/search-request-highlighting.html">Elasticsearch
-	 *      0.90 - Highlighting</a>
 	 */
 	protected void setSearchRequestHighlight(QuerySettings querySettings, SearchRequestBuilder srb) {
 		if (querySettings.getQuery() != null && querySettings.isQueryHighlight()) {
@@ -675,9 +672,6 @@ public class SearchService {
 	/**
 	 * @param querySettings
 	 * @param srb request builder to set sorting for
-	 * @see <a
-	 *      href="http://www.elasticsearch.org/guide/en/elasticsearch/reference/0.90/search-request-sort.html">Elasticsearch
-	 *      0.90 - Sort</a>
 	 */
 	protected void setSearchRequestSort(QuerySettings querySettings, SearchRequestBuilder srb) {
 		if (querySettings.getSortBy() != null) {
@@ -694,9 +688,6 @@ public class SearchService {
 	/**
 	 * @param querySettings
 	 * @param srb request builder to set response content for
-	 * @see <a
-	 *      href="http://www.elasticsearch.org/guide/en/elasticsearch/reference/0.90/search-request-fields.html">Elasticsearch
-	 *      0.90 - Fields</a>
 	 */
 	protected void setSearchRequestFields(QuerySettings querySettings, SearchRequestBuilder srb) {
 
@@ -748,8 +739,6 @@ public class SearchService {
 	/**
 	 * @param querySettings
 	 * @param srb
-	 * @link <a href="http://www.elasticsearch.org/guide/en/elasticsearch/reference/0.90/search-request-from-size.html">
-	 *       Elasticsearch 0.90 - From/Size</a>
 	 */
 	protected void setSearchRequestFromSize(QuerySettings querySettings, SearchRequestBuilder srb) {
 		if (querySettings.getFrom() != null && querySettings.getFrom() >= 0) {
