@@ -3,7 +3,7 @@ Searchisko configuration - configuration of fields which are allowed for filters
 
 **[configuration API](http://docs.jbossorg.apiary.io/#managementapiconfiguration) id:** `search_fulltext_filter_fields`
 
-Configuration of Elasticsearch [filters](http://www.elasticsearch.org/guide/en/elasticsearch/reference/0.90/query-dsl-filters.html) in Searchisko.
+Configuration of Elasticsearch [filters](http://www.elasticsearch.org/guide/en/elasticsearch/reference/1.3/query-dsl-filters.html) in Searchisko.
 
 The following filter types are supported:
 
@@ -22,7 +22,7 @@ Uses [Terms filter].
 
 Only one `terms` filter can be defined per `<field_name>`.
 
-_Note: The `terms` filter can be [aliased with `in`](http://www.elasticsearch.org/guide/en/elasticsearch/reference/0.90/query-dsl-terms-filter.html#query-dsl-terms-filter).
+_Note: The `terms` filter can be [aliased with `in`](http://www.elasticsearch.org/guide/en/elasticsearch/reference/1.3/query-dsl-terms-filter.html#query-dsl-terms-filter).
 This alias is supported._
 
 #### \<_suppress\>
@@ -35,15 +35,15 @@ then if both filters A and B are provided by the client then filter A is ignored
 By default terms used for [Terms filter] match are not analyzed. However, because we feed the field values in this
 filter directly from URL request parameters we allow to specify if those values should be lowercased before passing
 into the filter. This can be useful if the analysis for the field in the document uses
-[lowercase token filter](http://www.elasticsearch.org/guide/en/elasticsearch/reference/0.90/analysis-lowercase-tokenfilter.html).
+[lowercase token filter](http://www.elasticsearch.org/guide/en/elasticsearch/reference/1.3/analysis-lowercase-tokenfilter.html).
 A standard Java [String#toLowerCase(Locale.ENGLISH)](http://docs.oracle.com/javase/7/docs/api/java/lang/String.html)
 function is used (no ICU magic).
 
- [Terms filter]: http://www.elasticsearch.org/guide/en/elasticsearch/reference/0.90/query-dsl-terms-filter.html
+ [Terms filter]: http://www.elasticsearch.org/guide/en/elasticsearch/reference/1.3/query-dsl-terms-filter.html
 
 ### Range filter
 
-Uses [Range filter](http://www.elasticsearch.org/guide/en/elasticsearch/reference/0.90/query-dsl-range-filter.html).
+Uses [Range filter](http://www.elasticsearch.org/guide/en/elasticsearch/reference/1.3/query-dsl-range-filter.html).
 
 	"<filter_name>" : {
 		"range" : {

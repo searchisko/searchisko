@@ -44,7 +44,7 @@ You, as a content provider, can directly provide  documents that contain fields 
 For now there are to means of getting documents into the system:
 
 * **REST API** - the recommended approach. Allows to index one document at a time. You can use threads to push more documents in parallel. Every document undergo pre-defined processing operations before actual indexing.
-* **Elasticsearch river** - an experimental approach. We can use [Elasticsearch river](http://www.elasticsearch.org/guide/en/elasticsearch/rivers/0.90/index.html) to pull data from external resources. Currently, there are two implementations that we are using ([Remote river](https://github.com/searchisko/elasticsearch-river-remote) and [JIRA river](https://github.com/searchisko/elasticsearch-river-jira)). These rivers need to be installed by system admin. They allow for faster indexing. The disadvantage is higher maintenance and configuration cost. Please contact jboss.org team if you want to know more about this option.
+* **Elasticsearch river** - an experimental approach. We can use [Elasticsearch river](http://www.elasticsearch.org/guide/en/elasticsearch/rivers/1.3/index.html) to pull data from external resources. Currently, there are two implementations that we are using ([Remote river](https://github.com/searchisko/elasticsearch-river-remote) and [JIRA river](https://github.com/searchisko/elasticsearch-river-jira)). These rivers need to be installed by system admin. They allow for faster indexing. The disadvantage is higher maintenance and configuration cost. Please contact jboss.org team if you want to know more about this option.
 
 ### 4. Search documents
 
@@ -52,9 +52,9 @@ You search for documents via [search API](http://docs.jbossorg.apiary.io/#search
 
 Simply put, you can push your documents into centralized system and get hosted-search service for data related to your project only while the central search service (e.g. [search.jboss.org](http://search.jboss.org/)) will benefit from your data as well.
 
-For now the search API is quite simple proxy to more powerful [Elasticsearch search API](http://www.elasticsearch.org/guide/en/elasticsearch/reference/0.90/search.html). If it is missing some important features, feel fee to open a [new issue](https://github.com/searchisko/searchisko/issues).
+For now the search API is quite simple proxy to more powerful [Elasticsearch search API](http://www.elasticsearch.org/guide/en/elasticsearch/reference/1.3/search.html). If it is missing some important features, feel fee to open a [new issue](https://github.com/searchisko/searchisko/issues).
 
-Note that due to _near-real time_ aspect of Lucene it can take some time for indexed documents to become available via search API. In Elasticsearch that time is 1 sec by default (see [index.refresh_interval](http://www.elasticsearch.org/guide/en/elasticsearch/reference/0.90/index-modules.html)).
+Note that due to _near-real time_ aspect of Lucene it can take some time for indexed documents to become available via search API. In Elasticsearch that time is 1 sec by default (see [index.refresh_interval](http://www.elasticsearch.org/guide/en/elasticsearch/reference/1.3/index-modules.html)).
 
 ## Conclusion:
 

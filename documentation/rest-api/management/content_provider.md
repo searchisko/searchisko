@@ -35,7 +35,7 @@ Content provider configuration fields:
 ### Note:
 
 The idea behind having both `index/name` and `index/search_indices` defined is to allow for use of Elasticsearch
-[index aliases](http://www.elasticsearch.org/guide/en/elasticsearch/reference/0.90/indices-aliases.html)
+[index aliases](http://www.elasticsearch.org/guide/en/elasticsearch/reference/1.3/indices-aliases.html)
 for index scalability. In Elasticsearch it is possible to push new documents into index alias if that alias name refers
 to a single index only. So you can use the alias of name `index/name` for the index that new documents should go into and
 alias `index/search_indices` for all the indices that need to participate in search operations.

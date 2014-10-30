@@ -5,7 +5,7 @@ Searchisko configuration - definition of fields used for highlight during fullte
 
 This configuration document contains Map structure where keys are names of index fields used for highlight during fulltext search in Searchisko 'Search API' `search` operation. 
 Value is Map containing three mandatory parameters for field highlight configuration called `fragment_size`, `number_of_fragments`,`fragment_offset`, 
-see [ElasticSearch Highlight documentation](http://www.elasticsearch.org/guide/en/elasticsearch/reference/0.90/search-request-highlighting.html).
+see [ElasticSearch Highlight documentation](http://www.elasticsearch.org/guide/en/elasticsearch/reference/1.3/search-request-highlighting.html).
 
 Example:
 

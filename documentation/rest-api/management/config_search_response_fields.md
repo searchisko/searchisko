@@ -5,7 +5,7 @@ Searchisko configuration - definition of search response fields
 
 This configuration document contains distinct configurations related to content fields returned from 
 Searchisko content retrieval API's (eg. 'Search API'. 'Feed API'). 
-See related [ElasticSearch documentation](http://www.elasticsearch.org/guide/en/elasticsearch/reference/0.90/search-request-fields.html) 
+See related [ElasticSearch documentation](http://www.elasticsearch.org/guide/en/elasticsearch/reference/1.3/search-request-fields.html) 
 for details which fields are available there.
 
 * `search_response_fields` - an array with default set of fields returned from Searchisko 'Search API' 
