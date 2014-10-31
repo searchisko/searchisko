@@ -2,7 +2,7 @@
 
 This document contains high-level release notes. More details can be found in [milestones](https://github.com/searchisko/searchisko/issues/milestones) on GitHub.
 
-## 2.0.0
+## 2.0.0-SNAPSHOT
 
 Breaking:
 
