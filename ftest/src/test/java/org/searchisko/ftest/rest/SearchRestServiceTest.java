@@ -93,46 +93,50 @@ public class SearchRestServiceTest {
 
 	@Test
 	@InSequence(32)
-	public void setupPushContentWithId() throws MalformedURLException {
-		Map<String, Object> content = new HashMap<>();
-		content.put("data", "test");
-		content.put("data2", "test2");
-		content.put("data3", "test3");
-		content.put("data4", "test4");
-		ContentRestServiceTest.createOrUpdateContent(context, provider1, TYPE1, contentId, content);
+	public void assertNoStarAllovedForFiled() throws MalformedURLException {
+		// Bad Request must be returned
+		given().contentType(ContentType.JSON).expect().log().ifValidationFails().statusCode(400)
+				.contentType(ContentType.JSON).when().get(new URL(context, SEARCH_REST_API + "?field=*").toExternalForm());
 	}
 
 	@Test
-	@InSequence(33)
-	public void setupPushContentWithId2() throws MalformedURLException {
-		Map<String, Object> content = new HashMap<>();
-		content.put("data", "test");
-		content.put("data2", "test2");
-		content.put("data3", "test3");
-		content.put("data4", "test4");
-		ContentRestServiceTest.createOrUpdateContent(context, provider1, TYPE1, contentId2, content);
-	}
+	@InSequence(39)
+	public void setupPushContent() throws MalformedURLException {
+		{
+			Map<String, Object> content = new HashMap<>();
+			content.put("data", "test");
+			content.put("data2", "test2");
+			content.put("data3", "test3");
+			content.put("data4", "test4");
+			ContentRestServiceTest.createOrUpdateContent(context, provider1, TYPE1, contentId, content);
+		}
 
-	@Test
-	@InSequence(34)
-	public void setupPushContentWithId3() throws MalformedURLException {
-		Map<String, Object> content = new HashMap<>();
-		content.put("data", "test");
-		content.put("data2", "test2");
-		content.put("data3", "test3");
-		content.put("data4", "test4");
-		ContentRestServiceTest.createOrUpdateContent(context, provider1, TYPE2, contentId3, content);
-	}
+		{
+			Map<String, Object> content = new HashMap<>();
+			content.put("data", "test");
+			content.put("data2", "test2");
+			content.put("data3", "test3");
+			content.put("data4", "test4");
+			ContentRestServiceTest.createOrUpdateContent(context, provider1, TYPE1, contentId2, content);
+		}
 
-	@Test
-	@InSequence(35)
-	public void setupPushContentWithId4() throws MalformedURLException {
-		Map<String, Object> content = new HashMap<>();
-		content.put("data", "test");
-		content.put("data2", "test2");
-		content.put("data3", "test3");
-		content.put("data4", "test4");
-		ContentRestServiceTest.createOrUpdateContent(context, provider1, TYPE2, contentId4, content);
+		{
+			Map<String, Object> content = new HashMap<>();
+			content.put("data", "test");
+			content.put("data2", "test2");
+			content.put("data3", "test3");
+			content.put("data4", "test4");
+			ContentRestServiceTest.createOrUpdateContent(context, provider1, TYPE2, contentId3, content);
+		}
+
+		{
+			Map<String, Object> content = new HashMap<>();
+			content.put("data", "test");
+			content.put("data2", "test2");
+			content.put("data3", "test3");
+			content.put("data4", "test4");
+			ContentRestServiceTest.createOrUpdateContent(context, provider1, TYPE2, contentId4, content);
+		}
 	}
 
 	@Test
@@ -143,7 +147,7 @@ public class SearchRestServiceTest {
 
 	protected static String uuid;
 
-	// /////////////////////////////// document type level security ////////////////////////////////
+	// /////////////////////////////// content type level security - #142 ////////////////////////////////
 
 	@Test
 	@InSequence(41)
@@ -191,7 +195,7 @@ public class SearchRestServiceTest {
 				.get(new URL(context, SEARCH_REST_API).toExternalForm());
 	}
 
-	// /////////////////////////////// field level security ////////////////////////////////
+	// /////////////////////////////// field level security - #150 ////////////////////////////////
 
 	@Test
 	@InSequence(50)
@@ -298,6 +302,100 @@ public class SearchRestServiceTest {
 		given().auth().preemptive().basic(provider1.name, provider1.password).expect().log().ifValidationFails()
 				.statusCode(200).contentType(ContentType.JSON).body("hits.total", is(5)).when()
 				.get(new URL(context, SEARCH_REST_API).toExternalForm());
+	}
+
+	// /////////////////////////////// _source field filtering security - #184 ////////////////////////////////
+
+	@Test
+	@InSequence(70)
+	public void setupSffsPrepareDocuments() throws MalformedURLException {
+		ContentRestServiceTest.deleteContent(context, provider1, TYPE1, contentId);
+		ContentRestServiceTest.deleteContent(context, provider1, TYPE1, contentId2);
+		ContentRestServiceTest.deleteContent(context, provider1, TYPE1, contentId3);
+		ContentRestServiceTest.deleteContent(context, provider1, TYPE1, contentId4);
+		ContentRestServiceTest.deleteContent(context, provider1, TYPE2, contentId3);
+		ContentRestServiceTest.deleteContent(context, provider1, TYPE2, contentId4);
+
+		Map<String, Object> content = new HashMap<>();
+		content.put("field1", "fv1");
+		content.put("field2", "fv2");
+		content.put("field4", "fv4");
+		Map<String, Object> field3map = new HashMap<>();
+		field3map.put("field1", "fv3_1");
+		field3map.put("field2", "fv3_2");
+		field3map.put("field4", "fv3_4");
+		content.put("field3", field3map);
+		ContentRestServiceTest.createOrUpdateContent(context, provider1, TYPE1, contentId, content);
+
+		DeploymentHelpers.refreshES();
+	}
+
+	@Test
+	@InSequence(71)
+	public void setupSffsUploadConfigFieldsEmpty() throws MalformedURLException {
+		String data = "{}";
+		ConfigRestServiceTest.uploadConfigFile(context, ConfigService.CFGNAME_SEARCH_RESPONSE_FIELDS, data);
+	}
+
+	@Test
+	@InSequence(72)
+	public void assertSffs_noRestrictions_Anonym_sourceUnfiltered() throws MalformedURLException {
+		// check source is returned untouched for anonymous user if no restriction exist
+		given().expect().log().ifValidationFails().statusCode(200).contentType(ContentType.JSON)
+				.body("hits.hits[0]._source.field1", is("fv1")).body("hits.hits[0]._source.field2", is("fv2"))
+				.body("hits.hits[0]._source.field4", is("fv4")).body("hits.hits[0]._source.field3.field1", is("fv3_1"))
+				.body("hits.hits[0]._source.field3.field2", is("fv3_2"))
+				.body("hits.hits[0]._source.field3.field4", is("fv3_4")).when()
+				.get(new URL(context, SEARCH_REST_API + "?field=_source").toExternalForm());
+
+	}
+
+	@Test
+	@InSequence(75)
+	public void setupSffsUploadConfigFieldsRestricted() throws MalformedURLException {
+		String data = "{\"source_filtering_for_roles\" : {" + "\"field1\" : [\"role_other\"],"
+				+ "\"*.field1\" : [\"role_other\"]," + "\"field2\" : [\"provider\"]," + "\"field3.*\" : [\"provider\"]" + "}}";
+		ConfigRestServiceTest.uploadConfigFile(context, ConfigService.CFGNAME_SEARCH_RESPONSE_FIELDS, data);
+	}
+
+	@Test
+	@InSequence(76)
+	public void assertSffs_restrictions_admin_sourceUnfiltered() throws MalformedURLException {
+		// check source is returned untouched for admin
+		given().auth().preemptive()
+				.basic(DeploymentHelpers.DEFAULT_PROVIDER_NAME, DeploymentHelpers.DEFAULT_PROVIDER_PASSWORD).expect().log()
+				.ifValidationFails().statusCode(200).contentType(ContentType.JSON)
+				.body("hits.hits[0]._source.field1", is("fv1")).body("hits.hits[0]._source.field2", is("fv2"))
+				.body("hits.hits[0]._source.field4", is("fv4")).body("hits.hits[0]._source.field3.field1", is("fv3_1"))
+				.body("hits.hits[0]._source.field3.field2", is("fv3_2"))
+				.body("hits.hits[0]._source.field3.field4", is("fv3_4")).when()
+				.get(new URL(context, SEARCH_REST_API + "?field=_source").toExternalForm());
+	}
+
+	@Test
+	@InSequence(77)
+	public void assertSffs_restrictions_Anonym_sourceFiltered() throws MalformedURLException {
+		// check source is returned filtered for anonymous user
+		given().expect().log().ifValidationFails().statusCode(200).contentType(ContentType.JSON)
+				.body("hits.hits[0]._source.field1", isEmptyOrNullString())
+				.body("hits.hits[0]._source.field2", isEmptyOrNullString()).body("hits.hits[0]._source.field4", is("fv4"))
+				.body("hits.hits[0]._source.field3.field1", isEmptyOrNullString())
+				.body("hits.hits[0]._source.field3.field2", isEmptyOrNullString())
+				.body("hits.hits[0]._source.field3.field4", isEmptyOrNullString()).when()
+				.get(new URL(context, SEARCH_REST_API + "?field=_source").toExternalForm());
+	}
+
+	@Test
+	@InSequence(78)
+	public void assertSffs_restrictions_role_sourceFiltered() throws MalformedURLException {
+		// check source is returned filtered for user with provider
+		given().auth().preemptive().basic(provider1.name, provider1.password).expect().log().ifValidationFails()
+				.statusCode(200).contentType(ContentType.JSON).body("hits.hits[0]._source.field1", isEmptyOrNullString())
+				.body("hits.hits[0]._source.field2", is("fv2")).body("hits.hits[0]._source.field4", is("fv4"))
+				.body("hits.hits[0]._source.field3.field1", isEmptyOrNullString())
+				.body("hits.hits[0]._source.field3.field2", is("fv3_2"))
+				.body("hits.hits[0]._source.field3.field4", is("fv3_4")).when()
+				.get(new URL(context, SEARCH_REST_API + "?field=_source").toExternalForm());
 	}
 
 	// /////////////////////////////// put search result use info ////////////////////////////////
