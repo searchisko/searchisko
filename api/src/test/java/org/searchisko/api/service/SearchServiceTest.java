@@ -34,6 +34,7 @@ import org.searchisko.api.model.PastIntervalValue;
 import org.searchisko.api.model.QuerySettings;
 import org.searchisko.api.model.QuerySettings.Filters;
 import org.searchisko.api.model.SortByValue;
+import org.searchisko.api.rest.exception.BadFieldException;
 import org.searchisko.api.rest.exception.NotAuthorizedException;
 import org.searchisko.api.security.Role;
 import org.searchisko.api.testtools.TestUtils;
@@ -792,6 +793,21 @@ public class SearchServiceTest extends SearchServiceTestBase {
 			Mockito.verify(tested.configService).get(ConfigService.CFGNAME_SEARCH_RESPONSE_FIELDS);
 			Mockito.verifyZeroInteractions(tested.configService);
 		}
+
+		// case - fields requested but * used there which is invalid
+		{
+			Mockito.reset(srbMock, tested.configService);
+			QuerySettings querySettings = new QuerySettings();
+			querySettings.addField("aa");
+			querySettings.addField("*");
+			try {
+				tested.setSearchRequestFields(querySettings, srbMock);
+				Assert.fail("BadFieldException expected");
+			} catch (BadFieldException e) {
+				Assert.assertEquals(QuerySettings.FIELDS_KEY, e.getFieldName());
+
+			}
+		}
 	}
 
 	@Test
@@ -812,6 +828,9 @@ public class SearchServiceTest extends SearchServiceTestBase {
 		rolesSettings.put("bb", "role1");
 		rolesSettings.put("cc", "role1");
 		mockConfig.put(SearchService.CFGNAME_FIELD_VISIBLE_FOR_ROLES, rolesSettings);
+
+		// we configure source filtering to check it is not used when _source field is not requested
+		mockConfig.put(SearchService.CFGNAME_SOURCE_FILTERING_FOR_ROLES, rolesSettings);
 
 		// case - no fields requested so defaults loaded from configuration, but no any available for current user
 		{
@@ -904,6 +923,146 @@ public class SearchServiceTest extends SearchServiceTestBase {
 			Mockito.verify(srbMock).addFields("aa", "bb", "cc");
 			Mockito.verifyNoMoreInteractions(srbMock);
 			Mockito.verifyNoMoreInteractions(tested.configService);
+		}
+
+	}
+
+	@Test
+	public void handleResponseContentSettings_fields_source_filtering() {
+		// note that test which covers source filtering is not used when _source is not requested is in
+		// handleResponseContentSettings_fields_security()
+
+		ConfigService configService = Mockito.mock(ConfigService.class);
+		SearchService tested = getTested(configService);
+
+		SearchRequestBuilder srbMock = Mockito.mock(SearchRequestBuilder.class);
+
+		Map<String, Object> mockConfig = new HashMap<>();
+
+		Map<String, Object> rolesSettings = new HashMap<>();
+		rolesSettings.put("*.aa", "role1");
+		rolesSettings.put("bb", "role1");
+		rolesSettings.put("cc.*", TestUtils.createListOfStrings("role1", "role2"));
+		rolesSettings.put("dd", "role2");
+		mockConfig.put(SearchService.CFGNAME_SOURCE_FILTERING_FOR_ROLES, rolesSettings);
+
+		QuerySettings querySettings = new QuerySettings();
+
+		// case - check source filtering is applied if not any field is requested, as elasticsearch returns source in
+		// this case
+		{
+			Mockito.reset(srbMock, tested.configService, tested.authenticationUtilService);
+			Mockito.when(tested.configService.get(ConfigService.CFGNAME_SEARCH_RESPONSE_FIELDS)).thenReturn(mockConfig);
+			Mockito.when(srbMock.setFetchSource(Mockito.any(String[].class), Mockito.any(String[].class))).thenAnswer(
+					new SourceExcludeMatcher(srbMock, TestUtils.createListOfStrings("*.aa", "bb", "cc.*", "dd")));
+
+			tested.setSearchRequestFields(querySettings, srbMock);
+			Mockito.verify(tested.configService).get(ConfigService.CFGNAME_SEARCH_RESPONSE_FIELDS);
+			Mockito.verify(srbMock).setFetchSource(Mockito.any(String[].class), Mockito.any(String[].class));
+			Mockito.verifyNoMoreInteractions(srbMock);
+			Mockito.verifyNoMoreInteractions(tested.configService);
+		}
+
+		// set _source field as requested for other tests
+		querySettings.addField("_source");
+
+		// case - source filtering not applied when not configured
+		{
+			Mockito.reset(srbMock, tested.configService, tested.authenticationUtilService);
+			mockAuthenticatedUserWithRole(tested, "role1");
+			Mockito.when(tested.configService.get(ConfigService.CFGNAME_SEARCH_RESPONSE_FIELDS)).thenReturn(
+					new HashMap<String, Object>());
+
+			tested.setSearchRequestFields(querySettings, srbMock);
+			Mockito.verify(tested.configService).get(ConfigService.CFGNAME_SEARCH_RESPONSE_FIELDS);
+			Mockito.verify(srbMock).addFields("_source");
+			Mockito.verifyNoMoreInteractions(srbMock);
+			Mockito.verifyNoMoreInteractions(tested.configService);
+		}
+
+		// case - filtering configured, anonymous user has filtered source
+		{
+			Mockito.reset(srbMock, tested.configService, tested.authenticationUtilService);
+			Mockito.when(tested.configService.get(ConfigService.CFGNAME_SEARCH_RESPONSE_FIELDS)).thenReturn(mockConfig);
+			Mockito.when(srbMock.setFetchSource(Mockito.any(String[].class), Mockito.any(String[].class))).thenAnswer(
+					new SourceExcludeMatcher(srbMock, TestUtils.createListOfStrings("*.aa", "bb", "cc.*", "dd")));
+
+			tested.setSearchRequestFields(querySettings, srbMock);
+			Mockito.verify(tested.configService).get(ConfigService.CFGNAME_SEARCH_RESPONSE_FIELDS);
+			Mockito.verify(srbMock).addFields("_source");
+			Mockito.verify(srbMock).setFetchSource(Mockito.any(String[].class), Mockito.any(String[].class));
+			Mockito.verifyNoMoreInteractions(srbMock);
+			Mockito.verifyNoMoreInteractions(tested.configService);
+		}
+
+		// case - filtering configured, role1 and role2 users have filtered parts of source
+		{
+			Mockito.reset(srbMock, tested.configService, tested.authenticationUtilService);
+			mockAuthenticatedUserWithRole(tested, "role1");
+			Mockito.when(tested.configService.get(ConfigService.CFGNAME_SEARCH_RESPONSE_FIELDS)).thenReturn(mockConfig);
+			Mockito.when(srbMock.setFetchSource(Mockito.any(String[].class), Mockito.any(String[].class))).thenAnswer(
+					new SourceExcludeMatcher(srbMock, TestUtils.createListOfStrings("dd")));
+
+			tested.setSearchRequestFields(querySettings, srbMock);
+			Mockito.verify(tested.configService).get(ConfigService.CFGNAME_SEARCH_RESPONSE_FIELDS);
+			Mockito.verify(srbMock).addFields("_source");
+			Mockito.verify(srbMock).setFetchSource(Mockito.any(String[].class), Mockito.any(String[].class));
+			Mockito.verifyNoMoreInteractions(srbMock);
+			Mockito.verifyNoMoreInteractions(tested.configService);
+		}
+		{
+			Mockito.reset(srbMock, tested.configService, tested.authenticationUtilService);
+			mockAuthenticatedUserWithRole(tested, "role2");
+			Mockito.when(tested.configService.get(ConfigService.CFGNAME_SEARCH_RESPONSE_FIELDS)).thenReturn(mockConfig);
+			Mockito.when(srbMock.setFetchSource(Mockito.any(String[].class), Mockito.any(String[].class))).thenAnswer(
+					new SourceExcludeMatcher(srbMock, TestUtils.createListOfStrings("bb", "*.aa")));
+
+			tested.setSearchRequestFields(querySettings, srbMock);
+			Mockito.verify(tested.configService).get(ConfigService.CFGNAME_SEARCH_RESPONSE_FIELDS);
+			Mockito.verify(srbMock).addFields("_source");
+			Mockito.verify(srbMock).setFetchSource(Mockito.any(String[].class), Mockito.any(String[].class));
+			Mockito.verifyNoMoreInteractions(srbMock);
+			Mockito.verifyNoMoreInteractions(tested.configService);
+		}
+
+		// case - filtering configured, admin can see all fields, no any source filtering applied
+		{
+			Mockito.reset(srbMock, tested.configService, tested.authenticationUtilService);
+			mockAuthenticatedUserWithRole(tested, Role.ADMIN);
+			Mockito.when(tested.configService.get(ConfigService.CFGNAME_SEARCH_RESPONSE_FIELDS)).thenReturn(mockConfig);
+
+			tested.setSearchRequestFields(querySettings, srbMock);
+			Mockito.verify(tested.configService).get(ConfigService.CFGNAME_SEARCH_RESPONSE_FIELDS);
+			Mockito.verify(srbMock).addFields("_source");
+			Mockito.verifyNoMoreInteractions(srbMock);
+			Mockito.verifyNoMoreInteractions(tested.configService);
+		}
+	}
+
+	private static final class SourceExcludeMatcher implements Answer<SearchRequestBuilder> {
+
+		private SearchRequestBuilder srbMock;
+		private ArrayList<String> expectedExcludedFields;
+
+		public SourceExcludeMatcher(SearchRequestBuilder srbMockToReturn, ArrayList<String> expectedExcludedFields) {
+			this.srbMock = srbMockToReturn;
+			this.expectedExcludedFields = expectedExcludedFields;
+		}
+
+		@Override
+		public SearchRequestBuilder answer(InvocationOnMock invocation) throws Throwable {
+
+			Assert.assertNull(invocation.getArguments()[0]);
+
+			String[] actualStrings = (String[]) invocation.getArguments()[1];
+
+			Assert.assertEquals("size of expected and actual list of strings is not same", expectedExcludedFields.size(),
+					actualStrings.length);
+			for (String s : actualStrings) {
+				Assert.assertTrue(s + " is not in expected strings", expectedExcludedFields.contains(s));
+			}
+
+			return srbMock;
 		}
 
 	}
