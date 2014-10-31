@@ -1,4 +1,4 @@
-# Searchisko [![Build Status](https://travis-ci.org/searchisko/searchisko.svg?branch=master)](https://travis-ci.org/searchisko/searchisko)
+# Searchisko [![Build Status](https://travis-ci.org/searchisko/searchisko.svg?branch=master)](https://travis-ci.org/searchisko/searchisko) [![Coverage Status](https://coveralls.io/repos/searchisko/searchisko/badge.png)](https://coveralls.io/r/searchisko/searchisko)
 
 **Searchisko** is an open source project that allows to build a service
 to index, search, retrieve and aggregate content from configurable resources.
