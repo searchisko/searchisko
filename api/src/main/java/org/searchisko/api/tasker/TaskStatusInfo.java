@@ -22,12 +22,17 @@ import org.searchisko.api.util.SearchUtils;
 
 /**
  * Information about task existing in {@link TaskManager} and about status of execution.
- *
+ * 
  * @author Vlastimil Elias (velias at redhat dot com)
  */
 @Entity
 @XmlRootElement
 public class TaskStatusInfo {
+
+	/**
+	 * Maximal number of failover attempts for task
+	 */
+	public static final int FAILOVER_MAX_NUM = 100;
 
 	@Id
 	protected String id;
@@ -87,7 +92,7 @@ public class TaskStatusInfo {
 
 	/**
 	 * Check if object is in status to start task execution. Change object fields into state for task execution if yes.
-	 *
+	 * 
 	 * @param executionNodeId identifier of cluster node where task is started
 	 * @return true if task was in status which allow start execution, so execution was started. False if object is not in
 	 *         state for execution (but some fields may be changed even in this).
@@ -96,6 +101,10 @@ public class TaskStatusInfo {
 		if (taskStatus == TaskStatus.NEW || taskStatus == TaskStatus.FAILOVER) {
 			if (cancelRequested) {
 				taskStatus = TaskStatus.CANCELED;
+				return false;
+			} else if (taskStatus == TaskStatus.FAILOVER && runCount >= FAILOVER_MAX_NUM) {
+				taskStatus = TaskStatus.CANCELED;
+				appendProcessingLog("Cancelled due too much failover attempts");
 				return false;
 			} else {
 				taskStatus = TaskStatus.RUNNING;
@@ -122,7 +131,7 @@ public class TaskStatusInfo {
 
 	public void setTaskConfig(Map<String, Object> taskConfig) {
 		try {
-            final String tmp = SearchUtils.convertJsonMapToString(taskConfig);
+			final String tmp = SearchUtils.convertJsonMapToString(taskConfig);
 			this.taskConfigSerialized = tmp.trim().isEmpty() ? null : tmp;
 		} catch (IOException e) {
 			throw new RuntimeException(e);

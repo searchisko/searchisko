@@ -15,14 +15,14 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.searchisko.api.testtools.TestUtils;
-import org.searchisko.persistence.service.JpaTestBase;
 import org.junit.Assert;
 import org.junit.Test;
+import org.searchisko.api.testtools.TestUtils;
+import org.searchisko.persistence.service.JpaTestBase;
 
 /**
  * Unit test for {@link TaskPersisterJpa} using embedded DB.
- *
+ * 
  * @author Vlastimil Elias (velias at redhat dot com)
  */
 public class TaskPersisterJpaTest_Embedded extends JpaTestBase {
@@ -142,7 +142,9 @@ public class TaskPersisterJpaTest_Embedded extends JpaTestBase {
 			tested.getTaskStatusInfo(id).setTaskStatus(TaskStatus.FINISHED_OK);
 			tsi = tested.getTaskStatusInfo(id2);
 			tsi.setTaskStatus(TaskStatus.FAILOVER);
-			tsi.setRunCount(2);
+			tsi.setRunCount(1);
+			tsi.setLastRunFinishedAt(tsi.getTaskCreatedAt());
+			tsi.setLastRunStartedAt(tsi.getTaskCreatedAt());
 			em.getTransaction().commit();
 
 			em.getTransaction().begin();
@@ -153,17 +155,61 @@ public class TaskPersisterJpaTest_Embedded extends JpaTestBase {
 			Assert.assertEquals(1, tsi.getRunCount());
 			em.getTransaction().commit();
 
+			// id2 is started now as it is first failover
 			em.getTransaction().begin();
 			tsi = tested.getTaskToRun("mynode");
 			Assert.assertNotNull(tsi);
 			Assert.assertEquals(id2, tsi.getId());
 			Assert.assertEquals(TaskStatus.RUNNING, tsi.getTaskStatus());
-			Assert.assertEquals(3, tsi.getRunCount());
+			Assert.assertEquals(2, tsi.getRunCount());
 			em.getTransaction().commit();
 
 			em.getTransaction().begin();
 			tsi = tested.getTaskToRun("mynode");
 			Assert.assertNull(tsi);
+			em.getTransaction().commit();
+
+			// task 2 failed again
+			em.getTransaction().begin();
+			tsi = tested.getTaskStatusInfo(id2);
+			tsi.setTaskStatus(TaskStatus.FAILOVER);
+			tsi.setRunCount(1);
+			tsi.setExecutionNodeId("mynode");
+			tsi.setLastRunFinishedAt(new Date());
+			tsi.setLastRunStartedAt(tsi.getTaskCreatedAt());
+			em.getTransaction().commit();
+
+			// it is not selected on same node just now as we have timeout
+			em.getTransaction().begin();
+			tsi = tested.getTaskToRun("mynode");
+			Assert.assertNull(tsi);
+			em.getTransaction().commit();
+
+			// is selected now on another node due cluster failover
+			em.getTransaction().begin();
+			tsi = tested.getTaskToRun("mynode2");
+			Assert.assertNotNull(tsi);
+			Assert.assertEquals(id2, tsi.getId());
+			Assert.assertEquals(TaskStatus.RUNNING, tsi.getTaskStatus());
+			Assert.assertEquals(2, tsi.getRunCount());
+			em.getTransaction().commit();
+
+			// set it back to failover mode with older rlast finish date
+			em.getTransaction().begin();
+			tsi = tested.getTaskStatusInfo(id2);
+			tsi.setTaskStatus(TaskStatus.FAILOVER);
+			tsi.setRunCount(1);
+			tsi.setLastRunFinishedAt(new Date(System.currentTimeMillis() - TaskPersisterJpa.FAILOVER_DELAY - 100L));
+			tsi.setLastRunStartedAt(tsi.getTaskCreatedAt());
+			em.getTransaction().commit();
+
+			// is started now as delay is over
+			em.getTransaction().begin();
+			tsi = tested.getTaskToRun("mynode");
+			Assert.assertNotNull(tsi);
+			Assert.assertEquals(id2, tsi.getId());
+			Assert.assertEquals(TaskStatus.RUNNING, tsi.getTaskStatus());
+			Assert.assertEquals(2, tsi.getRunCount());
 			em.getTransaction().commit();
 
 		} catch (Exception ex) {

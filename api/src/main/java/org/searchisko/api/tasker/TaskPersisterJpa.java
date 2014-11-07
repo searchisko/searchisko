@@ -30,7 +30,7 @@ import org.elasticsearch.common.Strings;
 /**
  * JPA based implementation of {@link TaskPersister}. Uses shared RDBMS to persist tasks and synchronize execution in
  * the cluster.
- *
+ * 
  * @author Vlastimil Elias (velias at redhat dot com)
  */
 @Stateless
@@ -44,7 +44,7 @@ public class TaskPersisterJpa implements TaskPersister {
 
 	/**
 	 * Create persister.
-	 *
+	 * 
 	 */
 	public TaskPersisterJpa() {
 		super();
@@ -151,17 +151,39 @@ public class TaskPersisterJpa implements TaskPersister {
 		if (tsi != null && !tsi.isEmpty()) {
 			for (int i = tsi.size() - 1; i >= 0; i--) {
 				TaskStatusInfo work = tsi.get(i);
-				try {
-					em.lock(work, LockModeType.PESSIMISTIC_WRITE);
-					if (work.startTaskExecution(nodeId)) {
-						return work;
+				if (taskIsRunnableNow(nodeId, work)) {
+					try {
+						em.lock(work, LockModeType.PESSIMISTIC_WRITE);
+						if (work.startTaskExecution(nodeId)) {
+							return work;
+						}
+					} catch (LockTimeoutException e) {
+						log.fine("Lock exception for task id=" + work.getId());
 					}
-				} catch (LockTimeoutException e) {
-					log.fine("Lock exception for task id=" + work.getId());
 				}
 			}
 		}
 		return null;
+	}
+
+	public static final long FAILOVER_DELAY = 10 * 1000L;
+
+	protected boolean taskIsRunnableNow(String nodeId, TaskStatusInfo work) {
+		if (TaskStatus.FAILOVER == work.getTaskStatus()) {
+			// #189 - give some timeout for failover attempt
+			Date d = work.getLastRunFinishedAt();
+			if (d != null) {
+				if (nodeId.equals(work.getExecutionNodeId()) || work.getRunCount() > 1) {
+					// we run on same node or more failover attempts so use longer timeouts as we do not cope with cluster
+					// failover probably or there is some more serious problem
+					return System.currentTimeMillis() >= (d.getTime() + FAILOVER_DELAY);
+				} else {
+					// first failover on other node so it is real cluster failover probably, so use no timeout.
+					return true;
+				}
+			}
+		}
+		return true;
 	}
 
 	private static final List<TaskStatus> runningTaskStatusFilter = new ArrayList<>();

@@ -110,7 +110,7 @@ public class TaskStatusInfoTest {
 		tested.taskStatus = TaskStatus.FINISHED_ERROR;
 		assertStartRTaskExecutionIllegalStateException(tested);
 
-		// case - start ok
+		// case - start ok for new
 		{
 			tested = new TaskStatusInfo();
 			tested.taskStatus = TaskStatus.NEW;
@@ -124,16 +124,16 @@ public class TaskStatusInfoTest {
 			Assert.assertNull(tested.lastRunFinishedAt);
 		}
 
-		// case - start ok
+		// case - start ok for failover if count is under max count
 		{
 			tested = new TaskStatusInfo();
 			tested.taskStatus = TaskStatus.FAILOVER;
-			tested.runCount = 2;
+			tested.runCount = TaskStatusInfo.FAILOVER_MAX_NUM - 1;
 			tested.lastRunStartedAt = new Date(System.currentTimeMillis() - 100000l);
 			tested.lastRunFinishedAt = new Date(System.currentTimeMillis() - 90000l);
 			Assert.assertTrue(tested.startTaskExecution("mynode2"));
 
-			Assert.assertEquals(3, tested.runCount);
+			Assert.assertEquals(TaskStatusInfo.FAILOVER_MAX_NUM, tested.runCount);
 			Assert.assertEquals(TaskStatus.RUNNING, tested.taskStatus);
 			Assert.assertEquals("mynode2", tested.executionNodeId);
 			TestUtils.assertCurrentDate(tested.lastRunStartedAt);
@@ -163,6 +163,21 @@ public class TaskStatusInfoTest {
 
 			Assert.assertEquals(TaskStatus.CANCELED, tested.taskStatus);
 			Assert.assertEquals(0, tested.runCount);
+			Assert.assertNull(tested.executionNodeId);
+			Assert.assertNull(tested.lastRunStartedAt);
+			Assert.assertNull(tested.lastRunFinishedAt);
+		}
+
+		// case - automatic cancel due too much failover attempts
+		{
+			tested = new TaskStatusInfo();
+			tested.taskStatus = TaskStatus.FAILOVER;
+			tested.setCancelRequested(false);
+			tested.setRunCount(TaskStatusInfo.FAILOVER_MAX_NUM);
+			Assert.assertFalse(tested.startTaskExecution("mynode"));
+
+			Assert.assertEquals(TaskStatus.CANCELED, tested.taskStatus);
+			Assert.assertEquals(TaskStatusInfo.FAILOVER_MAX_NUM, tested.runCount);
 			Assert.assertNull(tested.executionNodeId);
 			Assert.assertNull(tested.lastRunStartedAt);
 			Assert.assertNull(tested.lastRunFinishedAt);
