@@ -22,9 +22,11 @@ import org.junit.Test;
 import org.mockito.Mockito;
 import org.searchisko.api.cache.IndexNamesCache;
 import org.searchisko.api.cache.ProviderCache;
+import org.searchisko.api.rest.exception.PreprocessorInvalidDataException;
 import org.searchisko.api.service.ProviderService.ProviderContentTypeInfo;
 import org.searchisko.api.testtools.ESRealClientTestBase;
 import org.searchisko.api.testtools.TestUtils;
+import org.searchisko.api.testtools.WarningMockPreprocessor;
 import org.searchisko.api.util.PreprocessChainContextImpl;
 import org.searchisko.persistence.service.EntityService;
 import org.searchisko.persistence.service.ListRequest;
@@ -732,7 +734,7 @@ public class ProviderServiceTest extends ESRealClientTestBase {
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@Test
-	public void runPreprocessors() {
+	public void runPreprocessors() throws PreprocessorInvalidDataException {
 		ProviderService tested = new ProviderService();
 		tested.searchClientService = Mockito.mock(SearchClientService.class);
 		Client client = Mockito.mock(Client.class);
@@ -794,6 +796,24 @@ public class ProviderServiceTest extends ESRealClientTestBase {
 			Assert.assertEquals("warning preprocessor 2", warnings.get(1).get(PreprocessChainContextImpl.WD_PREPROC_NAME));
 			Assert.assertEquals("warning message because null data",
 					warnings.get(1).get(PreprocessChainContextImpl.WD_WARNING));
+		}
+
+		// case - #188 - InvalidDataException from preprocessor must throw as PreprocessorInvalidDataException there
+		Assert.assertFalse(RuntimeException.class.isAssignableFrom(PreprocessorInvalidDataException.class));
+
+		{
+			List<Map<String, Object>> preprocessorsDef = ProviderService.extractPreprocessors(
+					(Map<String, Object>) ((Map<String, Object>) TestUtils.loadJSONFromClasspathFile("/provider/provider_1.json")
+							.get("type")).get("provider1_mailing"), "provider1_mailing");
+			Map<String, Object> data = new HashMap<String, Object>();
+			data.put(WarningMockPreprocessor.KEY_INVALID_DATA_EXCEPTION, "");
+			try {
+				tested.runPreprocessors(TEST_TYPE_NAME, preprocessorsDef, data);
+				Assert.fail("PreprocessorInvalidDataException expected");
+			} catch (PreprocessorInvalidDataException e) {
+				Assert.assertEquals(WarningMockPreprocessor.ERROR_IN_DATA, e.getMessage());
+			}
+
 		}
 
 	}

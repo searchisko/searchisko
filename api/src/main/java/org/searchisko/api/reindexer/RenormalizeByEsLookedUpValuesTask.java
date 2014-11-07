@@ -22,10 +22,10 @@ import org.elasticsearch.index.query.OrFilterBuilder;
 import org.elasticsearch.index.query.TermsFilterBuilder;
 import org.elasticsearch.search.SearchHit;
 import org.jboss.elasticsearch.tools.content.ESLookupValuePreprocessor;
-import org.jboss.elasticsearch.tools.content.InvalidDataException;
 import org.jboss.elasticsearch.tools.content.StructuredContentPreprocessor;
 import org.jboss.elasticsearch.tools.content.StructuredContentPreprocessorFactory;
 import org.searchisko.api.ContentObjectFields;
+import org.searchisko.api.rest.exception.PreprocessorInvalidDataException;
 import org.searchisko.api.service.ProviderService;
 import org.searchisko.api.service.ProviderService.ProviderContentTypeInfo;
 import org.searchisko.api.service.SearchClientService;
@@ -188,7 +188,7 @@ public class RenormalizeByEsLookedUpValuesTask extends Task {
 				// Run preprocessors to normalize mapped fields
 				providerService.runPreprocessors(sysContentType, ProviderService.extractPreprocessors(typeDef, sysContentType),
 						content);
-			} catch (InvalidDataException e) {
+			} catch (PreprocessorInvalidDataException e) {
 				writeTaskLog("ERROR: Data error from preprocessors execution so document " + id + " is skipped: "
 						+ e.getMessage());
 				return;

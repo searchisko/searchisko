@@ -52,6 +52,7 @@ import org.searchisko.api.events.ContentStoredEvent;
 import org.searchisko.api.rest.exception.BadFieldException;
 import org.searchisko.api.rest.exception.NotAuthorizedException;
 import org.searchisko.api.rest.exception.OperationUnavailableException;
+import org.searchisko.api.rest.exception.PreprocessorInvalidDataException;
 import org.searchisko.api.rest.exception.RequiredFieldException;
 import org.searchisko.api.security.Role;
 import org.searchisko.api.service.AuthenticationUtilService;
@@ -198,7 +199,7 @@ public class ContentRestService extends RestServiceBase {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	public Object pushContent(@PathParam("type") String type, @PathParam("contentId") String contentId,
-			Map<String, Object> content) {
+			Map<String, Object> content) throws PreprocessorInvalidDataException {
 
 		ProviderContentTypeInfo typeInfo = getTypeInfoWithManagePermissionCheck(type);
 
@@ -264,7 +265,7 @@ public class ContentRestService extends RestServiceBase {
 					brb.add(pcir.irb);
 					ids.add(contentId);
 					pcis.put(contentId, pcir);
-				} catch (RequiredFieldException | BadFieldException e) {
+				} catch (RequiredFieldException | BadFieldException | PreprocessorInvalidDataException e) {
 					Map<String, Object> retitem = new LinkedHashMap<>();
 					retitem.put(RETFIELD_STATUS, "error");
 					retitem.put(RETFIELD_MESSAGE, e.getMessage());
@@ -302,7 +303,7 @@ public class ContentRestService extends RestServiceBase {
 	}
 
 	public PushContentImplRet pushContentImpl(ProviderContentTypeInfo typeInfo, String contentId,
-			Map<String, Object> content) throws RequiredFieldException, BadFieldException {
+			Map<String, Object> content) throws RequiredFieldException, BadFieldException, PreprocessorInvalidDataException {
 
 		String type = typeInfo.getTypeName();
 

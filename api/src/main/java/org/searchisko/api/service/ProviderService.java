@@ -18,10 +18,12 @@ import javax.inject.Named;
 import javax.ws.rs.core.StreamingOutput;
 
 import org.elasticsearch.common.settings.SettingsException;
+import org.jboss.elasticsearch.tools.content.InvalidDataException;
 import org.jboss.elasticsearch.tools.content.StructuredContentPreprocessor;
 import org.jboss.elasticsearch.tools.content.StructuredContentPreprocessorFactory;
 import org.searchisko.api.cache.IndexNamesCache;
 import org.searchisko.api.cache.ProviderCache;
+import org.searchisko.api.rest.exception.PreprocessorInvalidDataException;
 import org.searchisko.api.util.PreprocessChainContextImpl;
 import org.searchisko.api.util.SearchUtils;
 import org.searchisko.persistence.service.EntityService;
@@ -337,9 +339,10 @@ public class ProviderService implements EntityService {
 	 * @param preprocessorsDef definition of preprocessors - see {@link #extractPreprocessors(Map, String)}
 	 * @param content to run preprocessors on
 	 * @return list of warnings from preprocessors, may be null
+	 * @throws PreprocessorInvalidDataException wrapping {@link InvalidDataException} if it is thrown by preprocessors.
 	 */
 	public List<Map<String, String>> runPreprocessors(String typeName, List<Map<String, Object>> preprocessorsDef,
-			Map<String, Object> content) {
+			Map<String, Object> content) throws PreprocessorInvalidDataException {
 		try {
 			List<StructuredContentPreprocessor> preprocessors = StructuredContentPreprocessorFactory.createPreprocessors(
 					preprocessorsDef, searchClientService.getClient());
@@ -348,6 +351,9 @@ public class ProviderService implements EntityService {
 				content = preprocessor.preprocessData(content, context);
 			}
 			return context.warnings;
+		} catch (InvalidDataException e) {
+			// #188 - we must remap this exception to something else which do not extends RuntimeException
+			throw new PreprocessorInvalidDataException(e);
 		} catch (IllegalArgumentException e) {
 			throw new SettingsException("Bad configuration of some 'input_preprocessors' for sys_content_type=" + typeName
 					+ ". Cause: " + e.getMessage(), e);

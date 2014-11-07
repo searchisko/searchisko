@@ -9,6 +9,7 @@ import java.util.Map;
 
 import org.elasticsearch.client.Client;
 import org.elasticsearch.common.settings.SettingsException;
+import org.jboss.elasticsearch.tools.content.InvalidDataException;
 import org.jboss.elasticsearch.tools.content.PreprocessChainContext;
 import org.jboss.elasticsearch.tools.content.StructuredContentPreprocessorBase;
 
@@ -18,6 +19,10 @@ import org.jboss.elasticsearch.tools.content.StructuredContentPreprocessorBase;
  * @author Vlastimil Elias (velias at redhat dot com)
  */
 public class WarningMockPreprocessor extends StructuredContentPreprocessorBase {
+
+	public static final String ERROR_IN_DATA = "error in data";
+
+	public static final String KEY_INVALID_DATA_EXCEPTION = "InvalidDataException";
 
 	public boolean warnAlways = false;
 
@@ -34,6 +39,10 @@ public class WarningMockPreprocessor extends StructuredContentPreprocessorBase {
 		}
 		if (data == null || warnAlways)
 			addDataWarning(chainContext, "warning message because null data");
+
+		if (data != null && data.containsKey(KEY_INVALID_DATA_EXCEPTION))
+			throw new InvalidDataException(ERROR_IN_DATA);
+
 		return data;
 	}
 

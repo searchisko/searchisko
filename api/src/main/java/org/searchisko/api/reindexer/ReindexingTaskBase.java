@@ -30,7 +30,7 @@ public abstract class ReindexingTaskBase extends Task {
 
 	protected SearchClientService searchClientService;
 
-	private static final long ES_SCROLL_KEEPALIVE = 60 * 1000;
+	protected static final long ES_SCROLL_KEEPALIVE = 60 * 1000;
 
 	public ReindexingTaskBase(ProviderService providerService, SearchClientService searchClientService) {
 		super();

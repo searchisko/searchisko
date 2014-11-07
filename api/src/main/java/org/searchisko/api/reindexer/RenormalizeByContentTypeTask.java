@@ -11,7 +11,7 @@ import org.elasticsearch.action.bulk.BulkRequestBuilder;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.search.SearchHit;
-import org.jboss.elasticsearch.tools.content.InvalidDataException;
+import org.searchisko.api.rest.exception.PreprocessorInvalidDataException;
 import org.searchisko.api.service.ProviderService;
 import org.searchisko.api.service.ProviderService.ProviderContentTypeInfo;
 import org.searchisko.api.service.SearchClientService;
@@ -26,9 +26,9 @@ public class RenormalizeByContentTypeTask extends ReindexingTaskBase {
 
 	protected String sysContentType;
 
-	private String indexName;
-	private String indexType;
-	private ProviderContentTypeInfo typeDef;
+	protected String indexName;
+	protected String indexType;
+	protected ProviderContentTypeInfo typeDef;
 
 	public RenormalizeByContentTypeTask(ProviderService providerService, SearchClientService searchClientService,
 			String sysContentType) {
@@ -66,7 +66,7 @@ public class RenormalizeByContentTypeTask extends ReindexingTaskBase {
 			// Run preprocessors to normalize mapped fields
 			providerService.runPreprocessors(sysContentType, ProviderService.extractPreprocessors(typeDef, sysContentType),
 					content);
-		} catch (InvalidDataException e) {
+		} catch (PreprocessorInvalidDataException e) {
 			writeTaskLog("ERROR: Data error from preprocessors execution so document " + id + " is skipped: "
 					+ e.getMessage());
 			return;
