@@ -13,8 +13,8 @@ import javax.enterprise.event.Event;
 import org.elasticsearch.action.bulk.BulkRequestBuilder;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.common.settings.SettingsException;
-import org.jboss.elasticsearch.tools.content.InvalidDataException;
 import org.searchisko.api.events.ContentBeforeIndexedEvent;
+import org.searchisko.api.rest.exception.PreprocessorInvalidDataException;
 import org.searchisko.api.service.ProviderService;
 import org.searchisko.api.service.ProviderService.ProviderContentTypeInfo;
 import org.searchisko.api.service.SearchClientService;
@@ -84,7 +84,7 @@ public class ReindexFromPersistenceTask extends Task {
 							// Run preprocessors to normalize mapped fields
 							providerService.runPreprocessors(sysContentType,
 									ProviderService.extractPreprocessors(typeInfo, sysContentType), content);
-						} catch (InvalidDataException e) {
+						} catch (PreprocessorInvalidDataException e) {
 							writeTaskLog("Data error from preprocessors execution so document " + id + " is skipped: "
 									+ e.getMessage());
 							continue;
