@@ -199,7 +199,7 @@ public class TaskPersisterJpaTest_Embedded extends JpaTestBase {
 			tsi = tested.getTaskStatusInfo(id2);
 			tsi.setTaskStatus(TaskStatus.FAILOVER);
 			tsi.setRunCount(1);
-			tsi.setLastRunFinishedAt(new Date(System.currentTimeMillis() - TaskPersisterJpa.FAILOVER_DELAY - 100L));
+			tsi.setLastRunFinishedAt(new Date(System.currentTimeMillis() - TaskPersisterJpa.FAILOVER_DELAY_10 - 100L));
 			tsi.setLastRunStartedAt(tsi.getTaskCreatedAt());
 			em.getTransaction().commit();
 
