@@ -7,6 +7,7 @@
         "spacesIndexed"         : "MAIN",
         "simpleGetDocuments"    : true,
         "indexUpdatePeriod"     : "1d",
+        "indexFullUpdatePeriod" : "1d",
         "maxIndexingThreads"    : 1,
         "htmlMapping"           : {
             "title"       : {"cssSelector" : "head title", "stripHtml" : true},
