@@ -1,9 +1,8 @@
 Contributor
 ===========
 
-Contributor configuration contains distinct information/identifiers used
-by preprocessors in 'Content Manipulation API' to normalize contributor identifier
-for `sys_contributors` field.
+Contributor configuration contains system level informations (like roles) and distinct information/identifiers used
+by preprocessors in 'Content Manipulation API' to normalize contributor identifier for `sys_contributors` field.
 
 It's managed over 'Management API - contributors'.
 
@@ -27,7 +26,11 @@ Contributor configuration fields:
   data to this contributor. Key in the structure marks type of identifier (eg. 
   jboss.org username, github username), value in structure is identifier itself 
   used during mapping.
-* `roles` - List of additional roles that authenticated user has.
+* `roles` - List of additional roles that authenticated user has. 
+  Authenticated user has `contributor` role assigned by default. 
+  `admin` role allow access of user to Management API's! Never use `provider` role here.
+  Names of other roles are flexible and you can use your own when configuring distinct 
+  aspects of Searchisko security like Content Security, Custom queries security etc.
 
 Example of contributor configuration:
 

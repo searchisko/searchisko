@@ -2,14 +2,13 @@ Searchisko Basic Principles and Architecture
 ============================================
 
 The **Searchisko** is a system designed to store,
-search and retrieve content related to Open Source Software (OSS) projects
-which may be distributed across multiple heterogenous systems.
+search, retrieve and aggregate content which comes from multiple heterogenous systems.
 
-The aim is to provide greater insight into where projects may benefit from
+Originally designed for OSS community with aim to provide greater insight into where projects may benefit from
 sharing a common approach to problems as well as highlighting the contributions
 being made and who is contributing them.
 
-The need for the Searchisko came from the realization that individual projects
+The need for the Searchisko came from the realization that individual OSS projects
 often want the ability to choose their own services such as source code repositories,
 wikis, forums, mailing lists and issue trackers rather than relying on a
 centralized infrastructure. Where projects are created by the same organization,
@@ -18,11 +17,16 @@ provided by a centralized service so another reason for the Searchisko is to all
 the gradual migration of projects from one service to another without impacting
 the ability to consistently search or retrieve information about them.
 
+But Searchisko is designed and implemented in a way to be generally usable for other 
+subjects who want to work with content from distinct resources in a similar way.
+
 The main design attributes of the Searchisko are:
 
 * openness and ease of use
 * simple, quick and flexible search of stored information
 * highly flexible stored information structures
+* advanced aggregations on top of stored content
+* flexible content security options
 * possibility to store information with guaranteed long-term persistence for 
   data sources where it is hard or impossible to obtain the information again in 
   the future (eg. blog posts obtained using the RSS protocol)
@@ -137,7 +141,7 @@ run on any platform and/or cloud provider (OpenShift, EC2 etc).
 
 ### Push API
 
-This component allows content to be pushed into the platform from various 
+This component allows *Content* to be pushed into the platform from various 
 information sources. It supports the following basic CRUD and List operations:
 
 * POST document into platform (create or update it based on provided 'provider content type' and id)
@@ -177,25 +181,22 @@ The framework for mappings/normalizations has been developed as part
 of the ElasticSearch JIRA river project and extracted to a separate GitHub 
 project called [structured-content-tools](https://github.com/jbossorg/structured-content-tools).
 
-### Search API
+### Search/Aggregations API
 
-This component allows a user to retrieve/search content from the platform. It is 
-used by both the JBoss Community Team developed websites (http://search.jboss.org
-and http://planet.jboss.org) and third-party/project team developed websites.
+This component allows a user to retrieve/search/aggregate content from the platform. It is 
+used by both the jboss.org Development Team developed websites (http://search.jboss.org
+and http://planet.jboss.org) and third-party/project team developed websites (http://www.jboss.org).
 
-The current search API supports a predefined set of filters and aggregations. The full ElasticSearch search 
-API should be provided in the future but we need to first investigate whether or not this could
-introduce security concerns, eg. harvesting of email addresses, denial of service attacks, etc...
+The current search API supports a predefined/configurable set of filters and aggregations. 
+Searchisko 2.0 brings fully configurable custom queries to unleash full power of Elasticsearch search and aggregation features.
+We can't provide full Elasticsearch search API as it do not address necessary content security features.
 
-We also need to implement some form of Quality of Service (QoS) handing here - for search requests
+We also plan to implement some form of Quality of Service (QoS) handing here - for search requests
 from unauthorized/unknown systems so they do not degrade the performance of the authorized/known systems.
 
-Part of this API will be the "Project list" operation that allows you to obtain the list of project
-identifiers and related project names used in platform normalized field `sys_project`.
- 
 ### Search Back-end
 
-Fulltext search nodes with distributed search indices etc.
+Fulltext search and aggregation nodes with distributed search indices etc.
 
 Based on ElasticSearch technology - [http://www.elasticsearch.org](http://www.elasticsearch.org).
 
@@ -203,7 +204,7 @@ Information is not persistently stored here, because search indices must be
 rebuilt from scratch from data sources in some cases (typically when something significant 
 is changed in ElasticSearch or Lucene).
 
-Separate ElasticSearch cluster is used to store some statistics from the Searchisko runtime for use by Searchisko administrators.
+Separate Elasticsearch cluster is used to store some statistics from the Searchisko runtime for use by Searchisko administrators.
 
 ### Persistence Back-end
 

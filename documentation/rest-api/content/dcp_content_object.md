@@ -1,7 +1,7 @@
-Searchisko Content object
-=========================
+Searchisko Content object (Document)
+====================================
 
-This document describes main content object, which can be pushed to and retrieved or searched from Searchisko.
+This describes Searchisko Content object (also called Document), which can be pushed to and retrieved (searched, aggreagted) from Searchisko.
  
 Searchisko Content object is a JSON document with a free structure. There is no 
 restriction about how many key value pairs must be defined or in what structure.

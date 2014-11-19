@@ -3,10 +3,9 @@ Searchisko REST API documentation
 
 Searchisko REST API on-line documentation & Server Mock are available at [http://docs.jbossorg.apiary.io](http://docs.jbossorg.apiary.io/)
 
-##Searchisko Content objects
-Searchisko content is the main reason why Searchisko exists. It can be pushed into the Searchisko by the 
-registered providers over 'Content Push API' and searched over 'Search API' and 
-'Query Suggestions API'.
+##Searchisko Content object/Document
+Searchisko content (Document) is the main reason why Searchisko exists. It can be pushed into the Searchisko by the 
+registered providers over 'Content Push API' and searched over 'Search API', 'Feed API' and 'Query Suggestions API'.
 
 The Searchisko content can be characterized by a type (e.g. e-mails, blog posts, forum 
 posts, issues, etc...). Content for one *sys_type* can originate from distinct source
