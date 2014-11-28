@@ -36,7 +36,7 @@ import static org.searchisko.ftest.rest.RestTestHelpers.givenJsonAndLogIfFailsAn
 
 /**
  * Integration test for /provider REST API.
- *
+ * 
  * @author Libor Krzyzanek
  * @see org.searchisko.api.rest.ProviderRestService
  */
@@ -86,55 +86,44 @@ public class ProviderRestServiceTest {
 
 	public void assertAccess(int expStatus, String username, String password, String role) throws MalformedURLException {
 		// TEST: GET /provider
-		givenJsonAndLogIfFailsAndAuthPreemptive(username, password)
-				.expect().statusCode(expStatus)
-				.when().get(new URL(context, PROVIDER_REST_API_BASE).toExternalForm());
+		givenJsonAndLogIfFailsAndAuthPreemptive(username, password).expect().statusCode(expStatus).when()
+				.get(new URL(context, PROVIDER_REST_API_BASE).toExternalForm());
 
 		// TEST: POST /provider
-		givenJsonAndLogIfFailsAndAuthPreemptive(username, password).body("")
-				.expect().statusCode(expStatus)
-				.when().post(new URL(context, PROVIDER_REST_API_BASE).toExternalForm());
+		givenJsonAndLogIfFailsAndAuthPreemptive(username, password).body("").expect().statusCode(expStatus).when()
+				.post(new URL(context, PROVIDER_REST_API_BASE).toExternalForm());
 
 		// TEST: POST /provider/test
-		givenJsonAndLogIfFailsAndAuthPreemptive(username, password)
-				.pathParam("id", "test").body("")
-				.expect().statusCode(expStatus)
-				.when().post(new URL(context, PROVIDER_REST_API).toExternalForm());
+		givenJsonAndLogIfFailsAndAuthPreemptive(username, password).pathParam("id", "test").body("").expect()
+				.statusCode(expStatus).when().post(new URL(context, PROVIDER_REST_API).toExternalForm());
 
 		// Overridden default role access
 		// PROVIDER has access to this as well so skip it
 		if (expStatus == 401 || (expStatus == 403 && !Role.PROVIDER.equals(role))) {
 			// TEST: GET /provider/jbossorg
 			givenJsonAndLogIfFailsAndAuthPreemptive(username, password)
-					.pathParam("id", DeploymentHelpers.DEFAULT_PROVIDER_NAME)
-					.expect().statusCode(expStatus).when()
+					.pathParam("id", DeploymentHelpers.DEFAULT_PROVIDER_NAME).expect().statusCode(expStatus).when()
 					.get(new URL(context, PROVIDER_REST_API).toExternalForm());
-
 
 			// TEST: DELETE /provider/test
 			givenJsonAndLogIfFailsAndAuthPreemptive(username, password)
-					.pathParam("id", DeploymentHelpers.DEFAULT_PROVIDER_NAME).body("")
-					.expect().statusCode(expStatus)
-					.when().delete(new URL(context, PROVIDER_REST_API).toExternalForm());
+					.pathParam("id", DeploymentHelpers.DEFAULT_PROVIDER_NAME).body("").expect().statusCode(expStatus).when()
+					.delete(new URL(context, PROVIDER_REST_API).toExternalForm());
 
 			// / Content manipulation lock part of API
 
 			// TEST: GET /provider/jbossorg/content_manipulation_lock
 			givenJsonAndLogIfFailsAndAuthPreemptive(username, password)
-					.pathParam("id", DeploymentHelpers.DEFAULT_PROVIDER_NAME)
-					.expect().statusCode(expStatus).when()
+					.pathParam("id", DeploymentHelpers.DEFAULT_PROVIDER_NAME).expect().statusCode(expStatus).when()
 					.get(new URL(context, PROVIDER_CML_REST_API).toExternalForm());
 
 			// TEST: POST /provider/test/content_manipulation_lock
-			givenJsonAndLogIfFailsAndAuthPreemptive(username, password)
-					.pathParam("id", "test").body("")
-					.expect().statusCode(expStatus)
-					.when().post(new URL(context, PROVIDER_CML_REST_API).toExternalForm());
+			givenJsonAndLogIfFailsAndAuthPreemptive(username, password).pathParam("id", "test").body("").expect()
+					.statusCode(expStatus).when().post(new URL(context, PROVIDER_CML_REST_API).toExternalForm());
 
 			// TEST: DELETE /provider/jbossorg/content_manipulation_lock
 			givenJsonAndLogIfFailsAndAuthPreemptive(username, password)
-					.pathParam("id", DeploymentHelpers.DEFAULT_PROVIDER_NAME).body("")
-					.expect().statusCode(expStatus).when()
+					.pathParam("id", DeploymentHelpers.DEFAULT_PROVIDER_NAME).body("").expect().statusCode(expStatus).when()
 					.delete(new URL(context, PROVIDER_CML_REST_API).toExternalForm());
 		}
 	}
@@ -273,13 +262,13 @@ public class ProviderRestServiceTest {
 	public void assertDeleteProviderSecurity(@ArquillianResource URL context) throws MalformedURLException {
 		// Provider1 cannot delete itself
 		given().pathParam("id", provider1.name).contentType(ContentType.JSON).auth()
-				.basic(provider1.name, provider1.password).expect().log().ifValidationFails().statusCode(403)
-				.when().delete(new URL(context, PROVIDER_REST_API).toExternalForm());
+				.basic(provider1.name, provider1.password).expect().log().ifValidationFails().statusCode(403).when()
+				.delete(new URL(context, PROVIDER_REST_API).toExternalForm());
 
 		// Provider1 cannot delete Provider2
 		given().pathParam("id", provider2.name).contentType(ContentType.JSON).auth()
-				.basic(provider1.name, provider1.password).expect().log().ifValidationFails().statusCode(403)
-				.when().delete(new URL(context, PROVIDER_REST_API).toExternalForm());
+				.basic(provider1.name, provider1.password).expect().log().ifValidationFails().statusCode(403).when()
+				.delete(new URL(context, PROVIDER_REST_API).toExternalForm());
 
 	}
 
@@ -494,11 +483,11 @@ public class ProviderRestServiceTest {
 
 	/**
 	 * Helper method to delete Content Manipulation API lock for given provider.
-	 *
-	 * @param context             to be used for call REST API
+	 * 
+	 * @param context to be used for call REST API
 	 * @param providerNameForLock name of provider to unlock
-	 * @param username            to authenticate on REST API
-	 * @param password            to authenticate on REST API
+	 * @param username to authenticate on REST API
+	 * @param password to authenticate on REST API
 	 * @throws MalformedURLException
 	 */
 	public static final void cmLockDelete(URL context, String providerNameForLock, String username, String password)
@@ -510,11 +499,11 @@ public class ProviderRestServiceTest {
 
 	/**
 	 * Helper method to create Content Manipulation API lock for given provider.
-	 *
-	 * @param context             to be used for call REST API
+	 * 
+	 * @param context to be used for call REST API
 	 * @param providerNameForLock name of provider to lock
-	 * @param username            to authenticate on REST API
-	 * @param password            to authenticate on REST API
+	 * @param username to authenticate on REST API
+	 * @param password to authenticate on REST API
 	 * @throws MalformedURLException
 	 */
 	public static final void cmLockCreate(URL context, String providerNameForLock, String username, String password)
@@ -538,7 +527,7 @@ public class ProviderRestServiceTest {
 
 	/**
 	 * Helper method to create new provider - non existence is tested
-	 *
+	 * 
 	 * @param context
 	 * @param provider
 	 * @throws MalformedURLException
@@ -566,8 +555,32 @@ public class ProviderRestServiceTest {
 	}
 
 	/**
+	 * Helper method to create or update provider
+	 * 
+	 * @param context
+	 * @param provider
+	 * @throws MalformedURLException
+	 */
+	public static void createOrUpdateProvider(URL context, ProviderModel provider) throws MalformedURLException {
+		log.log(Level.INFO, "Create or update provider, data: {0}", provider);
+
+		// TEST: Post Provider
+		given().pathParam("id", provider.name).contentType(ContentType.JSON).auth()
+				.basic(DeploymentHelpers.DEFAULT_PROVIDER_NAME, DeploymentHelpers.DEFAULT_PROVIDER_PASSWORD)
+				.body(provider.getProviderJSONModel()).expect().log().ifError().statusCode(200).body("id", is(provider.name))
+				.when().post(new URL(context, PROVIDER_REST_API).toExternalForm());
+
+		// TEST: Get provider back
+		given().pathParam("id", provider.name).contentType(ContentType.JSON).auth().basic(provider.name, provider.password)
+				.expect().log().ifError().statusCode(200).body("name", is(provider.name)).body("super_provider", nullValue())
+				.body(ProviderService.PASSWORD_HASH, nullValue()).when()
+				.get(new URL(context, PROVIDER_REST_API).toExternalForm());
+
+	}
+
+	/**
 	 * Helper method to update provider
-	 *
+	 * 
 	 * @param context
 	 * @param provider
 	 * @throws MalformedURLException
@@ -584,7 +597,7 @@ public class ProviderRestServiceTest {
 
 	/**
 	 * Helper method to delete provider
-	 *
+	 * 
 	 * @param context
 	 * @param provider
 	 * @throws MalformedURLException
