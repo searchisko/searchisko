@@ -5,15 +5,16 @@
  */
 package org.searchisko.api.rest;
 
-import javax.ws.rs.core.MultivaluedMap;
-import javax.ws.rs.core.Response.Status;
-import javax.ws.rs.core.SecurityContext;
-import javax.ws.rs.core.UriInfo;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
+
+import javax.ws.rs.core.MultivaluedMap;
+import javax.ws.rs.core.Response.Status;
+import javax.ws.rs.core.SecurityContext;
+import javax.ws.rs.core.UriInfo;
 
 import org.elasticsearch.action.get.GetResponse;
 import org.jboss.resteasy.specimpl.MultivaluedMapImpl;
@@ -21,6 +22,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.searchisko.api.ContentObjectFields;
+import org.searchisko.api.rest.exception.NotAuthorizedException;
 import org.searchisko.api.rest.exception.RequiredFieldException;
 import org.searchisko.api.service.AuthenticationUtilService;
 import org.searchisko.api.service.ProviderService;
@@ -39,6 +41,10 @@ import org.searchisko.persistence.service.RatingPersistenceService.RatingStats;
  */
 public class RatingRestServiceTest {
 
+	/**
+	 * 
+	 */
+	private static final String MOCK_ROLE = "role1";
 	private static final String MOCK_TYPE_NAME = "mytype";
 	private static final String MOCK_INDEX_NAME = "myindex";
 	private static final String MOCK_CONTENT_ID_1 = "jb-45";
@@ -247,6 +253,9 @@ public class RatingRestServiceTest {
 			TestUtils.assertResponseStatus(tested.postRating(MOCK_CONTENT_ID_1, content), Status.NOT_FOUND);
 
 			Mockito.verify(tested.providerService).findContentType(MOCK_PROVIDER_NAME);
+
+			Mockito.verify(tested.authenticationUtilService).getAuthenticatedContributor(true);
+			Mockito.verifyNoMoreInteractions(tested.authenticationUtilService);
 		}
 
 		// case - non existing document
@@ -269,6 +278,9 @@ public class RatingRestServiceTest {
 			TestUtils.assertResponseStatus(tested.postRating(MOCK_CONTENT_ID_1, content), Status.NOT_FOUND);
 
 			Mockito.verify(tested.searchClientService).performGet(MOCK_INDEX_NAME, MOCK_TYPE_NAME, MOCK_CONTENT_ID_1);
+
+			Mockito.verify(tested.authenticationUtilService).getAuthenticatedContributor(true);
+			Mockito.verifyNoMoreInteractions(tested.authenticationUtilService);
 		}
 
 		// case - rating OK with document upgrade
@@ -311,7 +323,184 @@ public class RatingRestServiceTest {
 			// assert rating stats added to the search index
 			Assert.assertEquals(new Double(3), indexDocumentContent.get(ContentObjectFields.SYS_RATING_AVG));
 			Assert.assertEquals(new Long(20), indexDocumentContent.get(ContentObjectFields.SYS_RATING_NUM));
+
+			Mockito.verify(tested.authenticationUtilService).getAuthenticatedContributor(true);
+			Mockito.verifyNoMoreInteractions(tested.authenticationUtilService);
 		}
+	}
+
+	@Test
+	public void postRating_contentsecurity_typeLevel() throws SearchIndexMissingException {
+
+		// case - #191 - rating OK with user in role
+		{
+			RatingRestService tested = getTested();
+
+			Mockito.when(tested.providerService.parseTypeNameFromSysId(MOCK_CONTENT_ID_1)).thenReturn(MOCK_PROVIDER_NAME);
+
+			Map<String, Object> typeDef = mockTypeDef();
+			typeDef.put(ProviderService.SYS_VISIBLE_FOR_ROLES, MOCK_ROLE);
+
+			Mockito.when(tested.providerService.findContentType(MOCK_PROVIDER_NAME)).thenReturn(
+					ProviderServiceTest.createProviderContentTypeInfo(typeDef));
+
+			List<String> expectedRoles = new ArrayList<>();
+			expectedRoles.add(MOCK_ROLE);
+			Mockito.when(tested.authenticationUtilService.isUserInAnyOfRoles(true, expectedRoles)).thenReturn(true);
+
+			GetResponse grMock = Mockito.mock(GetResponse.class);
+			Mockito.when(grMock.isExists()).thenReturn(true);
+			Map<String, Object> indexDocumentContent = new HashMap<>();
+			Mockito.when(grMock.getSource()).thenReturn(indexDocumentContent);
+			Mockito.when(tested.searchClientService.performGet(MOCK_INDEX_NAME, MOCK_TYPE_NAME, MOCK_CONTENT_ID_1))
+					.thenReturn(grMock);
+
+			Mockito.when(tested.ratingPersistenceService.countRatingStats(MOCK_CONTENT_ID_1)).thenReturn(
+					new RatingStats(MOCK_CONTENT_ID_1, 3, 20));
+
+			Map<String, Object> requestContent = new HashMap<>();
+			requestContent.put(RatingRestService.DATA_FIELD_RATING, "1");
+
+			tested.postRating(MOCK_CONTENT_ID_1, requestContent);
+
+			// verify service calls
+			Mockito.verify(tested.searchClientService).performGet(MOCK_INDEX_NAME, MOCK_TYPE_NAME, MOCK_CONTENT_ID_1);
+			Mockito.verify(tested.ratingPersistenceService).rate(MOCK_CONTRIB_ID, MOCK_CONTENT_ID_1, 1);
+			Mockito.verify(tested.searchClientService).performPutAsync(MOCK_INDEX_NAME, MOCK_TYPE_NAME, MOCK_CONTENT_ID_1,
+					indexDocumentContent);
+
+			Mockito.verify(tested.authenticationUtilService).getAuthenticatedContributor(true);
+			Mockito.verify(tested.authenticationUtilService).isUserInAnyOfRoles(true, expectedRoles);
+			Mockito.verifyNoMoreInteractions(tested.authenticationUtilService);
+		}
+
+		// case - #191 - rating not performed with user not in role
+		{
+			RatingRestService tested = getTested();
+
+			Mockito.when(tested.providerService.parseTypeNameFromSysId(MOCK_CONTENT_ID_1)).thenReturn(MOCK_PROVIDER_NAME);
+
+			Map<String, Object> typeDef = mockTypeDef();
+			typeDef.put(ProviderService.SYS_VISIBLE_FOR_ROLES, MOCK_ROLE);
+
+			Mockito.when(tested.providerService.findContentType(MOCK_PROVIDER_NAME)).thenReturn(
+					ProviderServiceTest.createProviderContentTypeInfo(typeDef));
+
+			List<String> expectedRoles = new ArrayList<>();
+			expectedRoles.add(MOCK_ROLE);
+			Mockito.when(tested.authenticationUtilService.isUserInAnyOfRoles(true, expectedRoles)).thenReturn(false);
+
+			GetResponse grMock = Mockito.mock(GetResponse.class);
+			Mockito.when(grMock.isExists()).thenReturn(true);
+			Map<String, Object> indexDocumentContent = new HashMap<>();
+			Mockito.when(grMock.getSource()).thenReturn(indexDocumentContent);
+			Mockito.when(tested.searchClientService.performGet(MOCK_INDEX_NAME, MOCK_TYPE_NAME, MOCK_CONTENT_ID_1))
+					.thenReturn(grMock);
+
+			Mockito.when(tested.ratingPersistenceService.countRatingStats(MOCK_CONTENT_ID_1)).thenReturn(
+					new RatingStats(MOCK_CONTENT_ID_1, 3, 20));
+
+			Map<String, Object> requestContent = new HashMap<>();
+			requestContent.put(RatingRestService.DATA_FIELD_RATING, "1");
+
+			try {
+				tested.postRating(MOCK_CONTENT_ID_1, requestContent);
+				Assert.fail("NotAuthorizedException expected");
+			} catch (NotAuthorizedException e) {
+
+				Mockito.verify(tested.authenticationUtilService).getAuthenticatedContributor(true);
+				Mockito.verify(tested.authenticationUtilService).isUserInAnyOfRoles(true, expectedRoles);
+				Mockito.verifyNoMoreInteractions(tested.authenticationUtilService, tested.searchClientService);
+			}
+		}
+	}
+
+	@Test
+	public void postRating_contentsecurity_documentLevel() throws SearchIndexMissingException {
+
+		// case - #191 - rating OK with user in role
+		{
+			RatingRestService tested = getTested();
+
+			Mockito.when(tested.providerService.parseTypeNameFromSysId(MOCK_CONTENT_ID_1)).thenReturn(MOCK_PROVIDER_NAME);
+
+			Map<String, Object> typeDef = mockTypeDef();
+			Mockito.when(tested.providerService.findContentType(MOCK_PROVIDER_NAME)).thenReturn(
+					ProviderServiceTest.createProviderContentTypeInfo(typeDef));
+
+			List<String> expectedRoles = new ArrayList<>();
+			expectedRoles.add(MOCK_ROLE);
+			Mockito.when(tested.authenticationUtilService.isUserInAnyOfRoles(true, expectedRoles)).thenReturn(true);
+
+			GetResponse grMock = Mockito.mock(GetResponse.class);
+			Mockito.when(grMock.isExists()).thenReturn(true);
+			Map<String, Object> indexDocumentContent = new HashMap<>();
+			indexDocumentContent.put(ContentObjectFields.SYS_VISIBLE_FOR_ROLES, MOCK_ROLE);
+			Mockito.when(grMock.getSource()).thenReturn(indexDocumentContent);
+			Mockito.when(tested.searchClientService.performGet(MOCK_INDEX_NAME, MOCK_TYPE_NAME, MOCK_CONTENT_ID_1))
+					.thenReturn(grMock);
+
+			Mockito.when(tested.ratingPersistenceService.countRatingStats(MOCK_CONTENT_ID_1)).thenReturn(
+					new RatingStats(MOCK_CONTENT_ID_1, 3, 20));
+
+			Map<String, Object> requestContent = new HashMap<>();
+			requestContent.put(RatingRestService.DATA_FIELD_RATING, "1");
+
+			tested.postRating(MOCK_CONTENT_ID_1, requestContent);
+
+			// verify service calls
+			Mockito.verify(tested.searchClientService).performGet(MOCK_INDEX_NAME, MOCK_TYPE_NAME, MOCK_CONTENT_ID_1);
+			Mockito.verify(tested.ratingPersistenceService).rate(MOCK_CONTRIB_ID, MOCK_CONTENT_ID_1, 1);
+			Mockito.verify(tested.searchClientService).performPutAsync(MOCK_INDEX_NAME, MOCK_TYPE_NAME, MOCK_CONTENT_ID_1,
+					indexDocumentContent);
+
+			Mockito.verify(tested.authenticationUtilService).getAuthenticatedContributor(true);
+			Mockito.verify(tested.authenticationUtilService).isUserInAnyOfRoles(true, expectedRoles);
+			Mockito.verifyNoMoreInteractions(tested.authenticationUtilService);
+		}
+
+		// case - #191 - rating not performed with user not in role
+		{
+			RatingRestService tested = getTested();
+
+			Mockito.when(tested.providerService.parseTypeNameFromSysId(MOCK_CONTENT_ID_1)).thenReturn(MOCK_PROVIDER_NAME);
+
+			Map<String, Object> typeDef = mockTypeDef();
+
+			Mockito.when(tested.providerService.findContentType(MOCK_PROVIDER_NAME)).thenReturn(
+					ProviderServiceTest.createProviderContentTypeInfo(typeDef));
+
+			List<String> expectedRoles = new ArrayList<>();
+			expectedRoles.add(MOCK_ROLE);
+			Mockito.when(tested.authenticationUtilService.isUserInAnyOfRoles(true, expectedRoles)).thenReturn(false);
+
+			GetResponse grMock = Mockito.mock(GetResponse.class);
+			Mockito.when(grMock.isExists()).thenReturn(true);
+			Map<String, Object> indexDocumentContent = new HashMap<>();
+			indexDocumentContent.put(ContentObjectFields.SYS_VISIBLE_FOR_ROLES, MOCK_ROLE);
+			Mockito.when(grMock.getSource()).thenReturn(indexDocumentContent);
+			Mockito.when(tested.searchClientService.performGet(MOCK_INDEX_NAME, MOCK_TYPE_NAME, MOCK_CONTENT_ID_1))
+					.thenReturn(grMock);
+
+			Mockito.when(tested.ratingPersistenceService.countRatingStats(MOCK_CONTENT_ID_1)).thenReturn(
+					new RatingStats(MOCK_CONTENT_ID_1, 3, 20));
+
+			Map<String, Object> requestContent = new HashMap<>();
+			requestContent.put(RatingRestService.DATA_FIELD_RATING, "1");
+
+			try {
+				tested.postRating(MOCK_CONTENT_ID_1, requestContent);
+				Assert.fail("NotAuthorizedException expected");
+			} catch (NotAuthorizedException e) {
+
+				Mockito.verify(tested.searchClientService).performGet(MOCK_INDEX_NAME, MOCK_TYPE_NAME, MOCK_CONTENT_ID_1);
+
+				Mockito.verify(tested.authenticationUtilService).getAuthenticatedContributor(true);
+				Mockito.verify(tested.authenticationUtilService).isUserInAnyOfRoles(true, expectedRoles);
+				Mockito.verifyNoMoreInteractions(tested.authenticationUtilService, tested.searchClientService);
+			}
+		}
+
 	}
 
 	protected Map<String, Object> mockTypeDef() {
@@ -330,13 +519,11 @@ public class RatingRestServiceTest {
 		tested.providerService = Mockito.mock(ProviderService.class);
 		tested.searchClientService = Mockito.mock(SearchClientService.class);
 		tested.authenticationUtilService = Mockito.mock(AuthenticationUtilService.class);
-		Mockito.when(
-				tested.authenticationUtilService.getAuthenticatedContributor(
-						Mockito.anyBoolean())).thenReturn(MOCK_CONTRIB_ID);
+		Mockito.when(tested.authenticationUtilService.getAuthenticatedContributor(Mockito.anyBoolean())).thenReturn(
+				MOCK_CONTRIB_ID);
 		// Pretend authenticated
 		tested.securityContext = Mockito.mock(SecurityContext.class);
-		Mockito.when(
-				tested.securityContext.isUserInRole(Mockito.anyString())).thenReturn(true);
+		Mockito.when(tested.securityContext.isUserInRole(Mockito.anyString())).thenReturn(true);
 
 		return tested;
 	}
