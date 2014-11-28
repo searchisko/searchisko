@@ -20,7 +20,7 @@ public class ProviderModel {
 
 	public String passwordHash;
 
-	public Map<String, Object> contentTypes = new HashMap<>();
+	public Map<String, Map<String, Object>> contentTypes = new HashMap<>();
 
 	public ProviderModel(String name, String password) {
 		this.name = name;
@@ -72,6 +72,16 @@ public class ProviderModel {
 		contentTypes.put(contentType, data);
 
 		return indexName;
+	}
+
+	/**
+	 * Get content type definition from provider
+	 * 
+	 * @param contentType to ger
+	 * @return type or null if not defined
+	 */
+	public Map<String, Object> getContentType(String contentType) {
+		return contentTypes.get(contentType);
 	}
 
 	/**
