@@ -52,28 +52,31 @@ descriptions of document structures for the management API:
 + [contributor](management/contributor.md) - document type used by 'Management API - contributors'
 + [config_*](management)  - document types used by 'Management API - configuration' to configure Searchisko instance
 
-## Security
+## Authentication and Roles based REST API security
 User or client can be authenticated via two mechanisms where each is supposed for different use cases.
 
-1. Provider authentication happens via HTTP Basic authentication
-2. User (called contributor) authentication via /rest/auth/status API
+1. *Provider* authentication happens via HTTP Basic authentication. 
+2. *Contributor* (called *user* sometimes) authentication via `/rest/auth/status` REST API call (which provides CAS SSO integration for now).
 
-Once provider/user is authenticated then can be granted by following roles
+Once provider/user is authenticated then it can be granted by following roles which control access to distinct parts of REST API.
 
 ### Roles
-1. `provider` - `default role` for authenticated provider
-2. `contributor` - `default role` for authenticated contributor
-3. `admin` - system administrator with access to whole API
-4. `contributors_manager` - full access to /rest/contributor API
-5. `projects_manager` - full access to /rest/project API
-6. `tasks_manager` - full access to /rest/tasks API
+1. `provider` - `default role` for authenticated *provider*. It is mainly used to control `/rest/content` API access.
+2. `contributor` - `default role` for authenticated *contributor*
+3. `admin` - system administrator with access to whole Management API
+4. `contributors_manager` - full access to `/rest/contributor` Management API
+5. `projects_manager` - full access to `/rest/project` Management API
+6. `tasks_manager` - full access to `/rest/tasks` Management API
 
-Provider can have only default `provider` role or can have `admin` role if defined in provider configuration.
+*Provider* can have only default `provider` role or can have `admin` role if defined in 
+[provider configuration](management/content_provider.md).
 
-Users can get any role except `provider` by explicitly defining it in [contributor document](management/contributor.md), attribute role
+*Contributors* can get any roles except `provider` by explicitly defining them in 
+[contributor document](management/contributor.md).
 
 
 ## [Expert] Mapping to Elasticsearch indices
 
-In the end of the day every indexed document is mapped and indexed into specific Elasticsearch index/type according on content provider configuration. Read more details about [Mapping from 'sys\_*' fields to Elasticsearch \_index, \_type and \_id fields](sys_fields_to_es_fields_mapping.md).
+In the end of the day every indexed document is mapped and indexed into specific Elasticsearch index/type according on 
+content provider configuration. Read more details about [Mapping from 'sys\_*' fields to Elasticsearch \_index, \_type and \_id fields](sys_fields_to_es_fields_mapping.md).
 

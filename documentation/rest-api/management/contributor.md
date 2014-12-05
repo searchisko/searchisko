@@ -27,10 +27,11 @@ Contributor configuration fields:
   jboss.org username, github username), value in structure is identifier itself 
   used during mapping.
 * `roles` - List of additional roles that authenticated user has. 
-  Authenticated user has `contributor` role assigned by default. 
-  `admin` role allow access of user to Management API's! Never use `provider` role here.
+  Authenticated user has `contributor` role assigned by default.  
+  You can use `admin` or other [roles for managemement API](../README.md#roles) there also. 
+  Never use `provider` role here.
   Names of other roles are flexible and you can use your own when configuring distinct 
-  aspects of Searchisko security like Content Security, Custom queries security etc.
+  aspects of Searchisko security like [Content Security](../../tutorials/content_security.md), Custom queries security etc.
 
 Example of contributor configuration:
 
