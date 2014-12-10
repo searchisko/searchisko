@@ -26,7 +26,8 @@ Improvements:
  
 Internal:
 
-- Upgrade to elasticsearch 1.3.0 [#48](https://github.com/searchisko/searchisko/issues/48)
+- Upgrade to elasticsearch 1.4.1 [#194](https://github.com/searchisko/searchisko/issues/194) (related is also [#48](https://github.com/searchisko/searchisko/issues/48))
+- Using custom build of Elasticsearch 1.4.1 [#195](https://github.com/searchisko/searchisko/issues/195)
 
 ## 1.1.1
 

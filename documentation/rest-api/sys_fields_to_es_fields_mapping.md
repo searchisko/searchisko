@@ -8,7 +8,7 @@ First we explain what schema is used to address documents in Elasticsearch. Then
 ### Elasticsearch index, type and id
 
 In Elasticsearch it is pretty simple, documents live under `index`/`type` namespace.
-When you [put](http://www.elasticsearch.org/guide/en/elasticsearch/reference/1.3/docs-index_.html) a document into
+When you [put](http://www.elasticsearch.org/guide/en/elasticsearch/reference/1.4/docs-index_.html) a document into
 Elasticsearch you use the following notation:
 
 ```
@@ -35,7 +35,7 @@ Let's have the following content in the `some_json_file.json` file:
 }
 ```
 
-When you index such document into Elasticsearch and [_search_](http://www.elasticsearch.org/guide/en/elasticsearch/reference/1.3/search.html) or [_get_](http://www.elasticsearch.org/guide/en/elasticsearch/reference/1.3/docs-get.html) it back later, it will look like this:
+When you index such document into Elasticsearch and [_search_](http://www.elasticsearch.org/guide/en/elasticsearch/reference/1.4/search.html) or [_get_](http://www.elasticsearch.org/guide/en/elasticsearch/reference/1.4/docs-get.html) it back later, it will look like this:
 
 ```
 {

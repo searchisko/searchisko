@@ -70,10 +70,10 @@ of the full Elasticsearch API functionality in its Search API. However, once #12
 to use any kind of aggregations.
 See full [Elasticsearch Aggregations documentation][elasticsearch aggs documentation] for details._
 
-  [mapping]: http://www.elasticsearch.org/guide/en/elasticsearch/reference/1.3/mapping.html
-  [analysis]: http://www.elasticsearch.org/guide/en/elasticsearch/reference/1.3/analysis.html
-  [field type]: http://www.elasticsearch.org/guide/en/elasticsearch/reference/1.3/mapping-types.html
-  [date type]: http://www.elasticsearch.org/guide/en/elasticsearch/reference/1.3/mapping-core-types.html#date
-  [terms agg]: http://www.elasticsearch.org/guide/en/elasticsearch/reference/1.3/search-aggregations-bucket-terms-aggregation.html
-  [date histogram agg]: http://www.elasticsearch.org/guide/en/elasticsearch/reference/1.3/search-aggregations-bucket-datehistogram-aggregation.html
-  [elasticsearch aggs documentation]: http://www.elasticsearch.org/guide/en/elasticsearch/reference/1.3/search-aggregations.html
+  [mapping]: http://www.elasticsearch.org/guide/en/elasticsearch/reference/1.4/mapping.html
+  [analysis]: http://www.elasticsearch.org/guide/en/elasticsearch/reference/1.4/analysis.html
+  [field type]: http://www.elasticsearch.org/guide/en/elasticsearch/reference/1.4/mapping-types.html
+  [date type]: http://www.elasticsearch.org/guide/en/elasticsearch/reference/1.4/mapping-core-types.html#date
+  [terms agg]: http://www.elasticsearch.org/guide/en/elasticsearch/reference/1.4/search-aggregations-bucket-terms-aggregation.html
+  [date histogram agg]: http://www.elasticsearch.org/guide/en/elasticsearch/reference/1.4/search-aggregations-bucket-datehistogram-aggregation.html
+  [elasticsearch aggs documentation]: http://www.elasticsearch.org/guide/en/elasticsearch/reference/1.4/search-aggregations.html

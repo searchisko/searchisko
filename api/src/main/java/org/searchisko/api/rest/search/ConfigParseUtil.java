@@ -23,14 +23,14 @@ import org.searchisko.api.service.ConfigService;
 public class ConfigParseUtil {
 
 	// All filters allow to set "_cache" and "_cache_key"
-	// @see http://www.elasticsearch.org/guide/en/elasticsearch/reference/1.3/query-dsl-filters.html#caching
+	// @see http://www.elasticsearch.org/guide/en/elasticsearch/reference/1.4/query-dsl-filters.html#caching
 	private static final String FILTER_CACHE = "_cache";
 	private static final String FILTER_CACHE_KEY = "_cache_key";
 	private static final String FILTER_CACHE_KEY_ALIAS = "_cacheKey"; // alias found in the ES codebase
 
 	// Each filter (and query since 0.90.4) can accept "_name"
 	// @see
-	// http://www.elasticsearch.org/guide/en/elasticsearch/reference/1.3/search-request-named-queries-and-filters.html#search-request-named-queries-and-filters
+	// http://www.elasticsearch.org/guide/en/elasticsearch/reference/1.4/search-request-named-queries-and-filters.html#search-request-named-queries-and-filters
 	private static final String FILTER_NAME = "_name";
 
 	// Searchisko custom field
