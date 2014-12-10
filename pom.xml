@@ -101,8 +101,13 @@
 		<dependencyManagement>
 				<dependencies>
 						<dependency>
+								<!-- We are using custom build of Elasticsearch now,
+								see https://github.com/searchisko/searchisko/issues/195
+								for details. We assume we will drop custom build and switch
+								back to official release once those issues are fixed.
+								-->
 								<groupId>org.elasticsearch</groupId>
-								<artifactId>elasticsearch</artifactId>
+								<artifactId>elasticsearch-patched</artifactId>
 								<version>${org.elasticsearch.version}</version>
 								<exclusions>
 										<exclusion>
@@ -127,17 +132,35 @@
 								<groupId>org.jboss.elasticsearch</groupId>
 								<artifactId>structured-content-tools</artifactId>
 								<version>${structured-content-tools.version}</version>
+								<exclusions>
+									<exclusion>
+										<groupId>org.elasticsearch</groupId>
+										<artifactId>elasticsearch</artifactId>
+									</exclusion>
+								</exclusions>
 						</dependency>
 						<dependency>
 								<groupId>org.jboss.elasticsearch</groupId>
 								<artifactId>elasticsearch-river-jira</artifactId>
 								<version>${elasticsearch-river-jira.version}</version>
 								<!-- re-enabled commons-logging otherwise httpclient doesn't work -->
+								<exclusions>
+									<exclusion>
+										<groupId>org.elasticsearch</groupId>
+										<artifactId>elasticsearch</artifactId>
+									</exclusion>
+								</exclusions>
 						</dependency>
 						<dependency>
 								<groupId>org.jboss.elasticsearch</groupId>
 								<artifactId>elasticsearch-river-remote</artifactId>
 								<version>${elasticsearch-river-remote.version}</version>
+								<exclusions>
+									<exclusion>
+										<groupId>org.elasticsearch</groupId>
+										<artifactId>elasticsearch</artifactId>
+									</exclusion>
+								</exclusions>
 						</dependency>
 						<dependency>
 								<groupId>org.jboss.shrinkwrap.resolver</groupId>
@@ -302,6 +325,21 @@
 								<enabled>true</enabled>
 								<updatePolicy>never</updatePolicy>
 						</snapshots>
+				</repository>
+
+				<repository>
+					<id>jboss-org-dev</id>
+					<name>JBoss Public Maven Repository with experimental artifacts</name>
+					<url>https://repository.jboss.org/nexus/content/repositories/jbossorg-dev/</url>
+					<layout>default</layout>
+					<releases>
+						<enabled>true</enabled>
+						<updatePolicy>never</updatePolicy>
+					</releases>
+					<snapshots>
+						<enabled>true</enabled>
+						<updatePolicy>never</updatePolicy>
+					</snapshots>
 				</repository>
 		</repositories>
 

@@ -153,7 +153,7 @@
 
 		<dependency>
 			<groupId>org.elasticsearch</groupId>
-			<artifactId>elasticsearch</artifactId>
+			<artifactId>elasticsearch-patched</artifactId>
 		</dependency>
 
 		<dependency>
