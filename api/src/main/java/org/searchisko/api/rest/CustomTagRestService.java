@@ -68,7 +68,7 @@ public class CustomTagRestService extends RestServiceBase {
 	 */
 	protected void checkIfUserAuthenticated() throws NotAuthorizedException {
 		if (!(securityContext.isUserInRole(Role.CONTRIBUTOR) || securityContext.isUserInRole(Role.ADMIN))) {
-			throw new NotAuthorizedException("User Not Authorized for Content Rating API");
+			throw new NotAuthorizedException("User Not Authorized for Tag API");
 		}
 	}
 
@@ -131,10 +131,10 @@ public class CustomTagRestService extends RestServiceBase {
 		Map<String, Object> result = new HashMap<>();
 		for (Tag tag : tags) {
 			if (result.containsKey(tag.getContentId())) {
-				((List<String>) result.get(tag.getContentId())).add(tag.getTag());
+				((List<String>) result.get(tag.getContentId())).add(tag.getTagLabel());
 			} else {
 				List<String> tl = new ArrayList<>();
-				tl.add(tag.getTag());
+				tl.add(tag.getTagLabel());
 				result.put(tag.getContentId(), tl);
 			}
 		}
@@ -149,8 +149,7 @@ public class CustomTagRestService extends RestServiceBase {
 		checkIfUserAuthenticated();
 
 		String currentContributorId = authenticationUtilService.getAuthenticatedContributor(true);
-
-
+		
 		contentSysId = SearchUtils.trimToNull(contentSysId);
 
 		// validation
@@ -200,13 +199,46 @@ public class CustomTagRestService extends RestServiceBase {
 			Tag tagObject = new Tag();
 			tagObject.setContentId(contentSysId);
 			tagObject.setContributorId(currentContributorId);
-			tagObject.setTag(tag);
-			customTagPersistenceService.createTag(tagObject);
+			tagObject.setTagLabel(tag);
+			boolean created = customTagPersistenceService.createTag(tagObject);
 
-			return createResponse(getResponse);
+			return Response.status(created ? Response.Status.CREATED : Response.Status.OK);
 		} catch (SearchIndexMissingException e) {
 			return Response.status(Response.Status.NOT_FOUND).build();
 		}
+	}
+
+
+	@DELETE
+	@Path("/{" + QUERY_PARAM_ID + "}")
+	public Object deleteTagsForContent(@PathParam(QUERY_PARAM_ID) String contentSysId) {
+		checkIfUserAuthenticated();
+
+		contentSysId = SearchUtils.trimToNull(contentSysId);
+
+		// validation
+		if (contentSysId == null) {
+			throw new RequiredFieldException(QUERY_PARAM_ID);
+		}
+
+		customTagPersistenceService.deleteTagsForContent(contentSysId);
+		return Response.status(Status.OK).build();
+	}
+
+	@DELETE
+	@Path("/{" + QUERY_PARAM_ID + "}/{tagLabel}")
+	public Object deleteTag(@PathParam(QUERY_PARAM_ID) String contentSysId, @PathParam("tagLabel") String tagLabel) {
+		checkIfUserAuthenticated();
+
+		contentSysId = SearchUtils.trimToNull(contentSysId);
+
+		// validation
+		if ((contentSysId == null) || (tagLabel == null)){
+			throw new RequiredFieldException(QUERY_PARAM_ID);
+		}
+
+		customTagPersistenceService.deleteTag(contentSysId, tagLabel);
+		return Response.status(Status.OK).build();
 	}
 
 }

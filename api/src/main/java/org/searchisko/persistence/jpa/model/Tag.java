@@ -1,7 +1,7 @@
 /*
  * JBoss, Home of Professional Open Source
  * Copyright 2013 Red Hat Inc. and/or its affiliates and other contributors
- * as indicated by the @authors tag. All rights reserved.
+ * as indicated by the @authors tagLabel. All rights reserved.
  */
 package org.searchisko.persistence.jpa.model;
 
@@ -14,7 +14,7 @@ import javax.persistence.Id;
 import javax.validation.constraints.NotNull;
 
 /**
- * Custom tag entity class. Class is JPA annotated.
+ * Custom tagLabel entity class. Class is JPA annotated.
  *
  * @author Jiri Mauritz (jirmauritz at gmail dot com)
  */
@@ -26,25 +26,24 @@ public class Tag implements Serializable {
 	private long id;
 
 	/**
-	 * Id of the content this tag belogs to.
+	 * Id of the content this tagLabel belogs to.
 	 */
 	@NotNull
 	private String contentId;
 
 	/**
-	 * Id of the contributor who created the tag.
+	 * Id of the contributor who created the tagLabel.
 	 */
 	@NotNull
 	private String contributorId;
 
 	/**
-	 * Text representation of the tag.
+	 * Text representation of the tagLabel.
 	 */
-	@NotNull
-	private String tag;
+	private String tagLabel;
 
 	/**
-	 * Timestamp when tag has been created last time.
+	 * Timestamp when tagLabel has been created last time.
 	 */
 	@NotNull
 	private Timestamp createdAt;
@@ -56,10 +55,10 @@ public class Tag implements Serializable {
 		super();
 	}
 
-	public Tag(String contentId, String contributorId, String tag, Timestamp createdAt) {
+	public Tag(String contentId, String contributorId, String tagLabel, Timestamp createdAt) {
 		this.contentId = contentId;
 		this.contributorId = contributorId;
-		this.tag = tag;
+		this.tagLabel = tagLabel;
 		this.createdAt = createdAt;
 	}
 
@@ -79,12 +78,12 @@ public class Tag implements Serializable {
 		this.contributorId = contributorId;
 	}
 
-	public String getTag() {
-		return tag;
+	public String getTagLabel() {
+		return tagLabel;
 	}
 
-	public void setTag(String tag) {
-		this.tag = tag;
+	public void setTagLabel(String tagLabel) {
+		this.tagLabel = tagLabel;
 	}
 
 	public Timestamp getCreatedAt() {
@@ -119,17 +118,45 @@ public class Tag implements Serializable {
 		if (getClass() != obj.getClass())
 			return false;
 		Tag other = (Tag) obj;
-		if (id != other.id)
+
+		if (!(getContentId().equals(other.getContentId()))) {
 			return false;
-		if (id == 0)
-			return obj == this;
-		return true;
+		}
+
+		if (!(getTagLabel().equals(other.getTagLabel()))) {
+			return false;
+		}
+
+		return compareTagLabels(getTagLabel(), other.getTagLabel());
+	}
+
+	/**
+	 * Decides if first tag label equals second.
+	 *
+	 * @param first tag label
+	 * @param second tag label
+	 * @return true if they are equal
+	 */
+	private boolean compareTagLabels(String first, String second) {
+		if (first == null) {
+			return second == null;
+		}
+
+		// trim whitespaces
+		first = first.trim();
+		second = second.trim();
+
+		// to lower case
+		first = first.toLowerCase();
+		second = second.toLowerCase();
+
+		return first.equals(second);
 	}
 
 	@Override
 	public String toString() {
 		return "Tag{" + "id=" + id + ", contentId=" + contentId + ", contributorId=" + contributorId +
-			", tag=" + tag + ", createdAt=" + createdAt + '}';
+			", tag=" + tagLabel + ", createdAt=" + createdAt + '}';
 	}
 
 }

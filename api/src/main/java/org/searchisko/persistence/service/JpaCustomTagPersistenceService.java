@@ -49,23 +49,26 @@ public class JpaCustomTagPersistenceService implements CustomTagPersistenceServi
 	}
 
 	@Override
-	public void createTag(Tag tag) {
+	public boolean createTag(Tag tag) {
 		// check if there is same tag for the same content
 		List<Tag> tagList = getTagsByContent(tag.getContentId());
 		if (tagList.contains(tag)) {
 			// tag already exists
-			// TODO: return HTTP code already exists
-			return;
+			return false;
 		}
 		tag.setCreatedAt(new Timestamp(System.currentTimeMillis()));
 		em.persist(tag);
+		return true;
 	}
 
 	@Override
-	public void deleteTag(Tag tag) {
-		if (tag != null)
-			// spravit - misto tag pride contentId a tag(string)
-			em.createQuery("delete from Tag t where t = ?1").setParameter(1, tag).executeUpdate();
+	public void deleteTag(String contentId, String tagLabel) {
+		if ((contentId != null) && (tagLabel!= null)) {
+			em.createQuery("delete from Tag t where t.contentId = ?1 and t.tagLabel = ?2")
+				.setParameter(1, contentId)
+				.setParameter(2, tagLabel)
+				.executeUpdate();
+		}
 	}
 
 	@Override
@@ -73,6 +76,18 @@ public class JpaCustomTagPersistenceService implements CustomTagPersistenceServi
 		if (contentId != null && contentId.length > 0)
 			em.createQuery("delete from Tag t where t.contentId in ?1").setParameter(1, Arrays.asList(contentId))
 					.executeUpdate();
+	}
+
+	@Override
+	public void changeOwnershipOfTags(String contributorFrom, String contributorTo) {
+		if (contributorFrom == null || contributorTo == null)
+			return;
+
+		em.createQuery(
+				"update Tag t set t.contributorId = ?1 where t.contributorId = ?2")
+				.setParameter(1, contributorTo)
+				.setParameter(2, contributorFrom)
+				.executeUpdate();
 	}
 
 }
