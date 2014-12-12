@@ -563,8 +563,8 @@ Search content using [registered query](#managementapiregisteredqueries) and pas
 ##### Request parameters
 
  * `content_provider` - filters result only to data provided by specified provider `sys_content_provider` field
- * `type` - filters result only to specific `sys_content_type`. This param can be used multiple times to get results for more `type`s.
- * `sys_type` - filters result only to specific `sys_type`. This param can be used multiple times to get results for more `sys_type`s.
+ * <s>`type` - filters result only to specific `sys_content_type`. This param can be used multiple times to get results for more `type`s.</s> (not implemented yet)
+ * <s>`sys_type` - filters result only to specific `sys_type`. This param can be used multiple times to get results for more `sys_type`s.</s> (not implemented yet)
  * Any other parameters are passed into search template as params.
 
 GET /rest/search/query{?content_provider,type,sys_type}
@@ -1757,7 +1757,8 @@ GET /rest/query/{id}
 }
 
 
-Create new registered query.
+Create new registered query. See [Query](https://github.com/searchisko/searchisko/blob/master/documentation/rest-api/management/query.md)
+data structure for further details about request data format.
 
 POST /rest/query
 < 200
@@ -1770,7 +1771,8 @@ POST /rest/query
 }
 
 
-Update (or create) register query.
+Update (or create) register query. See [Query](https://github.com/searchisko/searchisko/blob/master/documentation/rest-api/management/query.md)
+data structure for further details about request data format.
 
 POST /rest/query/{id}
 < 200
