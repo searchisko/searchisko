@@ -27,13 +27,13 @@ import org.searchisko.persistence.service.CustomTagPersistenceService;
 @Named
 @ApplicationScoped
 @Singleton
-public class CustomTagsService {
+public class CustomTagService {
 
 	@Inject
 	protected Logger log;
 
 	@Inject
-	protected CustomTagPersistenceService customTagsPersistenceService;
+	protected CustomTagPersistenceService customTagPersistenceService;
 
 	/**
 	 * CDI Event handler for {@link ContentDeletedEvent} used to remove ratings when content is deleted.
@@ -43,7 +43,7 @@ public class CustomTagsService {
 	public void contentDeletedEventHandler(@Observes ContentDeletedEvent event) {
 		log.log(Level.FINE, "contentDeletedEventHandler called for event {0}", event);
 		if (event != null && event.getContentId() != null) {
-			customTagsPersistenceService.deleteTagsForContent(event.getContentId());
+			customTagPersistenceService.deleteTagsForContent(event.getContentId());
 		} else {
 			log.warning("Invalid event " + event);
 		}
@@ -56,7 +56,7 @@ public class CustomTagsService {
 	 */
 	public void contributorMergedEventHandler(@Observes ContributorMergedEvent event) {
 		if (event != null && event.getContributorCodeFrom() != null && event.getContributorCodeTo() != null) {
-			customTagsPersistenceService.changeOwnershipOfTags(event.getContributorCodeFrom(), event.getContributorCodeTo());
+			customTagPersistenceService.changeOwnershipOfTags(event.getContributorCodeFrom(), event.getContributorCodeTo());
 		} else {
 			log.warning("Invalid event " + event);
 		}
