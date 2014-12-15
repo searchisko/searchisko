@@ -30,7 +30,7 @@ if [ -n "$4" ]; then
 fi
 
 outputfile=output.txt
-sysapi=${sysurl}/v2/rest/provider/
+sysapi=${sysurl}/v2/rest/query/
 
 echo "Pushing registered query $filename to sysytem API via ${sysapi}"
 echo -n "" > $outputfile
