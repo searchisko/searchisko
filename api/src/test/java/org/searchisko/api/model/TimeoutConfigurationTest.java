@@ -30,7 +30,6 @@ public class TimeoutConfigurationTest {
     Assert.assertEquals(0, tested.documentReferencesSearch());
     Assert.assertEquals(0, tested.subjectPatternCount());
     Assert.assertEquals(0, tested.subjectPatternSearch());
-    Assert.assertEquals(0, tested.subjectSuggestionsSearch());
 
     // case - init load
     tested.init();
@@ -42,7 +41,6 @@ public class TimeoutConfigurationTest {
     Assert.assertEquals(7, tested.documentReferencesSearch());
     Assert.assertEquals(8, tested.subjectPatternCount());
     Assert.assertEquals(9, tested.subjectPatternSearch());
-    Assert.assertEquals(10, tested.subjectSuggestionsSearch());
   }
 
 }

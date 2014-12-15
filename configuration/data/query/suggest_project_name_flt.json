@@ -1,0 +1,36 @@
+{
+  "id" : "suggest_project_name_ngram",
+  "description" : "Project name suggestions using FLT.",
+  "default" : {
+    "sys_content_type" : "jbossorg_project_info",
+    "sys_type" : "project_info"
+  },
+  "template" : {
+    "fields" : [ "sys_project", "sys_project_name" ],
+    "size" : 5,
+    "query" : {
+      "flt" : {
+        "fields" : [ "sys_project_name", "sys_project_name.ngram" ],
+        "like_text" : "{{query}}",
+        "max_query_terms" : 10,
+        "analyzer" : "whitespace_lowercase"
+      }
+    },
+    "highlight" : {
+      "fields" : {
+        "sys_project_name" : {
+          "fragment_size" : 1,
+          "number_of_fragments" : 0
+        },
+        "sys_project_name.ngram" : {
+          "fragment_size" : 1,
+          "number_of_fragments" : 0
+        },
+        "sys_project_name.edgengram" : {
+          "fragment_size" : 1,
+          "number_of_fragments" : 0
+        }
+      }
+    }
+  }
+}

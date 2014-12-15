@@ -44,8 +44,6 @@ public class TimeoutConfiguration {
 
 	private int subjectPatternSearch;
 
-	private int subjectSuggestionsSearch;
-
 	@PostConstruct
 	public void init() throws IOException {
 		Properties prop = SearchUtils.loadProperties("/search_timeouts.properties");
@@ -58,7 +56,6 @@ public class TimeoutConfiguration {
 		documentReferencesSearch = Integer.parseInt(prop.getProperty("documentReferencesSearch", "10"));
 		subjectPatternCount = Integer.parseInt(prop.getProperty("subjectPatternCount", "10"));
 		subjectPatternSearch = Integer.parseInt(prop.getProperty("subjectPatternSearch", "10"));
-		subjectSuggestionsSearch = Integer.parseInt(prop.getProperty("subjectSuggestionsSearch", "10"));
 	}
 
 	public int stats() {
@@ -91,9 +88,5 @@ public class TimeoutConfiguration {
 
 	public int subjectPatternSearch() {
 		return subjectPatternSearch;
-	}
-
-	public int subjectSuggestionsSearch() {
-		return subjectSuggestionsSearch;
 	}
 }

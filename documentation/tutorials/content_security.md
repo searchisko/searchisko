@@ -9,8 +9,8 @@ This document explains all possibilities how to restrict access to distinct part
 ## Content
 
 All Content Security options are intended to restrict access to distinct parts of content when retrieved over API's 
-used to obtain content from Searchisko like "[Search API](http://docs.jbossorg.apiary.io/#searchapi)", 
-"[Feed API](http://docs.jbossorg.apiary.io/#feedapi)", "Suggestions API" etc.   
+used to obtain content from Searchisko like "[Search API](http://docs.jbossorg.apiary.io/#searchapi)" and
+"[Feed API](http://docs.jbossorg.apiary.io/#feedapi)".
 
 Searchisko by default expects open content access, which means that if no any restriction is defined then 
 all users (including not logged in users) can see given content.

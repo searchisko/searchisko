@@ -1,0 +1,35 @@
+{
+  "id" : "suggest_project_name_ngram",
+  "description" : "Project name suggestions using ngrams.",
+  "default" : {
+    "sys_content_type" : "jbossorg_project_info",
+    "sys_type" : "project_info"
+  },
+  "template" : {
+    "fields" : [ "sys_project", "sys_project_name" ],
+    "size" : 5,
+    "query" : {
+      "query_string" : {
+        "query" : "{{query}}",
+        "fields" : [ "sys_project_name", "sys_project_name.edgengram", "sys_project_name.ngram" ],
+        "analyzer" : "whitespace_lowercase"
+      }
+    },
+    "highlight" : {
+      "fields" : {
+        "sys_project_name" : {
+          "fragment_size" : 1,
+          "number_of_fragments" : 0
+        },
+        "sys_project_name.ngram" : {
+          "fragment_size" : 1,
+          "number_of_fragments" : 0
+        },
+        "sys_project_name.edgengram" : {
+          "fragment_size" : 1,
+          "number_of_fragments" : 0
+        }
+      }
+    }
+  }
+}

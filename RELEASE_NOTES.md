@@ -6,7 +6,9 @@ This document contains high-level release notes. More details can be found in [m
 
 Breaking:
 
-- API URL starts with /v2 [#171](https://github.com/searchisko/searchisko/issues/171) 
+- API URL starts with /v2 [#171](https://github.com/searchisko/searchisko/issues/171)
+- Suggestions search APIs were removed [#196](https://github.com/searchisko/searchisko/issues/196). It was replaced by
+ specific set of registered queries.
 - Search API switched from `query_string_query` to `simple_query_string` type.
  This change is needed to support improved security model. [#140](https://github.com/searchisko/searchisko/issues/140) 
 - Search API switched from Facets to Aggregations.

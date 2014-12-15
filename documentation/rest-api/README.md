@@ -5,7 +5,7 @@ Searchisko REST API on-line documentation & Server Mock are available at [http:/
 
 ##Searchisko Content object/Document
 Searchisko content (Document) is the main reason why Searchisko exists. It can be pushed into the Searchisko by the 
-registered providers over 'Content Push API' and searched over 'Search API', 'Feed API' and 'Query Suggestions API'.
+registered providers over 'Content Push API' and searched over 'Search API' and 'Feed API'.
 
 The Searchisko content can be characterized by a type (e.g. e-mails, blog posts, forum 
 posts, issues, etc...). Content for one *sys_type* can originate from distinct source
