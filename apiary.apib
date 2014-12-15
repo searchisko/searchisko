@@ -558,36 +558,6 @@ GET /rest/search{?query,query_highlight,sortBy,from,size,agg,field,content_provi
 }
 
 
-Search content using [registered query](#managementapiregisteredqueries) and pass parameter values into templates.
-
-##### Request parameters
-
- * `content_provider` - filters result only to data provided by specified provider `sys_content_provider` field
- * <s>`type` - filters result only to specific `sys_content_type`. This param can be used multiple times to get results for more `type`s.</s> (not implemented yet)
- * <s>`sys_type` - filters result only to specific `sys_type`. This param can be used multiple times to get results for more `sys_type`s.</s> (not implemented yet)
- * Any other parameters are passed into search template as params.
-
-GET /rest/search/query{?content_provider,type,sys_type}
-< 200
-< Content-Type: application/json
-< Access-Control-Allow-Origin: *
-{
-  "uuid" : "f87e7875-85a1-42e3-a39e-e64d3f0e155d",
-  "took":3,
-  "timed_out":false,
-  "_shards":{
-    "total":5,
-    "successful":5,
-    "failed":0
-   },
-   "hits":{
-     "total":393,
-     "max_score":null,
-     "hits":[]
-   }
-}
-
-
 Write statistics record about hit returned in search response was "useful" for
 user, eg. user clicked URL related with given hit or viewed hit detail. 
 These statistics records may be analyzed later to improve fulltext search engine 
@@ -607,19 +577,38 @@ PUT /rest/search/{search_result_uuid}/{hit_id}{?session_id}
 < Access-Control-Allow-Origin: *
 
 
-Execute **Registered Query** using provided URL parameters.
+Execute [registered query](#managementapiregisteredqueries) using provided URL parameters.
 
 ##### Request parameters
 
  * `registered_query_id` id of registered query
- * `params` all these URL params will be passed into query template. There are only two exceptions:
-   `type` and `sys_type` - these two are not passed into query template but are used to _filter_
-   internal indices and types the query is executed against. They have the same meaning as in Search API.
+ * `params` all these URL params will be passed into query template.
+ * <s>`type` - filters result only to specific `sys_content_type`. This param can be used multiple times to get results for more `type`s.</s> (not implemented yet)
+ * <s>`sys_type` - filters result only to specific `sys_type`. This param can be used multiple times to get results for more `sys_type`s.</s> (not implemented yet)
+ * <s>`content_provider` - filters result only to data provided by specified provider `sys_content_provider` field</s> (not implemented yet)
 
-GET /rest/search/{registered_query_id}{?params}
+GET /rest/search/{registered_query_id}{?content_provider,type,sys_type,params}
 < 200
 < Content-Type: application/json
 < Access-Control-Allow-Origin: *
+{
+  "uuid" : "f87e7875-85a1-42e3-a39e-e64d3f0e155d",
+  "took":3,
+  "timed_out":false,
+  "_shards":{
+    "total":5,
+    "successful":5,
+    "failed":0
+   },
+   "hits":{
+     "total":393,
+     "max_score":null,
+     "hits":[ ... ]
+   },
+   "aggs":{
+     ...
+   }
+}
 
 --
 Suggestions API - query
