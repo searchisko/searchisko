@@ -75,7 +75,7 @@ public class Jive6ContributorProfileProvider implements ContributorProfileProvid
 
 	public static final String JIVE_PROFILE_REST_API = "/api/core/v3/people/username/";
 
-	public static final String JIVE_ALL_PROFILES_REST_API = "/api/core/v3/people/?fields=jive,username,name,emails,displayName,tags,updated,resources,thumbnailUrl";
+	public static final String JIVE_ALL_PROFILES_REST_API = "/api/core/v3/people/?fields=jive,username,name,emails,displayName,tags,updated,resources,thumbnailUrl,published";
 
 	@Inject
 	protected AppConfiguration appConfiguration;
