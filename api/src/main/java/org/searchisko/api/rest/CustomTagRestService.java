@@ -14,10 +14,12 @@ import java.util.*;
 import java.util.logging.Logger;
 
 import org.elasticsearch.action.get.GetResponse;
+import org.searchisko.api.ContentObjectFields;
 import org.searchisko.api.rest.exception.NotAuthorizedException;
 import org.searchisko.api.rest.exception.RequiredFieldException;
 import org.searchisko.api.security.Role;
 import org.searchisko.api.service.AuthenticationUtilService;
+import org.searchisko.api.service.CustomTagService;
 import org.searchisko.api.service.ProviderService;
 import org.searchisko.api.service.ProviderService.ProviderContentTypeInfo;
 import org.searchisko.api.service.SearchClientService;
@@ -50,6 +52,9 @@ public class CustomTagRestService extends RestServiceBase {
 
 	@Inject
 	protected SearchClientService searchClientService;
+
+	@Inject
+	protected CustomTagService customTagService;
 
 	@Inject
 	protected CustomTagPersistenceService customTagPersistenceService;
@@ -149,7 +154,7 @@ public class CustomTagRestService extends RestServiceBase {
 		checkIfUserAuthenticated();
 
 		String currentContributorId = authenticationUtilService.getAuthenticatedContributor(true);
-		
+
 		contentSysId = SearchUtils.trimToNull(contentSysId);
 
 		// validation
@@ -186,6 +191,7 @@ public class CustomTagRestService extends RestServiceBase {
 			return Response.status(Response.Status.NOT_FOUND).entity("content type is unknown").build();
 		}
 
+		// elastic search indices
 		String indexName = ProviderService.extractIndexName(typeInfo, type);
 		String indexType = ProviderService.extractIndexType(typeInfo, type);
 
@@ -195,14 +201,27 @@ public class CustomTagRestService extends RestServiceBase {
 				return Response.status(Response.Status.NOT_FOUND).build();
 			}
 
-			// store tag
-			Tag tagObject = new Tag();
-			tagObject.setContentId(contentSysId);
-			tagObject.setContributorId(currentContributorId);
-			tagObject.setTagLabel(tag);
-			boolean created = customTagPersistenceService.createTag(tagObject);
+			// check for same tag in provider tags
+			Map<String, Object> source = getResponse.getSource();
+			SortedSet<String> providerTags = new TreeSet(String.CASE_INSENSITIVE_ORDER);
+			providerTags.addAll((List<String>) source.get(ContentObjectFields.TAGS));
 
-			return Response.status(created ? Response.Status.CREATED : Response.Status.OK);
+			boolean created;
+			if (!(providerTags.contains(tag))) {
+				// store tag
+				Tag tagObject = new Tag();
+				tagObject.setContentId(contentSysId);
+				tagObject.setContributorId(currentContributorId);
+				tagObject.setTagLabel(tag);
+				created = customTagPersistenceService.createTag(tagObject);
+				if (created) {
+					customTagService.updateSysTagsField(source);
+					searchClientService.performPut(indexName, indexType, contentSysId, source);
+				}
+			} else
+				created = false;
+
+			return Response.status(created ? Response.Status.CREATED : Response.Status.OK).build();
 		} catch (SearchIndexMissingException e) {
 			return Response.status(Response.Status.NOT_FOUND).build();
 		}

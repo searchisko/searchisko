@@ -7,6 +7,7 @@ package org.searchisko.persistence.jpa.model;
 
 import java.io.Serializable;
 import java.sql.Timestamp;
+import java.util.Comparator;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -19,7 +20,7 @@ import javax.validation.constraints.NotNull;
  * @author Jiri Mauritz (jirmauritz at gmail dot com)
  */
 @Entity
-public class Tag implements Serializable {
+public class Tag implements Serializable, Comparable {
 
 	@Id
 	@GeneratedValue
@@ -119,38 +120,30 @@ public class Tag implements Serializable {
 			return false;
 		Tag other = (Tag) obj;
 
-		if (!(getContentId().equals(other.getContentId()))) {
+		if (getId() != other.getId()) {
 			return false;
 		}
 
-		if (!(getTagLabel().equals(other.getTagLabel()))) {
-			return false;
-		}
-
-		return compareTagLabels(getTagLabel(), other.getTagLabel());
+		return true;
 	}
 
-	/**
-	 * Decides if first tag label equals second.
-	 *
-	 * @param first tag label
-	 * @param second tag label
-	 * @return true if they are equal
-	 */
-	private boolean compareTagLabels(String first, String second) {
-		if (first == null) {
-			return second == null;
+	@Override
+	public int compareTo(Object o) {
+		if (o == null)
+			return 1;
+		if (getClass() != o.getClass())
+			return 1;
+		Tag other = (Tag) o;
+
+		if (getId() == other.getId()) {
+			return 0;
 		}
 
-		// trim whitespaces
-		first = first.trim();
-		second = second.trim();
-
-		// to lower case
-		first = first.toLowerCase();
-		second = second.toLowerCase();
-
-		return first.equals(second);
+		if (getId() > other.getId()) {
+			return 1;
+		} else {
+			return -1;
+		}
 	}
 
 	@Override

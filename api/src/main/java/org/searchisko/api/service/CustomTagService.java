@@ -5,6 +5,13 @@
  */
 package org.searchisko.api.service;
 
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -13,9 +20,11 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.event.Observes;
 import javax.inject.Inject;
 import javax.inject.Named;
+import org.searchisko.api.ContentObjectFields;
 
 import org.searchisko.api.events.ContentDeletedEvent;
 import org.searchisko.api.events.ContributorMergedEvent;
+import org.searchisko.persistence.jpa.model.Tag;
 import org.searchisko.persistence.service.CustomTagPersistenceService;
 
 /**
@@ -62,5 +71,16 @@ public class CustomTagService {
 		}
 	}
 
+	public void updateSysTagsField(Map<String,Object> source) {
+		List<String> tags = (List<String>) source.get(ContentObjectFields.TAGS);
+		List<Tag> customTags = customTagPersistenceService.getTagsByContent((String) source.get(ContentObjectFields.SYS_ID));
+		Set<String> sysTags = new HashSet<>();
 
+		sysTags.addAll(tags);
+		for (Tag tag : customTags) {
+			sysTags.add(tag.getTagLabel());
+		}
+
+		source.put(ContentObjectFields.SYS_TAGS, sysTags);
+	}
 }

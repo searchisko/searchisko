@@ -8,6 +8,8 @@ package org.searchisko.persistence.service;
 import java.sql.Timestamp;
 import java.util.Arrays;
 import java.util.List;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 import javax.ejb.LocalBean;
 import javax.ejb.Stateless;
@@ -51,8 +53,12 @@ public class JpaCustomTagPersistenceService implements CustomTagPersistenceServi
 	@Override
 	public boolean createTag(Tag tag) {
 		// check if there is same tag for the same content
-		List<Tag> tagList = getTagsByContent(tag.getContentId());
-		if (tagList.contains(tag)) {
+		SortedSet<String> tagList = new TreeSet(String.CASE_INSENSITIVE_ORDER);
+		for (Tag item : getTagsByContent(tag.getContentId())) {
+			tagList.add(item.getTagLabel());
+		}
+
+		if (tagList.contains(tag.getTagLabel())) {
 			// tag already exists
 			return false;
 		}
