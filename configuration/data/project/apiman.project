@@ -1,0 +1,12 @@
+{
+  "code": "apiman",
+  "name": "apiman",
+  "type_specific_code" : {
+    "jbossorg_blog": [""],
+    "jbossorg_jira": ["APIMAN"],
+    "jbossorg_sbs" : [""],
+    "jbossorg_mailing_list": ["apiman"],
+    "jbossorg_project_info": "apiman",
+    "product" : false
+  }
+}
