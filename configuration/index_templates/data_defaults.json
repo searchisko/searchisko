@@ -43,6 +43,20 @@
 			},
 			"include_in_all": false,
 			"properties": {
+				"sys_authors" : {
+					"type" : "nested",
+					"include_in_root" : true,
+					"properties" : {
+						"red_hat" : {
+							"type" : "nested",
+							"include_in_root" : true,
+							"properties" : {
+								"employee" : { "type" : "boolean", "store": "yes" }
+							}
+						},
+						"sys_contributor" : { "type" : "string", "analyzer": "keyword", "store": "yes" }
+					}
+				},
 				"sys_content_provider"	: { "type": "string",	"analyzer": "keyword" },
 				"sys_content_type"	: { "type": "string",	"analyzer": "keyword" },
 				"sys_content_id"	: { "type": "string", "analyzer": "keyword" },

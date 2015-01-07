@@ -47,15 +47,24 @@
             "reporter"              : {"jira_field" : "fields.reporter", "value_filter" : "user"},
             "assignee"              : {"jira_field" : "fields.assignee", "value_filter" : "user"},
             "fix_versions"          : {"jira_field" : "fields.fixVersions", "value_filter" : "name"},
-            "components"            : {"jira_field" : "fields.components", "value_filter" : "name"}
+            "components"            : {"jira_field" : "fields.components", "value_filter" : "name"},
+            "sys_authors"           : {"jira_field" : "prep_sys_authors", "value_filter" : "sys_author" }
         },
         "value_filters" : {
             "user" : {
                 "emailAddress" : "email_address",
                 "displayName"  : "display_name",
-                "prep_contributor" : "sys_contributor"
+                "prep_contributor" : "sys_contributor",
+                "name" : "username"
             },
-            "name" : { "name" : "name" }
+            "name" : { "name" : "name" },
+            "sys_author" : {
+                "emailAddress"      : "email_address",
+                "displayName"       : "display_name",
+                "prep_contributor"  : "sys_contributor",
+                "red_hat"           : "red_hat",
+                "name"          : "username"
+            }
         },
         "comment_mode"   : "embedded",
         "field_comments" : "sys_comments",
@@ -132,12 +141,12 @@
                 "settings" : {
                     "index_name"       : "sys_contributors",
                     "index_type"       : "contributor",
-                    "source_field"     : "emailAddress",
-                    "idx_search_field" : "email",
+                    "source_field"     : "name",
+                    "idx_search_field" : "type_specific_code.jbossorg_username",
                     "result_mapping"   : [{
 	                    "idx_result_field" : "code",
 	                    "target_field"     : "prep_contributor",
-	                    "value_default"    : "{displayName} <{emailAddress}>"
+	                    "value_default"    : "{displayName}"
                     }],
                     "source_bases"     : ["fields.reporter", "fields.assignee", "fields.comment.comments.author", "fields.comment.comments.updateAuthor"]
                 } 
@@ -173,6 +182,53 @@
                         "Resolved":"Closed",
                         "Closed":"Closed"
                     }
+                }
+            },{ 
+                "name"     : "Copy authors into sys_authors.",
+                "class"    : "org.jboss.elasticsearch.tools.content.ValuesCollectingPreprocessor",
+                "settings" : {
+                    "target_field"  : "prep_sys_authors",
+                    "source_fields" : ["fields.reporter"],
+                    "deep_copy"     : "true"
+                } 
+            },{
+                "name"     : "Get hire and leave dates for sys_authors.red_hat.",
+                "class"    : "org.jboss.elasticsearch.tools.content.ESLookupValuePreprocessor",
+                "settings" : {
+                    "index_name"       : "sys_contributors",
+                    "index_type"       : "contributor",
+                    "source_value"     : "{prep_contributor}",
+                    "idx_search_field" : "code",
+                    "result_mapping"   : [
+                        {
+                            "idx_result_field" : "hire_date",
+                            "target_field"     : "red_hat.hire_date"
+                        },{
+                            "idx_result_field" : "leave_date",
+                            "target_field"     : "red_hat.leave_date"
+                        }
+                    ],
+                    "source_bases" : [ "prep_sys_authors" ]
+                }
+            },{ 
+                "name"     : "Date range checker to verify employee status.",
+                "class"    : "org.jboss.elasticsearch.tools.content.IsDateInRangePreprocessor",
+                "settings" : {
+                    "left_date"  : "red_hat.hire_date",
+                    "left_date_format" : "yyyy-MM-dd",
+                    "right_date"  : "red_hat.leave_date",
+                    "right_date_format"  : "yyyy-MM-dd",
+                    "checked_date"  : "fields.created",
+                    "checked_date_format"  : "yyyy-MM-dd'T'HH:mm:ss.SSSZ",
+                    "result_field" : "red_hat.employee",
+                    "source_bases" : ["prep_sys_authors"]
+                }
+            },{ 
+                "name"     : "Removing hire and leave dates after preprocessing is done.",
+                "class"    : "org.jboss.elasticsearch.tools.content.RemoveMultipleFieldsPreprocessor",
+                "settings" : {
+                    "fields"  : ["red_hat.hire_date","red_hat.leave_date"],
+                    "source_bases" : [ "prep_sys_authors" ]
                 }
             }
         ]
