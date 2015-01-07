@@ -16,14 +16,18 @@ import java.util.Map;
 import org.codehaus.jackson.JsonParseException;
 import org.codehaus.jackson.map.JsonMappingException;
 import org.elasticsearch.common.joda.time.LocalDateTime;
+import org.jboss.resteasy.specimpl.MultivaluedMapImpl;
 import org.junit.Assert;
 import org.junit.Test;
 import org.searchisko.api.testtools.TestUtils;
+
+import javax.ws.rs.core.MultivaluedMap;
 
 /**
  * Unit test for {@link SearchUtils}.
  * 
  * @author Vlastimil Elias (velias at redhat dot com)
+ * @author Lukas Vlcek
  */
 public class SearchUtilsTest {
 
@@ -429,6 +433,85 @@ public class SearchUtilsTest {
 			Assert.assertEquals("sv1", tl.get("sk1"));
 			Assert.assertTrue(tl.get("k1") instanceof List);
 			Assert.assertEquals(2, ((List) tl.get("k1")).size());
+		}
+	}
+
+	@Test
+	public void collapseURLParams() {
+
+		{
+			MultivaluedMap<String, String> map = new MultivaluedMapImpl<>();
+			Map<String, Object> collapsedMap = SearchUtils.collapseURLParams(map);
+			Assert.assertTrue(collapsedMap.isEmpty());
+		}
+
+		{
+			MultivaluedMap<String, String> map = new MultivaluedMapImpl<>();
+			map.put(null, null);
+			Map<String, Object> collapsedMap = SearchUtils.collapseURLParams(map);
+			Assert.assertTrue(collapsedMap.isEmpty());
+		}
+
+		{
+			MultivaluedMap<String, String> map = new MultivaluedMapImpl<>();
+			map.put("key1", null);
+			Map<String, Object> collapsedMap = SearchUtils.collapseURLParams(map);
+			Assert.assertTrue(collapsedMap.isEmpty());
+		}
+
+		// test multiple key values
+		{
+			List<String> values = new ArrayList<>();
+			values.add("value1");
+			values.add("value2");
+			values.add("value3");
+			MultivaluedMap<String, String> map = new MultivaluedMapImpl<>();
+			map.put("key1", values);
+
+			Map<String, Object> collapsedMap = SearchUtils.collapseURLParams(map);
+			Assert.assertFalse(collapsedMap.isEmpty());
+			Assert.assertEquals(1, collapsedMap.keySet().size());
+			Assert.assertTrue(collapsedMap.containsKey("key1"));
+
+			// Elasticsearch assumes the Object is either String or an Array
+			Assert.assertTrue(collapsedMap.get("key1") instanceof  Object[]);
+			Assert.assertArrayEquals(values.toArray(), (Object[]) collapsedMap.get("key1"));
+		}
+
+		// test multiple key values "corner case"
+		{
+			List<String> values = new ArrayList<>();
+			values.add(null);
+			values.add(null);
+			values.add(null);
+			MultivaluedMap<String, String> map = new MultivaluedMapImpl<>();
+			map.put("key1", values);
+
+			Map<String, Object> collapsedMap = SearchUtils.collapseURLParams(map);
+			Assert.assertFalse(collapsedMap.isEmpty());
+			Assert.assertEquals(1, collapsedMap.keySet().size());
+			Assert.assertTrue(collapsedMap.containsKey("key1"));
+
+			// Elasticsearch assumes the Object is either String or an Array
+			Assert.assertTrue(collapsedMap.get("key1") instanceof  Object[]);
+			Assert.assertArrayEquals(values.toArray(), (Object[]) collapsedMap.get("key1"));
+		}
+
+		// test single key value
+		{
+			List<String> values = new ArrayList<>();
+			values.add("value1");
+			MultivaluedMap<String, String> map = new MultivaluedMapImpl<>();
+			map.put("key1", values);
+
+			Map<String, Object> collapsedMap = SearchUtils.collapseURLParams(map);
+			Assert.assertFalse(collapsedMap.isEmpty());
+			Assert.assertEquals(1, collapsedMap.keySet().size());
+			Assert.assertTrue(collapsedMap.containsKey("key1"));
+
+			// Elasticsearch assumes the Object is either String or an Array
+			Assert.assertTrue(collapsedMap.get("key1") instanceof  String);
+			Assert.assertEquals(values.get(0), collapsedMap.get("key1"));
 		}
 	}
 }

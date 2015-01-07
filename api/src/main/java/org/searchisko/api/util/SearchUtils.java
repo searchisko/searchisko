@@ -351,7 +351,9 @@ public class SearchUtils {
 		Map output = new HashMap<>();
 		for (String key: params.keySet()) {
 			List values = params.get(key);
-			output.put(key, values.size() == 1 ? values.get(0) : values.toArray());
+			if (values != null) {
+				output.put(key, values.size() == 1 ? values.get(0) : values.toArray());
+			}
 		}
 		return output;
 	}
