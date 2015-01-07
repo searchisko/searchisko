@@ -79,7 +79,7 @@ public class RenormalizeByEsValueTaskTest extends ESRealClientTestBase {
 		try {
 			RenormalizeByEsValueTask tested = new RenormalizeByEsValueTask();
 			tested.searchClientService = Mockito.mock(SearchClientService.class);
-			Mockito.when(tested.searchClientService.getClient()).thenReturn(prepareESClientForUnitTest());
+			Mockito.when(tested.searchClientService.getClient()).thenReturn(prepareESClientForUnitTest("RenormalizeByEsValueTaskTest"));
 			tested.esField = ContentObjectFields.SYS_CONTRIBUTORS;
 			tested.esValues = new String[] { contributorCode };
 			tested.providerService = Mockito.mock(ProviderService.class);

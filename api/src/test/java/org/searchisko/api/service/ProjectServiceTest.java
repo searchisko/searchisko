@@ -135,7 +135,7 @@ public class ProjectServiceTest extends ESRealClientTestBase {
 
 	@Test
 	public void create_noid() {
-		Client client = prepareESClientForUnitTest();
+		Client client = prepareESClientForUnitTest("ProjectServiceTest");
 		ProjectService tested = getTested(client);
 		try {
 
@@ -179,7 +179,7 @@ public class ProjectServiceTest extends ESRealClientTestBase {
 
 	@Test
 	public void create_id() {
-		Client client = prepareESClientForUnitTest();
+		Client client = prepareESClientForUnitTest("ProjectServiceTest_2");
 		ProjectService tested = getTested(client);
 		try {
 
@@ -233,7 +233,7 @@ public class ProjectServiceTest extends ESRealClientTestBase {
 
 	@Test
 	public void update() {
-		Client client = prepareESClientForUnitTest();
+		Client client = prepareESClientForUnitTest("ProjectServiceTest_3");
 		ProjectService tested = getTested(client);
 		try {
 
@@ -290,7 +290,7 @@ public class ProjectServiceTest extends ESRealClientTestBase {
 
 	@Test
 	public void delete() throws InterruptedException {
-		Client client = prepareESClientForUnitTest();
+		Client client = prepareESClientForUnitTest("ProjectServiceTest_4");
 		ProjectService tested = getTested(client);
 		try {
 
@@ -346,7 +346,7 @@ public class ProjectServiceTest extends ESRealClientTestBase {
 
 	@Test
 	public void findByCode() throws Exception {
-		Client client = prepareESClientForUnitTest();
+		Client client = prepareESClientForUnitTest("ProjectServiceTest_5");
 		ProjectService tested = getTested(client);
 		try {
 			// case - search from noexisting index
@@ -395,7 +395,7 @@ public class ProjectServiceTest extends ESRealClientTestBase {
 
 	@Test
 	public void findByTypeSpecificCode() throws InterruptedException {
-		Client client = prepareESClientForUnitTest();
+		Client client = prepareESClientForUnitTest("ProjectServiceTest_6");
 		ProjectService tested = getTested(client);
 		try {
 			// case - search from noexisting index
@@ -465,7 +465,7 @@ public class ProjectServiceTest extends ESRealClientTestBase {
 
 	@Test
 	public void prepareBulkRequest_updateSearchIndexBrb() {
-		Client client = prepareESClientForUnitTest();
+		Client client = prepareESClientForUnitTest("ProjectServiceTest_7");
 		ProjectService tested = getTested(client);
 		try {
 
@@ -498,7 +498,7 @@ public class ProjectServiceTest extends ESRealClientTestBase {
 
 	@Test
 	public void deleteOldFromSearchIndex() throws InterruptedException {
-		Client client = prepareESClientForUnitTest();
+		Client client = prepareESClientForUnitTest("ProjectServiceTest_8");
 		ProjectService tested = getTested(client);
 		try {
 

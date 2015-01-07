@@ -13,6 +13,10 @@
             "and" : {
               "filters" : [ {
                 "terms" : {
+                  "sys_content_provider" : [ "provider1" ]
+                }
+              }, {
+                "terms" : {
                   "sys_project" : [ "eap" ]
                 }
               }, {
@@ -27,6 +31,10 @@
                     "include_lower" : true,
                     "include_upper" : true
                   }
+                }
+              }, {
+                "terms" : {
+                  "sys_content_type" : [ "provider1_issue" ]
                 }
               } ]
             }
@@ -57,6 +65,10 @@
             "and" : {
               "filters" : [ {
                 "terms" : {
+                  "sys_content_provider" : [ "provider1" ]
+                }
+              }, {
+                "terms" : {
                   "sys_type" : [ "issue" ]
                 }
               }, {
@@ -67,6 +79,10 @@
                     "include_lower" : true,
                     "include_upper" : true
                   }
+                }
+              }, {
+                "terms" : {
+                  "sys_content_type" : [ "provider1_issue" ]
                 }
               }, {
                 "query" : {
@@ -96,6 +112,10 @@
             "and" : {
               "filters" : [ {
                 "terms" : {
+                  "sys_content_provider" : [ "provider1" ]
+                }
+              }, {
+                "terms" : {
                   "sys_project" : [ "eap" ]
                 }
               }, {
@@ -106,6 +126,10 @@
                     "include_lower" : true,
                     "include_upper" : true
                   }
+                }
+              }, {
+                "terms" : {
+                  "sys_content_type" : [ "provider1_issue" ]
                 }
               }, {
                 "query" : {

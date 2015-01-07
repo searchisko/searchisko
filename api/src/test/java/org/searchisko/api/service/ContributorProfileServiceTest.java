@@ -74,7 +74,7 @@ public class ContributorProfileServiceTest extends ESRealClientTestBase {
 
 	@Test
 	public void findByContributorCode() throws Exception {
-		Client client = prepareESClientForUnitTest();
+		Client client = prepareESClientForUnitTest("ContributorProfileServiceTest");
 		ContributorProfileService tested = getTested(client);
 		try {
 
@@ -126,7 +126,7 @@ public class ContributorProfileServiceTest extends ESRealClientTestBase {
 
 	@Test
 	public void create_update_delete() throws Exception {
-		Client client = prepareESClientForUnitTest();
+		Client client = prepareESClientForUnitTest("ContributorProfileServiceTest_2");
 		ContributorProfileService tested = getTested(client);
 		try {
 
@@ -191,7 +191,7 @@ public class ContributorProfileServiceTest extends ESRealClientTestBase {
 
 	@Test
 	public void updateContributorProfileInSearchIndex() throws Exception {
-		Client client = prepareESClientForUnitTest();
+		Client client = prepareESClientForUnitTest("ContributorProfileServiceTest_3");
 		ContributorProfileService tested = getTested(client);
 		try {
 			indexDelete(ContributorProfileService.SEARCH_INDEX_NAME);
@@ -258,7 +258,7 @@ public class ContributorProfileServiceTest extends ESRealClientTestBase {
 
 	@Test
 	public void contributorDeletedEventHandler() throws Exception {
-		Client client = prepareESClientForUnitTest();
+		Client client = prepareESClientForUnitTest("ContributorProfileServiceTest_4");
 		ContributorProfileService tested = getTested(client);
 		try {
 			initIndex(client);
@@ -291,7 +291,7 @@ public class ContributorProfileServiceTest extends ESRealClientTestBase {
 
 	@Test
 	public void contributorMergedEventHandler() throws Exception {
-		Client client = prepareESClientForUnitTest();
+		Client client = prepareESClientForUnitTest("ContributorProfileServiceTest_5");
 		ContributorProfileService tested = getTested(client);
 		try {
 			initIndex(client);
@@ -324,7 +324,7 @@ public class ContributorProfileServiceTest extends ESRealClientTestBase {
 
 	@Test
 	public void contributorCodeChangedEventHandler() throws Exception {
-		Client client = prepareESClientForUnitTest();
+		Client client = prepareESClientForUnitTest("ContributorProfileServiceTest_6");
 		ContributorProfileService tested = getTested(client);
 		try {
 			initIndex(client);

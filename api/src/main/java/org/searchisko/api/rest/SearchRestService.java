@@ -110,10 +110,11 @@ public class SearchRestService extends RestServiceBase {
 					throw new BadFieldException("uriInfo");
 				}
 				MultivaluedMap<String, String> params = uriInfo.getQueryParameters();
+				QuerySettings querySettings = querySettingsParser.parseUriParams(params);
 				Map<String, Object> collapsedParams = collapseURLParams(params);
 				String responseUuid = UUID.randomUUID().toString();
 
-				SearchResponse searchResponse = searchService.performSearchTemplate(id, collapsedParams);
+				SearchResponse searchResponse = searchService.performSearchTemplate(id, collapsedParams, querySettings.getFilters());
 				Map<String, String> af = new HashMap<>();
 				af.put("uuid", responseUuid);
 				return createResponse(searchResponse, af);

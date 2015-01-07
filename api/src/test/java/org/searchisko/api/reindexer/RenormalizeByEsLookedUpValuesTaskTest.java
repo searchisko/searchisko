@@ -81,7 +81,7 @@ public class RenormalizeByEsLookedUpValuesTaskTest extends ESRealClientTestBase 
 		try {
 			RenormalizeByEsLookedUpValuesTask tested = new RenormalizeByEsLookedUpValuesTask();
 			tested.searchClientService = Mockito.mock(SearchClientService.class);
-			Mockito.when(tested.searchClientService.getClient()).thenReturn(prepareESClientForUnitTest());
+			Mockito.when(tested.searchClientService.getClient()).thenReturn(prepareESClientForUnitTest("RenormalizeByEsLookedUpValuesTaskTest"));
 			tested.lookupIndex = "sys_projects";
 			tested.lookupType = "project";
 			tested.lookupField = "type_specific_code.jbossorg_jira";

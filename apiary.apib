@@ -582,9 +582,8 @@ Execute [registered query](#managementapiregisteredqueries) using provided URL p
 ##### Request parameters
 
  * `registered_query_id` id of registered query
- * <s>`content_provider` - filters result only to data provided by specified provider `sys_content_provider` field</s> (not implemented yet)
- * <s>`type` - filters result only to specific `sys_content_type`. This param can be used multiple times to get results for more `type`s.</s> (not implemented yet)
- * <s>`sys_type` - filters result only to specific `sys_type`. This param can be used multiple times to get results for more `sys_type`s.</s> (not implemented yet)
+ * `type` - filters result only to specific `sys_content_type`. This param can be used multiple times to get results for more `type`s.
+ * `sys_type` - filters result only to specific `sys_type`. This param can be used multiple times to get results for more `sys_type`s.
  * `params` all these URL params will be passed into query template.
 
 GET /rest/search/{registered_query_id}{?content_provider,type,sys_type,params}
@@ -1717,7 +1716,7 @@ DELETE /rest/contributor/{id}
 --
 Management API - registered queries
 
-This part of the API is used by 'Searchisko administrators' to manage registered queries.
+This part of the API is used by 'Searchisko administrators' to manage [registered queries](https://github.com/searchisko/searchisko/blob/master/documentation/rest-api/management/query.md).
 --
 
 Get all registered queries.

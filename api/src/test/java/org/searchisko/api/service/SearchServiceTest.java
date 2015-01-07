@@ -1357,6 +1357,8 @@ public class SearchServiceTest extends SearchServiceTestBase {
 			filters.acknowledgeUrlFilterCandidate("activity_date_interval", PastIntervalValue.TEST.toString());
 			filters.acknowledgeUrlFilterCandidate("project", "eap");
 			filters.acknowledgeUrlFilterCandidate("sys_type", "issue");
+			filters.acknowledgeUrlFilterCandidate("content_provider", "provider1");
+			filters.acknowledgeUrlFilterCandidate("type", "provider1_issue");
 			querySettings.setSize(0);
 			tested.parsedFilterConfigService.prepareFiltersForRequest(filters);
 			querySettings.setFilters(filters);

@@ -33,9 +33,9 @@ public class QuerySettingsParserTest {
 	final static private String PROJECTS_KEY = "project";
 	final static private String TAGS_KEY = "tag";
 	final static private String CONTRIBUTORS_KEY = "contributor";
-	final static private String ACTIVITY_DATE_INTERVAL_KEY = "actvity_date_interval";
-	final static private String ACTIVITY_DATE_FROM_KEY = "actvity_date_from";
-	final static private String ACTIVITY_DATE_TO_KEY = "actvity_date_to";
+	final static private String ACTIVITY_DATE_INTERVAL_KEY = "activity_date_interval";
+	final static private String ACTIVITY_DATE_FROM_KEY = "activity_date_from";
+	final static private String ACTIVITY_DATE_TO_KEY = "activity_date_to";
 
 	@Test
 	public void parseUriParams_common() {

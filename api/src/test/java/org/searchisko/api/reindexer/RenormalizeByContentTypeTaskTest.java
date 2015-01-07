@@ -78,7 +78,7 @@ public class RenormalizeByContentTypeTaskTest extends ESRealClientTestBase {
 		try {
 			RenormalizeByContentTypeTask tested = new RenormalizeByContentTypeTask();
 			tested.searchClientService = Mockito.mock(SearchClientService.class);
-			Mockito.when(tested.searchClientService.getClient()).thenReturn(prepareESClientForUnitTest());
+			Mockito.when(tested.searchClientService.getClient()).thenReturn(prepareESClientForUnitTest("RenormalizeByContentTypeTaskTest"));
 			tested.sysContentType = sysContentType;
 			tested.providerService = Mockito.mock(ProviderService.class);
 			tested.setExecutionContext("tid", Mockito.mock(TaskExecutionContext.class));

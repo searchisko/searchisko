@@ -29,10 +29,13 @@ import org.searchisko.api.service.SearchClientService;
 /**
  * Base class for unit tests which need to run some test against ElasticSearch cluster. You can use next pattern in your
  * unit test method to obtain testing client connected to in-memory ES cluster without any data.
- * 
+ *
+ * Note that even if the ES cluster is started in embedded mode it can still form a cluster of more nodes. To make
+ * sure you start isolated cluster for your unit test provide unique clusterName value.
+ *
  * <pre>
  * try{
- *   Client client = prepareESClientForUnitTest();
+ *   Client client = prepareESClientForUnitTest(clusterName);
  * 
  *   ... your unit test code here
  * 
@@ -45,7 +48,7 @@ import org.searchisko.api.service.SearchClientService;
  * 
  * <pre>
  * try{
- *   SearchClientService scService = prepareSearchClientServiceMock();
+ *   SearchClientService scService = prepareSearchClientServiceMock(clusterName);
  * 
  *   ... your unit test code here
  * 
@@ -69,13 +72,14 @@ public abstract class ESRealClientTestBase {
 	/**
 	 * Prepare SearchClientService against in-memory EC cluster for unit test. Do not forgot to call
 	 * {@link #finalizeESClientForUnitTest()} at the end of test!
-	 * 
+	 *
+	 * @param clusterName
 	 * @return
 	 */
-	public final SearchClientService prepareSearchClientServiceMock() {
+	public final SearchClientService prepareSearchClientServiceMock(String clusterName) {
 		SearchClientService ret = Mockito.mock(SearchClientService.class);
 		if (client == null)
-			prepareESClientForUnitTest();
+			prepareESClientForUnitTest(clusterName);
 		Mockito.when(ret.getClient()).thenReturn(client);
 		return ret;
 	}
@@ -83,11 +87,12 @@ public abstract class ESRealClientTestBase {
 	/**
 	 * Prepare ES in-memory client for unit test. Do not forgot to call {@link #finalizeESClientForUnitTest()} at the end
 	 * of test!
-	 * 
+	 *
+	 * @param clusterName
 	 * @return
 	 * @throws Exception
 	 */
-	public final Client prepareESClientForUnitTest() {
+	public final Client prepareESClientForUnitTest(String clusterName) {
 		if (client != null)
 			return client;
 		try {
@@ -114,7 +119,7 @@ public abstract class ESRealClientTestBase {
 					.put("index.store.type", "memory").put("gateway.type", "none").put("http.enabled", "false")
 					.put("path.data", tempFolderName).put("node.river", "_none_").put("index.number_of_shards", 1).build();
 
-			node = NodeBuilder.nodeBuilder().settings(settings).local(true).node();
+			node = NodeBuilder.nodeBuilder().clusterName(clusterName).settings(settings).local(true).node();
 
 			client = node.client();
 
@@ -163,6 +168,7 @@ public abstract class ESRealClientTestBase {
 
 	/**
 	 * Create index in in-memory client.
+	 * Operation is blocking until the cluster status is yellow or better.
 	 * 
 	 * @param indexName
 	 */
@@ -219,7 +225,7 @@ public abstract class ESRealClientTestBase {
 	 * 
 	 * @param indexName
 	 */
-	public void indexFlushAndRefresh(String indexName) {
+	public void indexFlushAndRefresh(String... indexName) {
 		client.admin().indices().prepareFlush(indexName).execute().actionGet();
 		client.admin().indices().prepareRefresh(indexName).execute().actionGet();
 	}

@@ -284,7 +284,7 @@ public class ContributorServiceTest extends ESRealClientTestBase {
 
 	@Test(expected = BadFieldException.class)
 	public void create_noid_codeDuplicityValidation() throws InterruptedException {
-		Client client = prepareESClientForUnitTest();
+		Client client = prepareESClientForUnitTest("ContributorServiceTest");
 		ContributorService tested = getTested(client);
 		try {
 
@@ -308,7 +308,7 @@ public class ContributorServiceTest extends ESRealClientTestBase {
 
 	@Test
 	public void create_noid() throws InterruptedException {
-		Client client = prepareESClientForUnitTest();
+		Client client = prepareESClientForUnitTest("ContributorServiceTest_2");
 		ContributorService tested = getTested(client);
 		try {
 
@@ -371,7 +371,7 @@ public class ContributorServiceTest extends ESRealClientTestBase {
 
 	@Test(expected = BadFieldException.class)
 	public void create_id_codeChangeValidation() throws InterruptedException {
-		Client client = prepareESClientForUnitTest();
+		Client client = prepareESClientForUnitTest("ContributorServiceTest_3");
 		ContributorService tested = getTested(client);
 		try {
 
@@ -394,7 +394,7 @@ public class ContributorServiceTest extends ESRealClientTestBase {
 
 	@Test(expected = BadFieldException.class)
 	public void create_id_codeDuplicityValidation() throws InterruptedException {
-		Client client = prepareESClientForUnitTest();
+		Client client = prepareESClientForUnitTest("ContributorServiceTest_4");
 		ContributorService tested = getTested(client);
 		try {
 
@@ -415,7 +415,7 @@ public class ContributorServiceTest extends ESRealClientTestBase {
 
 	@Test
 	public void create_id() throws InterruptedException {
-		Client client = prepareESClientForUnitTest();
+		Client client = prepareESClientForUnitTest("ContributorServiceTest_5");
 		ContributorService tested = getTested(client);
 		try {
 
@@ -510,7 +510,7 @@ public class ContributorServiceTest extends ESRealClientTestBase {
 
 	@Test
 	public void update() {
-		Client client = prepareESClientForUnitTest();
+		Client client = prepareESClientForUnitTest("ContributorServiceTest_6");
 		ContributorService tested = getTested(client);
 		try {
 
@@ -608,7 +608,7 @@ public class ContributorServiceTest extends ESRealClientTestBase {
 
 	@Test
 	public void delete() throws InterruptedException {
-		Client client = prepareESClientForUnitTest();
+		Client client = prepareESClientForUnitTest("ContributorServiceTest_7");
 		ContributorService tested = getTested(client);
 		try {
 
@@ -685,7 +685,7 @@ public class ContributorServiceTest extends ESRealClientTestBase {
 
 	@Test
 	public void findByCode_findOneByCode() throws Exception {
-		Client client = prepareESClientForUnitTest();
+		Client client = prepareESClientForUnitTest("ContributorServiceTest_8");
 		ContributorService tested = getTested(client);
 		try {
 			// case - search from noexisting index
@@ -737,7 +737,7 @@ public class ContributorServiceTest extends ESRealClientTestBase {
 
 	@Test
 	public void findByEmail_findOneByEmail() throws Exception {
-		Client client = prepareESClientForUnitTest();
+		Client client = prepareESClientForUnitTest("ContributorServiceTest_9");
 		ContributorService tested = getTested(client);
 		try {
 			// case - search from noexisting index
@@ -797,7 +797,7 @@ public class ContributorServiceTest extends ESRealClientTestBase {
 
 	@Test
 	public void findByName_fulltext() throws Exception {
-		Client client = prepareESClientForUnitTest();
+		Client client = prepareESClientForUnitTest("ContributorServiceTest_10");
 		ContributorService tested = getTested(client);
 		try {
 			// case - search from noexisting index
@@ -862,7 +862,7 @@ public class ContributorServiceTest extends ESRealClientTestBase {
 
 	@Test
 	public void findByName_exactMatch() throws Exception {
-		Client client = prepareESClientForUnitTest();
+		Client client = prepareESClientForUnitTest("ContributorServiceTest_11");
 		ContributorService tested = getTested(client);
 		try {
 			// case - search from noexisting index
@@ -922,7 +922,7 @@ public class ContributorServiceTest extends ESRealClientTestBase {
 
 	@Test
 	public void findByTypeSpecificCode() throws InterruptedException {
-		Client client = prepareESClientForUnitTest();
+		Client client = prepareESClientForUnitTest("ContributorServiceTest_12");
 		ContributorService tested = getTested(client);
 		try {
 			// case - search from noexisting index
@@ -974,7 +974,7 @@ public class ContributorServiceTest extends ESRealClientTestBase {
 
 	@Test
 	public void findByTypeSpecificCodeExistence() throws InterruptedException {
-		Client client = prepareESClientForUnitTest();
+		Client client = prepareESClientForUnitTest("ContributorServiceTest_13");
 		ContributorService tested = getTested(client);
 		try {
 			// case - search from noexisting index
@@ -1043,7 +1043,7 @@ public class ContributorServiceTest extends ESRealClientTestBase {
 
 	@Test
 	public void findOneByTypeSpecificCode() throws InterruptedException {
-		Client client = prepareESClientForUnitTest();
+		Client client = prepareESClientForUnitTest("ContributorServiceTest_14");
 		ContributorService tested = getTested(client);
 		try {
 			// case - search from noexisting index
@@ -1274,7 +1274,7 @@ public class ContributorServiceTest extends ESRealClientTestBase {
 
 	@Test
 	public void patchEmailUniqueness() throws Exception {
-		Client client = prepareESClientForUnitTest();
+		Client client = prepareESClientForUnitTest("ContributorServiceTest_15");
 		ContributorService tested = getTested(client);
 		try {
 			tested.init();
@@ -1336,7 +1336,7 @@ public class ContributorServiceTest extends ESRealClientTestBase {
 
 	@Test
 	public void patchTypeSpecificCodeUniqueness() throws Exception {
-		Client client = prepareESClientForUnitTest();
+		Client client = prepareESClientForUnitTest("ContributorServiceTest_16");
 		ContributorService tested = getTested(client);
 		try {
 			tested.init();
@@ -1418,7 +1418,7 @@ public class ContributorServiceTest extends ESRealClientTestBase {
 	@SuppressWarnings("unchecked")
 	@Test
 	public void changeContributorCode() throws Exception {
-		Client client = prepareESClientForUnitTest();
+		Client client = prepareESClientForUnitTest("ContributorServiceTest_17");
 		ContributorService tested = getTested(client);
 		try {
 			tested.init();
@@ -1525,7 +1525,7 @@ public class ContributorServiceTest extends ESRealClientTestBase {
 	@SuppressWarnings("unchecked")
 	@Test
 	public void mergeContributors() throws Exception {
-		Client client = prepareESClientForUnitTest();
+		Client client = prepareESClientForUnitTest("ContributorServiceTest_18");
 		ContributorService tested = getTested(client);
 		try {
 			tested.init();
@@ -1631,7 +1631,7 @@ public class ContributorServiceTest extends ESRealClientTestBase {
 	@SuppressWarnings("unchecked")
 	@Test
 	public void createOrUpdateFromProfile() throws Exception {
-		Client client = prepareESClientForUnitTest();
+		Client client = prepareESClientForUnitTest("ContributorServiceTest_19");
 		ContributorService tested = getTested(client);
 		try {
 			tested.init();
@@ -1788,7 +1788,7 @@ public class ContributorServiceTest extends ESRealClientTestBase {
 	@SuppressWarnings("unchecked")
 	@Test
 	public void createOrUpdateFromProfile_merge() throws Exception {
-		Client client = prepareESClientForUnitTest();
+		Client client = prepareESClientForUnitTest("ContributorServiceTest_20");
 		ContributorService tested = getTested(client);
 		try {
 			tested.init();
@@ -1915,7 +1915,7 @@ public class ContributorServiceTest extends ESRealClientTestBase {
 
 	@Test
 	public void prepareBulkRequest_updateSearchIndexBrb() {
-		Client client = prepareESClientForUnitTest();
+		Client client = prepareESClientForUnitTest("ContributorServiceTest_21");
 		ContributorService tested = getTested(client);
 		try {
 
@@ -1953,7 +1953,7 @@ public class ContributorServiceTest extends ESRealClientTestBase {
 
 	@Test
 	public void deleteOldFromSearchIndex() throws InterruptedException {
-		Client client = prepareESClientForUnitTest();
+		Client client = prepareESClientForUnitTest("ContributorServiceTest_22");
 		ContributorService tested = getTested(client);
 		try {
 

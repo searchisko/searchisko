@@ -43,7 +43,6 @@ import static org.hamcrest.Matchers.isEmptyOrNullString;
 public class SearchRestServiceTest {
 
 	public static final String SEARCH_REST_API = DeploymentHelpers.DEFAULT_REST_VERSION + "search";
-	public static final String QUERY_REST_API = DeploymentHelpers.DEFAULT_REST_VERSION + "query";
 
 	@Deployment(testable = false)
 	public static WebArchive createDeployment() throws IOException {

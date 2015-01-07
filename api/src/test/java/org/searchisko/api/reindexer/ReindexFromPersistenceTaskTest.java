@@ -50,7 +50,7 @@ public class ReindexFromPersistenceTaskTest extends ESRealClientTestBase {
 			ReindexFromPersistenceTask tested = new ReindexFromPersistenceTask();
 			tested.setExecutionContext("tid", Mockito.mock(TaskExecutionContext.class));
 			tested.searchClientService = Mockito.mock(SearchClientService.class);
-			Mockito.when(tested.searchClientService.getClient()).thenReturn(prepareESClientForUnitTest());
+			Mockito.when(tested.searchClientService.getClient()).thenReturn(prepareESClientForUnitTest("ReindexFromPersistenceTaskTest"));
 			Mockito.doCallRealMethod().when(tested.searchClientService)
 					.performDeleteOldRecords(Mockito.anyString(), Mockito.anyString(), Mockito.any(Date.class));
 			tested.sysContentType = sysContentType;

@@ -1,4 +1,4 @@
-# Query
+# Registered Query
 
 Registered query can be a good solution where the standard search API is not sufficient
 or not a good fit for particular use case. It allows to register search request template

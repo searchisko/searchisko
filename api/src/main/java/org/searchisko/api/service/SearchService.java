@@ -174,8 +174,8 @@ public class SearchService {
 	 * @throws NotAuthorizedException if current user has not permission to any of content he requested.
 	 * 
 	 */
-	protected void setSearchRequestIndicesAndTypes(QuerySettings.Filters filters, Set<String> aggregations,
-												   SearchRequestBuilder srb)
+	protected void setSearchRequestIndicesAndTypes(final QuerySettings.Filters filters, final Set<String> aggregations,
+												   final SearchRequestBuilder srb)
 			throws NotAuthorizedException {
 
 		Set<String> contentTypes = null;
@@ -828,21 +828,52 @@ public class SearchService {
 	/**
 	 * Perform Search Template query.
 	 *
-	 * Search Templates do not accept multiple values per key, see
+	 * Important note:
+	 * Elasticsearch Search Templates do not accept multiple values per key, see
 	 * https://github.com/elasticsearch/elasticsearch/pull/8255
+	 * but we are using custom build of Elasticsearch which allows for this, see
+	 * https://github.com/searchisko/searchisko/issues/195
 	 *
 	 * @param templateName name of registered query
 	 * @param templateParams parameters and values to pass into Mustache template
+	 * @param filters url param filters
 	 * @return search response
 	 */
-	public SearchResponse performSearchTemplate(String templateName, Map<String, Object> templateParams) {
+	public SearchResponse performSearchTemplate(final String templateName, final Map<String, Object> templateParams,
+												final QuerySettings.Filters filters) {
+
+		if (!parsedFilterConfigService.isCacheInitialized()) {
+			try {
+				parsedFilterConfigService.prepareFiltersForRequest(filters);
+			} catch (ReflectiveOperationException e) {
+				throw new ElasticsearchException("Can not prepare filters", e);
+			}
+		}
 
 		SearchRequestBuilder srb = new SearchRequestBuilder(searchClientService.getClient());
-		setSearchRequestIndicesAndTypes(null, null, srb);
+		performSearchTemplateInternal(templateName, templateParams, filters, srb);
+		return srb.get();
+	}
+
+	protected SearchRequestBuilder performSearchTemplateInternal(final String templateName, final Map<String, Object> templateParams,
+																 final QuerySettings.Filters filters, SearchRequestBuilder srb) {
+		setSearchRequestIndicesAndTypes(filters, null, srb);
+
+		// Make sure to remove values for 'type' and 'sys_type' keys from templateParams
+		// because they are strictly used only to determine indices and types for srb.
+		Set<String> sysContentTypeFieldNames = parsedFilterConfigService.getFilterNamesForDocumentField(ContentObjectFields.SYS_CONTENT_TYPE);
+		Set<String> sysTypeFieldNames = parsedFilterConfigService.getFilterNamesForDocumentField(ContentObjectFields.SYS_TYPE);
+
+		Map<String, Object> templateParamsClone = new HashMap<>();
+		for (String key : templateParams.keySet()) {
+			if (!sysContentTypeFieldNames.contains(key) && !sysTypeFieldNames.contains(key)) {
+				templateParamsClone.put(key, templateParams.get(key));
+			}
+		}
 
 		srb.setTemplateName(templateName).setTemplateType(ScriptService.ScriptType.INDEXED)
-				.setTemplateParams(templateParams);
+				.setTemplateParams(templateParamsClone);
 
-		return srb.get();
+		return srb;
 	}
 }

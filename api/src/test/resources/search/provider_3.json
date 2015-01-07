@@ -1,0 +1,19 @@
+{
+  "name"    : "provider3",
+  "type"    : {
+    "provider3_issue" : {
+      "sys_type" : "issue",
+      "index": {
+        "name" : "idx_provider3_issue",
+        "type" : "t_provider3_issue"
+      }
+    },
+    "provider3_mailing" : {
+      "sys_type" : "mailing",
+      "index": {
+        "name" : "idx_provider3_mailing",
+        "type" : "t_provider3_mailing"
+      }
+    }
+  }
+}

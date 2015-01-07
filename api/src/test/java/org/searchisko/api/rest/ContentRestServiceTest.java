@@ -1257,7 +1257,7 @@ public class ContentRestServiceTest extends ESRealClientTestBase {
 	 * Prepare tested instance with injected mocks.
 	 * 
 	 * @param initEsClient - searchClientService is initialized from
-	 *          {@link ESRealClientTestBase#prepareSearchClientServiceMock()} if this is true, so do not forget to clean
+	 *          {@link ESRealClientTestBase#prepareSearchClientServiceMock(String clusterName)} if this is true, so do not forget to clean
 	 *          up client in finally!
 	 * @return instance for test
 	 */
@@ -1265,7 +1265,7 @@ public class ContentRestServiceTest extends ESRealClientTestBase {
 	protected ContentRestService getTested(boolean initEsClient) {
 		ContentRestService tested = new ContentRestService();
 		if (initEsClient)
-			tested.searchClientService = prepareSearchClientServiceMock();
+			tested.searchClientService = prepareSearchClientServiceMock("ContentRestServiceTest");
 
 		tested.providerService = mock(ProviderService.class);
 		setupProviderServiceMock(tested.providerService);

@@ -17,7 +17,7 @@ import org.searchisko.api.cache.IndexNamesCache;
 import org.searchisko.api.testtools.TestUtils;
 
 /**
- * Base class for Unit tests for {@link SearchService}. We have to divide them to moore subclasses to have source file
+ * Base class for Unit tests for {@link SearchService}. We have to divide them to more subclasses to have source file
  * of reasonable size
  * 
  * @author Vlastimil Elias (velias at redhat dot com)

@@ -12,7 +12,6 @@ import org.searchisko.api.audit.annotation.AuditIgnore;
 import org.searchisko.api.rest.exception.RequiredFieldException;
 import org.searchisko.api.security.Role;
 import org.searchisko.api.service.RegisteredQueryService;
-import org.searchisko.api.service.SearchService;
 import org.searchisko.api.util.SearchUtils;
 
 import javax.annotation.PostConstruct;
@@ -41,9 +40,6 @@ import java.util.Map;
 public class RegisteredQueryRestService extends RestEntityServiceBase {
 
 	protected static final String[] FIELDS_TO_REMOVE = new String[] {};
-
-	@Inject
-	protected SearchService searchService;
 
 	@Inject
 	@Named("registeredQueryService")
