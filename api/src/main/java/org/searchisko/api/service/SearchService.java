@@ -839,7 +839,6 @@ public class SearchService {
 
 		SearchRequestBuilder srb = new SearchRequestBuilder(searchClientService.getClient());
 		setSearchRequestIndicesAndTypes(null, null, srb);
-		setSearchRequestIndicesAndTypes(null, null, srb);
 
 		srb.setTemplateName(templateName).setTemplateType(ScriptService.ScriptType.INDEXED)
 				.setTemplateParams(templateParams);
