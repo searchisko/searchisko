@@ -8,6 +8,7 @@ package org.searchisko.api.util;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -43,7 +44,7 @@ public class QuerySettingsParser {
 	 * @throws IllegalArgumentException if some param has invalid value. Message from exception contains parameter name
 	 *           and is used for error handling later!
 	 */
-	public QuerySettings parseUriParams(MultivaluedMap<String, String> params) throws IllegalArgumentException {
+	public QuerySettings parseUriParams(final MultivaluedMap<String, String> params) throws IllegalArgumentException {
 
 		QuerySettings settings = new QuerySettings();
 		if (params == null) {
@@ -54,7 +55,7 @@ public class QuerySettingsParser {
 		// Make copy of all param keys. Remove key from this copy each time a particular param is processed.
 		// The idea is to process the defined parameters first (and remove relevant keys) and then process
 		// the rest, where the rest can match configured filters.
-		Set<String> paramKeys = params.keySet();
+		Set<String> paramKeys = new TreeSet<>(params.keySet());
 
 		// process query
 		for (String key = QuerySettings.QUERY_KEY; paramKeys.contains(key); paramKeys.remove(key)) {
