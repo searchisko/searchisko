@@ -18,17 +18,19 @@ Query configuration fields:
 
 Example of query configuration:
 
+````json
 	{
 	  "id" : "get_X_docs",
 	  "description" : "Get X number of documents.",
-	  "roles" : [ "provider1", "provider2" ]
+	  "roles" : [ "provider1", "provider2" ],
 	  "template" : {
 	    "query" : {
 	      "match_all" : {}
 	    },
-	    "size": {{X}}
+	    "size": "{{X}}"
 	  }
 	}
+````
 
 [Elasticsearch query DSL]: http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/search-request-query.html#search-request-query
 [Elasticsearch Search Template]: http://www.elasticsearch.org/guide/en/elasticsearch/reference/1.3/search-template.html
