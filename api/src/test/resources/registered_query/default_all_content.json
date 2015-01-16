@@ -1,0 +1,17 @@
+{
+  "id": "default_all_content",
+  "description": "Can match all data in all content types",
+  "default": {
+    "sys_content_type": ["provider3_issue", "provider3_mailing"],
+    "sys_type": ["issue"]
+  },
+  "override": {
+    "sys_content_type": "type",
+    "sys_type": "sys_type"
+  },
+  "template": {
+    "query": {
+      "{{query_type}}": {}
+    }
+  }
+}

@@ -40,7 +40,7 @@ public class QuerySettingsParser {
 	 * Parse REST parameters, validate them, sanity them, and store into {@link QuerySettings} bean.
 	 * 
 	 * @param params REST request params to parse
-	 * @return query settings instance filled with valid search settings
+	 * @return query settings instance filled with valid search settings (never null)
 	 * @throws IllegalArgumentException if some param has invalid value. Message from exception contains parameter name
 	 *           and is used for error handling later!
 	 */

@@ -11,6 +11,7 @@ import org.searchisko.api.audit.annotation.AuditId;
 import org.searchisko.api.audit.annotation.AuditIgnore;
 import org.searchisko.api.rest.exception.RequiredFieldException;
 import org.searchisko.api.security.Role;
+import org.searchisko.api.service.AuthenticationUtilService;
 import org.searchisko.api.service.RegisteredQueryService;
 import org.searchisko.api.util.SearchUtils;
 
@@ -23,7 +24,6 @@ import javax.inject.Named;
 import javax.ws.rs.*;
 import javax.ws.rs.core.*;
 import javax.ws.rs.core.Response.Status;
-import java.security.Principal;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -39,14 +39,18 @@ import java.util.Map;
 @Audit
 public class RegisteredQueryRestService extends RestEntityServiceBase {
 
-	protected static final String[] FIELDS_TO_REMOVE = new String[] {};
+	protected static final String[] FIELDS_TO_REMOVE = new String[] {
+			RegisteredQueryService.FIELD_TEMPLATE,
+			RegisteredQueryService.FIELD_OVERRIDE,
+			RegisteredQueryService.FIELD_DEFAULT
+	};
 
 	@Inject
 	@Named("registeredQueryService")
 	protected RegisteredQueryService registeredQueryService;
 
-	@Context
-	protected SecurityContext securityContext;
+	@Inject
+	protected AuthenticationUtilService authenticationUtilService;
 
 	@PostConstruct
 	public void init() {
@@ -65,9 +69,7 @@ public class RegisteredQueryRestService extends RestEntityServiceBase {
 	@PermitAll
 	@AuditIgnore
 	public Object getAll(@QueryParam("from") Integer from, @QueryParam("size") Integer size) {
-		Principal principal = securityContext.getUserPrincipal();
-
-		if (principal == null) {
+		if (!authenticationUtilService.isUserInAnyOfRoles(true, Role.PROVIDER) ) {
 			return entityService.getAll(from, size, FIELDS_TO_REMOVE);
 		} else {
 			return entityService.getAll(from, size, null);
@@ -87,8 +89,7 @@ public class RegisteredQueryRestService extends RestEntityServiceBase {
 	@PermitAll
 	@AuditIgnore
 	public Object get(@PathParam("id") String id) {
-		Principal principal = securityContext.getUserPrincipal();
-		if (principal == null) {
+		if (!authenticationUtilService.isUserInAnyOfRoles(true, Role.PROVIDER) ) {
 			return super.getFiltered(id, FIELDS_TO_REMOVE);
 		} else {
 			return super.get(id);
@@ -177,6 +178,11 @@ public class RegisteredQueryRestService extends RestEntityServiceBase {
 		String descriptionFromData = (String) data.get(RegisteredQueryService.FIELD_DESCRIPTION);
 		if (descriptionFromData != null && !descriptionFromData.isEmpty()) {
 			dataWithSupportedFields.put(RegisteredQueryService.FIELD_DESCRIPTION, descriptionFromData);
+		}
+
+		Object defaultFromData = data.get(RegisteredQueryService.FIELD_DEFAULT);
+		if (defaultFromData instanceof Map) {
+			dataWithSupportedFields.put(RegisteredQueryService.FIELD_DEFAULT, defaultFromData);
 		}
 
 		registeredQueryService.create(id, dataWithSupportedFields);

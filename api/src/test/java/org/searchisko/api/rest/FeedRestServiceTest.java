@@ -414,26 +414,23 @@ public class FeedRestServiceTest {
 
 		{
 			QuerySettings querySettings = new QuerySettings();
-			Assert.assertEquals("Whole feed content", tested.constructFeedTitle(querySettings).toString());
+			Assert.assertEquals("Whole feed content", tested.constructFeedTitle(querySettings));
 		}
 
 		// case - string param
 		{
 			QuerySettings querySettings = new QuerySettings();
 			querySettings.getFiltersInit().acknowledgeUrlFilterCandidate(CONTENT_TYPE_KEY, "content_type");
-			Assert.assertEquals("Feed content for criteria type=[content_type]", tested.constructFeedTitle(querySettings)
-					.toString());
+			Assert.assertEquals("Feed content for criteria type=[content_type]", tested.constructFeedTitle(querySettings));
 		}
 
 		// case - list param
 		{
 			QuerySettings querySettings = new QuerySettings();
 			querySettings.getFiltersInit().acknowledgeUrlFilterCandidate(PROJECTS_KEY, "as7");
-			Assert.assertEquals("Feed content for criteria project=[as7]", tested.constructFeedTitle(querySettings)
-					.toString());
+			Assert.assertEquals("Feed content for criteria project=[as7]", tested.constructFeedTitle(querySettings));
 			querySettings.getFiltersInit().acknowledgeUrlFilterCandidate(PROJECTS_KEY, "as7", "aerogear");
-			Assert.assertEquals("Feed content for criteria project=[as7, aerogear]", tested.constructFeedTitle(querySettings)
-					.toString());
+			Assert.assertEquals("Feed content for criteria project=[as7, aerogear]", tested.constructFeedTitle(querySettings));
 		}
 
 		// case - multiple params
@@ -450,7 +447,7 @@ public class FeedRestServiceTest {
 			Assert
 					.assertEquals(
 							"Feed content for criteria project=[as7, aerogear] and contributor=[John Doe <john@doe.org>] and tag=[tag1, tag2] and sys_type=[issue, blogpost] and type=[content_type] and content_provider=[jbossorg] and query='querry me fulltext' and sortBy=new-create",
-							tested.constructFeedTitle(querySettings).toString());
+							tested.constructFeedTitle(querySettings));
 		}
 
 	}

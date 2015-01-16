@@ -5,15 +5,7 @@
  */
 package org.searchisko.api.service;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -83,6 +75,9 @@ public class SearchService {
 	protected ProviderService providerService;
 
 	@Inject
+	protected RegisteredQueryService registeredQueryService;
+
+	@Inject
 	protected ConfigService configService;
 
 	@Inject
@@ -127,13 +122,11 @@ public class SearchService {
 	}
 
 	/**
-	 * This method handles search query building. The output is a
-	 * {@link org.elasticsearch.action.search.SearchRequestBuilder} entity that reflects input parameters. This method can
-	 * be used for testing of final complete Elasticsearch query.
+	 * This method handles search query building.
 	 * 
 	 * @param querySettings
 	 * @param srb
-	 * @return SearchRequestBuilder entity
+	 * @return SearchRequestBuilder {@link org.elasticsearch.action.search.SearchRequestBuilder} instance that reflects input parameters
 	 */
 	protected SearchRequestBuilder performSearchInternal(final QuerySettings querySettings, SearchRequestBuilder srb) {
 		if (!parsedFilterConfigService.isCacheInitialized()) {
@@ -167,6 +160,12 @@ public class SearchService {
 	 * <strong>SECURITY NOTE:</strong> this method plays crucial role for "content type level security"! It fills search
 	 * request builder with indices and types for content types user has permission to only. So this method MUST BE used
 	 * for each search requests for common users! This method uses {@link AuthenticationUtilService}.
+	 * <p>
+	 * Apart from security constrains this method sets indices and types to SearchRequestBuilder but to make the query
+	 * return correct set of data there <strong>MUST</strong> be used appropriate filters in the query itself as well.
+	 * The indices and types that are set to SearchRequestBuilder are only "hints" for query execution optimization.
+	 * (Elasticsearch combines selected indices and types using OR operator, but we need AND, thus additional filters
+	 * in the query itself are usually necessary.)
 	 *
 	 * @param filters request filters
 	 * @param aggregations request aggregations
@@ -190,26 +189,7 @@ public class SearchService {
 		if (contentTypes != null && contentTypes.size() > 0) {
 			allQueryIndices = new LinkedHashSet<>();
 			allQueryTypes = new LinkedHashSet<>();
-			for (String type : contentTypes) {
-				ProviderContentTypeInfo typeDef = providerService.findContentType(type);
-				if (typeDef == null) {
-					throw new IllegalArgumentException("Unsupported content type");
-				}
-				// #142 - check content type level security there
-				Collection<String> roles = ProviderService.extractTypeVisibilityRoles(typeDef, type);
-				if (roles == null || authenticationUtilService.isUserInAnyOfRoles(true, roles)) {
-					String[] queryIndices = ProviderService.extractSearchIndices(typeDef, type);
-					String queryType = ProviderService.extractIndexType(typeDef, type);
-					if (log.isLoggable(Level.FINE)) {
-						log.log(Level.FINE, "Query indices and types relevant to {0}: {1}", new Object[] {
-								ContentObjectFields.SYS_CONTENT_TYPE, type });
-						log.log(Level.FINE, "Query indices: {0}", Arrays.asList(queryIndices).toString());
-						log.log(Level.FINE, "Query indices type: {0}", queryType);
-					}
-					Collections.addAll(allQueryIndices, queryIndices);
-					allQueryTypes.add(queryType);
-				}
-			}
+			populateIndicesAndTypesForUserInRoleBasedOnContentTypes(contentTypes, allQueryIndices, allQueryTypes);
 		} else {
 			Set<String> sysTypesRequested = null;
 			if (filters != null && filters.getFilterCandidatesKeys().size() > 0) {
@@ -218,22 +198,7 @@ public class SearchService {
 			}
 			boolean isSysTypeAggregation = (aggregations != null && aggregations.contains(
 					getAggregationNameUsingSysTypeField()));
-
-			// #142 - we can't cache for authenticated users due content type level security
-			String indexNameCacheKey = null;
-			if (!authenticationUtilService.isAuthenticatedUser()) {
-				indexNameCacheKey = prepareIndexNamesCacheKey(sysTypesRequested, isSysTypeAggregation);
-				allQueryIndices = indexNamesCache.get(indexNameCacheKey);
-			}
-			if (allQueryIndices == null) {
-				allQueryIndices = prepareIndexNamesForSysType(sysTypesRequested, isSysTypeAggregation);
-				if (indexNameCacheKey != null) {
-					indexNamesCache.put(indexNameCacheKey, allQueryIndices);
-				}
-			}
-			if (log.isLoggable(Level.FINE)) {
-				log.log(Level.FINE, "Query indices: {0}", allQueryIndices);
-			}
+			allQueryIndices = getIndicesForUserInRoleBasedOnTypes(sysTypesRequested, allQueryIndices, isSysTypeAggregation);
 		}
 
 		if ((allQueryIndices == null || allQueryIndices.isEmpty()) && (allQueryTypes == null || allQueryTypes.isEmpty())) {
@@ -245,6 +210,73 @@ public class SearchService {
 		if (allQueryTypes != null && !allQueryTypes.isEmpty())
 			srb.setTypes(allQueryTypes.toArray(new String[allQueryTypes.size()]));
 
+	}
+
+	/**
+	 *
+	 * @param sysTypesRequested
+	 * @param allQueryIndices
+	 * @param isSysTypeAggregation
+	 * @return
+	 */
+	protected Set<String> getIndicesForUserInRoleBasedOnTypes(Set<String> sysTypesRequested, Set<String> allQueryIndices, boolean isSysTypeAggregation) {
+		// #142 - we can't cache for authenticated users due content type level security
+		String indexNameCacheKey = null;
+		if (!authenticationUtilService.isAuthenticatedUser()) {
+            indexNameCacheKey = prepareIndexNamesCacheKey(sysTypesRequested, isSysTypeAggregation);
+            allQueryIndices = indexNamesCache.get(indexNameCacheKey);
+        }
+		if (allQueryIndices == null) {
+            allQueryIndices = prepareIndexNamesForSysType(sysTypesRequested, isSysTypeAggregation);
+            if (indexNameCacheKey != null) {
+                indexNamesCache.put(indexNameCacheKey, allQueryIndices);
+            }
+        }
+		if (log.isLoggable(Level.FINE)) {
+            log.log(Level.FINE, "Query indices: {0}", allQueryIndices);
+        }
+		return allQueryIndices;
+	}
+
+	/**
+	 * Populate allowed indices and types based on requested content types into allowedIndices and allowedTypes
+	 * respectively according to roles of user. Note it populates values into allowedIndices and allowedTypes
+	 * in-place. Note both allowedIndices and allowedTypes are cleared first.
+	 *
+	 * @param contentTypes
+	 * @param allowedIndices
+	 * @param allowedTypes
+	 */
+	private void populateIndicesAndTypesForUserInRoleBasedOnContentTypes(final Collection<String> contentTypes,
+																		 final Set<String> allowedIndices,
+																		 final Set<String> allowedTypes) {
+		if (allowedIndices == null || allowedTypes == null) {
+			throw new IllegalArgumentException("Invalid arguments, allowedIndices or allowedTypes is null.");
+		}
+		allowedIndices.clear();
+		allowedTypes.clear();
+		if (contentTypes != null) {
+			for (String type : contentTypes) {
+				ProviderContentTypeInfo typeDef = providerService.findContentType(type);
+				if (typeDef == null) {
+					throw new IllegalArgumentException("Unsupported content type");
+				}
+				// #142 - check content type level security there
+				Collection<String> roles = ProviderService.extractTypeVisibilityRoles(typeDef, type);
+				if (roles == null || authenticationUtilService.isUserInAnyOfRoles(true, roles)) {
+					String[] queryIndices = ProviderService.extractSearchIndices(typeDef, type);
+					String queryType = ProviderService.extractIndexType(typeDef, type);
+					if (log.isLoggable(Level.FINE)) {
+						log.log(Level.FINE, "Query indices and types relevant to {0}: {1}", new Object[]{
+								ContentObjectFields.SYS_CONTENT_TYPE, type});
+						log.log(Level.FINE, "Query indices: {0}", Arrays.asList(queryIndices).toString());
+						log.log(Level.FINE, "Query indices type: {0}", queryType);
+					}
+					Collections.addAll(allowedIndices, queryIndices);
+					allowedTypes.add(queryType);
+				}
+			}
+		}
 	}
 
 	/**
@@ -855,24 +887,82 @@ public class SearchService {
 		return srb.get();
 	}
 
+	/**
+	 * This method handles processing of search template.
+	 *
+	 * @param templateName name (id) of registered query
+	 * @param templateParams parameters to pass into search template (typically obtained form all URL parameters)
+	 * @param filters parsed filters instance from URL
+	 * @param srb {@link org.elasticsearch.action.search.SearchRequestBuilder} instance to work upon
+	 * @return {@link org.elasticsearch.action.search.SearchRequestBuilder} instance that reflects input parameters
+	 */
 	protected SearchRequestBuilder performSearchTemplateInternal(final String templateName, final Map<String, Object> templateParams,
 																 final QuerySettings.Filters filters, SearchRequestBuilder srb) {
-		setSearchRequestIndicesAndTypes(filters, null, srb);
 
-		// Make sure to remove values for 'type' and 'sys_type' keys from templateParams
-		// because they are strictly used only to determine indices and types for srb.
-		Set<String> sysContentTypeFieldNames = parsedFilterConfigService.getFilterNamesForDocumentField(ContentObjectFields.SYS_CONTENT_TYPE);
-		Set<String> sysTypeFieldNames = parsedFilterConfigService.getFilterNamesForDocumentField(ContentObjectFields.SYS_TYPE);
+		// get config override values
+		String overrideContentType = registeredQueryService.getOverrideSysContentTypes(templateName);
+		String overrideType = registeredQueryService.getOverrideSysTypes(templateName);
 
-		Map<String, Object> templateParamsClone = new HashMap<>();
-		for (String key : templateParams.keySet()) {
-			if (!sysContentTypeFieldNames.contains(key) && !sysTypeFieldNames.contains(key)) {
-				templateParamsClone.put(key, templateParams.get(key));
+		// get config default values
+		String[] defaultContentTypes = registeredQueryService.getDefaultSysContentTypes(templateName);
+		String[] defaultTypes = registeredQueryService.getDefaultSysTypes(templateName);
+
+		Set<String> allQueryIndices = new LinkedHashSet<>();
+		Set<String> allQueryTypes = new LinkedHashSet<>();
+
+		boolean handled = false;
+
+		// did client provide content type URL parameters
+		if (!handled && overrideContentType != null && !overrideContentType.trim().isEmpty()) {
+			List<String> requestedSysContentTypes = filters.getFilterCandidateValues(overrideContentType);
+			if (requestedSysContentTypes != null && requestedSysContentTypes.size() > 0) {
+				populateIndicesAndTypesForUserInRoleBasedOnContentTypes(requestedSysContentTypes, allQueryIndices, allQueryTypes);
+				handled = true;
 			}
 		}
 
+		// did client provide type URL parameters
+		if (!handled && overrideType != null && !overrideType.trim().isEmpty()) {
+			List<String> requestedSysTypes = filters.getFilterCandidateValues(overrideType);
+			if (requestedSysTypes != null && requestedSysTypes.size() > 0) {
+				allQueryIndices = getIndicesForUserInRoleBasedOnTypes(new HashSet<>(requestedSysTypes), allQueryIndices, false);
+				handled = true;
+			}
+		}
+
+		// client did not provide content type or type in URL params or they are not configured to allow for override
+		if (!handled) {
+			// use default content type if configured
+			if (defaultContentTypes.length > 0) {
+				populateIndicesAndTypesForUserInRoleBasedOnContentTypes(Arrays.asList(defaultContentTypes), allQueryIndices, allQueryTypes);
+				handled = true;
+			// use default type if configured
+			} else if (defaultTypes.length > 0) {
+				allQueryIndices = getIndicesForUserInRoleBasedOnTypes(new HashSet<>(Arrays.asList(defaultTypes)), allQueryIndices, false);
+				handled = true;
+			}
+		}
+
+		// if handled then we need to check if any indices or types were setup
+		if (handled) {
+			if (allQueryIndices.isEmpty() && allQueryTypes.isEmpty()) {
+				throw new NotAuthorizedException("No content available for current user");
+			}
+			if (!allQueryIndices.isEmpty())
+				srb.setIndices(allQueryIndices.toArray(new String[allQueryIndices.size()]));
+			if (!allQueryTypes.isEmpty())
+				srb.setTypes(allQueryTypes.toArray(new String[allQueryTypes.size()]));
+		}
+
+		// default to all allowed content types and types
+		if (!handled) {
+			// do not pass filters instance to the following method because 'content_type' and 'type'
+			// params have been already processed
+			setSearchRequestIndicesAndTypes(null, null, srb);
+		}
+
 		srb.setTemplateName(templateName).setTemplateType(ScriptService.ScriptType.INDEXED)
-				.setTemplateParams(templateParamsClone);
+				.setTemplateParams(templateParams);
 
 		return srb;
 	}

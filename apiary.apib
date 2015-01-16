@@ -582,11 +582,10 @@ Execute [registered query](#managementapiregisteredqueries) using provided URL p
 ##### Request parameters
 
  * `registered_query_id` id of registered query
- * `type` - filters result only to specific `sys_content_type`. This param can be used multiple times to get results for more `type`s.
- * `sys_type` - filters result only to specific `sys_type`. This param can be used multiple times to get results for more `sys_type`s.
- * `params` all these URL params will be passed into query template.
+ * `params` all URL params will be passed into registered query processing step.
+   See [https://github.com/searchisko/searchisko/blob/master/documentation/rest-api/management/query.md] for further details.
 
-GET /rest/search/{registered_query_id}{?content_provider,type,sys_type,params}
+GET /rest/search/{registered_query_id}{?params}
 < 200
 < Content-Type: application/json
 < Access-Control-Allow-Origin: *
@@ -1411,6 +1410,7 @@ DELETE /rest/contributor/{id}
 Management API - registered queries
 
 This part of the API is used by 'Searchisko administrators' to manage [registered queries](https://github.com/searchisko/searchisko/blob/master/documentation/rest-api/management/query.md).
+GET operations can be also used by anyone (no special role is required) but only registered query *id* and *description* values are returned in the response.
 --
 
 Get all registered queries.
@@ -1421,8 +1421,11 @@ GET /rest/query
 {
   "id" : "query_name",
   "description" : "Template description",
-  "roles" : [ "role1", "role2" ],
-  "template" : {}
+  "template" : {
+    "query" : {
+      "match_all" : {}
+    }
+  }
 }
 
 
@@ -1434,8 +1437,11 @@ GET /rest/query/{id}
 {
   "id" : "query_name",
   "description" : "Template description",
-  "roles" : [ "role1", "role2" ],
-  "template" : {}
+  "template" : {
+    "query" : {
+      "match_all" : {}
+    }
+  }
 }
 
 
@@ -1448,8 +1454,11 @@ POST /rest/query
 {
   "id" : "query_name",
   "description" : "Template description",
-  "roles" : [ "role1", "role2" ],
-  "template" : {}
+  "template" : {
+    "query" : {
+      "match_all" : {}
+    }
+  }
 }
 
 
@@ -1462,8 +1471,11 @@ POST /rest/query/{id}
 {
   "id" : "query_name",
   "description" : "Template description",
-  "roles" : [ "role1", "role2" ],
-  "template" : {}
+  "template" : {
+    "query" : {
+      "match_all" : {}
+    }
+  }
 }
 
 
