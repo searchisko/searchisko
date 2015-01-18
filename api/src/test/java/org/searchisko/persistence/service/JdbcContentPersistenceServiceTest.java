@@ -86,7 +86,7 @@ public class JdbcContentPersistenceServiceTest extends JpaTestBase {
 		content.put(ContentObjectFields.SYS_UPDATED, new Date(65463749865l));
 		tested.store("aaa-1", sysContentType, content);
 		assertRowCount(tested, sysContentType, 2);
-		TestUtils.assertJsonContent("{\"testkey\" : \"testvalue\", \"sys_updated\":\"1972-01-28T16:22:29.865+0000\"}",
+		TestUtils.assertJsonContent("{\"testkey\" : \"testvalue\", \"sys_updated\":\"1972-01-28T16:22:29.865Z\"}",
 				tested.get("aaa-1", sysContentType));
 		assertTableContent(tested, sysContentType, "aaa-1",
 				SearchUtils.getISODateFormat().parse("1972-01-28T16:22:29.865+0000"));

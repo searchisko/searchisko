@@ -131,7 +131,7 @@ public class SearchUtils {
 	 * @return DateFormat instance for ISO format
 	 */
 	public static DateFormat getISODateFormat() {
-		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXX");
 		sdf.setTimeZone(TimeZone.getTimeZone("GMT"));
 		sdf.setLenient(false);
 		return sdf;
