@@ -6,22 +6,27 @@
 package org.searchisko.api.util;
 
 import java.io.IOException;
+import java.text.DateFormat;
 import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TimeZone;
+
+import javax.ws.rs.core.MultivaluedMap;
 
 import org.codehaus.jackson.JsonParseException;
 import org.codehaus.jackson.map.JsonMappingException;
 import org.elasticsearch.common.joda.time.LocalDateTime;
 import org.jboss.resteasy.specimpl.MultivaluedMapImpl;
 import org.junit.Assert;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.searchisko.api.testtools.TestUtils;
-
-import javax.ws.rs.core.MultivaluedMap;
 
 /**
  * Unit test for {@link SearchUtils}.
@@ -30,7 +35,7 @@ import javax.ws.rs.core.MultivaluedMap;
  * @author Lukas Vlcek
  */
 public class SearchUtilsTest {
-
+    
 	@Test
 	public void dateFromISOString() throws ParseException {
 		Assert.assertNull(SearchUtils.dateFromISOString(null, false));
@@ -60,6 +65,52 @@ public class SearchUtilsTest {
 
 		Assert.assertEquals(1361390410123l, SearchUtils.dateFromISOString("2013-02-20T20:00:10.123Z", false).getTime());
 
+	}
+	
+	@Test
+	public void getISODateFormat() throws ParseException {
+	    
+	    DateFormat df = SearchUtils.getISODateFormat();
+	    
+	    // Previous date format initialized with yyyy-MM-dd'T'HH:mm:ss.SSSZ for comparison.
+	    SimpleDateFormat previousdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
+	    previousdf.setTimeZone(TimeZone.getTimeZone("GMT"));
+	    previousdf.setLenient(false);
+	    
+	    // This date format will work correctly for both formatters
+        Assert.assertEquals( 1361386810123l , df.parse("2013-02-20T20:00:10.123+0100").getTime() );
+        Assert.assertEquals( 1361386810123l , previousdf.parse("2013-02-20T20:00:10.123+0100").getTime() );
+        
+        // However this one with Z will work without an exception only with the new format.
+        Assert.assertEquals( 1361390410123l , df.parse("2013-02-20T20:00:10.123Z").getTime() );
+        
+        
+        // The following set of commands is expected to throw ParseException
+        
+        // The previous format won't parse date which timezone of +0000 difference is shortened to Z
+        try {
+            previousdf.parse("2013-02-20T20:00:10.123Z").getTime();
+            Assert.fail();
+        } catch (ParseException e) {
+            // If the exception is being thrown it means that we correctly expected the old format to fail.
+        }
+        
+        // Giving it a totally bad value to both formatters will correctly result in ParseException.
+        try {
+            df.parse("badvalue");
+            Assert.fail();
+        } catch (ParseException e) {
+            // It's all good, it should fail on such value.
+        }
+        
+        try {
+            previousdf.parse("badvalue");
+            Assert.fail();
+        } catch (ParseException e) {
+            // It's all good, it shoudl fail on such value.
+        }
+        
+        
 	}
 
 	@Test
@@ -160,7 +211,7 @@ public class SearchUtilsTest {
 			data.put("sys_title", sysTitleConfig);
 			TestUtils.assertJsonContent("{\"sys_title\":{" + "\"fragment_size\":\"-1\"," + "\"number_of_fragments\":\"0\","
 					+ "\"fragment_offset\":0," + "\"fragment_offset_long\":25," + "\"boolean\":true," + "\"boolean2\":false,"
-					+ "\"date\":\"1972-01-24T20:21:38.465+0000\"" + "}}", SearchUtils.convertJsonMapToString(data));
+					+ "\"date\":\"1972-01-24T20:21:38.465Z\"" + "}}", SearchUtils.convertJsonMapToString(data));
 		}
 
 		// case - conversion of List data type
