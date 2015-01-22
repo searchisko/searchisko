@@ -25,6 +25,7 @@ Improvements:
 - Administrator can lock "Content manipulation API" during maintenance [#109](https://github.com/searchisko/searchisko/issues/109)
 - Added pagination support (from,size) on Feed API [#152](https://github.com/searchisko/searchisko/issues/152)
 - New task for syncing all uses from contributor profile provider [#141](https://github.com/searchisko/searchisko/issues/141)
+- New Registered query API [#123](https://github.com/searchisko/searchisko/issues/123)
  
 Internal:
 
