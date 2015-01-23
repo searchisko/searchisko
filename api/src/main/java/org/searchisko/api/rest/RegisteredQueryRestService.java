@@ -185,6 +185,11 @@ public class RegisteredQueryRestService extends RestEntityServiceBase {
 			dataWithSupportedFields.put(RegisteredQueryService.FIELD_DEFAULT, defaultFromData);
 		}
 
+		Object overrideFromData = data.get(RegisteredQueryService.FIELD_OVERRIDE);
+		if (overrideFromData instanceof Map) {
+			dataWithSupportedFields.put(RegisteredQueryService.FIELD_OVERRIDE, overrideFromData);
+		}
+
 		registeredQueryService.create(id, dataWithSupportedFields);
 		return createResponseWithId(id);
 	}
