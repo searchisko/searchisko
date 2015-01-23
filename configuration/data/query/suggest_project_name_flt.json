@@ -1,5 +1,5 @@
 {
-  "id" : "suggest_project_name_ngram",
+  "id" : "suggest_project_name_flt",
   "description" : "Project name suggestions using FLT.",
   "default" : {
     "sys_content_type" : "jbossorg_project_info",
