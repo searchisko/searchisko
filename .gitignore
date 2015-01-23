@@ -9,3 +9,6 @@ deployments
 .dcp_data
 test.*
 /ftest.sh
+
+# Ignore all output.txt files produced by init scripts.
+output.txt
