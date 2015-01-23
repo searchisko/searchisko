@@ -5,7 +5,6 @@
  */
 package org.searchisko.api.service;
 
-import org.jboss.resteasy.specimpl.MultivaluedMapImpl;
 import org.junit.Assert;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
@@ -17,10 +16,8 @@ import org.searchisko.api.cache.RegisteredQueryCache;
 import org.searchisko.api.model.QuerySettings;
 import org.searchisko.api.testtools.ESRealClientTestBase;
 import org.searchisko.api.testtools.TestUtils;
-import org.searchisko.api.util.QuerySettingsParser;
 import org.searchisko.persistence.service.EntityService;
 
-import javax.ws.rs.core.MultivaluedMap;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -54,8 +51,13 @@ public class SearchServiceTest_registeredQuery extends SearchServiceTestBase {
         testHelper.indexFlushAndRefresh();
     }
 
+    private void deleteDataAndIndices(InnerESRealClient testHelper) {
+        testHelper.indexDelete("idx_provider3_issue");
+        testHelper.indexDelete("idx_provider3_mailing");
+    }
+
     @Test
-    public void testSearchServiceForRegisteredQuery() throws ReflectiveOperationException, IOException, JSONException {
+    public void testRegisteredQueryMatchAllWithOptions() throws ReflectiveOperationException, IOException, JSONException {
 
         InnerESRealClient testHelper = new InnerESRealClient();
 
@@ -79,18 +81,15 @@ public class SearchServiceTest_registeredQuery extends SearchServiceTestBase {
 
             registeredQueryService.registeredQueryCache = queryCache;
 
-            QuerySettingsParser querySettingsParser = new QuerySettingsParser();
-
             // Basic match_all query test (including internal ES behaviour test)
             // also test the `default` level for `sys_content_type`.
             {
-                MultivaluedMap<String, String> map = new MultivaluedMapImpl<>();
-                map.put("query_type", Arrays.asList("match_all"));
-
                 Map<String, Object> templateParams = new HashMap<>();
                 templateParams.put("query_type", "match_all");
 
-                QuerySettings.Filters filters = querySettingsParser.parseUriParams(map).getFilters();
+                QuerySettings.Filters filters = new QuerySettings.Filters();
+                filters.acknowledgeUrlFilterCandidate("query_type", "match_all");
+
                 searchService.parsedFilterConfigService.prepareFiltersForRequest(filters);
 
                 SearchRequestBuilder srb = new SearchRequestBuilder(searchClientService.getClient());
@@ -174,8 +173,54 @@ public class SearchServiceTest_registeredQuery extends SearchServiceTestBase {
             }
 
         } finally {
-            testHelper.indexDelete("idx_provider3_issue");
-            testHelper.indexDelete("idx_provider3_mailing");
+            deleteDataAndIndices(testHelper);
+            testHelper.finalizeESClientForUnitTest();
+        }
+    }
+
+    @Test
+    public void testRegisteredQueryWithoutOverride() throws ReflectiveOperationException, IOException, JSONException {
+
+        InnerESRealClient testHelper = new InnerESRealClient();
+
+        try {
+            SearchClientService searchClientService = testHelper.prepareSearchClientServiceMock("SearchServiceTest_registeredQuery");
+            prepareData(testHelper);
+
+            ConfigService configService = mockConfigurationService();
+            SearchService searchService = getTested(configService);
+            mockProviderConfiguration(searchService, "/search/provider_3.json");
+
+            RegisteredQueryService registeredQueryService = getRegisteredQueryService(searchClientService);
+            searchService.registeredQueryService = registeredQueryService;
+
+            // first create new registered query
+            Map<String, Object> template = TestUtils.loadJSONFromClasspathFile("/registered_query/only_default_content.json");
+            registeredQueryService.create("only_default_content", template);
+
+            RegisteredQueryCache queryCache = Mockito.mock(RegisteredQueryCache.class);
+            Mockito.when(queryCache.get("only_default_content")).thenReturn(template);
+
+            registeredQueryService.registeredQueryCache = queryCache;
+
+            {
+                Map<String, Object> templateParams = new HashMap<>();
+                templateParams.put("query_type", "match_all");
+
+                QuerySettings.Filters filters = new QuerySettings.Filters();
+                filters.acknowledgeUrlFilterCandidate("query_type", "match_all");
+
+                searchService.parsedFilterConfigService.prepareFiltersForRequest(filters);
+
+                SearchRequestBuilder srb = new SearchRequestBuilder(searchClientService.getClient());
+                searchService.performSearchTemplateInternal("only_default_content", templateParams, filters, srb);
+
+                SearchResponse response = srb.get();
+                Assert.assertEquals(3, response.getHits().getTotalHits());
+            }
+
+        } finally {
+            deleteDataAndIndices(testHelper);
             testHelper.finalizeESClientForUnitTest();
         }
     }

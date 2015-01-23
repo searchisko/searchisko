@@ -1,0 +1,12 @@
+{
+  "id": "only_default_content",
+  "description": "Will match only content defined by default",
+  "default": {
+    "sys_content_type": "provider3_issue"
+  },
+  "template": {
+    "query": {
+      "{{query_type}}": {}
+    }
+  }
+}
