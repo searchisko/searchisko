@@ -9,7 +9,7 @@
     "fields" : [ "sys_project", "sys_project_name", "archived", "license", "projectName" ],
     "size" : 5,
     "query" : {
-      "query_string" : {
+      "multi_match" : {
         "query" : "{{query}}",
         "fields" : [ "sys_project_name", "sys_project_name.edgengram", "sys_project_name.ngram" ],
         "analyzer" : "whitespace_lowercase"
