@@ -9,7 +9,7 @@
     "fields" : [ "sys_project", "sys_project_name" ],
     "size" : 5,
     "query" : {
-      "flt" : {
+      "fuzzy_like_this" : {
         "fields" : [ "sys_project_name", "sys_project_name.ngram" ],
         "like_text" : "{{query}}",
         "max_query_terms" : 10,
