@@ -10,7 +10,7 @@ Breaking:
 - Suggestions search APIs were removed [#196](https://github.com/searchisko/searchisko/issues/196). It was replaced by
  specific set of registered queries.
 - Search API switched from `query_string_query` to `simple_query_string` type.
- This change is needed to support improved security model. [#140](https://github.com/searchisko/searchisko/issues/140) 
+ This change is needed to support improved security model. [#140](https://github.com/searchisko/searchisko/issues/140), [#185](https://github.com/searchisko/searchisko/issues/185)
 - Search API switched from Facets to Aggregations.
  This change is related to deprecation of Facets in Elasticsearch 1.3. [#144](https://github.com/searchisko/searchisko/issues/144)
 
