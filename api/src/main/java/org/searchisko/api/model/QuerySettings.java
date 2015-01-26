@@ -187,10 +187,7 @@ public class QuerySettings {
 	}
 
 	/**
-	 * Get search query
-	 *
-	 * @return normalized query or null
-	 * @see QuerySettingsParser#normalizeQueryString(String)
+	 * @return search query or null
 	 */
 	public String getQuery() {
 		return query;

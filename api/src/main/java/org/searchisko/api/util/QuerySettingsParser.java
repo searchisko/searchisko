@@ -59,7 +59,7 @@ public class QuerySettingsParser {
 
 		// process query
 		for (String key = QuerySettings.QUERY_KEY; paramKeys.contains(key); paramKeys.remove(key)) {
-			settings.setQuery(normalizeQueryString(params.getFirst(key)));
+			settings.setQuery(SearchUtils.trimToNull(params.getFirst(key)));
 		}
 
 		// process highlighting
@@ -116,48 +116,6 @@ public class QuerySettingsParser {
 			log.fine("Requested search settings: " + settings);
 		}
 		return settings;
-	}
-
-	/**
-	 * Sanity query in given settings. Trim it and patch wildcard if not null, else use <code>match_all:{}</code>.
-	 * 
-	 * @param settings to sanity query in.
-	 * @throws IllegalArgumentException if settings is null
-	 */
-	protected void sanityQuery(QuerySettings settings) throws IllegalArgumentException {
-		if (settings == null) {
-			throw new IllegalArgumentException("No query settings provided!");
-		}
-		if (settings.getQuery() != null) {
-			settings.setQuery(settings.getQuery().trim());
-			settings.setQuery(patchWildcards(settings.getQuery()));
-		} else {
-			settings.setQuery("match_all:{}");
-		}
-	}
-
-	/**
-	 * Normalize search query string - trim it, return null if empty, patch wildcards.
-	 * 
-	 * @param query to normalize
-	 * @return normalized query
-	 */
-	protected String normalizeQueryString(String query) {
-		query = SearchUtils.trimToNull(query);
-		if (query == null) {
-			return null;
-		}
-		return patchWildcards(query);
-	}
-
-	private String patchWildcards(String q) {
-		if (q != null) {
-			q = q.replaceAll("\\*\\?", "*");
-			q = q.replaceAll("\\?\\*", "*");
-			q = q.replaceAll("\\*+", "*");
-			q = q.replaceAll("\\?+", "?");
-		}
-		return q;
 	}
 
 	/**

@@ -88,7 +88,7 @@ public class QuerySettingsParserTest {
 			QuerySettings ret = tested.parseUriParams(params);
 			Assert.assertNotNull(ret);
 			// note - we test here query is sanitized in settings!
-			assertQuerySettings(ret, "mytype", "mySysType,mySysType2", "query * query2", SortByValue.NEW, "proj1,proj2", 10,
+			assertQuerySettings(ret, "mytype", "mySysType,mySysType2", "query ** query2", SortByValue.NEW, "proj1,proj2", 10,
 					20, "tg1,tg2", "myprovider", "John Doe <john@doe.com>,Dan Boo <boo@boo.net>",
 					PastIntervalValue.WEEK, "2013-01-26T20:32:36.456Z", "2013-01-26T20:32:46.456+0100",
 					"rf1,_rf2", true, "per_project_counts,activity_dates_histogram");
@@ -496,57 +496,6 @@ public class QuerySettingsParserTest {
 			Assert.assertNotNull(ret);
 			Assert.assertNull(ret.getFields());
 		}
-	}
-
-	@Test
-	public void normalizeQueryString() {
-		QuerySettingsParser tested = getTested();
-		Assert.assertNull(tested.normalizeQueryString(null));
-		Assert.assertNull(tested.normalizeQueryString(""));
-		Assert.assertNull(tested.normalizeQueryString("    "));
-		Assert.assertEquals("trim test", tested.normalizeQueryString("  trim test  "));
-
-		// case - wildchar normalization
-		Assert.assertEquals("trim* test *", tested.normalizeQueryString("  trim** test ** "));
-		Assert.assertEquals("trim? *test ?", tested.normalizeQueryString("  trim??? **test ?? "));
-
-		Assert.assertEquals("? * ? * * *", tested.normalizeQueryString("??? ** ?? ?* ** *? "));
-	}
-
-	@Test
-	public void sanityQuery() {
-		QuerySettingsParser tested = getTested();
-		try {
-			tested.sanityQuery(null);
-			Assert.fail("IllegalArgumentException expected");
-		} catch (IllegalArgumentException e) {
-			// OK
-		}
-
-		QuerySettings settings = new QuerySettings();
-
-		// case - query is null
-		settings.setQuery(null);
-		tested.sanityQuery(settings);
-		Assert.assertEquals("match_all:{}", settings.getQuery());
-
-		// case - query is empty
-		settings.setQuery("");
-		tested.sanityQuery(settings);
-		Assert.assertEquals("", settings.getQuery());
-		settings.setQuery("   ");
-		tested.sanityQuery(settings);
-		Assert.assertEquals("", settings.getQuery());
-
-		// case - trimming
-		settings.setQuery(" test query  ");
-		tested.sanityQuery(settings);
-		Assert.assertEquals("test query", settings.getQuery());
-
-		// case - wildchar normalization
-		settings.setQuery(" test ** ?? * query *? ?* ** ?  ");
-		tested.sanityQuery(settings);
-		Assert.assertEquals("test * ? * query * * * ?", settings.getQuery());
 	}
 
 	@Test
