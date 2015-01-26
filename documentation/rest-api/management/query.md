@@ -103,7 +103,7 @@ is to register more similar queries that will return different set of fields and
 ### Document level security
 
 The *document* level security is not supported for now. However, it is possible to make sure the registered query contains
-required filters to support this functionality.
+required filters to mimic this functionality.
 
 [Elasticsearch query DSL]: http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/search-request-query.html#search-request-query
 [Elasticsearch Search Template]: http://www.elasticsearch.org/guide/en/elasticsearch/reference/1.3/search-template.html
