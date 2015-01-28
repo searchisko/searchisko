@@ -10,6 +10,12 @@
                 "terms" : {
                   "sys_tags" : [ "tag2", "tag1" ]
                 }
+              }, {
+                "missing" : {
+                  "field" : "sys_visible_for_roles",
+                  "null_value" : true,
+                  "existence" : true
+                }
               } ]
             }
           },

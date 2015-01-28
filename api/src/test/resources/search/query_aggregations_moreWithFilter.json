@@ -41,6 +41,12 @@
                 "terms" : {
                   "sys_content_type" : [ "my_content_type" ]
                 }
+              }, {
+                "missing" : {
+                  "field" : "sys_visible_for_roles",
+                  "null_value" : true,
+                  "existence" : true
+                }
               } ]
             }
           },
@@ -89,6 +95,12 @@
               }, {
                 "terms" : {
                   "sys_content_type" : [ "my_content_type" ]
+                }
+              }, {
+                "missing" : {
+                  "field" : "sys_visible_for_roles",
+                  "null_value" : true,
+                  "existence" : true
                 }
               } ]
             }
@@ -139,6 +151,12 @@
                 "terms" : {
                   "sys_content_type" : [ "my_content_type" ]
                 }
+              }, {
+                "missing" : {
+                  "field" : "sys_visible_for_roles",
+                  "null_value" : true,
+                  "existence" : true
+                }
               } ]
             }
           },
@@ -187,6 +205,12 @@
               }, {
                 "terms" : {
                   "sys_content_type" : [ "my_content_type" ]
+                }
+              }, {
+                "missing" : {
+                  "field" : "sys_visible_for_roles",
+                  "null_value" : true,
+                  "existence" : true
                 }
               } ]
             }
@@ -240,6 +264,12 @@
               }, {
                 "terms" : {
                   "sys_content_type" : [ "my_content_type" ]
+                }
+              }, {
+                "missing" : {
+                  "field" : "sys_visible_for_roles",
+                  "null_value" : true,
+                  "existence" : true
                 }
               } ]
             }

@@ -1339,33 +1339,65 @@ public class SearchServiceTest extends SearchServiceTestBase {
 		ConfigService configService = mockConfigurationService();
 
 		SearchService tested = getTested(configService);
+		mockProviderConfiguration(tested, "/search/provider_1.json", "/search/provider_2.json");
 
+		// prepare search request params
 		QuerySettings querySettings = new QuerySettings();
 		Filters filters = new Filters();
 		querySettings.setFilters(filters);
+		querySettings.addAggregation("activity_dates_histogram");
+		querySettings.addAggregation("per_project_counts");
+		querySettings.addAggregation("per_sys_type_counts");
+		querySettings.setQuery("This is client query");
+		filters.acknowledgeUrlFilterCandidate("activity_date_interval", PastIntervalValue.TEST.toString());
+		filters.acknowledgeUrlFilterCandidate("project", "eap");
+		filters.acknowledgeUrlFilterCandidate("sys_type", "issue");
+		filters.acknowledgeUrlFilterCandidate("content_provider", "provider1");
+		filters.acknowledgeUrlFilterCandidate("type", "provider1_issue");
+		querySettings.setSize(0);
+		querySettings.setFilters(filters);
 
-		tested.parsedFilterConfigService.prepareFiltersForRequest(filters);
-
-		mockProviderConfiguration(tested, "/search/provider_1.json", "/search/provider_2.json");
-
+		// case - user is not logged in
 		{
-			SearchRequestBuilder srb = new SearchRequestBuilder(client);
-			querySettings.addAggregation("activity_dates_histogram");
-			querySettings.addAggregation("per_project_counts");
-			querySettings.addAggregation("per_sys_type_counts");
-			querySettings.setQuery("This is client query");
-			filters.acknowledgeUrlFilterCandidate("activity_date_interval", PastIntervalValue.TEST.toString());
-			filters.acknowledgeUrlFilterCandidate("project", "eap");
-			filters.acknowledgeUrlFilterCandidate("sys_type", "issue");
-			filters.acknowledgeUrlFilterCandidate("content_provider", "provider1");
-			filters.acknowledgeUrlFilterCandidate("type", "provider1_issue");
-			querySettings.setSize(0);
 			tested.parsedFilterConfigService.prepareFiltersForRequest(filters);
-			querySettings.setFilters(filters);
+
+			Mockito.when(tested.authenticationUtilService.isAuthenticatedUser()).thenReturn(false);
+
+			SearchRequestBuilder srb = new SearchRequestBuilder(client);
 			tested.performSearchInternal(querySettings, srb);
-			TestUtils.assertJsonContentFromClasspathFile("/search/complete_query_filters_and_activity_dates_histogram.json",
+			TestUtils.assertJsonContentFromClasspathFile(
+					"/search/complete_query_filters_and_activity_dates_histogram_userNotAuthenticated.json",
 					srb.toString());
-			// We should assert indices and types in srb there, but it is not possible due ES API lack of getters !!!
+		}
+
+		// case - admin user
+		{
+			tested.parsedFilterConfigService.prepareFiltersForRequest(filters);
+
+			Mockito.reset(tested.authenticationUtilService);
+			Mockito.when(tested.authenticationUtilService.isUserInRole(Role.ADMIN)).thenReturn(true);
+			Mockito.when(tested.authenticationUtilService.isAuthenticatedUser()).thenReturn(true);
+
+			SearchRequestBuilder srb = new SearchRequestBuilder(client);
+			tested.performSearchInternal(querySettings, srb);
+			TestUtils.assertJsonContentFromClasspathFile("/search/complete_query_filters_and_activity_dates_histogram_userIsAdmin.json",
+					srb.toString());
+		}
+
+		// case - authenticated user with roles
+		{
+			tested.parsedFilterConfigService.prepareFiltersForRequest(filters);
+
+			Mockito.reset(tested.authenticationUtilService);
+			Mockito.when(tested.authenticationUtilService.isUserInRole(Role.ADMIN)).thenReturn(false);
+			Mockito.when(tested.authenticationUtilService.getUserRoles()).thenReturn(
+					TestUtils.createSetOfStrings("role1", "role2"));
+			Mockito.when(tested.authenticationUtilService.isAuthenticatedUser()).thenReturn(true);
+
+			SearchRequestBuilder srb = new SearchRequestBuilder(client);
+			tested.performSearchInternal(querySettings, srb);
+			TestUtils.assertJsonContentFromClasspathFile("/search/complete_query_filters_and_activity_dates_histogram_userWithRoles.json",
+					srb.toString());
 		}
 	}
 

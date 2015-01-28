@@ -42,10 +42,18 @@
         }
       },
       "filter" : {
-        "missing" : {
-          "field" : "sys_visible_for_roles",
-          "null_value" : true,
-          "existence" : true
+        "or" : {
+          "filters" : [ {
+            "missing" : {
+              "field" : "sys_visible_for_roles",
+              "null_value" : true,
+              "existence" : true
+            }
+          }, {
+            "terms" : {
+              "sys_visible_for_roles" : [ "role1", "role2" ]
+            }
+          } ]
         }
       }
     }
@@ -83,6 +91,20 @@
               }, {
                 "terms" : {
                   "sys_content_type" : [ "provider1_issue" ]
+                }
+              }, {
+                "or" : {
+                  "filters" : [ {
+                    "missing" : {
+                      "field" : "sys_visible_for_roles",
+                      "null_value" : true,
+                      "existence" : true
+                    }
+                  }, {
+                    "terms" : {
+                      "sys_visible_for_roles" : [ "role1", "role2" ]
+                    }
+                  } ]
                 }
               }, {
                 "query" : {
@@ -130,6 +152,20 @@
               }, {
                 "terms" : {
                   "sys_content_type" : [ "provider1_issue" ]
+                }
+              }, {
+                "or" : {
+                  "filters" : [ {
+                    "missing" : {
+                      "field" : "sys_visible_for_roles",
+                      "null_value" : true,
+                      "existence" : true
+                    }
+                  }, {
+                    "terms" : {
+                      "sys_visible_for_roles" : [ "role1", "role2" ]
+                    }
+                  } ]
                 }
               }, {
                 "query" : {

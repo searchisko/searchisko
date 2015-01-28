@@ -65,6 +65,10 @@ public class SearchService {
 	public static final String CFGNAME_FIELD_VISIBLE_FOR_ROLES = "field_visible_for_roles";
 	public static final String CFGNAME_SOURCE_FILTERING_FOR_ROLES = "source_filtering_for_roles";
 
+	// This value is used as a key in aggregation filter map. It should be "unique" enough so that it will not
+	// clash with any real key value used in configuration files.
+	private static final String QUERY_FILTER_KEY = "_query_filter_key";
+
 	@Inject
 	protected SearchClientService searchClientService;
 
@@ -139,11 +143,17 @@ public class SearchService {
 
 		setSearchRequestIndicesAndTypes(querySettings.getFilters(), querySettings.getAggregations(), srb);
 
-		QueryBuilder qb_fulltext = prepareQueryBuilder(querySettings);
-		srb.setQuery(applyContentLevelSecurityFilter(applyCommonFilters(
-				parsedFilterConfigService.getSearchFiltersForRequest(), qb_fulltext)));
+		QueryBuilder qb = prepareQueryBuilder(querySettings);
+		srb.setQuery(
+			applyContentLevelSecurityFilter(
+				applyCommonFilters(parsedFilterConfigService.getSearchFiltersForRequest(), qb)
+			)
+		);
 
-		parsedFilterConfigService.getSearchFiltersForRequest().put("fulltext_query", new QueryFilterBuilder(qb_fulltext)); // ??
+		// In some cases we need to apply also filter based on client input (Query filter).
+		// Thus we are adding it here into filters valid for actual request under arbitrary key.
+		parsedFilterConfigService.getSearchFiltersForRequest().put(QUERY_FILTER_KEY, new QueryFilterBuilder(qb));
+
 		handleAggregationSettings(querySettings, parsedFilterConfigService.getSearchFiltersForRequest(), srb);
 
 		setSearchRequestSort(querySettings, srb);
@@ -353,6 +363,8 @@ public class SearchService {
 
 	/**
 	 * Prepare query builder based on query settings.
+	 * If user query is provided (it is not null) then SimpleQueryString is used and all configured
+	 * fields are set on it. Otherwise MatchAll query is used.
 	 * 
 	 * Under the hood it creates either {@link org.elasticsearch.index.query.SimpleQueryStringBuilder} using fields
 	 * configured in {@link ConfigService#CFGNAME_SEARCH_FULLTEXT_QUERY_FIELDS} config file or
@@ -455,14 +467,23 @@ public class SearchService {
 	 * @return new query filter with applied security filtering
 	 */
 	protected QueryBuilder applyContentLevelSecurityFilter(QueryBuilder qb) {
-
-		if (authenticationUtilService.isUserInRole(Role.ADMIN))
+		FilterBuilder securityFilter = getContentLevelSecurityFilterInternal();
+		if (securityFilter == null) {
 			return qb;
+		} else {
+			return new FilteredQueryBuilder(qb, securityFilter);
+		}
+	}
+
+	/**
+	 * @return security filter or null (if no filters apply for authenticated user)
+	 */
+	protected FilterBuilder getContentLevelSecurityFilterInternal() {
+
+		if (authenticationUtilService.isUserInRole(Role.ADMIN)) return null;
 
 		List<FilterBuilder> filters = new ArrayList<>();
-
-		filters
-				.add(FilterBuilders.missingFilter(ContentObjectFields.SYS_VISIBLE_FOR_ROLES).existence(true).nullValue(true));
+		filters.add(FilterBuilders.missingFilter(ContentObjectFields.SYS_VISIBLE_FOR_ROLES).existence(true).nullValue(true));
 
 		if (authenticationUtilService.isAuthenticatedUser()) {
 			Set<String> roles = authenticationUtilService.getUserRoles();
@@ -477,14 +498,16 @@ public class SearchService {
 		} else {
 			securityFilter = new OrFilterBuilder(filters.toArray(new FilterBuilder[filters.size()]));
 		}
-		return new FilteredQueryBuilder(qb, securityFilter);
+		return securityFilter;
 	}
 
 	/**
+	 * Setup all required aggregations on SearchRequestBuilder.
+	 *
 	 * @param querySettings
 	 * @param srb
 	 */
-	protected void handleAggregationSettings(QuerySettings querySettings, Map<String, FilterBuilder> searchFilters,
+	protected void handleAggregationSettings(QuerySettings querySettings, final Map<String, FilterBuilder> searchFilters,
 											 SearchRequestBuilder srb) {
 		Map<String, Object> configuredAggregations = configService.get(ConfigService.CFGNAME_SEARCH_FULLTEXT_AGGREGATIONS_FIELDS);
 		Set<String> requestedAggregations = querySettings.getAggregations();
@@ -494,8 +517,10 @@ public class SearchService {
 				Object aggregationConfig = configuredAggregations.get(requestedAggregation);
 				if (aggregationConfig != null) {
 					SemiParsedAggregationConfig parsedAggregationConfig = parseAggregationType(aggregationConfig, requestedAggregation);
+
 					// terms aggregation
 					if (SemiParsedAggregationConfig.AggregationType.TERMS.toString().equals(parsedAggregationConfig.getAggregationType())) {
+
 						int size;
 						try {
 							size = (int) parsedAggregationConfig.getOptionalSettings().get("size");
@@ -505,14 +530,26 @@ public class SearchService {
 									+ ": Invalid value of [size] field.");
 						}
 
-						srb.addAggregation(createTermsBuilder(requestedAggregation, parsedAggregationConfig.getFieldName(), size, searchFilters, true));
-						if (searchFilters != null && searchFilters.containsKey(parsedAggregationConfig.getFieldName())) {
+						// We need to apply security filter.
+						Map<String, FilterBuilder> _searchFilters = searchFilters;
+						if (_searchFilters != null && !_searchFilters.isEmpty()) {
+							FilterBuilder securityFilter = getContentLevelSecurityFilterInternal();
+							if (securityFilter != null) {
+								Map<String, FilterBuilder> _searchFiltersClone = new HashMap<>();
+								_searchFiltersClone.putAll(_searchFilters);
+								_searchFiltersClone.put("document_level_security", securityFilter);
+								_searchFilters = _searchFiltersClone;
+							}
+						}
+
+						srb.addAggregation(createTermsBuilder(requestedAggregation, parsedAggregationConfig.getFieldName(), size, _searchFilters, true));
+						if (_searchFilters != null && _searchFilters.containsKey(parsedAggregationConfig.getFieldName())) {
 							if (parsedAggregationConfig.isFiltered()) {
 								// we filter over contributors so we have to add second aggregation which provide more accurate numbers for selected
 								// contributors because they can be out of normal aggregation due size limit
 								srb.addAggregation(createTermsBuilder(
 										requestedAggregation+"_selected", parsedAggregationConfig.getFieldName(),
-												parsedAggregationConfig.getFilteredSize(), searchFilters, false)
+												parsedAggregationConfig.getFilteredSize(), _searchFilters, false)
 								);
 							}
 						}
@@ -660,7 +697,7 @@ public class SearchService {
 	}
 
 	/**
-	 * TODO
+	 * Return Elasticsearch interval name for Histogram aggregation.
 	 *
 	 * @param fieldName
 	 * @return interval value or null
