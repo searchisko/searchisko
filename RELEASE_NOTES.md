@@ -19,7 +19,7 @@ Improvements:
 - security - additional roles for authenticated user [#137](https://github.com/searchisko/searchisko/issues/137), [#147](https://github.com/searchisko/searchisko/issues/147)
 - security - brand new Content security subsystem: 
   - support for 'Content type level' security [#142](https://github.com/searchisko/searchisko/issues/142)
-  - support for 'Document level' security [#143](https://github.com/searchisko/searchisko/issues/143)
+  - support for 'Document level' security [#143](https://github.com/searchisko/searchisko/issues/143), [#204](https://github.com/searchisko/searchisko/issues/204)
   - support for 'Field level' security [#150](https://github.com/searchisko/searchisko/issues/150)
 - security - CORS support is now configurable so you can restrict Origins who can use REST API at all and as authenticated user [#160](https://github.com/searchisko/searchisko/issues/160)
 - Administrator can lock "Content manipulation API" during maintenance [#109](https://github.com/searchisko/searchisko/issues/109)
