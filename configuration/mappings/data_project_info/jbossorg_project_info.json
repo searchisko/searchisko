@@ -19,7 +19,7 @@
             "jiraLink" : {"type" : "string", "index" : "no"},
             "srcLink" : {"type" : "string", "index" : "no"},
             "anonymousLink" : {"type" : "string", "index" : "no"},
-            "commiterLink" : {"type" : "string", "index" : "no"},
+            "committerLink" : {"type" : "string", "index" : "no"},
             "fisheyeLink" : {"type" : "string", "index" : "no"},
             "viewvcLink" : {"type" : "string", "index" : "no"},
             "githubLink" : {"type" : "string", "index" : "no"},
