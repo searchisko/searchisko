@@ -1,0 +1,9 @@
+{
+  "code": "overlord_rtgov",
+  "name": "Overlord RTGov",
+  "type_specific_code" : {
+    "jbossorg_jira": ["RTGOV"],
+    "jbossorg_project_info": "overlord_rtgov",
+    "product" : false
+  }
+}
