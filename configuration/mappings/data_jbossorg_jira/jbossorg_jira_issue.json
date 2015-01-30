@@ -38,7 +38,8 @@
 		                "properties" : {
 		                    "email_address" : {"type" : "string", "index" : "no"},
 		                    "display_name"  : {"type" : "string", "index" : "no"},
-		                    "sys_contributor" : {"type" : "string", "index" : "no"}
+		                    "sys_contributor" : {"type" : "string", "index" : "no"},
+                            "username" : {"type" : "string", "index" : "no"}
 		                }                    
 		            },
 		            "comment_updater" : {
@@ -46,7 +47,8 @@
 		                "properties" : {
 		                    "email_address" : {"type" : "string", "index" : "no"},
 		                    "display_name"  : {"type" : "string", "index" : "no"},
-		                    "sys_contributor" : {"type" : "string", "index" : "no"}
+		                    "sys_contributor" : {"type" : "string", "index" : "no"},
+                            "username" : {"type" : "string", "index" : "no"}
 		                }                    
 		            }
                 }    
@@ -56,7 +58,8 @@
                 "properties" : {
                     "email_address" : {"type" : "string", "index" : "no"},
                     "display_name"  : {"type" : "string", "index" : "no"},
-                    "sys_contributor" : {"type" : "string", "index" : "no"}
+                    "sys_contributor" : {"type" : "string", "index" : "no"},
+                    "username" : {"type" : "string", "index" : "no"}
                 }                    
             },
             "assignee" : {
@@ -64,7 +67,8 @@
                 "properties" : {
                     "email_address" : {"type" : "string", "index" : "no"},
                     "display_name"  : {"type" : "string", "index" : "no"},
-                    "sys_contributor" : {"type" : "string", "index" : "no"}
+                    "sys_contributor" : {"type" : "string", "index" : "no"},
+                    "username" : {"type" : "string", "index" : "no"}
                 }                    
             } 
         }
