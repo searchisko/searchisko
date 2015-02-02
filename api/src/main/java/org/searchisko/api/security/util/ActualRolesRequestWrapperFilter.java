@@ -19,6 +19,7 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
+import javax.servlet.http.HttpSession;
 
 import org.searchisko.api.security.jaas.PrincipalWithRoles;
 
@@ -117,10 +118,10 @@ public class ActualRolesRequestWrapperFilter implements Filter {
 				return rolesFromCache;
 			}
 
-			Object roles = req.getSession().getAttribute(SESSION_ACTUAL_ROLES_KEY);
-			if (roles != null) {
-				return (Set<String>) roles;
-			}
+            HttpSession session = req.getSession(false);
+			if (session != null) {
+                return (Set<String>) session.getAttribute(SESSION_ACTUAL_ROLES_KEY);
+            }
 
 			return null;
 		}
