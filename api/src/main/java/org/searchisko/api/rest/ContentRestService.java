@@ -201,8 +201,8 @@ public class ContentRestService extends RestServiceBase {
 	public Object pushContent(@PathParam("type") String type, @PathParam("contentId") String contentId,
 			Map<String, Object> content) throws PreprocessorInvalidDataException {
 
-        if (log.isLoggable(Level.FINEST)) {
-            log.log(Level.FINEST, "Client pushing content to type: {0}, contentId: {1}", new Object[]{type, contentId});
+        if (log.isLoggable(Level.FINE)) {
+            log.log(Level.FINE, "Client pushing content to type: {0}, contentId: {1}", new Object[]{type, contentId});
         }
 
 		ProviderContentTypeInfo typeInfo = getTypeInfoWithManagePermissionCheck(type);
@@ -244,8 +244,8 @@ public class ContentRestService extends RestServiceBase {
 	@Produces(MediaType.APPLICATION_JSON)
 	public Object pushContentBulk(@PathParam("type") String type, Map<String, Object> contentStructure) {
 
-        if (log.isLoggable(Level.FINEST)) {
-            log.log(Level.FINEST, "Client bulk pushing content to type: {0}, contentIds: {1}",new Object[]{type, contentStructure.keySet()});
+        if (log.isLoggable(Level.FINE)) {
+            log.log(Level.FINE, "Client bulk pushing content to type: {0}, contentIds: {1}",new Object[]{type, contentStructure.keySet()});
         }
 
 		ProviderContentTypeInfo typeInfo = getTypeInfoWithManagePermissionCheck(type);
