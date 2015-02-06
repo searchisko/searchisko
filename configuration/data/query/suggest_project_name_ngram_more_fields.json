@@ -1,6 +1,6 @@
 {
   "id" : "suggest_project_name_ngram_more_fields",
-  "description" : "Project name suggestions using ngrams, returning more fields.",
+  "description" : "Project name suggestions using ngrams, returning more fields. Archived projects are filtered out.",
   "default" : {
     "sys_content_type" : "jbossorg_project_info",
     "sys_type" : "project_info"
@@ -9,10 +9,30 @@
     "fields" : [ "sys_project", "sys_project_name", "archived", "license", "projectName" ],
     "size" : 5,
     "query" : {
-      "multi_match" : {
-        "query" : "{{query}}",
-        "fields" : [ "sys_project_name", "sys_project_name.edgengram", "sys_project_name.ngram" ],
-        "analyzer" : "whitespace_lowercase"
+      "filtered" : {
+        "query": {
+          "multi_match": {
+            "query": "{{query}}",
+            "fields": [ "sys_project_name", "sys_project_name.edgengram", "sys_project_name.ngram" ],
+            "analyzer": "whitespace_lowercase"
+          }
+        },
+        "filter": {
+          "or": {
+            "filters": [
+              {
+                "and": [
+                  { "not": { "term": { "archived": true }} },
+                  { "exists": { "field": "archived" } }
+                ]
+              },
+              {
+                "missing": { "field": "archived" }
+              }
+            ],
+            "_cache": true
+          }
+        }
       }
     },
     "highlight" : {

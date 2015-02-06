@@ -1,6 +1,6 @@
 {
   "id" : "suggest_project_name_flt",
-  "description" : "Project name suggestions using FLT.",
+  "description" : "Project name suggestions using FLT. Archived projects are filtered out.",
   "default" : {
     "sys_content_type" : "jbossorg_project_info",
     "sys_type" : "project_info"
@@ -9,11 +9,31 @@
     "fields" : [ "sys_project", "sys_project_name" ],
     "size" : 5,
     "query" : {
-      "fuzzy_like_this" : {
-        "fields" : [ "sys_project_name", "sys_project_name.ngram" ],
-        "like_text" : "{{query}}",
-        "max_query_terms" : 10,
-        "analyzer" : "whitespace_lowercase"
+      "filtered" : {
+        "query": {
+          "fuzzy_like_this": {
+            "fields": [ "sys_project_name", "sys_project_name.ngram" ],
+            "like_text": "{{query}}",
+            "max_query_terms": 10,
+            "analyzer": "whitespace_lowercase"
+          }
+        },
+        "filter": {
+          "or": {
+            "filters": [
+              {
+                "and": [
+                  { "not": { "term": { "archived": true } } },
+                  { "exists": { "field": "archived" } }
+                ]
+              },
+              {
+                "missing": { "field": "archived" }
+              }
+            ],
+            "_cache": true
+          }
+        }
       }
     },
     "highlight" : {
