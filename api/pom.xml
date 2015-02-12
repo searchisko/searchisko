@@ -157,6 +157,11 @@
 		</dependency>
 
 		<dependency>
+			<groupId>org.elasticsearch</groupId>
+			<artifactId>elasticsearch-lang-javascript</artifactId>
+		</dependency>
+
+		<dependency>
 			<groupId>org.jboss.elasticsearch</groupId>
 			<artifactId>structured-content-tools</artifactId>
 		</dependency>
