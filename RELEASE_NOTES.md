@@ -26,7 +26,8 @@ Improvements:
 - Added pagination support (from,size) on Feed API [#152](https://github.com/searchisko/searchisko/issues/152)
 - New task for syncing all uses from contributor profile provider [#141](https://github.com/searchisko/searchisko/issues/141)
 - New Registered query API [#123](https://github.com/searchisko/searchisko/issues/123)
- 
+- Enabled scripting support for Javascript [#214](https://github.com/searchisko/searchisko/issues/214)
+
 Internal:
 
 - Upgrade to elasticsearch 1.4.1 [#194](https://github.com/searchisko/searchisko/issues/194) (related is also [#48](https://github.com/searchisko/searchisko/issues/48))

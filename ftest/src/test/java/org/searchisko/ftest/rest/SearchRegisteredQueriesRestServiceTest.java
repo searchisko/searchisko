@@ -26,6 +26,7 @@ import java.util.Map;
 
 import static com.jayway.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.iterableWithSize;
 
 /**
  * Integration test for /search/{registered_query} REST API.
@@ -321,6 +322,58 @@ public class SearchRegisteredQueriesRestServiceTest {
                 .statusCode(200).contentType(ContentType.JSON)
                 .body("hits.total", is(4))
                 .when().get(new URL(context, SEARCH_REST_API + "/query3?use_also_second_term_query=yes")
+                .toExternalForm());
+    }
+
+    @Test
+    @InSequence(140)
+    public void testRegisteredQueryWithScripting() throws MalformedURLException {
+
+        // uncomment if you run only this test method
+        // setupCreateProviderAndDocumentTypes();
+        // re-index test documents again to make sure we have 4 documents
+        // setupPushContent();
+
+        String query = "{\n" +
+                "  \"id\": \"query4\",\n" +
+                "  \"template\": \"{" +
+                "      \\\"size\\\": 0, " +
+                "      \\\"query\\\": {" +
+                "          \\\"match_all\\\": {}" +
+                "      }," +
+                "      \\\"aggs\\\": {" +
+                "          \\\"scripted\\\": {" +
+                "              \\\"terms\\\": {" +
+                "                  \\\"script\\\": \\\"_source.data5\\\"" +
+                "              }" +
+                "          }" +
+                "      }" +
+                "   }\"\n" +
+                "}";
+
+        given().contentType(ContentType.JSON)
+                .auth().basic(DeploymentHelpers.DEFAULT_PROVIDER_NAME, DeploymentHelpers.DEFAULT_PROVIDER_PASSWORD)
+                .body(query)
+                .expect().statusCode(200)
+                .log().ifValidationFails()
+                .body("id", is("query4"))
+                .when().post(new URL(context, QUERY_REST_API).toExternalForm());
+
+        DeploymentHelpers.refreshES();
+
+        String providerUsername = "provider";
+        String providerPassword = "provider";
+
+        given().auth().preemptive().basic(providerUsername, providerPassword)
+                .expect().log().ifValidationFails()
+                .statusCode(200).contentType(ContentType.JSON)
+                .body("hits.total", is(4))
+                .body("aggregations.scripted.buckets", iterableWithSize(2))
+                .body("aggregations.scripted.buckets[0].key", is("bar"))
+                .body("aggregations.scripted.buckets[0].doc_count", is(3))
+                .body("aggregations.scripted.buckets[1].key", is("foo"))
+                .body("aggregations.scripted.buckets[1].doc_count", is(1))
+                .when().get(new URL(context, SEARCH_REST_API + "/query4")
                 .toExternalForm());
     }
 }
