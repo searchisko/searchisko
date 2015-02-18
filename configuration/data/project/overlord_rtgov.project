@@ -2,7 +2,9 @@
   "code": "overlord_rtgov",
   "name": "Overlord RTGov",
   "type_specific_code" : {
+    "jbossorg_blog": ["soagovernance"],
     "jbossorg_jira": ["RTGOV"],
+    "jbossorg_sbs" : ["2122","2123"],
     "jbossorg_project_info": "overlord_rtgov",
     "product" : false
   }
