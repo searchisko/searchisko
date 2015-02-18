@@ -1,0 +1,11 @@
+{
+  "code": "artificer",
+  "name": "Artificer",
+  "type_specific_code" : {
+    "jbossorg_blog": ["artificer"],
+    "jbossorg_jira": ["ARTIF"],
+    "jbossorg_sbs" : ["2349","2350"],
+    "jbossorg_project_info": "artificer",
+    "product" : false
+  }
+}
