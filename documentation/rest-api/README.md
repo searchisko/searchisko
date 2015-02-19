@@ -34,6 +34,10 @@ as an inspiration. You will have your own content.
 + [addon](content/addon.md) description of some Addon or Plugin for the project
 + [solution](content/solution.md) description of some problem solution from knowledgebase
 
+Additional `sys_type`s can be found in
+[jboss-developer](https://github.com/jboss-developer/www.jboss.org/blob/master/_dcp/data/provider/jboss-developer.json)
+provider configuration.
+
 Other data types considered in the future:
 
 + documentation page
