@@ -138,6 +138,16 @@ some of them are set during content push before pre-processing, thus they will b
   <td/>
   <td>Number of users who rated this Document - system field. It is updated automatically when "Personalized Content Rating API" is used. Contains positive integer number. Field is not present if nobody rated document yet.</td>
 </tr>
+<tr>
+  <td>sys_featured</td>
+  <td/>
+  <td>Idea of this boolean field is to have possibility to mark any content as "featured" (promoted).</td>
+</tr>
+<tr>
+  <td>sys_language</td>
+  <td/>
+  <td>Primary language of this document. It should contain two letter ISO 639 language code.</td>
+</tr>
 </tbody>
 </table>
 

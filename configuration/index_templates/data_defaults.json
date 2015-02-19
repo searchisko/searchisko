@@ -86,6 +86,7 @@
 				"sys_rating_avg"	: { "type": "float", "store": "yes" },
 				"sys_rating_num"	: { "type": "integer", "store": "yes" },
 				"sys_featured"	: { "type": "boolean", "store": "no" },
+				"sys_language"	: { "type": "string", "analyzer": "keyword", "store": "no" },
 				"sys_comments": {
 					"type": "object",
 					"properties": {
