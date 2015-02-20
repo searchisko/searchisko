@@ -43,7 +43,7 @@ This chapter discusses implementation details of Elasticsearch query. It should 
           "terms": {
             "field": "sys_tags",
             "include": {
-              "pattern": "^{{query}}.*",
+              "pattern": "^\\Q{{query}}\\E.*",
               "flags": "CASE_INSENSITIVE|UNICODE_CASE"
             }
           }
@@ -55,6 +55,4 @@ In aggregation `sys_tags_candidates` we need to filter out all terms that do not
 The reason for this is that matching documents can have several tags and we need to filter out those that
 do not share valid prefix.
 
-It should be noted that currently this query can suffer from input values that break regex pattern.
-For example `query=*` will cause Exception to be fired (see #219). Additionally, the `query` value
-should be **ALWAYS** lowercased because it is matched against analyzed content.
+It should be noted that the `query` value should be **ALWAYS** lowercased because it is matched against analyzed content.

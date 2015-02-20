@@ -19,7 +19,7 @@
         "terms": {
           "field": "sys_tags",
           "include": {
-            "pattern": "^{{query}}.*",
+            "pattern": "^\\Q{{query}}\\E.*",
             "flags": "CASE_INSENSITIVE|UNICODE_CASE"
           }
         }
