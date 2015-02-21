@@ -148,6 +148,11 @@ some of them are set during content push before pre-processing, thus they will b
   <td/>
   <td>Primary language of this document. It should contain two letter ISO 639 language code.</td>
 </tr>
+<tr>
+  <td>sys_authors</td>
+  <td />
+  <td>A list of sys_contributors who can be considered as authors of this document. Nested red_hat node provides information whether particular author was an employee during creation of this document.</td>
+</tr>
 </tbody>
 </table>
 
@@ -234,6 +239,14 @@ It's defined only by content provider and must contain mandatory fields defined 
 	    "sys_project": "as7",
 	    "sys_project_name": "JBoss AS7",
 	    "sys_contributors": ["John Doe <john@doe.org>", "Pat Mat <pat@mat.org>"],
+      "sys_authors" : [
+        {
+          "red_hat" : {
+            "employee" : false
+          },
+          "sys_contributor" : "John Doe <john@doe.org>"
+        }
+      ]
 	    "sys_activity_dates": ["2012-12-06T06:34:55.000Z", "2012-12-05T01:48:05.000Z"],
 	    "sys_created" : "2012-12-05T01:48:05.000Z",
 	    "sys_last_activity_date" : "2012-12-06T06:34:55.000Z",
