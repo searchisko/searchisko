@@ -11,7 +11,9 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.*;
 import javax.ws.rs.core.Response.Status;
 import java.util.*;
+import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.apache.commons.lang.StringUtils;
 
 import org.elasticsearch.action.get.GetResponse;
 import org.searchisko.api.ContentObjectFields;
@@ -164,7 +166,7 @@ public class CustomTagRestService extends RestServiceBase {
 
 		String tag = null;
 		try {
-			tag = (String) requestContent.get(DATA_FIELD_TAGGING);
+			tag = StringUtils.trim((String) requestContent.get(DATA_FIELD_TAGGING));
 		} catch (ClassCastException e) {
 			return Response.status(Status.BAD_REQUEST).entity(DATA_FIELD_TAGGING + " field must be text string").build();
 		}
@@ -204,7 +206,10 @@ public class CustomTagRestService extends RestServiceBase {
 			// check for same tag in provider tags
 			Map<String, Object> source = getResponse.getSource();
 			SortedSet<String> providerTags = new TreeSet(String.CASE_INSENSITIVE_ORDER);
-			providerTags.addAll((List<String>) source.get(ContentObjectFields.TAGS));
+			List<String> providersList = (List<String>) source.get(ContentObjectFields.TAGS);
+			if (providersList != null) {
+				providerTags.addAll(providersList);
+			}
 
 			boolean created;
 			if (!(providerTags.contains(tag))) {
@@ -229,7 +234,7 @@ public class CustomTagRestService extends RestServiceBase {
 
 
 	@DELETE
-	@Path("/{" + QUERY_PARAM_ID + "}")
+	@Path("/{" + QUERY_PARAM_ID + "}/_all")
 	public Object deleteTagsForContent(@PathParam(QUERY_PARAM_ID) String contentSysId) {
 		checkIfUserAuthenticated();
 
@@ -240,23 +245,106 @@ public class CustomTagRestService extends RestServiceBase {
 			throw new RequiredFieldException(QUERY_PARAM_ID);
 		}
 
+		// check if tagged document exists
+		String type = null;
+		try {
+			type = providerService.parseTypeNameFromSysId(contentSysId);
+		} catch (IllegalArgumentException e) {
+			log.fine("bad format or unknown type for content sys_id=" + contentSysId);
+			return Response.status(Response.Status.BAD_REQUEST).entity(QUERY_PARAM_ID + " format is invalid").build();
+		}
+
+		ProviderContentTypeInfo typeInfo = providerService.findContentType(type);
+		if (typeInfo == null) {
+			log.fine("unknown type for content with sys_id=" + contentSysId);
+			return Response.status(Response.Status.NOT_FOUND).entity("content type is unknown").build();
+		}
+
+		// delete tags from custom tags
 		customTagPersistenceService.deleteTagsForContent(contentSysId);
+
+		// delete tags from SYS_TAG field (update SYS_TAG field)
+		String indexName = ProviderService.extractIndexName(typeInfo, type);
+		String indexType = ProviderService.extractIndexType(typeInfo, type);
+		GetResponse getResponse;
+		try {
+			getResponse = searchClientService.performGet(indexName, indexType, contentSysId);
+		} catch (SearchIndexMissingException ex) {
+			return Response.status(Response.Status.NOT_FOUND).build();
+		}
+		if (!getResponse.isExists()) {
+			return Response.status(Response.Status.NOT_FOUND).build();
+		}
+		Map<String, Object> source = getResponse.getSource();
+		customTagService.updateSysTagsField(source);
+		searchClientService.performPut(indexName, indexType, contentSysId, source);
+
 		return Response.status(Status.OK).build();
 	}
 
 	@DELETE
-	@Path("/{" + QUERY_PARAM_ID + "}/{tagLabel}")
-	public Object deleteTag(@PathParam(QUERY_PARAM_ID) String contentSysId, @PathParam("tagLabel") String tagLabel) {
+	@Path("/{" + QUERY_PARAM_ID + "}")
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
+	public Object deleteTag(@PathParam(QUERY_PARAM_ID) String contentSysId, Map<String, Object> requestContent) {
 		checkIfUserAuthenticated();
 
 		contentSysId = SearchUtils.trimToNull(contentSysId);
 
 		// validation
-		if ((contentSysId == null) || (tagLabel == null)){
+		if ((contentSysId == null) || (requestContent == null)){
 			throw new RequiredFieldException(QUERY_PARAM_ID);
 		}
 
+		String tagLabel = null;
+		try {
+			tagLabel = StringUtils.trim((String) requestContent.get(DATA_FIELD_TAGGING));
+		} catch (ClassCastException e) {
+			return Response.status(Status.BAD_REQUEST).entity(DATA_FIELD_TAGGING + " field must be text string").build();
+		}
+		if (tagLabel == null) {
+			throw new RequiredFieldException(DATA_FIELD_TAGGING);
+		}
+
+		if (tagLabel.isEmpty()) {
+			return Response.status(Status.BAD_REQUEST).entity(DATA_FIELD_TAGGING + " field cannot be empty").build();
+		}
+
+		// check if tagged document exists
+		String type = null;
+		try {
+			type = providerService.parseTypeNameFromSysId(contentSysId);
+		} catch (IllegalArgumentException e) {
+			log.fine("bad format or unknown type for content sys_id=" + contentSysId);
+			return Response.status(Response.Status.BAD_REQUEST).entity(QUERY_PARAM_ID + " format is invalid").build();
+		}
+
+		ProviderContentTypeInfo typeInfo = providerService.findContentType(type);
+		if (typeInfo == null) {
+			log.fine("unknown type for content with sys_id=" + contentSysId);
+			return Response.status(Response.Status.NOT_FOUND).entity("content type is unknown").build();
+		}
+
+		// delete tag from custom tags
 		customTagPersistenceService.deleteTag(contentSysId, tagLabel);
+
+
+		// delete tag from SYS_TAG field (update SYS_TAG field)
+		String indexName = ProviderService.extractIndexName(typeInfo, type);
+		String indexType = ProviderService.extractIndexType(typeInfo, type);
+		GetResponse getResponse;
+		try {
+			getResponse = searchClientService.performGet(indexName, indexType, contentSysId);
+		} catch (SearchIndexMissingException ex) {
+			return Response.status(Response.Status.NOT_FOUND).build();
+		}
+		if (!getResponse.isExists()) {
+			return Response.status(Response.Status.NOT_FOUND).build();
+		}
+		Map<String, Object> source = getResponse.getSource();
+		customTagService.updateSysTagsField(source);
+		searchClientService.performPut(indexName, indexType, contentSysId, source);
+
 		return Response.status(Status.OK).build();
 	}
 

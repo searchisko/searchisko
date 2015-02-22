@@ -5,10 +5,12 @@
  */
 package org.searchisko.api.service;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -106,13 +108,17 @@ public class CustomTagService {
 	public void updateSysTagsField(Map<String,Object> source) {
 		List<String> tags = (List<String>) source.get(ContentObjectFields.TAGS);
 		List<Tag> customTags = customTagPersistenceService.getTagsByContent((String) source.get(ContentObjectFields.SYS_ID));
-		Set<String> sysTags = new HashSet<>();
+		Set<String> sysTags = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
 
-		sysTags.addAll(tags);
 		for (Tag tag : customTags) {
 			sysTags.add(tag.getTagLabel());
 		}
 
-		source.put(ContentObjectFields.SYS_TAGS, sysTags);
+		if (tags != null) {
+			sysTags.addAll(tags);
+		}
+
+
+		source.put(ContentObjectFields.SYS_TAGS, new ArrayList<String>(sysTags));
 	}
 }

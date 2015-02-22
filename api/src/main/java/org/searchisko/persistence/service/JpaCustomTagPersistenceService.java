@@ -6,6 +6,7 @@
 package org.searchisko.persistence.service;
 
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.SortedSet;
@@ -19,6 +20,7 @@ import javax.persistence.TypedQuery;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
+import org.elasticsearch.common.Strings;
 
 import org.searchisko.persistence.jpa.model.Tag;
 
@@ -52,16 +54,24 @@ public class JpaCustomTagPersistenceService implements CustomTagPersistenceServi
 
 	@Override
 	public boolean createTag(Tag tag) {
-		// check if there is same tag for the same content
-		SortedSet<String> tagList = new TreeSet(String.CASE_INSENSITIVE_ORDER);
-		for (Tag item : getTagsByContent(tag.getContentId())) {
-			tagList.add(item.getTagLabel());
-		}
-
-		if (tagList.contains(tag.getTagLabel())) {
-			// tag already exists
+		if (!(tag instanceof Tag)) {
 			return false;
 		}
+		if (tag.getTagLabel() == null) {
+			return false;
+		}
+
+		// to lower case
+		tag.setTagLabel(tag.getTagLabel().toLowerCase());
+
+		// check if there is same tag for the same content
+		for (Tag item : getTagsByContent(tag.getContentId())) {
+			if (item.getTagLabel().equals(tag.getTagLabel())) {
+				// tag already exists
+				return false;
+			}
+		}
+
 		tag.setCreatedAt(new Timestamp(System.currentTimeMillis()));
 		em.persist(tag);
 		return true;
@@ -69,6 +79,7 @@ public class JpaCustomTagPersistenceService implements CustomTagPersistenceServi
 
 	@Override
 	public void deleteTag(String contentId, String tagLabel) {
+		tagLabel = tagLabel.toLowerCase();
 		if ((contentId != null) && (tagLabel!= null)) {
 			em.createQuery("delete from Tag t where t.contentId = ?1 and t.tagLabel = ?2")
 				.setParameter(1, contentId)
