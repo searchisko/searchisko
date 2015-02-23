@@ -6,7 +6,7 @@
 package org.searchisko.api.rest.exception;
 
 /**
- * Exception used when user is not authorized to perform some action. Usefull for fine grained authorization code.
+ * Exception used when user is not authorized to perform some action. Useful for fine grained authorization code.
  * 
  * @author Vlastimil Elias (velias at redhat dot com)
  */
