@@ -62,7 +62,7 @@ public class SearchServiceTest_registeredQuery extends SearchServiceTestBase {
         InnerESRealClient testHelper = new InnerESRealClient();
 
         try {
-            SearchClientService searchClientService = testHelper.prepareSearchClientServiceMock("SearchServiceTest_registeredQuery");
+            SearchClientService searchClientService = testHelper.prepareSearchClientServiceMock("SearchServiceTest_registeredQuery[1]");
             prepareData(testHelper);
 
             ConfigService configService = mockConfigurationService();
@@ -72,7 +72,7 @@ public class SearchServiceTest_registeredQuery extends SearchServiceTestBase {
             RegisteredQueryService registeredQueryService = getRegisteredQueryService(searchClientService);
             searchService.registeredQueryService = registeredQueryService;
 
-            // first create new registered query
+            // create registered query
             Map<String, Object> template = TestUtils.loadJSONFromClasspathFile("/registered_query/default_all_content.json");
             registeredQueryService.create("default_all_content", template);
 
@@ -179,12 +179,12 @@ public class SearchServiceTest_registeredQuery extends SearchServiceTestBase {
     }
 
     @Test
-    public void testRegisteredQueryWithoutOverride() throws ReflectiveOperationException, IOException, JSONException {
+    public void testRegisteredQuery_Default_SysContentType() throws ReflectiveOperationException, IOException, JSONException {
 
         InnerESRealClient testHelper = new InnerESRealClient();
 
         try {
-            SearchClientService searchClientService = testHelper.prepareSearchClientServiceMock("SearchServiceTest_registeredQuery");
+            SearchClientService searchClientService = testHelper.prepareSearchClientServiceMock("SearchServiceTest_registeredQuery[2]");
             prepareData(testHelper);
 
             ConfigService configService = mockConfigurationService();
@@ -194,12 +194,12 @@ public class SearchServiceTest_registeredQuery extends SearchServiceTestBase {
             RegisteredQueryService registeredQueryService = getRegisteredQueryService(searchClientService);
             searchService.registeredQueryService = registeredQueryService;
 
-            // first create new registered query
-            Map<String, Object> template = TestUtils.loadJSONFromClasspathFile("/registered_query/only_default_content.json");
-            registeredQueryService.create("only_default_content", template);
+            // create registered query
+            Map<String, Object> template = TestUtils.loadJSONFromClasspathFile("/registered_query/default_sys_content_type.json");
+            registeredQueryService.create("default_sys_content_type", template);
 
             RegisteredQueryCache queryCache = Mockito.mock(RegisteredQueryCache.class);
-            Mockito.when(queryCache.get("only_default_content")).thenReturn(template);
+            Mockito.when(queryCache.get("default_sys_content_type")).thenReturn(template);
 
             registeredQueryService.registeredQueryCache = queryCache;
 
@@ -213,7 +213,7 @@ public class SearchServiceTest_registeredQuery extends SearchServiceTestBase {
                 searchService.parsedFilterConfigService.prepareFiltersForRequest(filters);
 
                 SearchRequestBuilder srb = new SearchRequestBuilder(searchClientService.getClient());
-                searchService.performSearchTemplateInternal("only_default_content", templateParams, filters, srb);
+                searchService.performSearchTemplateInternal("default_sys_content_type", templateParams, filters, srb);
 
                 SearchResponse response = srb.get();
                 Assert.assertEquals(3, response.getHits().getTotalHits());
@@ -231,5 +231,52 @@ public class SearchServiceTest_registeredQuery extends SearchServiceTestBase {
         rqs.searchClientService.log = Logger.getLogger("testlogger");
         rqs.entityService = Mockito.mock(EntityService.class);
         return rqs;
+    }
+
+    @Test
+    public void testRegisteredQuery_Default_SysType() throws ReflectiveOperationException, IOException, JSONException {
+
+        InnerESRealClient testHelper = new InnerESRealClient();
+
+        try {
+            SearchClientService searchClientService = testHelper.prepareSearchClientServiceMock("SearchServiceTest_registeredQuery[3]");
+            prepareData(testHelper);
+
+            ConfigService configService = mockConfigurationService();
+            SearchService searchService = getTested(configService);
+            mockProviderConfiguration(searchService, "/search/provider_3.json");
+
+            RegisteredQueryService registeredQueryService = getRegisteredQueryService(searchClientService);
+            searchService.registeredQueryService = registeredQueryService;
+
+            // create registered query
+            Map<String, Object> template = TestUtils.loadJSONFromClasspathFile("/registered_query/default_sys_type.json");
+            registeredQueryService.create("default_sys_type", template);
+
+            RegisteredQueryCache queryCache = Mockito.mock(RegisteredQueryCache.class);
+            Mockito.when(queryCache.get("default_sys_type")).thenReturn(template);
+
+            registeredQueryService.registeredQueryCache = queryCache;
+
+            {
+                Map<String, Object> templateParams = new HashMap<>();
+                templateParams.put("query_type", "match_all");
+
+                QuerySettings.Filters filters = new QuerySettings.Filters();
+                filters.acknowledgeUrlFilterCandidate("query_type", "match_all");
+
+                searchService.parsedFilterConfigService.prepareFiltersForRequest(filters);
+
+                SearchRequestBuilder srb = new SearchRequestBuilder(searchClientService.getClient());
+                searchService.performSearchTemplateInternal("default_sys_type", templateParams, filters, srb);
+
+                SearchResponse response = srb.get();
+                Assert.assertEquals(3, response.getHits().getTotalHits());
+            }
+
+        } finally {
+            deleteDataAndIndices(testHelper);
+            testHelper.finalizeESClientForUnitTest();
+        }
     }
 }

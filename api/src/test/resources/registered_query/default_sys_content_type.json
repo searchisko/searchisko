@@ -1,6 +1,6 @@
 {
-  "id": "only_default_content",
-  "description": "Will match only content defined by default",
+  "id": "default_sys_content_type",
+  "description": "Will match only content defined by default sys_content_type",
   "default": {
     "sys_content_type": "provider3_issue"
   },

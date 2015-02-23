@@ -1,0 +1,12 @@
+{
+  "id": "default_sys_type",
+  "description": "Will match only content defined by default sys_type",
+  "default": {
+    "sys_type": "issue"
+  },
+  "template": {
+    "query": {
+      "{{query_type}}": {}
+    }
+  }
+}
