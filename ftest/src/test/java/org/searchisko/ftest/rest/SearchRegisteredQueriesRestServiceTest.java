@@ -376,4 +376,84 @@ public class SearchRegisteredQueriesRestServiceTest {
                 .when().get(new URL(context, SEARCH_REST_API + "/query4")
                 .toExternalForm());
     }
+
+    @Test
+    @InSequence(150)
+    public void testRegisteredQueryWithDefaultSysType() throws MalformedURLException {
+
+        // uncomment if you run only this test method
+        // setupCreateProviderAndDocumentTypes();
+        // re-index test documents again to make sure we have 4 documents
+        // setupPushContent();
+
+        String query = "{\n" +
+                "  \"id\": \"query5\",\n" +
+                "  \"default\": {\n" +
+                "    \"sys_type\": \"issue\"\n" +
+                "   },\n" +
+                "  \"template\": {" +
+                "    \"query\": { \"match_all\": {}} \n" +
+                "   }" +
+                "}";
+
+        given().contentType(ContentType.JSON)
+                .auth().basic(DeploymentHelpers.DEFAULT_PROVIDER_NAME, DeploymentHelpers.DEFAULT_PROVIDER_PASSWORD)
+                .body(query)
+                .expect().statusCode(200)
+                .log().ifValidationFails()
+                .body("id", is("query5"))
+                .when().post(new URL(context, QUERY_REST_API).toExternalForm());
+
+        DeploymentHelpers.refreshES();
+
+        String providerUsername = "provider";
+        String providerPassword = "provider";
+
+        given().auth().preemptive().basic(providerUsername, providerPassword)
+                .expect().log().ifValidationFails()
+                .statusCode(200).contentType(ContentType.JSON)
+                .body("hits.total", is(2))
+                .when().get(new URL(context, SEARCH_REST_API + "/query5")
+                .toExternalForm());
+    }
+
+    @Test
+    @InSequence(160)
+    public void testRegisteredQueryWithDefaultSysContentType() throws MalformedURLException {
+
+        // uncomment if you run only this test method
+        // setupCreateProviderAndDocumentTypes();
+        // re-index test documents again to make sure we have 4 documents
+        // setupPushContent();
+
+        String query = "{\n" +
+                "  \"id\": \"query6\",\n" +
+                "  \"default\": {\n" +
+                "    \"sys_content_type\": \"provider1_issue\"\n" +
+                "   },\n" +
+                "  \"template\": {" +
+                "    \"query\": { \"match_all\": {}} \n" +
+                "   }" +
+                "}";
+
+        given().contentType(ContentType.JSON)
+                .auth().basic(DeploymentHelpers.DEFAULT_PROVIDER_NAME, DeploymentHelpers.DEFAULT_PROVIDER_PASSWORD)
+                .body(query)
+                .expect().statusCode(200)
+                .log().ifValidationFails()
+                .body("id", is("query6"))
+                .when().post(new URL(context, QUERY_REST_API).toExternalForm());
+
+        DeploymentHelpers.refreshES();
+
+        String providerUsername = "provider";
+        String providerPassword = "provider";
+
+        given().auth().preemptive().basic(providerUsername, providerPassword)
+                .expect().log().ifValidationFails()
+                .statusCode(200).contentType(ContentType.JSON)
+                .body("hits.total", is(2))
+                .when().get(new URL(context, SEARCH_REST_API + "/query6")
+                .toExternalForm());
+    }
 }

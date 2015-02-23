@@ -208,7 +208,7 @@ public class SearchService {
 			}
 			boolean isSysTypeAggregation = (aggregations != null && aggregations.contains(
 					getAggregationNameUsingSysTypeField()));
-			allQueryIndices = getIndicesForUserInRoleBasedOnTypes(sysTypesRequested, allQueryIndices, isSysTypeAggregation);
+			allQueryIndices = getIndicesForUserInRoleBasedOnTypes(sysTypesRequested, isSysTypeAggregation);
 		}
 
 		if ((allQueryIndices == null || allQueryIndices.isEmpty()) && (allQueryTypes == null || allQueryTypes.isEmpty())) {
@@ -225,11 +225,11 @@ public class SearchService {
 	/**
 	 *
 	 * @param sysTypesRequested
-	 * @param allQueryIndices
 	 * @param isSysTypeAggregation
 	 * @return
 	 */
-	protected Set<String> getIndicesForUserInRoleBasedOnTypes(Set<String> sysTypesRequested, Set<String> allQueryIndices, boolean isSysTypeAggregation) {
+	protected Set<String> getIndicesForUserInRoleBasedOnTypes(Set<String> sysTypesRequested, boolean isSysTypeAggregation) {
+        Set<String> allQueryIndices = null;
 		// #142 - we can't cache for authenticated users due content type level security
 		String indexNameCacheKey = null;
 		if (!authenticationUtilService.isAuthenticatedUser()) {
@@ -962,12 +962,12 @@ public class SearchService {
 		if (!handled && overrideType != null && !overrideType.trim().isEmpty()) {
 			List<String> requestedSysTypes = filters.getFilterCandidateValues(overrideType);
 			if (requestedSysTypes != null && requestedSysTypes.size() > 0) {
-				allQueryIndices = getIndicesForUserInRoleBasedOnTypes(new HashSet<>(requestedSysTypes), allQueryIndices, false);
+				allQueryIndices = getIndicesForUserInRoleBasedOnTypes(new HashSet<>(requestedSysTypes), false);
 				handled = true;
 			}
 		}
 
-		// client did not provide content type or type in URL params or they are not configured to allow for override
+        // client did not provide content type or type in URL params or they are not configured to allow for override
 		if (!handled) {
 			// use default content type if configured
 			if (defaultContentTypes.length > 0) {
@@ -975,7 +975,7 @@ public class SearchService {
 				handled = true;
 			// use default type if configured
 			} else if (defaultTypes.length > 0) {
-				allQueryIndices = getIndicesForUserInRoleBasedOnTypes(new HashSet<>(Arrays.asList(defaultTypes)), allQueryIndices, false);
+				allQueryIndices = getIndicesForUserInRoleBasedOnTypes(new HashSet<>(Arrays.asList(defaultTypes)), false);
 				handled = true;
 			}
 		}
