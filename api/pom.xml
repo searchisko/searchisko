@@ -225,6 +225,12 @@
 			<version>2.4</version>
 		</dependency>
 
+		<!-- We use urlrewritefilter to ensure clients using old APIs (like RSS clients) will not break -->
+		<dependency>
+			<groupId>org.tuckey</groupId>
+			<artifactId>urlrewritefilter</artifactId>
+		</dependency>
+
 		<!-- Unit test dependencies -->
 		<dependency>
 			<groupId>junit</groupId>

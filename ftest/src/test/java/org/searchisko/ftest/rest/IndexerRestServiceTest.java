@@ -40,7 +40,7 @@ public class IndexerRestServiceTest {
 		ALLOWED_ROLES.add(Role.PROVIDER);
 	}
 
-	public static final String INDEXER_REST_API = DeploymentHelpers.DEFAULT_REST_VERSION + "indexer/{type}/{operation}";
+	public static final String INDEXER_REST_API = DeploymentHelpers.CURRENT_REST_VERSION + "indexer/{type}/{operation}";
 
 	@Deployment(testable = false)
 	public static WebArchive createDeployment() throws IOException {

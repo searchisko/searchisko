@@ -42,7 +42,7 @@ import static org.hamcrest.Matchers.isEmptyOrNullString;
 @RunWith(Arquillian.class)
 public class SearchRestServiceTest {
 
-	public static final String SEARCH_REST_API = DeploymentHelpers.DEFAULT_REST_VERSION + "search";
+	public static final String SEARCH_REST_API = DeploymentHelpers.CURRENT_REST_VERSION + "search";
 
 	@Deployment(testable = false)
 	public static WebArchive createDeployment() throws IOException {

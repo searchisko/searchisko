@@ -40,7 +40,7 @@ public class RegisteredQueryRestServiceTest {
 		ALLOWED_ROLES.add(Role.ADMIN);
 	}
 
-	public static final String QUERY_REST_API = DeploymentHelpers.DEFAULT_REST_VERSION + "query";
+	public static final String QUERY_REST_API = DeploymentHelpers.CURRENT_REST_VERSION + "query";
 
 	@ArquillianResource
 	protected URL context;

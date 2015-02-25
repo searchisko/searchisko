@@ -50,7 +50,7 @@ public class ProviderRestServiceTest {
 
 	protected static Logger log = Logger.getLogger(ProviderRestServiceTest.class.getName());
 
-	public static final String PROVIDER_REST_API_BASE = DeploymentHelpers.DEFAULT_REST_VERSION + "provider/";
+	public static final String PROVIDER_REST_API_BASE = DeploymentHelpers.CURRENT_REST_VERSION + "provider/";
 
 	public static final String PROVIDER_REST_API = PROVIDER_REST_API_BASE + "{id}";
 

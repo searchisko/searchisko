@@ -129,7 +129,7 @@ public class CORSWithCredentialsTest {
 				.ifError().statusCode(200).header(ACCESS_CONTROL_ALLOW_CREDENTIALS, is("true"))
 				.header(ACCESS_CONTROL_ALLOW_HEADERS, nullValue()).header(ACCESS_CONTROL_ALLOW_METHODS, nullValue())
 				.header(ACCESS_CONTROL_MAX_AGE, nullValue()).when()
-				.get(new URL(context, DeploymentHelpers.DEFAULT_REST_VERSION + "sys/es/search/").toExternalForm()).thenReturn();
+				.get(new URL(context, DeploymentHelpers.CURRENT_REST_VERSION + "sys/es/search/").toExternalForm()).thenReturn();
 		testCORSHeader(response);
 	}
 

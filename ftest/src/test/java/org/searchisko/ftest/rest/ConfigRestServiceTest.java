@@ -42,7 +42,7 @@ public class ConfigRestServiceTest {
 		ALLOWED_ROLES.add(Role.ADMIN);
 	}
 
-	public static final String CONFIG_REST_API_BASE = DeploymentHelpers.DEFAULT_REST_VERSION + "config/";
+	public static final String CONFIG_REST_API_BASE = DeploymentHelpers.CURRENT_REST_VERSION + "config/";
 
 	public static final String CONFIG_REST_API = CONFIG_REST_API_BASE + "{id}";
 

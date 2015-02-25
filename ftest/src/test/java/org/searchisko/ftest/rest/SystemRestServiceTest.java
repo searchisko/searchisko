@@ -47,7 +47,7 @@ public class SystemRestServiceTest {
 		ALLOWED_ROLES.add(Role.ADMIN);
 	}
 
-	public static final String SYSTEM_REST_API = DeploymentHelpers.DEFAULT_REST_VERSION + "sys/{operation}";
+	public static final String SYSTEM_REST_API = DeploymentHelpers.CURRENT_REST_VERSION + "sys/{operation}";
 
 	public static final String OPERATION_AUDITLOG = "auditlog";
 

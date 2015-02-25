@@ -50,7 +50,7 @@ public class ContentRestServiceTest {
 		ALLOWED_ROLES.add(Role.PROVIDER);
 	}
 
-	public static final String CONTENT_REST_API_BASE = DeploymentHelpers.DEFAULT_REST_VERSION + "content/{type}/";
+	public static final String CONTENT_REST_API_BASE = DeploymentHelpers.CURRENT_REST_VERSION + "content/{type}/";
 
 	public static final String CONTENT_REST_API = CONTENT_REST_API_BASE + "{contentId}";
 

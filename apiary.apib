@@ -614,6 +614,10 @@ Feed API
 This part of the API is used by all systems that want to consume [content](https://github.com/searchisko/searchisko/tree/master/documentation/rest-api/)
 stored in Searchisko as feed in [Atom Syndication Format](http://tools.ietf.org/html/rfc4287). 
 Request parameters can be used to filter feed content by distinct criteria.
+
+Because RSS clients may not support HTTP Redirects well Searchisko forwards internally any request from `/v1/rest/feed` to `/v2/rest/feed`.
+Thanks to this forward clients that registered for previous API version will still work without any issues after Searchisko API
+is upgraded to new version.
 --
 
 Get Atom feed with filtered content.

@@ -42,7 +42,7 @@ public class TaskRestServiceTest {
 		ALLOWED_ROLES.add(Role.TASKS_MANAGER);
 	}
 
-	public static final String TASKS_REST_API = DeploymentHelpers.DEFAULT_REST_VERSION + "tasks";
+	public static final String TASKS_REST_API = DeploymentHelpers.CURRENT_REST_VERSION + "tasks";
 
 	@Deployment(testable = false)
 	public static WebArchive createDeployment() throws IOException {

@@ -44,9 +44,13 @@ public class DeploymentHelpers {
 
 	protected static Logger log = Logger.getLogger(DeploymentHelpers.class.getName());
 
-	public static final String DEFAULT_API_VERSION = "v2/";
+	public static final String V1_API_VERSION = "v1/";
 
-	public static final String DEFAULT_REST_VERSION = DEFAULT_API_VERSION + "rest/";
+	public static final String V1_REST_VERSION = V1_API_VERSION + "rest/";
+
+	public static final String CURRENT_API_VERSION = "v2/";
+
+	public static final String CURRENT_REST_VERSION = CURRENT_API_VERSION + "rest/";
 
 	public static final String DEFAULT_PROVIDER_NAME = "jbossorg";
 
@@ -107,7 +111,7 @@ public class DeploymentHelpers {
 	private static String projectRootPath = null;
 
 
-	public static String getProjectRootPaht() {
+	public static String getProjectRootPath() {
 		if (projectRootPath == null) {
 			String rootPath = DeploymentHelpers.class.getResource("/").getFile();
 			// Root Path is /searchisko/ftest/target/test-classes/
@@ -120,14 +124,14 @@ public class DeploymentHelpers {
 	}
 
 	public static File getProjectFile(String relativePath) {
-		return new File(getProjectRootPaht() + relativePath);
+		return new File(getProjectRootPath() + relativePath);
 	}
 
 	protected static WebArchive createWar() throws IOException {
 		final File[] runtimeDeps;
 		try {
 			// /api/pom.xml determined dynamically allowing running single test in IDE
-			File apiPom = new File(getProjectRootPaht() + "/api/pom.xml");
+			File apiPom = new File(getProjectRootPath() + "/api/pom.xml");
 
 			runtimeDeps = Maven.resolver().loadPomFromFile(apiPom).importRuntimeDependencies().resolve()
 					.withTransitivity().asFile();
@@ -153,10 +157,11 @@ public class DeploymentHelpers {
 				.addAsResource("META-INF/test-persistence.xml", "META-INF/persistence.xml")
 				.setWebXML(getWebXML(projectRootPath))
 				.addAsWebInfResource(new StringAsset("<jboss-web><security-domain>" + SECURITY_DOMAIN
-						+ "</security-domain></jboss-web>"), "jboss-web.xml")
+                        + "</security-domain></jboss-web>"), "jboss-web.xml")
 				.addAsWebInfResource("webapp/WEB-INF/test-searchisko-ds.xml", "searchisko-ds.xml")
 				.addAsWebInfResource(new File(projectRootPath + "/api/src/main/webapp/WEB-INF/beans.xml"), "beans.xml")
-				.addAsWebInfResource(new File(projectRootPath + "/api/src/main/webapp/WEB-INF/jboss-deployment-structure.xml"), "jboss-deployment-structure.xml");
+				.addAsWebInfResource(new File(projectRootPath + "/api/src/main/webapp/WEB-INF/jboss-deployment-structure.xml"), "jboss-deployment-structure.xml")
+				.addAsWebInfResource(new File(projectRootPath + "/api/src/main/webapp/WEB-INF/urlrewrite.xml"), "urlrewrite.xml");
 
 		return war;
 	}

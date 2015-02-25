@@ -32,7 +32,7 @@ import static org.searchisko.ftest.rest.RestTestHelpers.givenJsonAndLogIfFails;
 @RunWith(Arquillian.class)
 public class AuthStatusRestServiceTest {
 
-	private static final String REST_API_AUTH_STATUS = DeploymentHelpers.DEFAULT_REST_VERSION + "auth/status";
+	private static final String REST_API_AUTH_STATUS = DeploymentHelpers.CURRENT_REST_VERSION + "auth/status";
 
 	@ArquillianResource
 	protected URL context;

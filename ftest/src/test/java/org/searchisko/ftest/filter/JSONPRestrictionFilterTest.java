@@ -32,9 +32,9 @@ import static com.jayway.restassured.RestAssured.given;
 @RunWith(Arquillian.class)
 public class JSONPRestrictionFilterTest {
 
-	public static final String AUTH_STATUS_REST_API = DeploymentHelpers.DEFAULT_REST_VERSION + "auth/status";
+	public static final String AUTH_STATUS_REST_API = DeploymentHelpers.CURRENT_REST_VERSION + "auth/status";
 
-	public static final String COMMON_REST_API = DeploymentHelpers.DEFAULT_REST_VERSION + "search";
+	public static final String COMMON_REST_API = DeploymentHelpers.CURRENT_REST_VERSION + "search";
 
 	@ArquillianResource
 	protected URL context;

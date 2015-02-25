@@ -38,8 +38,8 @@ import static org.hamcrest.Matchers.iterableWithSize;
 @RunWith(Arquillian.class)
 public class SearchRegisteredQueriesRestServiceTest {
 
-    public static final String SEARCH_REST_API = DeploymentHelpers.DEFAULT_REST_VERSION + "search";
-    public static final String QUERY_REST_API = DeploymentHelpers.DEFAULT_REST_VERSION + "query";
+    public static final String SEARCH_REST_API = DeploymentHelpers.CURRENT_REST_VERSION + "search";
+    public static final String QUERY_REST_API = DeploymentHelpers.CURRENT_REST_VERSION + "query";
 
     @Deployment(testable = false)
     public static WebArchive createDeployment() throws IOException {

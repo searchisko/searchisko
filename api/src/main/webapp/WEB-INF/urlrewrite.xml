@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE urlrewrite PUBLIC "-//tuckey.org//DTD UrlRewrite 4.0//EN"
+		"http://www.tuckey.org/res/dtds/urlrewrite4.0.dtd">
+
+<urlrewrite>
+
+	<rule>
+		<note>
+			Make sure RSS clients using old API version are forwarded to new API version.
+			See https://github.com/searchisko/searchisko/issues/211
+		</note>
+		<!--<from>/v1/rest/feed</from>-->
+		<!--<to type="forward">%{context-path}/v2/rest/feed</to>-->
+		<from>^/v1/rest/feed$</from>
+		<to type="forward">/v2/rest/feed</to>
+	</rule>
+
+</urlrewrite>

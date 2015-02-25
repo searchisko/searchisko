@@ -41,9 +41,9 @@ import static org.hamcrest.Matchers.notNullValue;
 @RunWith(Arquillian.class)
 public class ESProxyFilterTest {
 
-	public static final String SEARCH_REST_API = DeploymentHelpers.DEFAULT_REST_VERSION + "sys/es/search";
+	public static final String SEARCH_REST_API = DeploymentHelpers.CURRENT_REST_VERSION + "sys/es/search";
 
-	public static final String STATS_REST_API = DeploymentHelpers.DEFAULT_REST_VERSION + "sys/es/stats";
+	public static final String STATS_REST_API = DeploymentHelpers.CURRENT_REST_VERSION + "sys/es/stats";
 
 	@ArquillianResource
 	protected URL context;

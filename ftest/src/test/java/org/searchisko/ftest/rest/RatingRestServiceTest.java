@@ -41,7 +41,7 @@ import static org.hamcrest.Matchers.nullValue;
 @RunWith(Arquillian.class)
 public class RatingRestServiceTest {
 
-	public static final String RATING_REST_API_BASE = DeploymentHelpers.DEFAULT_REST_VERSION + "rating/";
+	public static final String RATING_REST_API_BASE = DeploymentHelpers.CURRENT_REST_VERSION + "rating/";
 
 	public static final String RATING_REST_API = RATING_REST_API_BASE + "{id}";
 

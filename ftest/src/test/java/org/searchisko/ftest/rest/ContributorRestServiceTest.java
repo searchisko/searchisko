@@ -51,7 +51,7 @@ public class ContributorRestServiceTest {
         return DeploymentHelpers.createDeployment();
     }
 
-	public static final String CONTRIBUTOR_REST_API_BASE = DeploymentHelpers.DEFAULT_REST_VERSION + "contributor/";
+	public static final String CONTRIBUTOR_REST_API_BASE = DeploymentHelpers.CURRENT_REST_VERSION + "contributor/";
 
 	public static final String CONTRIBUTOR_REST_API = CONTRIBUTOR_REST_API_BASE + "{id}";
 

@@ -39,7 +39,7 @@ public class NormalizationRestServiceTest {
 		ALLOWED_ROLES.add(Role.PROVIDER);
 	}
 
-	public static final String NORMALIZATION_REST_API_BASE = DeploymentHelpers.DEFAULT_REST_VERSION + "normalization/{normalizationName}/";
+	public static final String NORMALIZATION_REST_API_BASE = DeploymentHelpers.CURRENT_REST_VERSION + "normalization/{normalizationName}/";
 
 	public static final String NORMALIZATION_REST_API = NORMALIZATION_REST_API_BASE + "{id}";
 

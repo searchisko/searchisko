@@ -43,7 +43,7 @@ public class ProjectRestServiceTest {
 		ALLOWED_ROLES.add(Role.PROJECTS_MANAGER);
 	}
 
-	public static final String PROJECT_REST_API = DeploymentHelpers.DEFAULT_REST_VERSION + "project";
+	public static final String PROJECT_REST_API = DeploymentHelpers.CURRENT_REST_VERSION + "project";
 
 	@ArquillianResource
 	protected URL context;

@@ -35,11 +35,17 @@ import static org.hamcrest.Matchers.is;
  * http://docs.jbossorg.apiary.io/#feedapi
  * 
  * @author Libor Krzyzanek
+ * @author Lukas Vlcek
  * @see org.searchisko.api.rest.FeedRestService
  */
 @RunWith(Arquillian.class)
 public class FeedRestServiceTest {
-	public static final String FEED_REST_API = DeploymentHelpers.DEFAULT_REST_VERSION + "feed";
+
+	public static final String FEED_REST_API_V1 = DeploymentHelpers.V1_REST_VERSION + "feed";
+	public static final String FEED_REST_API_CURRENT = DeploymentHelpers.CURRENT_REST_VERSION + "feed";
+
+    // We want to test several versions of FEED API. See https://github.com/searchisko/searchisko/issues/211
+    public static final String[] FEED_API_VERSIONS = new String[]{ FEED_REST_API_V1, FEED_REST_API_CURRENT };
 
 	@Deployment(testable = false)
 	public static WebArchive createDeployment() throws IOException {
@@ -52,8 +58,10 @@ public class FeedRestServiceTest {
 	@Test
 	@InSequence(10)
 	public void assertNoProviderConfigured() throws MalformedURLException {
-		given().contentType(ContentType.JSON).expect().log().ifValidationFails().statusCode(500).when()
-				.get(new URL(context, FEED_REST_API).toExternalForm());
+        for (String feedAPI: FEED_API_VERSIONS) {
+            given().contentType(ContentType.JSON).expect().log().ifValidationFails().statusCode(500).when()
+                    .get(new URL(context, feedAPI).toExternalForm());
+        }
 	}
 
 	static ProviderModel provider1 = new ProviderModel("provider1", "password");
@@ -78,8 +86,10 @@ public class FeedRestServiceTest {
 	@Test
 	@InSequence(20)
 	public void assertGetAllEmpty() throws MalformedURLException {
-		given().contentType(ContentType.JSON).expect().log().ifValidationFails().statusCode(200)
-				.contentType("application/atom+xml").when().get(new URL(context, FEED_REST_API).toExternalForm());
+        for (String feedAPI: FEED_API_VERSIONS) {
+            given().contentType(ContentType.JSON).expect().log().ifValidationFails().statusCode(200)
+                    .contentType("application/atom+xml").when().get(new URL(context, feedAPI).toExternalForm());
+        }
 	}
 
 	static final String contentId = "test-id";
@@ -115,21 +125,25 @@ public class FeedRestServiceTest {
 	@Test
 	@InSequence(31)
 	public void assertGetDataFeed_noPermissionForAnonym() throws MalformedURLException {
-		given().contentType(ContentType.XML).expect().log().ifValidationFails().statusCode(200)
-				.contentType("application/atom+xml").body("feed.entry.author.name.text()", is("unknown"))
-				.body("feed.entry.content.@type", is(FEED_CONTENT_TYPE)).body("feed.entry.content.text()", is("content"))
-				.body("feed.entry.summary.text()", is("desc")).when().get(new URL(context, FEED_REST_API).toExternalForm());
+        for (String feedAPI: FEED_API_VERSIONS) {
+            given().contentType(ContentType.XML).expect().log().ifValidationFails().statusCode(200)
+                    .contentType("application/atom+xml").body("feed.entry.author.name.text()", is("unknown"))
+                    .body("feed.entry.content.@type", is(FEED_CONTENT_TYPE)).body("feed.entry.content.text()", is("content"))
+                    .body("feed.entry.summary.text()", is("desc")).when().get(new URL(context, feedAPI).toExternalForm());
+        }
 	}
 
 	@Test
 	@InSequence(32)
 	public void assertGetDataFeed_providerHasPermission() throws MalformedURLException {
 		// authenticated provider has right to type 2 as it allows role "provider"
-		given().contentType(ContentType.XML).auth().preemptive().basic(provider1.name, provider1.password).expect().log()
-				.ifValidationFails().statusCode(200).contentType("application/atom+xml")
-				.body("feed.entry[0].author.name.text()", is("unknown"))
-				.body("feed.entry[1].author.name.text()", is("unknown")).when()
-				.get(new URL(context, FEED_REST_API).toExternalForm());
+        for (String feedAPI: FEED_API_VERSIONS) {
+            given().contentType(ContentType.XML).auth().preemptive().basic(provider1.name, provider1.password).expect().log()
+                    .ifValidationFails().statusCode(200).contentType("application/atom+xml")
+                    .body("feed.entry[0].author.name.text()", is("unknown"))
+                    .body("feed.entry[1].author.name.text()", is("unknown")).when()
+                    .get(new URL(context, feedAPI).toExternalForm());
+        }
 	}
 
 	@Test
@@ -143,23 +157,27 @@ public class FeedRestServiceTest {
 	@InSequence(41)
 	public void assertGetDataFeed_providerHasNoPermission() throws MalformedURLException {
 		// authenticated provider has no right to type 2 as it allows another role now
-		given().contentType(ContentType.XML).auth().preemptive().basic(provider1.name, provider1.password).expect().log()
-				.ifValidationFails().statusCode(200).contentType("application/atom+xml")
-				.body("feed.entry.author.name.text()", is("unknown")).body("feed.entry.content.@type", is(FEED_CONTENT_TYPE))
-				.body("feed.entry.content.text()", is("content")).body("feed.entry.summary.text()", is("desc")).when()
-				.get(new URL(context, FEED_REST_API).toExternalForm());
+        for (String feedAPI: FEED_API_VERSIONS) {
+            given().contentType(ContentType.XML).auth().preemptive().basic(provider1.name, provider1.password).expect().log()
+                    .ifValidationFails().statusCode(200).contentType("application/atom+xml")
+                    .body("feed.entry.author.name.text()", is("unknown")).body("feed.entry.content.@type", is(FEED_CONTENT_TYPE))
+                    .body("feed.entry.content.text()", is("content")).body("feed.entry.summary.text()", is("desc")).when()
+                    .get(new URL(context, feedAPI).toExternalForm());
+        }
 	}
 
 	@Test
 	@InSequence(42)
 	public void assertGetDataFeed_adminHasPermission() throws MalformedURLException {
 		// authenticated admin has always right to type 2
-		given().contentType(ContentType.XML).auth().preemptive()
-				.basic(DeploymentHelpers.DEFAULT_PROVIDER_NAME, DeploymentHelpers.DEFAULT_PROVIDER_PASSWORD).expect().log()
-				.ifValidationFails().statusCode(200).contentType("application/atom+xml")
-				.body("feed.entry[0].author.name.text()", is("unknown"))
-				.body("feed.entry[1].author.name.text()", is("unknown")).when()
-				.get(new URL(context, FEED_REST_API).toExternalForm());
+        for (String feedAPI: FEED_API_VERSIONS) {
+            given().contentType(ContentType.XML).auth().preemptive()
+                    .basic(DeploymentHelpers.DEFAULT_PROVIDER_NAME, DeploymentHelpers.DEFAULT_PROVIDER_PASSWORD).expect().log()
+                    .ifValidationFails().statusCode(200).contentType("application/atom+xml")
+                    .body("feed.entry[0].author.name.text()", is("unknown"))
+                    .body("feed.entry[1].author.name.text()", is("unknown")).when()
+                    .get(new URL(context, feedAPI).toExternalForm());
+        }
 	}
 
 	@Test
@@ -176,22 +194,22 @@ public class FeedRestServiceTest {
 	@Test
 	@InSequence(51)
 	public void assertGetDataFeed_paginationSupport() throws MalformedURLException {
+        for (String feedAPI: FEED_API_VERSIONS) {
+            given().contentType(ContentType.XML).expect().log().ifValidationFails().statusCode(200)
+                    .contentType("application/atom+xml").body("feed.entry[0].content.text()", is("content"))
+                    .body("feed.entry[1].content.text()", is("content 2")).when()
+                    .get(new URL(context, feedAPI).toExternalForm());
 
-		given().contentType(ContentType.XML).expect().log().ifValidationFails().statusCode(200)
-				.contentType("application/atom+xml").body("feed.entry[0].content.text()", is("content"))
-				.body("feed.entry[1].content.text()", is("content 2")).when()
-				.get(new URL(context, FEED_REST_API).toExternalForm());
+            given().contentType(ContentType.XML).expect().log().ifValidationFails().statusCode(200)
+                    .contentType("application/atom+xml").body("feed.entry.content.@type", is(FEED_CONTENT_TYPE))
+                    .body("feed.entry.content.text()", is("content")).when()
+                    .get(new URL(context, feedAPI + "?size=1&from=0").toExternalForm());
 
-		given().contentType(ContentType.XML).expect().log().ifValidationFails().statusCode(200)
-				.contentType("application/atom+xml").body("feed.entry.content.@type", is(FEED_CONTENT_TYPE))
-				.body("feed.entry.content.text()", is("content")).when()
-				.get(new URL(context, FEED_REST_API + "?size=1&from=0").toExternalForm());
-
-		given().contentType(ContentType.XML).expect().log().ifValidationFails().statusCode(200)
-				.contentType("application/atom+xml").body("feed.entry.content.@type", is(FEED_CONTENT_TYPE))
-				.body("feed.entry.content.text()", is("content 2")).when()
-				.get(new URL(context, FEED_REST_API + "?size=1&from=1").toExternalForm());
-
+            given().contentType(ContentType.XML).expect().log().ifValidationFails().statusCode(200)
+                    .contentType("application/atom+xml").body("feed.entry.content.@type", is(FEED_CONTENT_TYPE))
+                    .body("feed.entry.content.text()", is("content 2")).when()
+                    .get(new URL(context, feedAPI + "?size=1&from=1").toExternalForm());
+        }
 	}
 
 	// /////////////////////////////// Document level security - #143 ////////////////////////////////
@@ -237,38 +255,44 @@ public class FeedRestServiceTest {
 	@Test
 	@InSequence(61)
 	public void assertDls_adminHasPermissionToAllDocuments() throws MalformedURLException {
-		given().contentType(ContentType.XML).auth().preemptive()
-				.basic(DeploymentHelpers.DEFAULT_PROVIDER_NAME, DeploymentHelpers.DEFAULT_PROVIDER_PASSWORD).expect().log()
-				.ifValidationFails().statusCode(200).contentType("application/atom+xml")
-				.body("feed.entry[0].id.text()", is("searchisko:content:id:provider1_blog-test-id"))
-				.body("feed.entry[1].id.text()", is("searchisko:content:id:provider1_blog-test-id2"))
-				.body("feed.entry[2].id.text()", is("searchisko:content:id:provider1_blog-test-id3"))
-				.body("feed.entry[3].id.text()", is("searchisko:content:id:provider1_blog-test-id4"))
-				.body("feed.entry[4].id.text()", is("searchisko:content:id:provider1_blog-test-id5")).when()
-				.get(new URL(context, FEED_REST_API).toExternalForm());
+        for (String feedAPI: FEED_API_VERSIONS) {
+            given().contentType(ContentType.XML).auth().preemptive()
+                    .basic(DeploymentHelpers.DEFAULT_PROVIDER_NAME, DeploymentHelpers.DEFAULT_PROVIDER_PASSWORD).expect().log()
+                    .ifValidationFails().statusCode(200).contentType("application/atom+xml")
+                    .body("feed.entry[0].id.text()", is("searchisko:content:id:provider1_blog-test-id"))
+                    .body("feed.entry[1].id.text()", is("searchisko:content:id:provider1_blog-test-id2"))
+                    .body("feed.entry[2].id.text()", is("searchisko:content:id:provider1_blog-test-id3"))
+                    .body("feed.entry[3].id.text()", is("searchisko:content:id:provider1_blog-test-id4"))
+                    .body("feed.entry[4].id.text()", is("searchisko:content:id:provider1_blog-test-id5")).when()
+                    .get(new URL(context, feedAPI).toExternalForm());
+        }
 	}
 
 	@Test
 	@InSequence(62)
 	public void assertDls_anonym() throws MalformedURLException {
-		given().contentType(ContentType.XML).expect().log().ifValidationFails().statusCode(200)
-				.contentType("application/atom+xml")
-				.body("feed.entry[0].id.text()", is("searchisko:content:id:provider1_blog-test-id"))
-				.body("feed.entry[1].id.text()", is("searchisko:content:id:provider1_blog-test-id2"))
-				.body("feed.entry[2].id.text()", is("searchisko:content:id:provider1_blog-test-id5")).when()
-				.get(new URL(context, FEED_REST_API).toExternalForm());
+        for (String feedAPI: FEED_API_VERSIONS) {
+            given().contentType(ContentType.XML).expect().log().ifValidationFails().statusCode(200)
+                    .contentType("application/atom+xml")
+                    .body("feed.entry[0].id.text()", is("searchisko:content:id:provider1_blog-test-id"))
+                    .body("feed.entry[1].id.text()", is("searchisko:content:id:provider1_blog-test-id2"))
+                    .body("feed.entry[2].id.text()", is("searchisko:content:id:provider1_blog-test-id5")).when()
+                    .get(new URL(context, feedAPI).toExternalForm());
+        }
 	}
 
 	@Test
 	@InSequence(63)
 	public void assertDls_userwithrole() throws MalformedURLException {
-		given().contentType(ContentType.XML).auth().preemptive().basic(provider1.name, provider1.password).expect().log()
-				.ifValidationFails().statusCode(200).contentType("application/atom+xml")
-				.body("feed.entry[0].id.text()", is("searchisko:content:id:provider1_blog-test-id"))
-				.body("feed.entry[1].id.text()", is("searchisko:content:id:provider1_blog-test-id2"))
-				.body("feed.entry[2].id.text()", is("searchisko:content:id:provider1_blog-test-id4"))
-				.body("feed.entry[3].id.text()", is("searchisko:content:id:provider1_blog-test-id5")).when()
-				.get(new URL(context, FEED_REST_API).toExternalForm());
+        for (String feedAPI: FEED_API_VERSIONS) {
+            given().contentType(ContentType.XML).auth().preemptive().basic(provider1.name, provider1.password).expect().log()
+                    .ifValidationFails().statusCode(200).contentType("application/atom+xml")
+                    .body("feed.entry[0].id.text()", is("searchisko:content:id:provider1_blog-test-id"))
+                    .body("feed.entry[1].id.text()", is("searchisko:content:id:provider1_blog-test-id2"))
+                    .body("feed.entry[2].id.text()", is("searchisko:content:id:provider1_blog-test-id4"))
+                    .body("feed.entry[3].id.text()", is("searchisko:content:id:provider1_blog-test-id5")).when()
+                    .get(new URL(context, feedAPI).toExternalForm());
+        }
 	}
 
 }
