@@ -1,19 +1,18 @@
 {
     "type" : "remote",
     "remote" : {
-        "urlGetDocuments"       : "http://www.jboss.org/rht_solutions.json",
-        "simpleGetDocuments"    : "true",
-        "urlGetDocumentDetailsField":"url",
+        "urlGetDocuments"       : "https://api.access.redhat.com/rs/search?keyword=product:*JBoss*%20and%20language:en&contentTypes=solution&offset={startAtIndex}&limit=30",
+        "getDocsResFieldDocuments" : "search_result",
+        "listDocumentsMode"     : "pagination",
         "spacesIndexed"					: "MAIN",
         "timeout"               : "20s",
-        "indexUpdatePeriod"     : "1h",
+        "indexUpdatePeriod"     : "24h",
         "maxIndexingThreads"    : 1
     },
     "index" : {
         "index"             : "data_rht_knowledgebase_solution",
         "type"              : "rht_knowledgebase_solution",
-        "remote_field_document_id" : "url",
-        "remote_field_updated"     : "detail.last_modified_date",
+        "remote_field_document_id" : "display_id",
         "field_space_key"   : "space_key",
         "field_document_id" : "sys_id",
         "fields" : {
@@ -24,54 +23,40 @@
             "sys_content_type"      : {"remote_field" : "prep_content_type"},
             "sys_project"           : {"remote_field" : "prep_project"},
             "sys_project_name"      : {"remote_field" : "prep_project_name"},
-            "sys_url_view"			    : {"remote_field" : "prep_view_uri"},
-            "sys_title"             : {"remote_field" : "detail.title"},
-            "sys_description"       : {"remote_field" : "prep_description"},
-            "issue"                 : {"remote_field" : "detail.issue.text"},
-            "environment"           : {"remote_field" : "detail.environment.text"},
-            "resolution"            : {"remote_field" : "detail.resolution.text"},
-            "root_cause"            : {"remote_field" : "detail.root_cause.text"},
-            "product"               : {"remote_field" : "product"},
-            "tags"                  : {"remote_field" : "detail.tags.tag"},
-            "sys_tags"              : {"remote_field" : "detail.tags.tag"}
+            "sys_url_view"			    : {"remote_field" : "view_uri"},
+            "sys_title"             : {"remote_field" : "title"},
+            "sys_description"       : {"remote_field" : "abstract"},
+            "product"               : {"remote_field" : "solution.products.product"},
+            "tags"                  : {"remote_field" : "solution.tags.tag"},
+            "sys_tags"              : {"remote_field" : "solution.tags.tag"}
         },
         "preprocessors" : [
             {
                 "name"     : "Remote id copy",
                 "class"    : "org.jboss.elasticsearch.tools.content.AddMultipleValuesPreprocessor",
                 "settings" : {
-                    "prep_id_remote" : "{detail.id}"
+                    "prep_id_remote" : "{display_id}"
                  } 
             },{
                 "name"     : "Values filler",
                 "class"    : "org.jboss.elasticsearch.tools.content.AddMultipleValuesPreprocessor",
                 "settings" : {
-                    "url"                    : "rht_knowledgebase_solution-{detail.id}",
+                    "display_id"             : "rht_knowledgebase_solution-{display_id}",
                     "prep_type"              : "solution",
                     "prep_content_provider"  : "rht",
-                    "prep_content_type"      : "rht_knowledgebase_solution",
-                    "prep_view_uri"          : "https://access.redhat.com/site/solutions/{detail.id}"
-                    
+                    "prep_content_type"      : "rht_knowledgebase_solution"
                  } 
             },{ 
                 "name"     : "Updated filler",
                 "class"    : "org.jboss.elasticsearch.tools.content.AddCurrentTimestampPreprocessor",
                 "settings" : { "field" : "prep_updated" }
             },{ 
-                "name"     : "Description trimmer",
-                "class"    : "org.jboss.elasticsearch.tools.content.TrimStringValuePreprocessor",
-                "settings" : {
-                    "source_field" : "detail.issue.text",
-                    "target_field" : "prep_description",
-                    "max_size" : 400
-                } 
-            },{ 
                 "name"     : "Projects mapper",
                 "class"    : "org.jboss.elasticsearch.tools.content.ESLookupValuePreprocessor",
                 "settings" : {
                     "index_name"       : "sys_projects",
                     "index_type"       : "project",
-                    "source_field"     : "product",
+                    "source_field"     : "solution.products.product",
                     "idx_search_field" : "jbossdeveloper_website_code",
                     "result_mapping"   : [{
 		                    "idx_result_field" : "code",

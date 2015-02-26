@@ -56,12 +56,12 @@ some of them are set during content push before pre-processing, thus they will b
 <tr>
   <td>sys_project</td>
   <td/>
-  <td>Normalized Searchisko wide identifier of the project - system field - it is used for the project aggregations and filtering in the Search API.</td>
+  <td>Normalized Searchisko wide identifier of the project - system field - it is used for the project aggregations and filtering in the Search API. May contain one value or array of values!</td>
 </tr>
 <tr>
   <td>sys_project_name</td>
   <td/>
-  <td>Human readable name of project based on <code>sys_project</code> identifier - system field.</td>
+  <td>Human readable name of project based on <code>sys_project</code> identifier - system field. May contain one value or array of values!</td>
 </tr>
 <tr>
   <td>sys_contributors</td>
