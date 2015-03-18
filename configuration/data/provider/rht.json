@@ -7,6 +7,7 @@
       "description": "Articles from Red Hat knowledgebase - https://access.redhat.com/search/browse/articles",
       "sys_type": "article",
       "sys_content_content-type" : "text/plain",
+      "persist" : true,
       "input_preprocessors": [
         { 
 	        "name"     : "Projects mapper",
@@ -40,6 +41,7 @@
       "description": "Solutions from Red Hat knowledgebase - https://access.redhat.com/search/browse/solutions",
       "sys_type": "solution",
       "sys_content_content-type" : "text/plain",
+      "persist" : true,
       "input_preprocessors": [
         { 
 	        "name"     : "Projects mapper",

@@ -276,6 +276,7 @@
       "description": "Forum threads from SBS running at developer.jboss.org collected by jbossorg_sbs_forum river",
       "sys_type": "forumthread",
       "sys_content_content-type" : "text/html",
+      "persist" : true,
       "input_preprocessors": [
       			{ 
                 "name"     : "Projects mapper",
@@ -388,6 +389,7 @@
       "description": "Articles from SBS running at developer.jboss.org collected by jbossorg_sbs_article river",
       "sys_type": "article",
       "sys_content_content-type" : "text/html",
+      "persist" : true,
       "input_preprocessors": [
       			{ 
                 "name"     : "Projects mapper",
@@ -612,6 +614,7 @@
       "description": "Contributor profile - additional information to contributor system profiles",
       "sys_type": "contributor_profile",
       "sys_content_content-type" : "text/plain",
+      "persist" : true,
       "input_preprocessors": [
         {
           "name": "Contributor consistency validator",
