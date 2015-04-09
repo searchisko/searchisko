@@ -70,9 +70,9 @@ given script. Steps 2 - 5 can be performed by top level `init_all_noriver.sh` sc
 
 	* Optionally push other init data
 
-        # If you have any additional init data, push them.
-        # For example if you have list of contributors or passwords for rivers.
-        # (Such init data is typically not shared in public repo)
+		# If you have any additional init data, push them.
+		# For example if you have list of contributors or passwords for rivers.
+		# (Such init data is typically not shared in public repo)
 
 6. Start Rivers
 
