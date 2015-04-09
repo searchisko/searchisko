@@ -1,6 +1,6 @@
 # Release Notes
 
-This document contains high-level release notes. More details can be found in [milestones](https://github.com/searchisko/searchisko/issues/milestones) on GitHub.
+This document contains high-level release notes. More details can be found in [milestones](https://github.com/searchisko/searchisko/milestones) on GitHub.
 
 ## 2.0.1-SNAPSHOT
 
