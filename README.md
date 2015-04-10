@@ -1,7 +1,7 @@
 # Searchisko [![Build Status](https://travis-ci.org/searchisko/searchisko.svg?branch=master)](https://travis-ci.org/searchisko/searchisko) [![Coverage Status](https://coveralls.io/repos/searchisko/searchisko/badge.png?branch=master)](https://coveralls.io/r/searchisko/searchisko)
 
 **Searchisko** is an open source project that allows to quickly build secured role-based REST service
-to index, search, retrieve and aggregate content from heterogeneous sources. It can attributes content
+to index, search, retrieve and aggregate content from heterogeneous sources. It can attribute content
 to people and projects regardless of where the content originated.
 
 Searchisko is Java EE 6 application which runs in the JBoss EAP 6 application server to provide REST API, and using 
