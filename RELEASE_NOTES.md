@@ -17,6 +17,8 @@ Breaking:
  This change is needed to support improved security model. [#140](https://github.com/searchisko/searchisko/issues/140), [#185](https://github.com/searchisko/searchisko/issues/185)
 - Search API switched from Facets to Aggregations.
  This change is related to deprecation of Facets in Elasticsearch 1.3. [#144](https://github.com/searchisko/searchisko/issues/144)
+- It is also possible that some of the [Elasticsearch 1.0 breaking changes](http://www.elastic.co/guide/en/elasticsearch/reference/1.4/breaking-changes-1.0.html)
+ will apply to you (for example returned `fields` values are now [always returned as array](http://www.elastic.co/guide/en/elasticsearch/reference/1.4/_return_values.html)) 
 
 Improvements:
 
