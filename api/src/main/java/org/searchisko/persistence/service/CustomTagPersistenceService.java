@@ -25,11 +25,12 @@ public interface CustomTagPersistenceService {
 	List<Tag> getTagsByContent(String... contentId);
 
 	/**
-	 * Get tags for all contents. It can be used for tagcloud and others.
+	 * Get all tags for content type.
 	 *
-	 * @return list of tags
+	 * @param contentType id of contentType
+	 * @return list of tags for content type
 	 */
-	List<Tag> getAllTags();
+	List<Tag> getTagsByContentType(String contentType);
 
 	/**
 	 * Creates tag for the content given in the tag object parameter.

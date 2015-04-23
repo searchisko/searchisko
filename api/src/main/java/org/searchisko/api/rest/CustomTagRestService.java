@@ -11,7 +11,6 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.*;
 import javax.ws.rs.core.Response.Status;
 import java.util.*;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.commons.lang.StringUtils;
 
@@ -39,8 +38,6 @@ import org.searchisko.persistence.service.CustomTagPersistenceService;
 @Path("/tagging")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
-// Standard Roles are not used because it's designed to return 403 if user is not authenticated.
-//@RolesAllowed({Role.ADMIN, Role.CONTRIBUTOR})
 public class CustomTagRestService extends RestServiceBase {
 
 	public static final String QUERY_PARAM_ID = "id";
@@ -64,18 +61,18 @@ public class CustomTagRestService extends RestServiceBase {
 	@Inject
 	protected AuthenticationUtilService authenticationUtilService;
 
-	@Context
-	protected SecurityContext securityContext;
 
 	/**
-	 * Custom authentication check if user is in role ${@link org.searchisko.api.security.Role#CONTRIBUTOR}
-	 * or ${@link org.searchisko.api.security.Role#ADMIN}
+	 * Custom authentication check if user is in role {@link org.searchisko.api.security.Role#TAGS_MANAGER}
+	 * or {@link org.searchisko.api.security.Role#ADMIN} or <code>tags_manager_contentType</code>
+	 *
+	 * @param contentType - check permission for content type
 	 *
 	 * @throws NotAuthorizedException if user doesn't have required role
 	 */
-	protected void checkIfUserAuthenticated() throws NotAuthorizedException {
-		if (!(securityContext.isUserInRole(Role.CONTRIBUTOR) || securityContext.isUserInRole(Role.ADMIN))) {
-			throw new NotAuthorizedException("User Not Authorized for Tag API");
+	protected void checkIfUserAuthenticated(String contentType) throws NotAuthorizedException {
+		if (!(authenticationUtilService.isUserInAnyOfRoles(true, Role.TAGS_MANAGER, Role.TAGS_MANAGER + "_" + contentType))) {
+			throw new NotAuthorizedException("User Not Authorized for Tagging API");
 		}
 	}
 
@@ -83,14 +80,28 @@ public class CustomTagRestService extends RestServiceBase {
 	@Path("/{" + QUERY_PARAM_ID + "}")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Object getTagsByContent(@PathParam(QUERY_PARAM_ID) String contentSysId) {
-		checkIfUserAuthenticated();
-
 		contentSysId = SearchUtils.trimToNull(contentSysId);
-
 		// validation
 		if (contentSysId == null) {
 			throw new RequiredFieldException(QUERY_PARAM_ID);
 		}
+
+		// check if tagged document exists
+		String type = null;
+		try {
+			type = providerService.parseTypeNameFromSysId(contentSysId);
+		} catch (IllegalArgumentException e) {
+			log.fine("bad format or unknown type for content sys_id=" + contentSysId);
+			return Response.status(Response.Status.BAD_REQUEST).entity(QUERY_PARAM_ID + " format is invalid").build();
+		}
+
+		ProviderContentTypeInfo typeInfo = providerService.findContentType(type);
+		if (typeInfo == null) {
+			log.fine("unknown type for content with sys_id=" + contentSysId);
+			return Response.status(Response.Status.NOT_FOUND).entity("content type is unknown").build();
+		}
+
+		checkIfUserAuthenticated(providerService.parseTypeNameFromSysId(contentSysId));
 
 		List<Tag> tagList = customTagPersistenceService.getTagsByContent(contentSysId);
 		if (tagList != null && !tagList.isEmpty()) {
@@ -109,43 +120,39 @@ public class CustomTagRestService extends RestServiceBase {
 	 */
 	protected Map<String, Object> tagsToJSON(List<Tag> tags) {
 		Map<String, Object> result = new HashMap<>();
-		result.put("tags", tags);
+		List<String> labels = new ArrayList<>();
+		for (Tag tag : tags) {
+			labels.add(tag.getTagLabel());
+		}
+		result.put(DATA_FIELD_TAGGING, labels);
 		return result;
 	}
 
 	@GET
-	@Path("/")
+	@Path("/type/{" + QUERY_PARAM_ID + "}")
 	@Produces(MediaType.APPLICATION_JSON)
-	public Object getAllTags() {
-		checkIfUserAuthenticated();
+	public Object getTagsByContentType(@PathParam(QUERY_PARAM_ID) String contentType) {
+		contentType = SearchUtils.trimToNull(contentType);
+		// validation
+		if (contentType == null) {
+			throw new RequiredFieldException(QUERY_PARAM_ID);
+		}
 
-		List<Tag> tagList = customTagPersistenceService.getAllTags();
+		ProviderContentTypeInfo typeInfo = providerService.findContentType(contentType);
+		if (typeInfo == null) {
+			log.fine("unknown type id=" + contentType);
+			return Response.status(Response.Status.NOT_FOUND).entity("content type is unknown").build();
+		}
+
+		checkIfUserAuthenticated(contentType);
+
+		List<Tag> tagList = customTagPersistenceService.getTagsByContentType(contentType);
 		if (tagList != null && !tagList.isEmpty()) {
-			Map<String, Object> result = tagsByContentToJSON(tagList);
+			Map<String, Object> result = tagsToJSON(tagList);
 			return result;
 		} else {
 			return Response.status(Status.NOT_FOUND).build();
 		}
-	}
-
-	/**
-	 * Convert {@link Tag} object sorted by content into JSON map.
-	 *
-	 * @param tags list of tags to convert
-	 * @return JSON map with information about tag
-	 */
-	protected Map<String, Object> tagsByContentToJSON(List<Tag> tags) {
-		Map<String, Object> result = new HashMap<>();
-		for (Tag tag : tags) {
-			if (result.containsKey(tag.getContentId())) {
-				((List<String>) result.get(tag.getContentId())).add(tag.getTagLabel());
-			} else {
-				List<String> tl = new ArrayList<>();
-				tl.add(tag.getTagLabel());
-				result.put(tag.getContentId(), tl);
-			}
-		}
-		return result;
 	}
 
 	@POST
@@ -153,29 +160,10 @@ public class CustomTagRestService extends RestServiceBase {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	public Object postTag(@PathParam(QUERY_PARAM_ID) String contentSysId, Map<String, Object> requestContent) {
-		checkIfUserAuthenticated();
-
-		String currentContributorId = authenticationUtilService.getAuthenticatedContributor(true);
-
 		contentSysId = SearchUtils.trimToNull(contentSysId);
-
 		// validation
-		if (contentSysId == null) {
+		if ((contentSysId == null) || (requestContent == null)) {
 			throw new RequiredFieldException(QUERY_PARAM_ID);
-		}
-
-		String tag = null;
-		try {
-			tag = StringUtils.trim((String) requestContent.get(DATA_FIELD_TAGGING));
-		} catch (ClassCastException e) {
-			return Response.status(Status.BAD_REQUEST).entity(DATA_FIELD_TAGGING + " field must be text string").build();
-		}
-		if (tag == null) {
-			throw new RequiredFieldException(DATA_FIELD_TAGGING);
-		}
-
-		if (tag.isEmpty()) {
-			return Response.status(Status.BAD_REQUEST).entity(DATA_FIELD_TAGGING + " field cannot be empty").build();
 		}
 
 		// check if tagged document exists
@@ -191,6 +179,25 @@ public class CustomTagRestService extends RestServiceBase {
 		if (typeInfo == null) {
 			log.fine("unknown type for content with sys_id=" + contentSysId);
 			return Response.status(Response.Status.NOT_FOUND).entity("content type is unknown").build();
+		}
+
+		checkIfUserAuthenticated(providerService.parseTypeNameFromSysId(contentSysId));
+
+		String currentContributorId = authenticationUtilService.getAuthenticatedContributor(true);
+
+		String tag = null;
+
+		if (requestContent.get(DATA_FIELD_TAGGING) == null) {
+			throw new RequiredFieldException(DATA_FIELD_TAGGING);
+		}
+
+		if (!(requestContent.get(DATA_FIELD_TAGGING) instanceof String)) {
+			return Response.status(Status.BAD_REQUEST).entity(DATA_FIELD_TAGGING + " field must be text string").build();
+		}
+		tag = StringUtils.trim((String) requestContent.get(DATA_FIELD_TAGGING));
+
+		if (tag.isEmpty()) {
+			return Response.status(Status.BAD_REQUEST).entity(DATA_FIELD_TAGGING + " field cannot be empty").build();
 		}
 
 		// elastic search indices
@@ -236,8 +243,6 @@ public class CustomTagRestService extends RestServiceBase {
 	@DELETE
 	@Path("/{" + QUERY_PARAM_ID + "}/_all")
 	public Object deleteTagsForContent(@PathParam(QUERY_PARAM_ID) String contentSysId) {
-		checkIfUserAuthenticated();
-
 		contentSysId = SearchUtils.trimToNull(contentSysId);
 
 		// validation
@@ -259,6 +264,8 @@ public class CustomTagRestService extends RestServiceBase {
 			log.fine("unknown type for content with sys_id=" + contentSysId);
 			return Response.status(Response.Status.NOT_FOUND).entity("content type is unknown").build();
 		}
+
+		checkIfUserAuthenticated(providerService.parseTypeNameFromSysId(contentSysId));
 
 		// delete tags from custom tags
 		customTagPersistenceService.deleteTagsForContent(contentSysId);
@@ -287,27 +294,11 @@ public class CustomTagRestService extends RestServiceBase {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	public Object deleteTag(@PathParam(QUERY_PARAM_ID) String contentSysId, Map<String, Object> requestContent) {
-		checkIfUserAuthenticated();
-
 		contentSysId = SearchUtils.trimToNull(contentSysId);
 
 		// validation
 		if ((contentSysId == null) || (requestContent == null)){
 			throw new RequiredFieldException(QUERY_PARAM_ID);
-		}
-
-		String tagLabel = null;
-		try {
-			tagLabel = StringUtils.trim((String) requestContent.get(DATA_FIELD_TAGGING));
-		} catch (ClassCastException e) {
-			return Response.status(Status.BAD_REQUEST).entity(DATA_FIELD_TAGGING + " field must be text string").build();
-		}
-		if (tagLabel == null) {
-			throw new RequiredFieldException(DATA_FIELD_TAGGING);
-		}
-
-		if (tagLabel.isEmpty()) {
-			return Response.status(Status.BAD_REQUEST).entity(DATA_FIELD_TAGGING + " field cannot be empty").build();
 		}
 
 		// check if tagged document exists
@@ -323,6 +314,22 @@ public class CustomTagRestService extends RestServiceBase {
 		if (typeInfo == null) {
 			log.fine("unknown type for content with sys_id=" + contentSysId);
 			return Response.status(Response.Status.NOT_FOUND).entity("content type is unknown").build();
+		}
+
+		checkIfUserAuthenticated(providerService.parseTypeNameFromSysId(contentSysId));
+
+		String tagLabel = null;
+		try {
+			tagLabel = StringUtils.trim((String) requestContent.get(DATA_FIELD_TAGGING));
+		} catch (ClassCastException e) {
+			return Response.status(Status.BAD_REQUEST).entity(DATA_FIELD_TAGGING + " field must be text string").build();
+		}
+		if (tagLabel == null) {
+			throw new RequiredFieldException(DATA_FIELD_TAGGING);
+		}
+
+		if (tagLabel.isEmpty()) {
+			return Response.status(Status.BAD_REQUEST).entity(DATA_FIELD_TAGGING + " field cannot be empty").build();
 		}
 
 		// delete tag from custom tags

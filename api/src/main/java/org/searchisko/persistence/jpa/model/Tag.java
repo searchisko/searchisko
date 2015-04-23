@@ -41,6 +41,7 @@ public class Tag implements Serializable, Comparable {
 	/**
 	 * Text representation of the tagLabel.
 	 */
+	@NotNull
 	private String tagLabel;
 
 	/**
@@ -56,11 +57,10 @@ public class Tag implements Serializable, Comparable {
 		super();
 	}
 
-	public Tag(String contentId, String contributorId, String tagLabel, Timestamp createdAt) {
+	public Tag(String contentId, String contributorId, String tagLabel) {
 		this.contentId = contentId;
 		this.contributorId = contributorId;
 		this.tagLabel = tagLabel;
-		this.createdAt = createdAt;
 	}
 
 	public String getContentId() {

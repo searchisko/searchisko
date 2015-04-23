@@ -6,12 +6,8 @@
 package org.searchisko.persistence.service;
 
 import java.sql.Timestamp;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.SortedSet;
-import java.util.TreeSet;
-
 import javax.ejb.LocalBean;
 import javax.ejb.Stateless;
 import javax.inject.Inject;
@@ -20,7 +16,6 @@ import javax.persistence.TypedQuery;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
-import org.elasticsearch.common.Strings;
 
 import org.searchisko.persistence.jpa.model.Tag;
 
@@ -48,8 +43,11 @@ public class JpaCustomTagPersistenceService implements CustomTagPersistenceServi
 	}
 
 	@Override
-	public List<Tag> getAllTags() {
-		return em.createQuery("from Tag").getResultList();
+	public List<Tag> getTagsByContentType(String contentType) {
+		return em.createQuery("SELECT t FROM Tag t WHERE SUBSTRING(t.contentId, 1, ?1) = ?2")
+			.setParameter(1, contentType.length())
+			.setParameter(2, contentType)
+			.getResultList();
 	}
 
 	@Override
@@ -100,11 +98,13 @@ public class JpaCustomTagPersistenceService implements CustomTagPersistenceServi
 		if (contributorFrom == null || contributorTo == null)
 			return;
 
-		em.createQuery(
-				"update Tag t set t.contributorId = ?1 where t.contributorId = ?2")
-				.setParameter(1, contributorTo)
-				.setParameter(2, contributorFrom)
-				.executeUpdate();
+		List<Tag> tags = em.createQuery("FROM Tag").getResultList();
+		for (Tag tag : tags) {
+			if (tag.getContributorId().equals(contributorFrom)) {
+				tag.setContributorId(contributorTo);
+				em.merge(tag);
+			}
+		}
 	}
 
 }
