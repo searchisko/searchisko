@@ -22,7 +22,7 @@
 				"sys_tags": {
 					"type": "custom",
 					"tokenizer": "keyword",
-					"filter": ["lowercase", "unique", "trim"]
+					"filter": ["lowercase", "trim", "unique"]
 				}
 			},
 			"filter": {
