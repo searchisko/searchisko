@@ -75,6 +75,18 @@ public class CustomTagRestService extends RestServiceBase {
 			throw new NotAuthorizedException("User Not Authorized for Tagging API");
 		}
 	}
+        /**
+	 * Custom authentication check if user is in role {@link org.searchisko.api.security.Role#TAGS_MANAGER}
+	 * or {@link org.searchisko.api.security.Role#ADMIN}
+	 *
+	 *
+	 * @throws NotAuthorizedException if user doesn't have required role
+	 */
+	protected void checkIfUserAuthenticated() throws NotAuthorizedException {
+		if (!(authenticationUtilService.isUserInAnyOfRoles(true, Role.TAGS_MANAGER))) {
+			throw new NotAuthorizedException("User Not Authorized for Tagging API");
+		}
+	}
 
 	@GET
 	@Path("/{" + QUERY_PARAM_ID + "}")
@@ -265,7 +277,7 @@ public class CustomTagRestService extends RestServiceBase {
 			return Response.status(Response.Status.NOT_FOUND).entity("content type is unknown").build();
 		}
 
-		checkIfUserAuthenticated(providerService.parseTypeNameFromSysId(contentSysId));
+		checkIfUserAuthenticated();
 
 		// delete tags from custom tags
 		customTagPersistenceService.deleteTagsForContent(contentSysId);
@@ -316,7 +328,7 @@ public class CustomTagRestService extends RestServiceBase {
 			return Response.status(Response.Status.NOT_FOUND).entity("content type is unknown").build();
 		}
 
-		checkIfUserAuthenticated(providerService.parseTypeNameFromSysId(contentSysId));
+		checkIfUserAuthenticated();
 
 		String tagLabel = null;
 		try {
