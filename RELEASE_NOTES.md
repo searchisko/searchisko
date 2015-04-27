@@ -2,9 +2,16 @@
 
 This document contains high-level release notes. More details can be found in [milestones](https://github.com/searchisko/searchisko/milestones) on GitHub.
 
-## 2.0.1-SNAPSHOT
+## 2.0.1
 
-- TBD
+Improvements:
+
+- Swap order of filters in "sys\_tags" analyzer [#224](https://github.com/searchisko/searchisko/issues/224)
+- Make project name queries to accept list of projects to search in [#223](https://github.com/searchisko/searchisko/issues/223)
+
+Bug fixes:
+
+- Enable clustering [#225](https://github.com/searchisko/searchisko/issues/225)
 
 ## 2.0.0
 
