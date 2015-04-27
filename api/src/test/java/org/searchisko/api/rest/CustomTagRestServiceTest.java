@@ -5,14 +5,13 @@
  */
 package org.searchisko.api.rest;
 
-import java.sql.Timestamp;
-import javax.ws.rs.core.Response.Status;
-import javax.ws.rs.core.SecurityContext;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
+
+import javax.ws.rs.core.Response.Status;
 
 import org.elasticsearch.action.get.GetResponse;
 import org.junit.Assert;
@@ -20,6 +19,7 @@ import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 import org.searchisko.api.rest.exception.RequiredFieldException;
+import org.searchisko.api.security.Role;
 import org.searchisko.api.service.AuthenticationUtilService;
 import org.searchisko.api.service.CustomTagService;
 import org.searchisko.api.service.ProviderService;
@@ -32,7 +32,7 @@ import org.searchisko.persistence.service.CustomTagPersistenceService;
 
 /**
  * Unit test for {@link CustomTagRestService}
- *
+ * 
  * @author Jiri Mauritz (jirmauritz at gmail dot com)
  */
 public class CustomTagRestServiceTest {
@@ -41,7 +41,6 @@ public class CustomTagRestServiceTest {
 	private static final String MOCK_INDEX_NAME = "myindex";
 	private static final String MOCK_CONTENT_ID_1 = "jb-45";
 	private static final String MOCK_CONTENT_ID_2 = "jb-425";
-	private static final String MOCK_CONTENT_ID_3 = "jb-456";
 	private static final String MOCK_CONTENT_TYPE = "jb";
 	private static final String MOCK_CONTRIB_ID = "test <test@test.org>";
 
@@ -64,9 +63,7 @@ public class CustomTagRestServiceTest {
 
 		// case - no tag in DB, null returned from service
 		{
-			Mockito.when(
-					tested.customTagPersistenceService.getTagsByContent(Mockito.eq(MOCK_CONTENT_ID_1)))
-					.thenReturn(null);
+			Mockito.when(tested.customTagPersistenceService.getTagsByContent(Mockito.eq(MOCK_CONTENT_ID_1))).thenReturn(null);
 			TestUtils.assertResponseStatus(tested.getTagsByContent(MOCK_CONTENT_ID_1), Status.NOT_FOUND);
 			Mockito.verify(tested.customTagPersistenceService).getTagsByContent(Mockito.eq(MOCK_CONTENT_ID_1));
 		}
@@ -74,9 +71,8 @@ public class CustomTagRestServiceTest {
 		// case - no tag in DB, empty list returned from service
 		{
 			Mockito.reset(tested.customTagPersistenceService);
-			Mockito.when(
-					tested.customTagPersistenceService.getTagsByContent(Mockito.eq(MOCK_CONTENT_ID_1)))
-					.thenReturn(new ArrayList<Tag>());
+			Mockito.when(tested.customTagPersistenceService.getTagsByContent(Mockito.eq(MOCK_CONTENT_ID_1))).thenReturn(
+					new ArrayList<Tag>());
 			TestUtils.assertResponseStatus(tested.getTagsByContent(MOCK_CONTENT_ID_1), Status.NOT_FOUND);
 			Mockito.verify(tested.customTagPersistenceService).getTagsByContent(Mockito.eq(MOCK_CONTENT_ID_1));
 		}
@@ -86,9 +82,7 @@ public class CustomTagRestServiceTest {
 			List<Tag> tags = new ArrayList<Tag>();
 			tags.add(new Tag(MOCK_CONTENT_ID_1, MOCK_CONTRIB_ID, "label"));
 			Mockito.reset(tested.customTagPersistenceService);
-			Mockito.when(
-					tested.customTagPersistenceService.getTagsByContent(Mockito.eq(MOCK_CONTENT_ID_1)))
-					.thenReturn(tags);
+			Mockito.when(tested.customTagPersistenceService.getTagsByContent(Mockito.eq(MOCK_CONTENT_ID_1))).thenReturn(tags);
 			@SuppressWarnings("unchecked")
 			Map<String, Object> aret = (Map<String, Object>) tested.getTagsByContent(MOCK_CONTENT_ID_1);
 			List<String> testingList = new ArrayList<>();
@@ -121,13 +115,11 @@ public class CustomTagRestServiceTest {
 		CustomTagRestService tested = getTested();
 		Map<String, Object> typeDef = mockTypeDef();
 		Mockito.when(tested.providerService.findContentType(MOCK_CONTENT_TYPE)).thenReturn(
-					ProviderServiceTest.createProviderContentTypeInfo(typeDef));
+				ProviderServiceTest.createProviderContentTypeInfo(typeDef));
 
 		// case - no tags in DB, null returned from service
 		{
-			Mockito.when(
-					tested.customTagPersistenceService.getTagsByContentType(Mockito.anyString()))
-					.thenReturn(null);
+			Mockito.when(tested.customTagPersistenceService.getTagsByContentType(Mockito.anyString())).thenReturn(null);
 			TestUtils.assertResponseStatus(tested.getTagsByContentType(MOCK_CONTENT_TYPE), Status.NOT_FOUND);
 			Mockito.verify(tested.customTagPersistenceService).getTagsByContentType(MOCK_CONTENT_TYPE);
 		}
@@ -135,9 +127,8 @@ public class CustomTagRestServiceTest {
 		// case - no customTag in DB, empty list returned from service
 		{
 			Mockito.reset(tested.customTagPersistenceService);
-			Mockito.when(
-					tested.customTagPersistenceService.getTagsByContentType(Mockito.anyString()))
-					.thenReturn(new ArrayList<Tag>());
+			Mockito.when(tested.customTagPersistenceService.getTagsByContentType(Mockito.anyString())).thenReturn(
+					new ArrayList<Tag>());
 			TestUtils.assertResponseStatus(tested.getTagsByContentType(MOCK_CONTENT_TYPE), Status.NOT_FOUND);
 			Mockito.verify(tested.customTagPersistenceService).getTagsByContentType(MOCK_CONTENT_TYPE);
 		}
@@ -148,8 +139,7 @@ public class CustomTagRestServiceTest {
 			tags.add(new Tag(MOCK_CONTENT_ID_1, MOCK_CONTRIB_ID, "label1"));
 			tags.add(new Tag(MOCK_CONTENT_ID_2, MOCK_CONTRIB_ID, "label2"));
 			Mockito.reset(tested.customTagPersistenceService);
-			Mockito.when(
-					tested.customTagPersistenceService.getTagsByContentType(MOCK_CONTENT_TYPE)).thenReturn(tags);
+			Mockito.when(tested.customTagPersistenceService.getTagsByContentType(MOCK_CONTENT_TYPE)).thenReturn(tags);
 			Map<String, Object> aret = (Map<String, Object>) tested.getTagsByContentType(MOCK_CONTENT_TYPE);
 			Mockito.verify(tested.customTagPersistenceService).getTagsByContentType(MOCK_CONTENT_TYPE);
 			List<String> testingList = new ArrayList<>();
@@ -256,8 +246,7 @@ public class CustomTagRestServiceTest {
 			CustomTagRestService tested = getTested();
 
 			Mockito.when(tested.providerService.parseTypeNameFromSysId(MOCK_CONTENT_ID_1)).thenReturn(MOCK_PROVIDER_NAME);
-			Mockito.when(tested.customTagPersistenceService.createTag(Mockito.any(Tag.class)))
-				.thenReturn(false);
+			Mockito.when(tested.customTagPersistenceService.createTag(Mockito.any(Tag.class))).thenReturn(false);
 
 			Map<String, Object> typeDef = mockTypeDef();
 			Mockito.when(tested.providerService.findContentType(MOCK_PROVIDER_NAME)).thenReturn(
@@ -276,12 +265,11 @@ public class CustomTagRestServiceTest {
 			Mockito.verify(tested.searchClientService).performGet(MOCK_INDEX_NAME, MOCK_TYPE_NAME, MOCK_CONTENT_ID_1);
 
 			// verify jpa call
-			ArgumentCaptor argument = ArgumentCaptor.forClass(Tag.class);
+			ArgumentCaptor<Tag> argument = ArgumentCaptor.forClass(Tag.class);
 			Mockito.verify(tested.customTagPersistenceService).createTag((Tag) argument.capture());
 			Assert.assertEquals("label", ((Tag) argument.getValue()).getTagLabel());
 		}
 	}
-
 
 	@Test(expected = RequiredFieldException.class)
 	public void deleteTag_invalidParam_contentSysId_1() {
@@ -378,8 +366,7 @@ public class CustomTagRestServiceTest {
 			CustomTagRestService tested = getTested();
 
 			Mockito.when(tested.providerService.parseTypeNameFromSysId(MOCK_CONTENT_ID_1)).thenReturn(MOCK_PROVIDER_NAME);
-			Mockito.when(tested.customTagPersistenceService.createTag(Mockito.any(Tag.class)))
-				.thenReturn(true);
+			Mockito.when(tested.customTagPersistenceService.createTag(Mockito.any(Tag.class))).thenReturn(true);
 
 			Map<String, Object> typeDef = mockTypeDef();
 			Mockito.when(tested.providerService.findContentType(MOCK_PROVIDER_NAME)).thenReturn(
@@ -498,24 +485,24 @@ public class CustomTagRestServiceTest {
 		tested.providerService = Mockito.mock(ProviderService.class);
 		tested.searchClientService = Mockito.mock(SearchClientService.class);
 		tested.authenticationUtilService = Mockito.mock(AuthenticationUtilService.class);
-		Mockito.when(
-				tested.authenticationUtilService.getAuthenticatedContributor(
-						Mockito.anyBoolean())).thenReturn(MOCK_CONTRIB_ID);
+		Mockito.when(tested.authenticationUtilService.getAuthenticatedContributor(Mockito.anyBoolean())).thenReturn(
+				MOCK_CONTRIB_ID);
 		// Pretend authenticated
-		tested.authenticationUtilService = Mockito.mock(AuthenticationUtilService.class);
 		Mockito.when(
-				tested.authenticationUtilService.isUserInAnyOfRoles(Mockito.anyBoolean(), Mockito.anyString(), Mockito.anyString())).thenReturn(true);
+				tested.authenticationUtilService.isUserInAnyOfRoles(Mockito.eq(true), Mockito.eq(Role.TAGS_MANAGER),
+						Mockito.anyString())).thenReturn(true);
+		Mockito.when(tested.authenticationUtilService.isUserInAnyOfRoles(true, Role.TAGS_MANAGER)).thenReturn(true);
 
 		return tested;
 	}
 
 	private void prepareContentId(CustomTagRestService tested) {
 
-			Mockito.when(tested.providerService.parseTypeNameFromSysId(MOCK_CONTENT_ID_1)).thenReturn(MOCK_PROVIDER_NAME);
+		Mockito.when(tested.providerService.parseTypeNameFromSysId(MOCK_CONTENT_ID_1)).thenReturn(MOCK_PROVIDER_NAME);
 
-			Map<String, Object> typeDef = mockTypeDef();
-			Mockito.when(tested.providerService.findContentType(MOCK_PROVIDER_NAME)).thenReturn(
-					ProviderServiceTest.createProviderContentTypeInfo(typeDef));
+		Map<String, Object> typeDef = mockTypeDef();
+		Mockito.when(tested.providerService.findContentType(MOCK_PROVIDER_NAME)).thenReturn(
+				ProviderServiceTest.createProviderContentTypeInfo(typeDef));
 	}
 
 }

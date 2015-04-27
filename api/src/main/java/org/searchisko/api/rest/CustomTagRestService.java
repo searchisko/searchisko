@@ -5,15 +5,28 @@
  */
 package org.searchisko.api.rest;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.SortedSet;
+import java.util.TreeSet;
+import java.util.logging.Logger;
+
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
-import javax.ws.rs.*;
-import javax.ws.rs.core.*;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
-import java.util.*;
-import java.util.logging.Logger;
-import org.apache.commons.lang.StringUtils;
 
+import org.apache.commons.lang.StringUtils;
 import org.elasticsearch.action.get.GetResponse;
 import org.searchisko.api.ContentObjectFields;
 import org.searchisko.api.rest.exception.NotAuthorizedException;
@@ -31,7 +44,7 @@ import org.searchisko.persistence.service.CustomTagPersistenceService;
 
 /**
  * REST API endpoint for 'Custom Tag API'.
- *
+ * 
  * @author Jiri Mauritz (jirmauritz at gmail dot com)
  */
 @RequestScoped
@@ -61,13 +74,12 @@ public class CustomTagRestService extends RestServiceBase {
 	@Inject
 	protected AuthenticationUtilService authenticationUtilService;
 
-
 	/**
-	 * Custom authentication check if user is in role {@link org.searchisko.api.security.Role#TAGS_MANAGER}
-	 * or {@link org.searchisko.api.security.Role#ADMIN} or <code>tags_manager_contentType</code>
-	 *
+	 * Custom authentication check if user is in role {@link org.searchisko.api.security.Role#TAGS_MANAGER} or
+	 * {@link org.searchisko.api.security.Role#ADMIN} or <code>tags_manager_contentType</code>
+	 * 
 	 * @param contentType - check permission for content type
-	 *
+	 * 
 	 * @throws NotAuthorizedException if user doesn't have required role
 	 */
 	protected void checkIfUserAuthenticated(String contentType) throws NotAuthorizedException {
@@ -75,11 +87,12 @@ public class CustomTagRestService extends RestServiceBase {
 			throw new NotAuthorizedException("User Not Authorized for Tagging API");
 		}
 	}
-        /**
-	 * Custom authentication check if user is in role {@link org.searchisko.api.security.Role#TAGS_MANAGER}
-	 * or {@link org.searchisko.api.security.Role#ADMIN}
-	 *
-	 *
+
+	/**
+	 * Custom authentication check if user is in role {@link org.searchisko.api.security.Role#TAGS_MANAGER} or
+	 * {@link org.searchisko.api.security.Role#ADMIN}
+	 * 
+	 * 
 	 * @throws NotAuthorizedException if user doesn't have required role
 	 */
 	protected void checkIfUserAuthenticated() throws NotAuthorizedException {
@@ -126,7 +139,7 @@ public class CustomTagRestService extends RestServiceBase {
 
 	/**
 	 * Convert {@link Tag} object into JSON map.
-	 *
+	 * 
 	 * @param tags list of tags to convert
 	 * @return JSON map with information about tag
 	 */
@@ -167,6 +180,7 @@ public class CustomTagRestService extends RestServiceBase {
 		}
 	}
 
+	@SuppressWarnings("unchecked")
 	@POST
 	@Path("/{" + QUERY_PARAM_ID + "}")
 	@Consumes(MediaType.APPLICATION_JSON)
@@ -224,7 +238,7 @@ public class CustomTagRestService extends RestServiceBase {
 
 			// check for same tag in provider tags
 			Map<String, Object> source = getResponse.getSource();
-			SortedSet<String> providerTags = new TreeSet(String.CASE_INSENSITIVE_ORDER);
+			SortedSet<String> providerTags = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
 			List<String> providersList = (List<String>) source.get(ContentObjectFields.TAGS);
 			if (providersList != null) {
 				providerTags.addAll(providersList);
@@ -250,7 +264,6 @@ public class CustomTagRestService extends RestServiceBase {
 			return Response.status(Response.Status.NOT_FOUND).build();
 		}
 	}
-
 
 	@DELETE
 	@Path("/{" + QUERY_PARAM_ID + "}/_all")
@@ -309,7 +322,7 @@ public class CustomTagRestService extends RestServiceBase {
 		contentSysId = SearchUtils.trimToNull(contentSysId);
 
 		// validation
-		if ((contentSysId == null) || (requestContent == null)){
+		if ((contentSysId == null) || (requestContent == null)) {
 			throw new RequiredFieldException(QUERY_PARAM_ID);
 		}
 
@@ -346,7 +359,6 @@ public class CustomTagRestService extends RestServiceBase {
 
 		// delete tag from custom tags
 		customTagPersistenceService.deleteTag(contentSysId, tagLabel);
-
 
 		// delete tag from SYS_TAG field (update SYS_TAG field)
 		String indexName = ProviderService.extractIndexName(typeInfo, type);
