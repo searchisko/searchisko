@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source
- * Copyright 2012 Red Hat Inc. and/or its affiliates and other contributors
+ * Copyright 2015 Red Hat Inc. and/or its affiliates and other contributors
  * as indicated by the @authors tag. All rights reserved.
  */
 package org.searchisko.api.rest;
@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.logging.Logger;
@@ -46,6 +47,7 @@ import org.searchisko.persistence.service.CustomTagPersistenceService;
  * REST API endpoint for 'Custom Tag API'.
  * 
  * @author Jiri Mauritz (jirmauritz at gmail dot com)
+ * @author Vlastimil Elias (velias at redhat dot com)
  */
 @RequestScoped
 @Path("/tagging")
@@ -84,19 +86,6 @@ public class CustomTagRestService extends RestServiceBase {
 	 */
 	protected void checkIfUserAuthenticated(String contentType) throws NotAuthorizedException {
 		if (!(authenticationUtilService.isUserInAnyOfRoles(true, Role.TAGS_MANAGER, Role.TAGS_MANAGER + "_" + contentType))) {
-			throw new NotAuthorizedException("User Not Authorized for Tagging API");
-		}
-	}
-
-	/**
-	 * Custom authentication check if user is in role {@link org.searchisko.api.security.Role#TAGS_MANAGER} or
-	 * {@link org.searchisko.api.security.Role#ADMIN}
-	 * 
-	 * 
-	 * @throws NotAuthorizedException if user doesn't have required role
-	 */
-	protected void checkIfUserAuthenticated() throws NotAuthorizedException {
-		if (!(authenticationUtilService.isUserInAnyOfRoles(true, Role.TAGS_MANAGER))) {
 			throw new NotAuthorizedException("User Not Authorized for Tagging API");
 		}
 	}
@@ -145,11 +134,12 @@ public class CustomTagRestService extends RestServiceBase {
 	 */
 	protected Map<String, Object> tagsToJSON(List<Tag> tags) {
 		Map<String, Object> result = new HashMap<>();
-		List<String> labels = new ArrayList<>();
+		// use tree set to remove duplicities and order results
+		Set<String> labels = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
 		for (Tag tag : tags) {
 			labels.add(tag.getTagLabel());
 		}
-		result.put(DATA_FIELD_TAGGING, labels);
+		result.put(DATA_FIELD_TAGGING, new ArrayList<>(labels));
 		return result;
 	}
 
@@ -226,12 +216,8 @@ public class CustomTagRestService extends RestServiceBase {
 			return Response.status(Status.BAD_REQUEST).entity(DATA_FIELD_TAGGING + " field cannot be empty").build();
 		}
 
-		// elastic search indices
-		String indexName = ProviderService.extractIndexName(typeInfo, type);
-		String indexType = ProviderService.extractIndexType(typeInfo, type);
-
 		try {
-			GetResponse getResponse = searchClientService.performGet(indexName, indexType, contentSysId);
+			GetResponse getResponse = getContentDocument(typeInfo, contentSysId);
 			if (!getResponse.isExists()) {
 				return Response.status(Response.Status.NOT_FOUND).build();
 			}
@@ -254,7 +240,7 @@ public class CustomTagRestService extends RestServiceBase {
 				created = customTagPersistenceService.createTag(tagObject);
 				if (created) {
 					customTagService.updateSysTagsField(source);
-					searchClientService.performPut(indexName, indexType, contentSysId, source);
+					searchClientService.performPut(getResponse.getIndex(), getResponse.getType(), contentSysId, source);
 				}
 			} else
 				created = false;
@@ -290,17 +276,15 @@ public class CustomTagRestService extends RestServiceBase {
 			return Response.status(Response.Status.NOT_FOUND).entity("content type is unknown").build();
 		}
 
-		checkIfUserAuthenticated();
+		checkIfUserAuthenticated(providerService.parseTypeNameFromSysId(contentSysId));
 
 		// delete tags from custom tags
 		customTagPersistenceService.deleteTagsForContent(contentSysId);
 
 		// delete tags from SYS_TAG field (update SYS_TAG field)
-		String indexName = ProviderService.extractIndexName(typeInfo, type);
-		String indexType = ProviderService.extractIndexType(typeInfo, type);
 		GetResponse getResponse;
 		try {
-			getResponse = searchClientService.performGet(indexName, indexType, contentSysId);
+			getResponse = getContentDocument(typeInfo, contentSysId);
 		} catch (SearchIndexMissingException ex) {
 			return Response.status(Response.Status.NOT_FOUND).build();
 		}
@@ -309,7 +293,7 @@ public class CustomTagRestService extends RestServiceBase {
 		}
 		Map<String, Object> source = getResponse.getSource();
 		customTagService.updateSysTagsField(source);
-		searchClientService.performPut(indexName, indexType, contentSysId, source);
+		searchClientService.performPut(getResponse.getIndex(), getResponse.getType(), contentSysId, source);
 
 		return Response.status(Status.OK).build();
 	}
@@ -341,7 +325,7 @@ public class CustomTagRestService extends RestServiceBase {
 			return Response.status(Response.Status.NOT_FOUND).entity("content type is unknown").build();
 		}
 
-		checkIfUserAuthenticated();
+		checkIfUserAuthenticated(providerService.parseTypeNameFromSysId(contentSysId));
 
 		String tagLabel = null;
 		try {
@@ -361,11 +345,9 @@ public class CustomTagRestService extends RestServiceBase {
 		customTagPersistenceService.deleteTag(contentSysId, tagLabel);
 
 		// delete tag from SYS_TAG field (update SYS_TAG field)
-		String indexName = ProviderService.extractIndexName(typeInfo, type);
-		String indexType = ProviderService.extractIndexType(typeInfo, type);
 		GetResponse getResponse;
 		try {
-			getResponse = searchClientService.performGet(indexName, indexType, contentSysId);
+			getResponse = getContentDocument(typeInfo, contentSysId);
 		} catch (SearchIndexMissingException ex) {
 			return Response.status(Response.Status.NOT_FOUND).build();
 		}
@@ -374,9 +356,16 @@ public class CustomTagRestService extends RestServiceBase {
 		}
 		Map<String, Object> source = getResponse.getSource();
 		customTagService.updateSysTagsField(source);
-		searchClientService.performPut(indexName, indexType, contentSysId, source);
+		searchClientService.performPut(getResponse.getIndex(), getResponse.getType(), contentSysId, source);
 
 		return Response.status(Status.OK).build();
+	}
+
+	private GetResponse getContentDocument(ProviderContentTypeInfo typeInfo, String contentSysId)
+			throws SearchIndexMissingException {
+		String indexName = ProviderService.extractIndexName(typeInfo, typeInfo.getTypeName());
+		String indexType = ProviderService.extractIndexType(typeInfo, typeInfo.getTypeName());
+		return searchClientService.performGet(indexName, indexType, contentSysId);
 	}
 
 }

@@ -811,17 +811,16 @@ This part of API allows to store and retrieve custom tags for any document store
 Custom tags allow users to classify the content in the Searchisko and improve searching.
 
 Custom tags are stored in the field `sys_tags` together with tags provided by the content provider.
-GET methods show provider tags, however this API cannot update them in any way.
 
 This API requires User authentication. All calls of this API return `403` Forbidden http response code if user is not authenticated!
-More specifically, you need to have TAGS_MANAGER role to access all tags or
-TAGS_MANAGER_[contentTypeId] role to access tags for content type `content type`.
+More specifically, user needs `tags_manager` role to work with all custom tags or
+`tags_manager_[contentTypeId]` role to work with custom tags for given content type.
 
 When called directly from Web Browser, this API cooperates with 'User Authentication Status API' to establish user authenticity,
 so you have to call 'User Authentication Status API' before you call this API in this case.
 --
 
-Get all tags for one document.
+Get all custom tags for one document.
 
 ##### Request parameters
 
@@ -851,11 +850,11 @@ GET /rest/tagging/{_id}
 }
 
 
-Get all tags for documents of one type.
+Get all existig custom tags for documents of one content type.
 
 ##### Request parameters
 
-* `id` unique identifier of the content type in Searchisko to get all tags for (`_type` document field in search API results).
+* `_id` unique identifier of the content type in Searchisko to get all tags for (`_type` document field in search API results).
 
 ##### Response content
 
@@ -870,7 +869,7 @@ The response contains a JSON object where `tag` holds array of all the tags.
 }
 ```
 
-GET /rest/tagging/type{?id}
+GET /rest/tagging/type/{_id}
 < 200
 < Content-Type: application/json
 {
@@ -913,7 +912,7 @@ Delete tag.
 
 ##### Request parameter
 
-* `id` unique identifier of the document in Searchisko to delete custom tag for (`_id` document field in search API results).
+* `_id` unique identifier of the document in Searchisko to delete custom tag for (`_id` document field in search API results).
 
 ##### Request content
 JSON object with tag label to delete in `tag` mandatory field.
@@ -936,7 +935,7 @@ Delete all tags for content.
 
 ##### Request parameter
 
-* `id` unique identifier of the document in Searchisko to delete custom tag for (`_id` document field in search API results).
+* `_id` unique identifier of the document in Searchisko to delete custom tag for (`_id` document field in search API results).
 
 DELETE /rest/tagging/{_id}/_all
 > Content-Type: application/json
