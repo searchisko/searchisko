@@ -804,6 +804,143 @@ POST /rest/rating/{_id}
   "sys_rating_num" : 24
 }
 
+--
+Custom Tag API
+
+This part of API allows to store and retrieve custom tags for any document stored inside Searchisko. 
+Custom tags allow users to classify the content in the Searchisko and improve searching.
+
+Custom tags are stored in the field `sys_tags` together with tags provided by the content provider.
+
+This API requires User authentication. All calls of this API return `403` Forbidden http response code if user is not authenticated!
+More specifically, user needs `tags_manager` role to work with all custom tags or
+`tags_manager_[contentTypeId]` role to work with custom tags for given content type.
+
+When called directly from Web Browser, this API cooperates with 'User Authentication Status API' to establish user authenticity,
+so you have to call 'User Authentication Status API' before you call this API in this case.
+--
+
+Get all custom tags for one document.
+
+##### Request parameters
+
+* `_id` unique identifier of the document in Searchisko to get all tags for (`_id` document field in search API results).
+
+##### Response content
+
+The response contains a JSON object where `tag` holds array of all the tags.
+
+```
+{
+  "tag" : [
+	"linux",
+	"red hat"
+  ]
+}
+```
+
+GET /rest/tagging/{_id}
+< 200
+< Content-Type: application/json
+{
+  "tag" : [
+	"linux",
+	"red hat"
+  ]
+}
+
+
+Get all existig custom tags for documents of one content type.
+
+##### Request parameters
+
+* `_id` unique identifier of the content type in Searchisko to get all tags for (`_type` document field in search API results).
+
+##### Response content
+
+The response contains a JSON object where `tag` holds array of all the tags.
+
+```
+{
+  "tag" : [
+	"linux",
+	"red hat"
+  ]
+}
+```
+
+GET /rest/tagging/type/{_id}
+< 200
+< Content-Type: application/json
+{
+  "tag" : [
+	"linux",
+	"red hat"
+  ]
+}
+
+
+Assign tag to document.
+
+##### Request parameter
+
+* `id` unique identifier of the document in Searchisko to store custom tag for (`_id` document field in search API results).
+
+##### Request content
+JSON object with tag label to store in `tag` mandatory field.
+
+```
+{
+  "tag" : "label"
+}
+```
+
+##### Response status
+201 (Created) when the tag was created
+
+200 (OK) when there was same tag for the document (no changes)
+
+POST /rest/tagging/{_id}
+> Content-Type: application/json
+{
+  "tag" : "label"
+}
+< 201
+
+
+Delete tag.
+
+##### Request parameter
+
+* `_id` unique identifier of the document in Searchisko to delete custom tag for (`_id` document field in search API results).
+
+##### Request content
+JSON object with tag label to delete in `tag` mandatory field.
+
+```
+{
+  "tag" : "label"
+}
+```
+
+DELETE /rest/tagging/{_id}
+> Content-Type: application/json
+{
+  "tag" : "label"
+}
+< 200
+
+
+Delete all tags for content.
+
+##### Request parameter
+
+* `_id` unique identifier of the document in Searchisko to delete custom tag for (`_id` document field in search API results).
+
+DELETE /rest/tagging/{_id}/_all
+> Content-Type: application/json
+< 200
+
 
 --
 Normalization API

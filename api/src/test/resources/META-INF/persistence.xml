@@ -10,6 +10,7 @@
     <class>org.searchisko.persistence.jpa.model.Project</class>
     <class>org.searchisko.persistence.jpa.model.Query</class>
     <class>org.searchisko.persistence.jpa.model.Rating</class>
+    <class>org.searchisko.persistence.jpa.model.Tag</class>
     <class>org.searchisko.api.tasker.TaskStatusInfo</class>
 		<properties>
 			<!-- Bean validation is used for validation and DDL as well -->

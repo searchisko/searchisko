@@ -17,7 +17,8 @@ public class Role {
 			Role.CONTRIBUTOR,
 			Role.CONTRIBUTORS_MANAGER,
 			Role.PROJECTS_MANAGER,
-			Role.TASKS_MANAGER
+			Role.TASKS_MANAGER,
+			Role.TAGS_MANAGER
 	};
 
 	/**
@@ -55,5 +56,12 @@ public class Role {
 	 * @see org.searchisko.api.rest.TaskRestService
 	 */
 	public static final String TASKS_MANAGER = "tasks_manager";
+
+	/**
+	 * User with this role can manage custom tags via Tagging REST API.
+	 *
+	 * @see org.searchisko.api.rest.CustomTagRestService
+	 */
+	public static final String TAGS_MANAGER = "tags_manager";
 
 }

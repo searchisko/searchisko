@@ -72,6 +72,8 @@ Once provider/user is authenticated then it can be granted by following roles wh
 4. `contributors_manager` - full access to `/rest/contributor` Management API
 5. `projects_manager` - full access to `/rest/project` Management API
 6. `tasks_manager` - full access to `/rest/tasks` Management API
+7. `tags_manager` - full acces to /rest/tagging API for all content types
+8. `tags_manager_x` - access to /rest/tagging API for content type x
 
 *Provider* can have only default `provider` role or can have `admin` role if defined in 
 [provider configuration](management/content_provider.md).
