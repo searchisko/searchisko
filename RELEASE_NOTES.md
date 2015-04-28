@@ -4,7 +4,9 @@ This document contains high-level release notes. More details can be found in [m
 
 ## 2.0.2-SNAPSHOT
 
-- TBD
+Improvements:
+
+- Custom tags [#87](https://github.com/searchisko/searchisko/issues/87)
 
 ## 2.0.1
 
