@@ -498,6 +498,41 @@
         "name" : "jbossorg_sbs_article"
       }
     },
+    "jbossorg_download_logs": {
+      "description": "Parsed apache access logs from downloads.jboss.org.",
+      "sys_type": "download",
+      "sys_content_content-type" : "text/plain",
+      "persist" : false,
+      "input_preprocessors": [
+            {
+                "name"     : "Projects mapper",
+                "class"    : "org.jboss.elasticsearch.tools.content.ESLookupValuePreprocessor",
+                "settings" : {
+                    "index_name"       : "sys_projects",
+                    "index_type"       : "project",
+                    "source_field"     : "sys_project",
+                    "idx_search_field" : "code",
+                    "result_mapping"   : [
+                        {
+                            "idx_result_field" : "name",
+                            "target_field"     : "sys_project_name"
+                        },{
+                            "idx_result_field" : "type_specific_code.product",
+                            "target_field"     : "product"
+                        }
+                    ]
+                }
+            }
+      ],
+      "index": {
+        "name": "data_jbossorg_download_logs",
+        "type": "jbossorg_download_logs"
+      },
+      "indexer" : {
+        "type" : "elasticsearch-river-remote",
+        "name" : "jbossorg_download_logs"
+      }
+    },
     "jbossorg_mailing_list": {
         "description" : "Mails from project mailing list, public archive under https://lists.jboss.org/mailman/listinfo/",
         "sys_type" : "mailing_list_message",
