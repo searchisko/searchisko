@@ -152,7 +152,14 @@ Unescaped mustache template:
 The same as **suggest_project_name_ngram** except it returns more fields:
 
       {
-        "fields" : [ "sys_project", "sys_project_name", "archived", "license", "projectName" ],
+        "fields" : [
+            "sys_project", "sys_project_name", "archived", "license", "projectName",
+            "anonymousGitLink", "anonymousLink", "blogLink", "buildLink", "chatLink", "committerLink",
+            "committerGitLink", "communityLink", "description", "devForumLink", "docsLink", 
+            "downloadsLink", "fisheyeLink", "githubLink", "hudsonLink", "issueTrackerLink",
+            "jiraLink", "knowledgeBaseLink", "mailingListLink", "specialIcon", "srcLink",
+            "sys_url_view", "twitterLink", "userForumLink", "viewvcLink"
+            ],
 
         ...
       }
