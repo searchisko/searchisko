@@ -1,12 +1,13 @@
 # Query: Contributor Profiles
 
-**Contributor Profiles** is a query that return data from `contributor_profile` type. 
+**Contributor Profiles** is a query that return data from `contributor_profile` type.
+Query can return up to 30 profiles.
 
 ## URL parameters
 
 ##### `query`
 
-Can be used for full-text search across contributor profiles. Is searching on top
+Can be used for full-text search across contributor profiles. It is searching on top
 of `sys_contributors` and `sys_title` fields.
 If no `query` parameter is provided then all contributor profiles will match.
 
@@ -16,7 +17,7 @@ If no `query` parameter is provided then all contributor profiles will match.
 
 ##### `contributor`
 
-Is used to narrow the scope the query will be executed against.
+Is used to pull specific profiles only or to narrow the scope the query will be executed against.
 It **MUST match `sys_contributors`** value.
 Can be used multiple times.
 
@@ -71,11 +72,11 @@ Unescaped mustache template:
                 }
               }
             }
-          }
+          }          
           
-To get `accounts` data we are using `script_fields` (see [#232](https://github.com/searchisko/searchisko/issues/232)).          
-          
-There are some dirty hacks used to workaround Mustache limitations.
+There are some hacks used to workaround Mustache and ES restrictions.
+
+- To get `accounts` data we are using `script_fields` (see [#232](https://github.com/searchisko/searchisko/issues/232)).
 
 - Since `contributors` param is an array there is no easy way how to conditionally include the
   filter for it and populate the array at the same time. Current mustache template repeat complete
