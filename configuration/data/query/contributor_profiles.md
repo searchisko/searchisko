@@ -63,7 +63,8 @@ Unescaped mustache template:
                   {{#query}}
                   "simple_query_string": {
                     "fields": ["sys_contributors.fulltext", "sys_title"],
-                    "query": "{{query}}"
+                    "query": "{{query}}",
+                    "default_operator": "and"
                   }
                   {{/query}}
                   {{^query}}
