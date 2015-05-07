@@ -33,6 +33,7 @@ as an inspiration. You will have your own content.
 + [mailing_list_message](content/mailing_list_message.md) mbox message from project's mailing list
 + [addon](content/addon.md) description of some Addon or Plugin for the project
 + [solution](content/solution.md) description of some problem solution from knowledgebase
++ [download](content/download.md) downloads data based on Apache access logs entries 
 
 Additional `sys_type`s can be found in
 [jboss-developer](https://github.com/jboss-developer/www.jboss.org/blob/master/_dcp/data/provider/jboss-developer.json)

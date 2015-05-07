@@ -1,0 +1,29 @@
+{
+    "_all" : { "enabled" : false },
+    "dynamic_templates" : [ {
+      "string_template" : {
+        "mapping" : {
+          "index" : "not_analyzed",
+          "omit_norms" : true,
+          "type" : "string"
+        },
+        "match_mapping_type" : "string",
+        "match" : "*"
+      }
+    } ],
+    "properties":{
+        "product"            : { "type" : "boolean" },
+        "tags"               : { "type" : "string", "analyzer" : "sys_tags", "store" : "yes" },
+        "country"            : { "type" : "string" },
+        "bytes"              : { "type" : "long" },
+        "client_ip"          : { "type" : "string" },
+        "cookie"             : { "type" : "string" },
+        "release_no"         : { "type" : "string" },
+        "referer"            : { "type" : "string" },
+        "user_agent"         : { "type" : "string" },
+        "path"               : { "type" : "string" },
+        "file"               : { "type" : "string" },
+        "file_ext"           : { "type" : "string" },
+        "space_key"          : { "type" : "string" }
+    }
+}
