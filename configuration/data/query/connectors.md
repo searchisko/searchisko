@@ -13,7 +13,7 @@ If no `query` parameter is provided then all Fuse connectors will match.
 
 **Example:**
 
-- <http://dcp_server:port/v2/rest/search/fuse_connectors?query=co>
+- <http://dcp_server:port/v2/rest/search/connectors?query=co>
 
 ##### `id`
 
@@ -25,7 +25,7 @@ Can be used multiple times.
 
 Get all Fuse connectors from connectors SAP, Salesforce and Twitter that have title **prefix** "sa" (output will include only two: Salesforce and SAP):
 
-- <http://dcp_server:port/v2/rest/search/fuse_connectors?query=sa&id=camel-sap&id=camel-salesforce&id=camel-twitter>
+- <http://dcp_server:port/v2/rest/search/connectors?query=sa&id=camel-sap&id=camel-salesforce&id=camel-twitter>
 
 ##### `target_product`
 
@@ -34,7 +34,7 @@ fields `target_product_1`, `target_product_2` or `target_product_3` equal to pro
 
 **Example:**
 
-- <http://dcp_server:port/v2/rest/search/fuse_connectors?target_product=fuse>
+- <http://dcp_server:port/v2/rest/search/connectors?target_product=fuse>
 
 ##### `sortAlpha`
 
@@ -48,9 +48,9 @@ If this flag is not present or has null value then documents are sorted by `prio
 The actual value of this parameter does not matter as long as it is not null.
 Thus all the following examples have the same meaning:
 
-- <http://dcp_server:port/v2/rest/search/fuse_connectors?sortAlpha=true>
-- <http://dcp_server:port/v2/rest/search/fuse_connectors?sortAlpha=false>
-- <http://dcp_server:port/v2/rest/search/fuse_connectors?sortAlpha=John-Doe>
+- <http://dcp_server:port/v2/rest/search/connectors?sortAlpha=true>
+- <http://dcp_server:port/v2/rest/search/connectors?sortAlpha=false>
+- <http://dcp_server:port/v2/rest/search/connectors?sortAlpha=John-Doe>
 
 ## Query output format
 
