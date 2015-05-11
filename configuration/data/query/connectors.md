@@ -1,6 +1,6 @@
-# Query: Fuse Connectors
+# Query: Connectors
 
-**Fuse Connectors** is a query that can return list of Fuse relevant connectors.
+**Connectors** is a query that can return list of relevant connectors.
 It is possible to sort and filter returned data (see below for details). 
 
 ## URL parameters
@@ -26,6 +26,15 @@ Can be used multiple times.
 Get all Fuse connectors from connectors SAP, Salesforce and Twitter that have title **prefix** "sa" (output will include only two: Salesforce and SAP):
 
 - <http://dcp_server:port/v2/rest/search/fuse_connectors?query=sa&id=camel-sap&id=camel-salesforce&id=camel-twitter>
+
+##### `target_product`
+
+Optional parameter. If provided then the query is restricted to connectors having at least one of the
+fields `target_product_1`, `target_product_2` or `target_product_3` equal to provided value.
+
+**Example:**
+
+- <http://dcp_server:port/v2/rest/search/fuse_connectors?target_product=fuse>
 
 ##### `sortAlpha`
 
@@ -74,14 +83,16 @@ Unescaped mustache template:
                       {{#id}} { "term": { "sys_content_id": "{{.}}" }}, {{/id}}
                       {}
                     ]
-                  },
-                  {
+                  }
+                  {{#target_product}}
+                  ,{
                     "or": [
-                      { "term": { "target_product_1": "fuse" }},
-                      { "term": { "target_product_2": "fuse" }},
-                      { "term": { "target_product_3": "fuse" }}
+                      { "term": { "target_product_1": "{{target_product}}" }},
+                      { "term": { "target_product_2": "{{target_product}}" }},
+                      { "term": { "target_product_3": "{{target_product}}" }}
                     ]
                   }
+                  {{/target_product}}
                 ]
               }
             }
