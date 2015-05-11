@@ -1,3 +1,11 @@
+# **Important !!!**
+
+### Searchisko configuration for jboss.org is being moved to separate repository found at <https://github.com/searchisko/configuration>. See relevant ticket #71 for status.
+
+### Any modifications to configuration must happen in the new repository going forward.
+
+---
+
 jboss.org Searchisko instance (called DCP) configuration
 ========================================================
 
