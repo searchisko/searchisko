@@ -1,9 +1,0 @@
-{
-  "id" : "suggest_project_name_ngram_more_fields",
-  "description" : "Project name suggestions using ngrams, returning more fields. Archived projects are filtered out. Accepts the following parameters: 'query', 'project'.",
-  "default" : {
-    "sys_content_type" : "jbossorg_project_info",
-    "sys_type" : "project_info"
-  },
-  "template" : "{\"fields\" : [ \"sys_project\", \"sys_project_name\", \"archived\", \"license\", \"projectName\", \"anonymousGitLink\", \"anonymousLink\", \"blogLink\", \"buildLink\", \"chatLink\", \"committerLink\", \"committerGitLink\", \"communityLink\", \"description\", \"devForumLink\", \"docsLink\", \"downloadsLink\", \"fisheyeLink\", \"githubLink\", \"hudsonLink\", \"issueTrackerLink\", \"jiraLink\", \"knowledgeBaseLink\", \"mailingListLink\", \"specialIcon\", \"srcLink\", \"sys_url_view\", \"twitterLink\", \"userForumLink\", \"viewvcLink\" ],\"size\": 500,\"query\" : {\"filtered\" : {\"query\": { {{#query}} \"multi_match\": {\"query\": \"{{query}}\",\"fields\": [ \"sys_project_name\", \"sys_project_name.edgengram\", \"sys_project_name.ngram\" ],\"analyzer\": \"whitespace_lowercase\" } {{/query}} {{^query}} \"match_all\": {} {{/query}} },\"filter\": {\"and\": [ {\"or\": {\"filters\": [ {{#project}} { \"term\": { \"sys_project\": \"{{.}}\" }}, {{/project}} {} {{^project}}, { \"exists\": { \"field\": \"sys_project\" }} {{/project}} ],\"_cache\": true }}, {\"or\": {\"filters\": [ {\"and\": [ { \"not\": { \"term\": { \"archived\": true } } },{ \"exists\": { \"field\": \"archived\" } } ] }, {\"missing\": { \"field\": \"archived\" } }],\"_cache\": true }}]}}},\"highlight\" : {\"fields\" : {\"sys_project_name\" : {\"fragment_size\" : 1,\"number_of_fragments\" : 0 },\"sys_project_name.ngram\" : {\"fragment_size\" : 1,\"number_of_fragments\" : 0 },\"sys_project_name.edgengram\" : {\"fragment_size\" : 1,\"number_of_fragments\" : 0}}}}"
-}

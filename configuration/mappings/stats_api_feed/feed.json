@@ -1,9 +1,0 @@
-{
-    "feed" : {
-        "properties" : {
-            "type"          : {"type" : "string", "analyzer" : "keyword"},
-            "response_uuid" : {"type" : "string", "analyzer" : "keyword"},
-            "hits_id"       : {"type" : "string", "analyzer" : "keyword"}
-        }
-    }
-}

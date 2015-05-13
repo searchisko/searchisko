@@ -1,8 +1,0 @@
-{
-  "id" : "contributor_profiles",
-  "description" : "Query contributor profiles. Accepts the following parameters: 'query', 'contributor'.",
-  "default" : {
-    "sys_type" : "contributor_profile"
-  },
-  "template" : "{\"size\": 30,\"fields\": [ \"sys_contributors\", \"sys_title\", \"sys_url_view\" ],\"script_fields\": {\"accounts\": {\"script\": \"(_source.accounts && _source.accounts.length > 0 ) ? _source.accounts[0] : ''\" }},\"query\": {\"filtered\": { {{#contributor}} \"filter\": {\"terms\": {\"sys_contributors\": [ {{#contributor}} \"{{.}}\", {{/contributor}} {} ]}}, {{/contributor}} \"query\": { {{#query}} \"simple_query_string\": {\"fields\": [\"sys_contributors.fulltext\", \"sys_title\"],\"query\": \"{{query}}\", \"default_operator\": \"and\" } {{/query}} {{^query}} \"match_all\": {} {{/query}} }}}}"
-}

@@ -1,8 +1,0 @@
-{
-  "id" : "connectors",
-  "description" : "List connectors. Accepts the following parameters: 'query', 'id', 'target_product', 'sortAlpha'.",
-  "default" : {
-    "sys_content_type" : "jbossdeveloper_connector"
-  },
-  "template" : "{\"fields\": [ \"_source\" ],\"size\": 500,\"query\": {\"filtered\": { {{#query}} \"query\": {\"prefix\": {\"sys_title\": \"{{query}}\"}}, {{/query}}\"filter\": {\"and\": [ {\"or\": [ {{#id}} { \"term\": { \"sys_content_id\": \"{{.}}\" }}, {{/id}} {} ] } {{#target_product}}, {\"or\": [ { \"term\": { \"target_product_1\": \"{{target_product}}\" }}, { \"term\": { \"target_product_2\": \"{{target_product}}\" }}, { \"term\": { \"target_product_3\": \"{{target_product}}\" }} ]} {{/target_product}} ]}}},\"sort\": [ {{#sortAlpha}} {{/sortAlpha}} {{^sortAlpha}} { \"priority\": { \"order\": \"asc\" }}, {{/sortAlpha}} { \"_script\": {\"script\": \"_source['sys_title'].toLowerCase()\",\"type\": \"string\",\"order\": \"asc\" }}]}}"
-}
