@@ -1,0 +1,18 @@
+{
+  "template": "*",
+  "order": 0,
+  "settings": {
+    "analysis": {
+      "analyzer": {
+        "keyword_lowercase": {
+          "type": "custom",
+          "tokenizer": "keyword",
+          "filter": [
+            "lowercase",
+            "trim"
+          ]
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "template": "stats_*",
+  "order": 2,
+  "mappings": {
+    "_default_": {
+      "_timestamp": {
+        "enabled": true
+      },
+      "include_in_all": false,
+      "properties": {
+        "type": {
+          "type": "string",
+          "analyzer": "keyword"
+        },
+        "date": {
+          "type": "date"
+        }
+      }
+    }
+  }
+}

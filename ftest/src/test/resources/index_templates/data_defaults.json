@@ -1,0 +1,114 @@
+{
+  "template": "data_*",
+  "order": 1,
+  "settings": {
+    "analysis": {
+      "analyzer": {
+        "default": {
+          "type": "custom",
+          "tokenizer": "standard",
+          "filter": ["word_delimiter", "standard", "lowercase", "asciifolding", "stop", "kstem"]
+        },
+        /* Used for fields that go to _all field and contain html */
+        "html_strip_default" : {
+          "type": "custom",
+          "char_filter" : "html_strip",
+          "tokenizer": "standard",
+          "filter": ["word_delimiter", "standard", "lowercase", "asciifolding", "stop", "kstem"]
+        },
+        "sys_project_name": {
+          "type": "standard"
+        },
+        "sys_tags": {
+          "type": "custom",
+          "tokenizer": "keyword",
+          "filter": ["lowercase", "trim", "unique"]
+        }
+      },
+      "filter": {
+        "word_delimiter": {
+          "type": "word_delimiter",
+          "preserve_original": true,
+          "catenate_all": true,
+          "catenate_numbers": true,
+          "catenate_words": true
+        }
+      }
+    }
+  },
+  "mappings": {
+    "_default_": {
+      "_timestamp": {
+        "enabled": true
+      },
+      "include_in_all": false,
+      "properties": {
+        "sys_authors" : {
+          "type" : "nested",
+          "include_in_root" : true,
+          "properties" : {
+            "red_hat" : {
+              "type" : "nested",
+              "include_in_root" : true,
+              "properties" : {
+                "employee" : { "type" : "boolean", "store": "yes" }
+              }
+            },
+            "sys_contributor" : { "type" : "string", "analyzer": "keyword", "store": "yes" }
+          }
+        },
+        "sys_content_provider"	: { "type": "string",	"analyzer": "keyword" },
+        "sys_content_type"	: { "type": "string",	"analyzer": "keyword" },
+        "sys_content_id"	: { "type": "string", "analyzer": "keyword" },
+        "sys_id"	: { "type": "string", "analyzer": "keyword" },
+        "sys_type"	: { "type": "string", "analyzer": "keyword", "store": "yes" },
+        "sys_visible_for_roles"	: { "type": "string",	"analyzer": "keyword", "store" : "no" },
+        "sys_title"	: { "type": "string", "store": "yes", "term_vector": "with_positions_offsets" },
+        "sys_url_view"	: { "type": "string", "store": "yes" },
+        "sys_description"	: { "type": "string", "store": "yes", "term_vector": "with_positions_offsets" },
+        "sys_content"	: { "type": "string", "index": "no" },
+        "sys_content_content-type"	: { "type": "string", "analyzer": "keyword" },
+        "sys_content_plaintext"	: { "type": "string", "term_vector": "with_positions_offsets" },
+        "sys_updated"	: { "type": "date" },
+        "sys_project"	: { "type": "string", "analyzer": "keyword", "store": "yes" },
+        "sys_project_name"	: { "type": "string", "analyzer": "sys_project_name", "store": "yes" },
+        "sys_contributors"	: {
+          "type" : "multi_field",
+          "fields" : {
+            "fulltext" : { "type": "string", "index": "analyzed", "term_vector": "with_positions_offsets" },
+            "sys_contributors" : { "type": "string", "analyzer": "keyword", "store": "yes" }
+          }
+        },
+        "sys_tags"	: { "type": "string", "analyzer": "sys_tags", "store": "yes" },
+        "sys_created"	: { "type": "date", "store": "yes" },
+        "sys_last_activity_date"	: { "type": "date", "store": "yes" },
+        "sys_activity_dates"	: { "type": "date" },
+        "sys_rating_avg"	: { "type": "float", "store": "yes" },
+        "sys_rating_num"	: { "type": "integer", "store": "yes" },
+        "sys_featured"	: { "type": "boolean", "store": "no" },
+        "sys_language"	: { "type": "string", "analyzer": "keyword", "store": "no" },
+        "sys_comments": {
+          "type": "object",
+          "properties": {
+            "comment_id": { "type": "string", "index": "no" },
+            "comment_body": { "type": "string", "store": "yes", "term_vector": "with_positions_offsets" },
+            "comment_created": { "type": "date", "index": "no" },
+            "comment_updated": { "type": "date", "index": "no" },
+            "comment_author": {
+              "type": "object",
+              "properties": {
+                "sys_contributor": { "type": "string", "index": "no" }
+              }
+            },
+            "comment_updater": {
+              "type": "object",
+              "properties": {
+                "sys_contributor": { "type": "string", "index": "no" }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

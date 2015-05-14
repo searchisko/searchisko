@@ -196,11 +196,10 @@ public class DeploymentHelpers {
 	}
 
 	public static void initIndexTemplate(URL context, String templateName) throws IOException {
-		final String relativePath = "/configuration/index_templates/" + templateName + ".json";
+		final String relativePath = "/index_templates/" + templateName + ".json";
 
 		log.log(Level.INFO, "Init index template {0} via context {1}", new Object[]{relativePath, context});
-		File file = getProjectFile(relativePath);
-		InputStream is = new FileInputStream(file);
+		InputStream is = DeploymentHelpers.class.getResourceAsStream(relativePath);
 		byte[] data = IOUtils.toByteArray(is);
 		is.close();
 
