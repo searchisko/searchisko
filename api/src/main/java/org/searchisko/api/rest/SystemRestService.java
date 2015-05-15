@@ -32,10 +32,12 @@ import org.searchisko.api.service.SearchIndexMissingException;
 import org.searchisko.api.service.StatsClientService;
 import org.searchisko.api.service.StatsRecordType;
 import org.searchisko.api.service.SystemInfoService;
+import org.searchisko.persistence.service.PersistenceService;
 
 /**
  * System related REST service
  *
+ * @author Lukas Vcek
  * @author Vlastimil Elias (velias at redhat dot com)
  */
 @Path("/sys")
@@ -53,12 +55,22 @@ public class SystemRestService {
 	@Inject
 	private StatsClientService statsClientService;
 
+	@Inject
+	private PersistenceService persistenceService;
+
 	@GET
 	@Path("/info")
 	@Produces(MediaType.APPLICATION_JSON)
 	@PermitAll
 	public Map<Object, Object> info() throws IOException {
 		return systemInfoService.getSystemInfo(securityContext.isUserInRole(Role.ADMIN));
+	}
+
+	@GET
+	@Path("/persistence")
+	@Produces(MediaType.APPLICATION_JSON)
+	public Map<String, Integer> persistence() {
+		return persistenceService.getTableCounts();
 	}
 
 	@GET

@@ -4,7 +4,7 @@ HOST: http://dcp.jboss.org/v2
 ---
 # Overview
 
-**Searchisko** is a system intended to store and search/retrieve information related to distinct JBoss Community OSS projects, aggregated from various heterogenous source systems. 
+**Searchisko** is a system intended to store and search/retrieve information related to distinct JBoss Community OSS projects, aggregated from various heterogeneous source systems.
 This system is necessary to support/extend synergy of JBoss Community in the era of more distributed development environment, when project teams tend to use third party systems instead of systems provided and maintained by JBoss Community Team.
 
 Searchisko main design attributes:
@@ -676,7 +676,7 @@ Check if user is authenticated.
 
 ##### Request parameters
 
-* `roles` if this http patam is not empty then response contains array of roles if user is authenticated.
+* `roles` if this http param is not empty then response contains array of roles if user is authenticated.
 
 ##### Response content
 The response contains a JSON object with fields:
@@ -687,7 +687,7 @@ The response contains a JSON object with fields:
 ```
 {
   "authenticated":true,
-  "roles" : ["contributor","anotherrole"]
+  "roles" : ["contributor","another_role"]
 }
 ```
 
@@ -850,7 +850,7 @@ GET /rest/tagging/{_id}
 }
 
 
-Get all existig custom tags for documents of one content type.
+Get all existing custom tags for documents of one content type.
 
 ##### Request parameters
 
@@ -949,7 +949,7 @@ This part of API allows *content providers* to run normalizations defined in Sea
 These normalizations can use Searchisko internal data (like Projects and Contributor configurations) commonly available for normalizations performed during Content Push only.
 --
 
-Get informations about all available normalizations. 
+Get information about all available normalizations.
 Available normalizations are configured by Searchisko [normalizations](https://github.com/searchisko/searchisko/blob/master/documentation/rest-api/management/config_normalizations.md) config file.
 
 ##### Response content
@@ -1508,7 +1508,7 @@ POST /rest/contributor/{id}
 }
 
 Change contributor's `code` for contributor with requested `id`. Searchisko will maintain data consistency as part of this
-operation. It will start background reindexation task (se API for tasks later) to patch `sys_contributor` field for whole affected content. 
+operation. It will start background reindexing task (se API for tasks later) to patch `sys_contributor` field for whole affected content.
 
 ##### Response content
 The response contains a JSON structure with Contributor data after `code` change.
@@ -1527,7 +1527,7 @@ Merge Contributor with identifier `idFrom` into Contributor with `idTo`.
 `email` and `type_specific_code` fields are merged together from both records, so all values from both records are kept.
 Merge result is stored into Contributor with identifier `idTo`, `code` of this Contributor is preserved.  
 Contributor with identifier `idFrom` is deleted form Searchisko together with his `code`.
-Searchisko will maintain data consistency as part of this operation. It will start background reindexation
+Searchisko will maintain data consistency as part of this operation. It will start background reindexing
 task (se API for tasks later) to patch `sys_contributor` field for whole affected content.
 
 ##### Response content
@@ -1717,9 +1717,9 @@ DELETE /rest/config/{id}
 
 
 --
-Management API - content reindexation tasks
+Management API - content reindexing tasks
 
-This part of the API is used by 'Searchisko administrators' to operate long running reindexation tasks.
+This part of the API is used by 'Searchisko administrators' to operate long running reindexing tasks.
 These task are used to refresh search indices in case of contributor or project mapping change.
 Special task type is used to put content from persistent store into search indices also.
 --
@@ -1948,6 +1948,18 @@ Each record in the array contains `id` field with unique id for other REST opera
 ```
 
 
+Get list of persistence tables along with count of records for each table.
+
+GET /rest/sys/persistence
+< 200
+< Content-Type: application/json
+{
+  "TABLE_NAME_1": 10,
+  "TABLE_NAME_2": 0,
+  "TABLE_NAME_3": 144
+}
+
+
 GET /rest/sys/auditlog{?operation,path,username,usertype,id,from,size,sort}
 < 200
 < Content-Type: application/json
@@ -1985,14 +1997,14 @@ GET /rest/sys/auditlog{?operation,path,username,usertype,id,from,size,sort}
 
 
 
-Elasticsearch "Search" cluster [full REST API](http://www.elasticsearch.org/guide/). 
+Elasticsearch "Search" cluster [full REST API](https://www.elastic.co/guide/en/elasticsearch/reference/current/index.html).
 
 GET /rest/sys/es/search/*
 < 200
 < Content-Type: application/json
 
 
-Elasticsearch "Statistics" cluster [full REST API](http://www.elasticsearch.org/guide/).
+Elasticsearch "Statistics" cluster [full REST API](https://www.elastic.co/guide/en/elasticsearch/reference/current/index.html).
 
 GET /rest/sys/es/stats/*
 < 200

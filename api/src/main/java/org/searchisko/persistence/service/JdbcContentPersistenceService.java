@@ -172,30 +172,38 @@ public class JdbcContentPersistenceService implements ContentPersistenceService 
 
 	/**
 	 * Check if table exists in DB for given table name.
-	 * 
+	 *
 	 * @param tableName to check
 	 * @return true if table exists, false if not
 	 */
 	protected boolean checkTableExists(String tableName) {
 		if (TABLES_EXISTS.isEmpty()) {
-			pullTableNames();
+			cacheAllTableNames();
 		}
 		boolean exists = TABLES_EXISTS.containsKey(tableName);
 		// Refresh table names map if table now found
 		// Double check is important in case of cluster deployment - should happen rarely.
 		if (!exists) {
-			pullTableNames();
+			cacheAllTableNames();
 			exists = TABLES_EXISTS.containsKey(tableName);
 		}
 		return exists;
 	}
 
-	private void pullTableNames() {
-		String sql = "select table_name from information_schema.tables where upper(table_schema) <> 'INFORMATION_SCHEMA'";
-		List<String> allTables = executeListReturningSql(sql);
-		for (String table : allTables) {
+	private void cacheAllTableNames() {
+		for (String table : getAllTableNames()) {
 			TABLES_EXISTS.putIfAbsent(table, Boolean.TRUE);
 		}
+	}
+
+	/**
+	 * Get list of all tables (excluding 'INFORMATION_SCHEMA' table if it exists).
+	 *
+	 * @return list of all tables
+	 */
+	public List<String> getAllTableNames() {
+		String sql = "select table_name from information_schema.tables where upper(table_schema) <> 'INFORMATION_SCHEMA'";
+		return executeListReturningSql(sql);
 	}
 
 	/**
@@ -369,7 +377,16 @@ public class JdbcContentPersistenceService implements ContentPersistenceService 
 
 	@Override
 	public int countRecords(String sysContentType) {
-		String tableName = getTableName(sysContentType);
+		return rowCount(getTableName(sysContentType));
+	}
+
+	/**
+	 * Return count of records in the table.
+	 *
+	 * @param tableName
+	 * @return count of records in the table
+	 */
+	public int rowCount(String tableName) {
 		if (!checkTableExists(tableName))
 			return 0;
 		String sqlString = String.format("select count(*) from %s", tableName);
