@@ -11,12 +11,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 import java.util.logging.Logger;
 
 import javax.annotation.PostConstruct;
@@ -44,6 +40,7 @@ import org.searchisko.api.util.SearchUtils;
  * 
  * @author Vlastimil Elias (velias at redhat dot com)
  * @author Jason Porter (jporter@redhat.com)
+ * @author Lukas Vlcek
  */
 @Named
 @Stateless
@@ -148,7 +145,30 @@ public class JdbcContentPersistenceService implements ContentPersistenceService 
 		return "data_" + sysContentType;
 	}
 
-	protected static final ConcurrentMap<String, Boolean> TABLES_EXISTS = new ConcurrentHashMap<>(10);
+	/**
+	 * We need to ensure that keys are always treated as UPPERCASE values.
+	 * Note: this class does not correctly implement whole Map API, right
+	 * now only used methods are reimplemented to use UPPERCASE values.
+	 */
+	static class ConcurrentUpperCaseHashMap extends ConcurrentHashMap<String, Boolean> {
+		public ConcurrentUpperCaseHashMap(int size) {
+			super(size);
+		}
+		public Boolean putIfAbsent(String key, Boolean value) {
+			return super.putIfAbsent(key.toUpperCase(Locale.US), value);
+		}
+		public Boolean put(String key, Boolean value) {
+			return super.put(key.toUpperCase(Locale.US), value);
+		}
+		public boolean containsKey(Object key) {
+			return super.containsKey(((String) key).toUpperCase(Locale.US));
+		}
+		public Boolean get(Object key) {
+			return super.get(((String)key).toUpperCase(Locale.US));
+		}
+	}
+
+	protected static final ConcurrentUpperCaseHashMap TABLES_EXISTS = new ConcurrentUpperCaseHashMap(10);
 
 	/**
 	 * Check if table exists in DB for given table name.
@@ -158,13 +178,24 @@ public class JdbcContentPersistenceService implements ContentPersistenceService 
 	 */
 	protected boolean checkTableExists(String tableName) {
 		if (TABLES_EXISTS.isEmpty()) {
-			String sql = "select table_name from information_schema.tables where upper(table_schema) <> 'INFORMATION_SCHEMA'";
-			List<String> allTables = executeListReturningSql(sql);
-			for (String table : allTables) {
-				TABLES_EXISTS.putIfAbsent(table, Boolean.TRUE);
-			}
+			pullTableNames();
 		}
-		return TABLES_EXISTS.containsKey(tableName);
+		boolean exists = TABLES_EXISTS.containsKey(tableName);
+		// Refresh table names map if table now found
+		// Double check is important in case of cluster deployment - should happen rarely.
+		if (!exists) {
+			pullTableNames();
+			exists = TABLES_EXISTS.containsKey(tableName);
+		}
+		return exists;
+	}
+
+	private void pullTableNames() {
+		String sql = "select table_name from information_schema.tables where upper(table_schema) <> 'INFORMATION_SCHEMA'";
+		List<String> allTables = executeListReturningSql(sql);
+		for (String table : allTables) {
+			TABLES_EXISTS.putIfAbsent(table, Boolean.TRUE);
+		}
 	}
 
 	/**
@@ -317,8 +348,7 @@ public class JdbcContentPersistenceService implements ContentPersistenceService 
 					while (rs.next()) {
 						String id = rs.getString(2);
 						try {
-							content.add(new ContentTuple<String, Map<String, Object>>(id, SearchUtils.convertToJsonMap(rs
-									.getString(1))));
+							content.add(new ContentTuple<>(id, SearchUtils.convertToJsonMap(rs.getString(1))));
 						} catch (IOException e) {
 							log.severe("Could not convert content to JSON object for contentType='" + sysContentType + "' and id='"
 									+ id + "' due: " + e.getMessage());

@@ -10,16 +10,11 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.logging.Logger;
 
 import org.h2.jdbcx.JdbcConnectionPool;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.*;
 import org.searchisko.api.ContentObjectFields;
 import org.searchisko.api.testtools.TestUtils;
 import org.searchisko.api.util.SearchUtils;
@@ -28,8 +23,39 @@ import org.searchisko.api.util.SearchUtils;
  * Unit test for {@link JdbcContentPersistenceService}
  * 
  * @author Vlastimil Elias (velias at redhat dot com)
+ * @author Lukas Vlcek
  */
 public class JdbcContentPersistenceServiceTest extends JpaTestBase {
+
+	@Test
+	public void tableNameCaseDoesNotMatter() {
+		JdbcContentPersistenceService.ConcurrentUpperCaseHashMap map = new JdbcContentPersistenceService.ConcurrentUpperCaseHashMap(10);
+
+		map.put("lower", true);
+
+		Assert.assertTrue(map.containsKey("lower"));
+		Assert.assertTrue(map.containsKey("Lower"));
+		Assert.assertTrue(map.containsKey("LOWER"));
+
+		Assert.assertTrue(map.get("lower"));
+		Assert.assertTrue(map.get("Lower"));
+		Assert.assertTrue(map.get("LOWER"));
+
+		map.putIfAbsent("UPPER", true);
+
+		Assert.assertTrue(map.containsKey("upper"));
+		Assert.assertTrue(map.containsKey("Upper"));
+		Assert.assertTrue(map.containsKey("UPPER"));
+
+		Assert.assertTrue(map.get("upper"));
+		Assert.assertTrue(map.get("Upper"));
+		Assert.assertTrue(map.get("UPPER"));
+
+		Set<String> keys = map.keySet();
+		Assert.assertEquals(2, keys.size());
+		Assert.assertTrue(keys.contains("LOWER"));
+		Assert.assertTrue(keys.contains("UPPER"));
+	}
 
 	@Test
 	public void checkAndEnsureTableExists() {
@@ -49,7 +75,36 @@ public class JdbcContentPersistenceServiceTest extends JpaTestBase {
 		tested.ensureTableExists("table_2");
 		Assert.assertTrue(tested.checkTableExists("table_2"));
 		Assert.assertTrue(tested.checkTableExists("table1"));
+	}
 
+	@Test
+	public void checkAndEnsureTableExistsWithCasing() {
+		JdbcContentPersistenceService tested = getTested();
+
+		Assert.assertFalse(tested.checkTableExists("table1"));
+		Assert.assertFalse(tested.checkTableExists("TABLE1"));
+
+		tested.ensureTableExists("table1");
+		Assert.assertTrue(tested.checkTableExists("TABLE1"));
+		Assert.assertTrue(tested.checkTableExists("table1"));
+
+		tested.ensureTableExists("TABLE1");
+		Assert.assertTrue(tested.checkTableExists("table1"));
+		Assert.assertTrue(tested.checkTableExists("TABLE1"));
+
+		Assert.assertFalse(tested.checkTableExists("TABLE_2"));
+		tested.ensureTableExists("table_2");
+		Assert.assertTrue(tested.checkTableExists("TABLE_2"));
+		Assert.assertTrue(tested.checkTableExists("TABLE1"));
+	}
+
+	@Test
+	public void simulateClusterTableCreation() {
+		JdbcContentPersistenceService tested = getTested();
+
+		Assert.assertFalse(tested.checkTableExists("table1"));
+		createTable("TABLE1");
+		Assert.assertTrue(tested.checkTableExists("table1"));
 	}
 
 	@Test
@@ -248,6 +303,42 @@ public class JdbcContentPersistenceServiceTest extends JpaTestBase {
 
 	protected JdbcContentPersistenceService getTested() {
 		return tested;
+	}
+
+	/**
+	 * Directly create a table in the database. This can be used
+	 * to simulate a second EAP node creating a new table.
+	 *
+	 * @see JdbcContentPersistenceService#ensureTableExists
+	 * @param tableName table name to create
+	 */
+	protected void createTable(String tableName) {
+		try {
+			final Connection conn = this.getTested().searchiskoDs.getConnection();
+			conn.prepareStatement("create table " + tableName).execute();
+			conn.commit();
+		} catch (SQLException e) {
+			Assert.fail(e.getMessage());
+		}
+	}
+
+	/**
+	 * Drop all tables found in JdbcContentPersistenceService.TABLES_EXISTS
+	 * map after each test and also clear this map itself.
+	 */
+	@After
+	public void clearDatabase() {
+		try {
+			final Connection conn = this.getTested().searchiskoDs.getConnection();
+			Set<String> tables = JdbcContentPersistenceService.TABLES_EXISTS.keySet();
+			for (String table: tables) {
+				conn.prepareStatement("drop table " + table).execute();
+			}
+			conn.commit();
+			JdbcContentPersistenceService.TABLES_EXISTS.clear();
+		} catch (SQLException e) {
+			Assert.fail(e.getMessage());
+		}
 	}
 
 	@BeforeClass
