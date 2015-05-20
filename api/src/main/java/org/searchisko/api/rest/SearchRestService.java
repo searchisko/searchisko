@@ -95,6 +95,9 @@ public class SearchRestService extends RestServiceBase {
 			}
 
 			Map<String, Object> registeredQuery = registeredQueryService.get(id);
+			if (registeredQuery == null) {
+				return Response.status(Response.Status.NOT_FOUND).build();
+			}
 			@SuppressWarnings("unchecked")
 			List<String> roles = (List<String>) registeredQuery.get(RegisteredQueryService.FIELD_ALLOWED_ROLES);
 

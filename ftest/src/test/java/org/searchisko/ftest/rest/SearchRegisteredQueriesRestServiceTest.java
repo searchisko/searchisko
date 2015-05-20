@@ -135,6 +135,14 @@ public class SearchRegisteredQueriesRestServiceTest {
     }
 
     @Test
+    @InSequence(90)
+    public void testRegisteredQueryNotFound() throws MalformedURLException {
+        given().expect()
+               .statusCode(404)
+               .when().get(new URL(context, SEARCH_REST_API + "/invalid_query_id").toExternalForm());
+    }
+
+    @Test
     @InSequence(100)
     public void testRegisteredQuery() throws MalformedURLException {
 
