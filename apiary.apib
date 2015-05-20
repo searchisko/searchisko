@@ -1990,9 +1990,13 @@ GET /rest/sys/persistence
 < 200
 < Content-Type: application/json
 {
-  "TABLE_NAME_1": 10,
-  "TABLE_NAME_2": 0,
-  "TABLE_NAME_3": 144
+  "tables": {
+    "counts": {
+      "TABLE_NAME_1": 10,
+      "TABLE_NAME_2": 0,
+      "TABLE_NAME_3": 144
+    }
+  }
 }
 
 

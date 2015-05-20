@@ -6,6 +6,7 @@
 package org.searchisko.api.rest;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Map;
 
 import javax.annotation.security.PermitAll;
@@ -69,8 +70,15 @@ public class SystemRestService {
 	@GET
 	@Path("/persistence")
 	@Produces(MediaType.APPLICATION_JSON)
-	public Map<String, Integer> persistence() {
-		return persistenceService.getTableCounts();
+	public Map<String, Object> persistence() {
+		Map<String, Integer> tables = persistenceService.getTableCounts();
+
+		Map<String, Object> row_counts = new HashMap<>();
+		row_counts.put("counts", tables);
+
+		Map<String, Object> ret = new HashMap<>();
+		ret.put("tables", row_counts);
+		return ret;
 	}
 
 	@GET
