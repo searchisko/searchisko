@@ -71,7 +71,7 @@ public class SystemRestService {
 	@Path("/persistence")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Map<String, Object> persistence() {
-		Map<String, String> tables = persistenceService.getTableCounts();
+		Map<String, Object> tables = persistenceService.getTableCounts();
 
 		Map<String, Object> row_counts = new HashMap<>();
 		row_counts.put("counts", tables);

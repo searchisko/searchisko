@@ -36,20 +36,17 @@ public class PersistenceService {
 	 *
 	 * @return map containing table names as keys and number of records as values
 	 */
-	public Map<String, String> getTableCounts() {
-		Map<String, String> ret = new LinkedHashMap<>();
+	public Map<String, Object> getTableCounts() {
+		Map<String, Object> ret = new LinkedHashMap<>();
 		List<String> tableNames = jdbcContentPersistenceService.getAllTableNames();
 		Collections.sort(tableNames);
 
 		for (String tableName: tableNames) {
-			String result;
 			try {
-				int count = jdbcContentPersistenceService.rowCount(tableName);
-				result = Integer.toString(count);
+				ret.put(tableName, jdbcContentPersistenceService.rowCount(tableName));
 			} catch (Throwable e) {
-				result = "ERROR: " + e.getMessage();
+				ret.put(tableName, "ERROR: " + e.getMessage());
 			}
-			ret.put(tableName, result);
 		}
 
 		return ret;

@@ -1984,7 +1984,7 @@ GET /rest/sys/auditlog{?operation,path,username,usertype,id,from,size,sort}
 }
 
 
-Get list of persistence tables along with count of records for each table.
+Get list of persistence tables along with count of records for each table (or error message).
 
 GET /rest/sys/persistence
 < 200
@@ -1994,7 +1994,8 @@ GET /rest/sys/persistence
     "counts": {
       "TABLE_NAME_1": 10,
       "TABLE_NAME_2": 0,
-      "TABLE_NAME_3": 144
+      "TABLE_NAME_3": 144,
+      "TABLE_NAME_4": "ERROR: Table TABLE_NAME_4 does not exist."
     }
   }
 }
