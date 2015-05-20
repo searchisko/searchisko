@@ -29,17 +29,27 @@ public class PersistenceService {
 
 	/**
 	 * List all tables from persistence and number of records stored in them.
+	 * <p/>
+	 * Getting count from some tables may not be possible (or results into runtime errors).
+	 * In such cases we should not get an exception but the count value should contain some
+	 * error message.
 	 *
 	 * @return map containing table names as keys and number of records as values
 	 */
-	public Map<String, Integer> getTableCounts() {
-		Map<String, Integer> ret = new LinkedHashMap<>();
+	public Map<String, String> getTableCounts() {
+		Map<String, String> ret = new LinkedHashMap<>();
 		List<String> tableNames = jdbcContentPersistenceService.getAllTableNames();
 		Collections.sort(tableNames);
 
 		for (String tableName: tableNames) {
-			int count = jdbcContentPersistenceService.rowCount(tableName);
-			ret.put(tableName, count);
+			String result;
+			try {
+				int count = jdbcContentPersistenceService.rowCount(tableName);
+				result = Integer.toString(count);
+			} catch (Throwable e) {
+				result = "ERROR: " + e.getMessage();
+			}
+			ret.put(tableName, result);
 		}
 
 		return ret;

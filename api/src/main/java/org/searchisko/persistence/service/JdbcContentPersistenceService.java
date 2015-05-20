@@ -197,12 +197,13 @@ public class JdbcContentPersistenceService implements ContentPersistenceService 
 	}
 
 	/**
-	 * Get list of all tables (excluding 'INFORMATION_SCHEMA' table if it exists).
+	 * Get list of all tables (excluding 'INFORMATION_SCHEMA', 'PERFORMANCE_SCHEMA' or 'MYSQL' table if it exists).
 	 *
 	 * @return list of all tables
 	 */
 	public List<String> getAllTableNames() {
-		String sql = "select table_name from information_schema.tables where upper(table_schema) <> 'INFORMATION_SCHEMA'";
+		String sql = "select table_name from information_schema.tables " +
+				"where upper(table_schema) not in ('INFORMATION_SCHEMA', 'PERFORMANCE_SCHEMA', 'MYSQL')";
 		return executeListReturningSql(sql);
 	}
 
@@ -382,6 +383,7 @@ public class JdbcContentPersistenceService implements ContentPersistenceService 
 
 	/**
 	 * Return count of records in the table.
+	 * Can throw unchecked exception (special system table names ... etc).
 	 *
 	 * @param tableName
 	 * @return count of records in the table

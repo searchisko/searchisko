@@ -30,11 +30,11 @@ public class PersistenceServiceTest extends JpaTestBase {
 
 		PersistenceService tested = getTested();
 		tested.jdbcContentPersistenceService.store("id1", "type1", data1);
-		Map<String, Integer> result = tested.getTableCounts();
+		Map<String, String> result = tested.getTableCounts();
 
 		Assert.assertEquals(1, result.keySet().size());
 		String tableName = (String) result.keySet().toArray()[0];
-		Assert.assertEquals(new Integer(1), result.get(tableName));
+		Assert.assertEquals("1", result.get(tableName));
 	}
 
 	protected PersistenceService getTested() {
