@@ -2,11 +2,18 @@
 
 This document contains high-level release notes. More details can be found in [milestones](https://github.com/searchisko/searchisko/milestones) on GitHub.
 
-## 2.0.2-SNAPSHOT
+## 2.0.2
 
 Improvements:
 
 - Custom tags [#87](https://github.com/searchisko/searchisko/issues/87)
+- Expose persistence status info via REST API [#241](https://github.com/searchisko/searchisko/issues/241)
+
+Internal:
+
+- Move configuration to separate repo [#71](https://github.com/searchisko/searchisko/issues/71)
+
+Several other bug-fixes and enhancements, see [full list](https://github.com/searchisko/searchisko/issues?q=milestone%3A2.0.2+is%3Aclosed).
 
 ## 2.0.1
 
