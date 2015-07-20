@@ -451,6 +451,8 @@
 				<es.client.embedded.data.path>${env.OPENSHIFT_DATA_DIR}</es.client.embedded.data.path>
 				<es.network.host>${env.OPENSHIFT_JBOSSEAP_IP}</es.network.host>
 				<!-- Variables defined on Openshift via custom variables. See documentation development.md -->
+				<contributorprofile.provider.urlbase>${env.SEARCHISKO_CB_PROVIDER_URLBASE}
+				</contributorprofile.provider.urlbase>
 				<contributorprofile.provider.username>${env.SEARCHISKO_CB_PROVIDER_USERNAME}
 				</contributorprofile.provider.username>
 				<contributorprofile.provider.password>${env.SEARCHISKO_CB_PROVIDER_PASSWORD}

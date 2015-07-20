@@ -205,7 +205,7 @@ you have to use port forwarding to access it from outside.
 
 To enable Access to Contributor Profile Provider (developer.jboss.org) as authenticated set these [Openshift custom variables](https://www.openshift.com/blogs/taking-advantage-of-environment-variables-in-openshift-php-apps):
 
-	rhc set-env SEARCHISKO_CB_PROVIDER_USERNAME=developer.jboss.org-username SEARCHISKO_CB_PROVIDER_PASSWORD=developer.jboss.org-password -a {name of your app}
+	rhc set-env SEARCHISKO_CB_PROVIDER_URLBASE=https://developer.jboss.org SEARCHISKO_CB_PROVIDER_USERNAME=developer.jboss.org-username SEARCHISKO_CB_PROVIDER_PASSWORD=developer.jboss.org-password -a {name of your app}
 
 
 #### staging/production
@@ -254,7 +254,7 @@ In case you have already running instance and you'd like to create same instance
 
 		gunzip < searchiskodb-backup.sql.gz | mysql -h $OPENSHIFT_MYSQL_DB_HOST -P ${OPENSHIFT_MYSQL_DB_PORT} -u ${OPENSHIFT_MYSQL_DB_USERNAME} --password="$OPENSHIFT_MYSQL_DB_PASSWORD" "$OPENSHIFT_APP_NAME"
 
-5. Set Openshift environment properties if needed e.g. `SEARCHISKO_CB_PROVIDER_USERNAME` and `SEARCHISKO_CB_PROVIDER_PASSWORD` variables
+5. Set Openshift environment properties if needed e.g. `SEARCHISKO_CB_PROVIDER_USERNAME`, `SEARCHISKO_CB_PROVIDER_PASSWORD` and `SEARCHISKO_CB_PROVIDER_URLBASE` variables
 6. Force push your current git repo to new Openshift instance
 7. Initialize Searchisko like from scratch. See section above
 8. Run task reindexation for each persisted content type. Example:
