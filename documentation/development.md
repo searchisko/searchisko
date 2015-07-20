@@ -196,6 +196,10 @@ Simply login to [OpenShift](https://openshift.redhat.com), create new Applicatio
 with 'JBoss Enterprise Application Platform 6.0 Cartridge ' 
 and add 'MySQL Database 5.5' cartridge into it.
 
+Note: If you're going to import DB Dump from instance where table names are lower case only then configure it via Openshift env. property
+
+	rhc env set OPENSHIFT_MYSQL_LOWER_CASE_TABLE_NAMES=1 -a {instance name}
+
 Then push content of this git repo (`git push openshift master` or `git push openshift {local_branch_name}:master` if working on branch)
 into the OpenShift application's git repo. Then Searchisko is built and deployed automatically.
 
