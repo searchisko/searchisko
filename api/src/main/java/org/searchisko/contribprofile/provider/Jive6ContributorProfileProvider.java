@@ -94,6 +94,8 @@ public class Jive6ContributorProfileProvider implements ContributorProfileProvid
 		String url = jive6Url + JIVE_ALL_PROFILES_REST_API;
 		url = addPaginationToUrl(url, start, size);
 
+		log.log(Level.FINE, "Get data from Jive using url: {0}", url);
+
 		byte[] data = getData(url);
 		if (data == null) {
 			return null;
@@ -167,6 +169,7 @@ public class Jive6ContributorProfileProvider implements ContributorProfileProvid
 			}
 			return data;
 		} catch (IOException e) {
+			log.log(Level.SEVERE, "Cannot get date from Jive", e);
 			return null;
 		} catch (AuthenticationException e) {
 			throw new RuntimeException(e);

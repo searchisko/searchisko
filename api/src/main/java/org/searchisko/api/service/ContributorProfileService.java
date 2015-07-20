@@ -320,6 +320,7 @@ public class ContributorProfileService {
 
 		List<ContributorProfile> profiles = contributorProfileProvider.getAllProfiles(start, size);
 		if (profiles == null) {
+			log.log(Level.INFO, "No profiles returned from profile provider");
 			return -1;
 		}
 		for (ContributorProfile profile : profiles) {

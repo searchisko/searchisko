@@ -6,6 +6,8 @@
 package org.searchisko.api.reindexer;
 
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.searchisko.api.service.ContributorProfileService;
 import org.searchisko.api.tasker.Task;
@@ -18,6 +20,8 @@ import org.searchisko.api.tasker.TaskConfigurationException;
  * @see org.searchisko.api.service.ContributorProfileService#isContributorCodeTypesSupported(String)
  */
 public class FullSyncContributorAndProfilesTask extends Task {
+
+	private Logger log = Logger.getLogger(FullSyncContributorAndProfilesTask.class.getName());
 
 	public static final String CFG_CONTRIBUTOR_TYPE_SPECIFIC_CODE_TYPE = "contributor_type_specific_code_type";
 	public static final String CFG_START = "start";
@@ -67,6 +71,10 @@ public class FullSyncContributorAndProfilesTask extends Task {
 			}
 			index += counter;
 			totalCount += counter;
+			if (log.isLoggable(Level.INFO)) {
+				log.log(Level.INFO, "Full Sync Status. index: {0}, total count: {1}",
+						new Object[]{index, totalCount});
+			}
 			// TODO: Put progress to new field: https://github.com/searchisko/searchisko/issues/155
 			//writeTaskLog(totalCount + ";");
 		}

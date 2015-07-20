@@ -57,7 +57,7 @@
 	<profile>
 		<subsystem xmlns="urn:jboss:domain:logging:1.3">
 			<console-handler name="CONSOLE">
-				<level name="INFO"/>
+				<level name="FINEST"/>
 				<formatter>
 					<pattern-formatter pattern="%d{yyyy/MM/dd HH:mm:ss,SSS} %-5p [%c] (%t) %s%E%n"/>
 				</formatter>
@@ -83,9 +83,22 @@
 			<logger category="jacorb">
 				<level name="WARN" />
 			</logger>
+			<logger category="org">
+				<level name="WARN" />
+			</logger>
+			<logger category="javax">
+				<level name="WARN" />
+			</logger>
 			<logger category="jacorb.config">
 				<level name="ERROR" />
 			</logger>
+			<logger category="org.searchisko">
+				<level name="INFO" />
+			</logger>
+			<logger category="org.searchisko.contribprofile.provider">
+				<level name="FINE" />
+			</logger>
+
 			<logger category="org.searchisko.api.audit.handler.AuditHandlerLogging" use-parent-handlers="false">
 				<level name="INFO" />
 				<handlers>
@@ -93,7 +106,7 @@
 				</handlers>
 			</logger>
 			<root-logger>
-				<level name="INFO" />
+				<level name="FINEST" />
 				<handlers>
 					<handler name="CONSOLE"/>
 				</handlers>
