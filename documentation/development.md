@@ -76,7 +76,7 @@ Just copy this security domain definition into `<subsystem xmlns="urn:jboss:doma
 		</authentication>
 	</security-domain>
 
-See how is Openshift configured in [Configuration](/.openshift/conf/standalone.xml) for instance.
+See how is Openshift configured in [Configuration](/.openshift/config/standalone.xml) for instance.
 
 ### Cache
 Searchisko needs number of caches to be configured:
