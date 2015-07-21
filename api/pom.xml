@@ -427,20 +427,6 @@
 			</build>
 		</profile>
 		<profile>
-			<!-- development on RHEL6 based dev machine with standard installation of jboss EAP bundle -->
-			<id>rhel6-dev</id>
-			<properties>
-				<filter.name>rhel6-dev</filter.name>
-				<es.client.embedded.data.path>/var/lib/jbossas/standalone/.dcp_data</es.client.embedded.data.path>
-				<persistence.xml.jta-data-source>java:jboss/datasources/SearchiskoDS</persistence.xml.jta-data-source>
-				<persistence.xml.hibernate.dialect>org.hibernate.dialect.H2Dialect</persistence.xml.hibernate.dialect>
-				<datasource.connection.url>jdbc:h2:mem:searchisko;DB_CLOSE_DELAY=-1</datasource.connection.url>
-				<datasource.driver>h2</datasource.driver>
-				<datasource.username>sa</datasource.username>
-				<datasource.password>sa</datasource.password>
-			</properties>
-		</profile>
-		<profile>
 			<!-- When built in OpenShift the openshift profile will be used when invoking mvn. -->
 			<!-- Use this profile for any OpenShift specific customization your app will need. -->
 			<!-- By default that is to put the resulting archive into the deployments folder. -->

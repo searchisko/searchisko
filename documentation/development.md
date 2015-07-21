@@ -39,12 +39,6 @@ used to build for different target environments (the `localhost` profile is acti
 * Embedded ElasticSearch nodes used with data stored in user home `.dcp_data` subfolder. Search node REST API on 15000 port. Statistics node REST API on 15100 port.  
 * Embedded [h2 database](http://www.h2database.com) used for persistence.
 
-#### rhel6-dev
-
-* build for development running on typical RHEL6 machine with installed standard JBoss EAP bundle.
-* Embedded ElasticSearch nodes used with data stored in `_EAP_HOME_/standalone/.dcp_data` subfolder. Search node REST API on 15000 port. Statistics node REST API on 15100 port.
-* Embedded [h2 database](http://www.h2database.com) used for persistence.
-
 #### openshift
 
 * build for testing deployment on [OpenShift](http://openshift.redhat.com) 
@@ -185,10 +179,6 @@ One way how to do this is via CL parameter when starting the server. For example
 IP `10.34.2.178`:
 
     ./bin/standalone.sh -b 10.34.2.178
-
-#### rhel6-dev
-
-No details yet. This is internal server.
 
 #### OpenShift
 
