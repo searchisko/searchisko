@@ -14,6 +14,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.ejb.Singleton;
+import javax.ejb.Lock;
+import javax.ejb.LockType;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 import javax.enterprise.context.ApplicationScoped;
@@ -40,6 +42,7 @@ import org.searchisko.contribprofile.provider.Jive6ContributorProfileProvider;
 @Named
 @ApplicationScoped
 @Singleton
+@Lock(LockType.READ)
 public class ContributorProfileService {
 
 	/** Type specific code for jboss.org username */
