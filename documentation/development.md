@@ -212,6 +212,20 @@ To enable Access to Contributor Profile Provider (developer.jboss.org) as authen
 	rhc set-env SEARCHISKO_CB_PROVIDER_URLBASE=https://developer.jboss.org SEARCHISKO_CB_PROVIDER_USERNAME=developer.jboss.org-username SEARCHISKO_CB_PROVIDER_PASSWORD=developer.jboss.org-password -a {name of your app}
 
 
+##### Remote Debugging on OpenShift
+JDPA is enabled by default on Openshfit by marker enable_jdpa
+
+To enable remote debugging you just need:
+
+1. Do port forwarding on Openshfit by
+
+	rhc port-forward -a {name of instance}
+	
+2. Add and run remote debugger in your IDE with host `localhost` and port `8787`
+
+Then you can put your break point wherever you want
+
+
 #### staging/production
 
 TODO
