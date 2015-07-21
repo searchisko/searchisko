@@ -280,6 +280,7 @@ To generate list of these commands from current configuration run
 		rhc snapshot save searchisko1
 		rhc app create searchisko2 jbosseap-6 mysql-5.5 -g medium
 		rhc snapshot restore searchisko2 --filepath searchisko1.tar.gz
+		rhc set-env  ... - Set any needed properties. See above
 		rhc app-deploy master --app searchisko2
 
 Note: app-deploy is needed because deployment replaces various variables by current Openshift values like `OPENSHIFT_MYSQL_DB_HOST` etc.
