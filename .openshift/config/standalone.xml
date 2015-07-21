@@ -38,7 +38,7 @@
 		<extension module="com.openshift.metrics"/>
 		-->
 	</extensions>
-
+	
 	<system-properties>
        <property name="org.apache.coyote.http11.Http11Protocol.COMPRESSION" value="on"/>
     </system-properties>
@@ -283,7 +283,7 @@
 					<eviction strategy="LRU" max-entries="10000" />
 					<file-store />
 				</replicated-cache>
-				<!-- ~ Clustered cache used internally by EJB subsytem for managing the
+				<!-- ~ Clustered cache used internally by EJB subsytem for managing the 
 					client-mapping(s) of ~ the socketbinding referenced by the EJB remoting connector -->
 				<replicated-cache name="remote-connector-client-mappings"
 					mode="SYNC" batching="true" />
@@ -397,10 +397,10 @@
 				<security-enabled>false</security-enabled>
 				<journal-file-size>102400</journal-file-size>
 				<journal-min-files>2</journal-min-files>
-
+				
 				<thread-pool-max-size>${messaging.thread.pool.max.size}</thread-pool-max-size>
  	            <scheduled-thread-pool-max-size>${messaging.scheduled.thread.pool.max.size}</scheduled-thread-pool-max-size>
-
+ 	            
 				<connectors>
 					<netty-connector name="netty" socket-binding="messaging" />
                     <netty-connector name="netty-throughput" socket-binding="messaging-throughput">
@@ -417,7 +417,7 @@
                    </netty-acceptor>
 					<in-vm-acceptor name="in-vm" server-id="0" />
 				</acceptors>
-
+				
 				<address-settings>
 					<!--default for catch all -->
 					<address-setting match="#">
@@ -600,7 +600,7 @@
 			<loopback-address value="${env.OPENSHIFT_JBOSSEAP_IP}" />
 		</interface>
 		<interface name="unsecure">
-			<!-- Used for IIOP sockets in the standarad configuration. To secure JacORB
+			<!-- Used for IIOP sockets in the standarad configuration. To secure JacORB 
 				you need to setup SSL -->
 			<loopback-address value="${env.OPENSHIFT_JBOSSEAP_IP}" />
 		</interface>
@@ -620,7 +620,7 @@
 			port="3529" />
 		<socket-binding name="jgroups-tcp" port="${env.OPENSHIFT_JBOSSEAP_CLUSTER_PORT}" />
 		<socket-binding name="messaging" port="${env.OPENSHIFT_JBOSSEAP_MESSAGING_PORT}" />
-        <socket-binding name="messaging-throughput"
+        <socket-binding name="messaging-throughput" 
         	port="${env.OPENSHIFT_JBOSSEAP_MESSAGING_THROUGHPUT_PORT}"/>
 		<socket-binding name="osgi-http" interface="management"
 			port="8090" />
