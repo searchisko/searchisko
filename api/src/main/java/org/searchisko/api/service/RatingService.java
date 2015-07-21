@@ -9,6 +9,8 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.ejb.Lock;
+import javax.ejb.LockType;
 import javax.ejb.Singleton;
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.event.Observes;
@@ -33,6 +35,7 @@ import org.searchisko.persistence.service.RatingPersistenceService.RatingStats;
 @Named
 @ApplicationScoped
 @Singleton
+@Lock(LockType.READ)
 public class RatingService {
 
 	@Inject

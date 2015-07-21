@@ -5,21 +5,24 @@
  */
 package org.searchisko.api.service;
 
-import org.searchisko.api.model.AppConfiguration;
-import org.searchisko.api.model.AppConfiguration.ClientType;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.annotation.PostConstruct;
+import javax.ejb.Lock;
+import javax.ejb.LockType;
 import javax.ejb.Singleton;
 import javax.ejb.Startup;
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Produces;
 import javax.inject.Inject;
 import javax.inject.Named;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Properties;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+
+import org.searchisko.api.model.AppConfiguration;
+import org.searchisko.api.model.AppConfiguration.ClientType;
 
 /**
  * Application configuration service
@@ -30,6 +33,7 @@ import java.util.logging.Logger;
 @Named
 @ApplicationScoped
 @Singleton
+@Lock(LockType.READ)
 @Startup
 public class AppConfigurationService {
 

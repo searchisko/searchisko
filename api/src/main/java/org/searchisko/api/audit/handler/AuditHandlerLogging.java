@@ -6,14 +6,17 @@
 
 package org.searchisko.api.audit.handler;
 
-import javax.ejb.Singleton;
-import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
-import javax.inject.Named;
 import java.lang.reflect.Method;
 import java.security.Principal;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import javax.ejb.Lock;
+import javax.ejb.LockType;
+import javax.ejb.Singleton;
+import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
+import javax.inject.Named;
 
 import org.searchisko.api.security.AuthenticatedUserType;
 
@@ -25,6 +28,7 @@ import org.searchisko.api.security.AuthenticatedUserType;
 @Named
 @ApplicationScoped
 @Singleton
+@Lock(LockType.READ)
 public class AuditHandlerLogging implements AuditHandler {
 
 	public static final String TARGET_LOGGER_CLASS_SUFFIX = ".Audit";

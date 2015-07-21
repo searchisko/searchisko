@@ -9,6 +9,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
 
+import javax.ejb.Lock;
+import javax.ejb.LockType;
 import javax.ejb.Singleton;
 import javax.ejb.Startup;
 import javax.enterprise.context.ApplicationScoped;
@@ -32,6 +34,7 @@ import org.searchisko.persistence.jpa.model.*;
  */
 @Named
 @Singleton
+@Lock(LockType.READ)
 @ApplicationScoped
 @Startup
 public class PersistenceBackendService {

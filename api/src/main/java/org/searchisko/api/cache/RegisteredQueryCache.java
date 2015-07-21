@@ -1,8 +1,11 @@
 package org.searchisko.api.cache;
 
+import java.util.Map;
+
+import javax.ejb.Lock;
+import javax.ejb.LockType;
 import javax.ejb.Singleton;
 import javax.enterprise.context.ApplicationScoped;
-import java.util.Map;
 
 /**
  * Cache used to cache provider info inside {@link org.searchisko.api.service.ProviderService}.
@@ -12,6 +15,7 @@ import java.util.Map;
  */
 @ApplicationScoped
 @Singleton
+@Lock(LockType.READ)
 public class RegisteredQueryCache extends ExpiringCacheBase<Map<String, Object>> {
 
     public RegisteredQueryCache() {

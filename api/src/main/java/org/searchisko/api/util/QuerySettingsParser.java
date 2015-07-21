@@ -12,6 +12,8 @@ import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.ejb.Lock;
+import javax.ejb.LockType;
 import javax.ejb.Singleton;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Named;
@@ -32,6 +34,7 @@ import org.searchisko.api.service.SearchService;
 @Named
 @ApplicationScoped
 @Singleton
+@Lock(LockType.READ)
 public class QuerySettingsParser {
 
 	private final static Logger log = Logger.getLogger(QuerySettingsParser.class.getName());

@@ -8,6 +8,8 @@ package org.searchisko.api.indexer;
 import java.io.IOException;
 
 import javax.ejb.LocalBean;
+import javax.ejb.Lock;
+import javax.ejb.LockType;
 import javax.ejb.ObjectNotFoundException;
 import javax.ejb.Singleton;
 import javax.enterprise.context.ApplicationScoped;
@@ -40,6 +42,7 @@ import org.searchisko.api.util.SearchUtils;
 @ApplicationScoped
 @Singleton
 @LocalBean
+@Lock(LockType.WRITE)
 public class EsRiverRemoteIndexerHandler implements IndexerHandler {
 
 	@Inject
@@ -58,6 +61,7 @@ public class EsRiverRemoteIndexerHandler implements IndexerHandler {
 	}
 
 	@Override
+	@Lock(LockType.READ)
 	public Object getStatus(String indexerName) throws ObjectNotFoundException {
 
 		JRStateRequest actionRequest = new JRStateRequest(indexerName);

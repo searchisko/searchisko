@@ -9,6 +9,8 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.ejb.Lock;
+import javax.ejb.LockType;
 import javax.ejb.Singleton;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
@@ -60,6 +62,7 @@ import static org.searchisko.api.rest.search.ConfigParseUtil.parseAggregationTyp
 @Named
 @ApplicationScoped
 @Singleton
+@Lock(LockType.READ)
 public class SearchService {
 
 	public static final String CFGNAME_FIELD_VISIBLE_FOR_ROLES = "field_visible_for_roles";
