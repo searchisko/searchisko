@@ -10,6 +10,8 @@ import java.util.logging.Logger;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
+import javax.ejb.Lock;
+import javax.ejb.LockType;
 import javax.ejb.Singleton;
 import javax.ejb.Startup;
 import javax.enterprise.context.ApplicationScoped;
@@ -29,6 +31,7 @@ import org.searchisko.api.tasker.TaskPersister;
 @Named
 @ApplicationScoped
 @Singleton
+@Lock(LockType.READ)
 @Startup
 public class TaskService {
 

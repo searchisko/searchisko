@@ -12,6 +12,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.ejb.Lock;
+import javax.ejb.LockType;
 import javax.ejb.Singleton;
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.event.Event;
@@ -41,6 +43,7 @@ import org.searchisko.persistence.service.ContentPersistenceService;
 @Named
 @ApplicationScoped
 @Singleton
+@Lock(LockType.READ)
 public class ReindexingTaskFactory implements TaskFactory {
 
 	public static final String CFG_PROJECT_ID_VALUE = "project_id_value";

@@ -9,6 +9,8 @@ import java.io.IOException;
 import java.util.Properties;
 
 import javax.annotation.PostConstruct;
+import javax.ejb.Lock;
+import javax.ejb.LockType;
 import javax.ejb.Singleton;
 import javax.ejb.Startup;
 import javax.enterprise.context.ApplicationScoped;
@@ -26,6 +28,7 @@ import org.searchisko.api.util.SearchUtils;
 @ApplicationScoped
 @Singleton
 @Startup
+@Lock(LockType.READ)
 public class TimeoutConfiguration {
 
 	private int stats;

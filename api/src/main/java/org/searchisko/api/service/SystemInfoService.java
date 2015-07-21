@@ -16,6 +16,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.annotation.PostConstruct;
+import javax.ejb.Lock;
+import javax.ejb.LockType;
 import javax.ejb.Singleton;
 import javax.ejb.Startup;
 import javax.enterprise.context.ApplicationScoped;
@@ -42,6 +44,7 @@ import org.searchisko.persistence.service.JdbcContentPersistenceService;
 @Named
 @ApplicationScoped
 @Singleton
+@Lock(LockType.READ)
 @Startup
 public class SystemInfoService {
 

@@ -11,6 +11,8 @@ import java.io.StringWriter;
 import java.util.logging.Logger;
 
 import javax.annotation.Resource;
+import javax.ejb.Lock;
+import javax.ejb.LockType;
 import javax.ejb.Singleton;
 import javax.enterprise.context.ContextNotActiveException;
 import javax.enterprise.context.RequestScoped;
@@ -45,6 +47,7 @@ import org.infinispan.manager.EmbeddedCacheManager;
  * @author Libor Krzyzanek
  */
 @Singleton
+@Lock(LockType.READ)
 public class Resources {
 
 	@Produces
