@@ -2001,6 +2001,17 @@ GET /rest/sys/persistence
 }
 
 
+Get info from MBeans via HTTP. 'Searchisko administrator' authentication required.
+
+GET /rest/sys/metrics
+< 200
+{
+  "timestamp": 1437568971,
+  "status": 200,
+  ...
+}
+
+
 Elasticsearch "Search" cluster [full REST API](https://www.elastic.co/guide/en/elasticsearch/reference/current/index.html).
 
 GET /rest/sys/es/search/*

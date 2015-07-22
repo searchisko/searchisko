@@ -231,6 +231,12 @@
 			<artifactId>urlrewritefilter</artifactId>
 		</dependency>
 
+		<!-- MBean to JSON over HTTP tool -->
+		<dependency>
+			<groupId>org.jolokia</groupId>
+			<artifactId>jolokia-core</artifactId>
+		</dependency>
+
 		<!-- Unit test dependencies -->
 		<dependency>
 			<groupId>junit</groupId>
@@ -299,11 +305,7 @@
 							<Specification-Title>${project.name}</Specification-Title>
 							<Implementation-Title>${project.name}</Implementation-Title>
 							<Implementation-Version>${buildNumber}</Implementation-Version>
-							<Dependencies>
-								org.jboss.resteasy.resteasy-jaxrs,
-								org.jboss.resteasy.resteasy-cdi,
-								org.apache.commons.codec
-							</Dependencies>
+							<Dependencies>org.jboss.resteasy.resteasy-jaxrs, org.jboss.resteasy.resteasy-cdi, org.apache.commons.codec</Dependencies>
 						</manifestEntries>
 					</archive>
 					<warName>ROOT</warName>
