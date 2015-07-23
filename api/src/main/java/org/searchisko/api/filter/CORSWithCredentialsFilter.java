@@ -49,7 +49,7 @@ public class CORSWithCredentialsFilter implements Filter {
 	public static final String ACCESS_CONTROL_ALLOW_METHODS = "Access-Control-Allow-Methods";
 	public static final String ACCESS_CONTROL_MAX_AGE = "Access-Control-Max-Age";
 
-	public static final String ACCESS_CONTROL_ALLOW_HEADERS_VALUE = "X-Requested-With, Content-Type, Content-Length, Origin, Accept";
+	public static final String ACCESS_CONTROL_ALLOW_HEADERS_VALUE = "X-Requested-With, Content-Type, Content-Length, Origin, Accept, Authorization";
 	public static final String ACCESS_CONTROL_MAX_AGE_VALUE = "86400";
 
 	/**
