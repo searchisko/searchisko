@@ -2,9 +2,11 @@
 
 This document contains high-level release notes. More details can be found in [milestones](https://github.com/searchisko/searchisko/milestones) on GitHub.
 
-## 2.0.3-SNAPSHOT
+## 2.1.0
 
-WIP
+- JMX REST API [#257](https://github.com/searchisko/searchisko/issues/257)
+
+Several other bug-fixes and enhancements, see [full list](https://github.com/searchisko/searchisko/issues?q=milestone%3A2.0.2+is%3Aclosed).
 
 ## 2.0.2
 
