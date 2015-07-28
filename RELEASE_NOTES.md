@@ -4,9 +4,12 @@ This document contains high-level release notes. More details can be found in [m
 
 ## 2.1.0
 
-- JMX REST API [#257](https://github.com/searchisko/searchisko/issues/257)
+Improvements:
 
-Several other bug-fixes and enhancements, see [full list](https://github.com/searchisko/searchisko/issues?q=milestone%3A2.0.2+is%3Aclosed).
+- JMX REST API [#257](https://github.com/searchisko/searchisko/issues/257)
+- Support HTTP Basic Authentication within CORS [#259](https://github.com/searchisko/searchisko/issues/259)
+
+Several other bug-fixes and enhancements, see [full list](https://github.com/searchisko/searchisko/issues?q=milestone%3A2.1.0+is%3Aclosed).
 
 ## 2.0.2
 
