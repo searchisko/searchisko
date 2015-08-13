@@ -3,6 +3,16 @@ cache:
   directories:
     - $HOME/.m2
 
+script:
+  - mvn test
+  - mvn clean test -Ptest-jpa-mysql
+
+before_script:
+  - mysql -e 'create database searchisko_test;'
+  - export SEARCHISKO_TEST_CONNECTION_URL=jdbc:mysql://localhost/searchisko_test
+  - export SEARCHISKO_TEST_USERNAME=travis
+  - export SEARCHISKO_TEST_PASSWORD=
+
 after_success:
   - mvn clean cobertura:cobertura coveralls:report
 
