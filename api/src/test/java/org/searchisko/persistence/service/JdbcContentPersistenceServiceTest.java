@@ -10,18 +10,27 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
-import java.util.*;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 import java.util.logging.Logger;
 
-import org.h2.jdbcx.JdbcConnectionPool;
-import org.junit.*;
+import javax.sql.DataSource;
+
+import org.junit.Assert;
+import org.junit.BeforeClass;
+import org.junit.Test;
+import org.mockito.Mockito;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 import org.searchisko.api.ContentObjectFields;
 import org.searchisko.api.testtools.TestUtils;
 import org.searchisko.api.util.SearchUtils;
 
 /**
  * Unit test for {@link JdbcContentPersistenceService}
- * 
+ *
  * @author Vlastimil Elias (velias at redhat dot com)
  * @author Lukas Vlcek
  */
@@ -55,6 +64,8 @@ public class JdbcContentPersistenceServiceTest extends JpaTestBase {
 		Assert.assertEquals(2, keys.size());
 		Assert.assertTrue(keys.contains("LOWER"));
 		Assert.assertTrue(keys.contains("UPPER"));
+
+		clearDatabase();
 	}
 
 	@Test
@@ -75,6 +86,8 @@ public class JdbcContentPersistenceServiceTest extends JpaTestBase {
 		tested.ensureTableExists("table_2");
 		Assert.assertTrue(tested.checkTableExists("table_2"));
 		Assert.assertTrue(tested.checkTableExists("table1"));
+
+		clearDatabase();
 	}
 
 	@Test
@@ -96,6 +109,8 @@ public class JdbcContentPersistenceServiceTest extends JpaTestBase {
 		tested.ensureTableExists("table_2");
 		Assert.assertTrue(tested.checkTableExists("TABLE_2"));
 		Assert.assertTrue(tested.checkTableExists("TABLE1"));
+
+		clearDatabase();
 	}
 
 	@Test
@@ -105,6 +120,8 @@ public class JdbcContentPersistenceServiceTest extends JpaTestBase {
 		Assert.assertFalse(tested.checkTableExists("table1"));
 		createTable("TABLE1");
 		Assert.assertTrue(tested.checkTableExists("table1"));
+
+		clearDatabase();
 	}
 
 	@Test
@@ -176,6 +193,7 @@ public class JdbcContentPersistenceServiceTest extends JpaTestBase {
 		Assert.assertNull(tested.get("aaa-1", sysContentType));
 		Assert.assertNotNull(tested.get("aaa-2", sysContentType));
 
+		clearDatabase();
 	}
 
 	@Test
@@ -228,6 +246,7 @@ public class JdbcContentPersistenceServiceTest extends JpaTestBase {
 			Assert.assertFalse(req.hasContent());
 
 		}
+		clearDatabase();
 	}
 
 	@Test
@@ -251,6 +270,8 @@ public class JdbcContentPersistenceServiceTest extends JpaTestBase {
 		tested.store("3", CT, content);
 		tested.store("asdas", CT, content);
 		Assert.assertEquals(4, tested.countRecords(CT));
+
+		clearDatabase();
 	}
 
 	private void addContent(JdbcContentPersistenceService tested, String sysContentType, String id) {
@@ -265,8 +286,8 @@ public class JdbcContentPersistenceServiceTest extends JpaTestBase {
 		final String tablename = tested.getTableName(sysContentType);
 		int result = 0;
 		try (final Connection conn = this.getTested().searchiskoDs.getConnection();
-				final PreparedStatement statement = conn.prepareStatement(String.format("select count(*) from %s", tablename));
-				final ResultSet rs = statement.executeQuery()) {
+			 final PreparedStatement statement = conn.prepareStatement(String.format("select count(*) from %s", tablename));
+			 final ResultSet rs = statement.executeQuery()) {
 			while (rs.next()) {
 				result = rs.getInt(1);
 			}
@@ -277,12 +298,12 @@ public class JdbcContentPersistenceServiceTest extends JpaTestBase {
 	}
 
 	private void assertTableContent(final JdbcContentPersistenceService tested, final String sysContentType,
-			final String id, final Date expectedUpdated) {
+									final String id, final Date expectedUpdated) {
 		final String tablename = tested.getTableName(sysContentType);
 
 		try (final Connection conn = this.getTested().searchiskoDs.getConnection();
-				final PreparedStatement statement = conn.prepareStatement(String.format(
-						"select sys_content_type, updated from %s where id = ?", tablename))) {
+			 final PreparedStatement statement = conn.prepareStatement(String.format(
+					 "select sys_content_type, updated from %s where id = ?", tablename))) {
 			statement.setString(1, id);
 			try (final ResultSet rs = statement.executeQuery()) {
 				Assert.assertTrue(rs.next());
@@ -302,6 +323,20 @@ public class JdbcContentPersistenceServiceTest extends JpaTestBase {
 	private static JdbcContentPersistenceService tested;
 
 	protected JdbcContentPersistenceService getTested() {
+		try {
+			DataSource ds = Mockito.mock(DataSource.class);
+			Mockito.when(ds.getConnection()).then(new Answer<Connection>() {
+				@Override
+				public Connection answer(InvocationOnMock invocation) throws Throwable {
+					return getConnectionProvider().getConnection();
+				}
+			});
+			tested.searchiskoDs = ds;
+		} catch (Exception e) {
+			e.printStackTrace();
+			Assert.fail(e.getMessage());
+		}
+
 		return tested;
 	}
 
@@ -309,14 +344,14 @@ public class JdbcContentPersistenceServiceTest extends JpaTestBase {
 	 * Directly create a table in the database. This can be used
 	 * to simulate a second EAP node creating a new table.
 	 *
-	 * @see JdbcContentPersistenceService#ensureTableExists
 	 * @param tableName table name to create
+	 * @see JdbcContentPersistenceService#ensureTableExists
 	 */
 	protected void createTable(String tableName) {
 		try {
 			final Connection conn = this.getTested().searchiskoDs.getConnection();
-			conn.prepareStatement("create table " + tableName).execute();
-			conn.commit();
+			conn.prepareStatement("create table " + tableName + " ( column1 INT )").execute();
+//			conn.commit();
 		} catch (SQLException e) {
 			Assert.fail(e.getMessage());
 		}
@@ -326,15 +361,14 @@ public class JdbcContentPersistenceServiceTest extends JpaTestBase {
 	 * Drop all tables found in JdbcContentPersistenceService.TABLES_EXISTS
 	 * map after each test and also clear this map itself.
 	 */
-	@After
 	public void clearDatabase() {
 		try {
 			final Connection conn = this.getTested().searchiskoDs.getConnection();
 			Set<String> tables = JdbcContentPersistenceService.TABLES_EXISTS.keySet();
-			for (String table: tables) {
+			for (String table : tables) {
 				conn.prepareStatement("drop table " + table).execute();
 			}
-			conn.commit();
+//			conn.commit();
 			JdbcContentPersistenceService.TABLES_EXISTS.clear();
 		} catch (SQLException e) {
 			Assert.fail(e.getMessage());
@@ -345,13 +379,6 @@ public class JdbcContentPersistenceServiceTest extends JpaTestBase {
 	public static void beforeClass() {
 		tested = new JdbcContentPersistenceService();
 		tested.log = Logger.getLogger("test logger");
-
-		tested.searchiskoDs = JdbcConnectionPool.create("jdbc:h2:mem:unit-testing-jpa-persistence-service-test", "sa", "");
 	}
 
-	@AfterClass
-	public static void afterClass() {
-		((JdbcConnectionPool) tested.searchiskoDs).dispose();
-		tested = null;
-	}
 }

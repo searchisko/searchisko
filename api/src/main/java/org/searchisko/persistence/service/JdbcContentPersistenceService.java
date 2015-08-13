@@ -202,7 +202,7 @@ public class JdbcContentPersistenceService implements ContentPersistenceService 
 	 * @return list of all tables
 	 */
 	public List<String> getAllTableNames() {
-		String sql = "select table_name from information_schema.tables " +
+		String sql = "select table_name from INFORMATION_SCHEMA.tables " +
 				"where upper(table_schema) not in ('INFORMATION_SCHEMA', 'PERFORMANCE_SCHEMA', 'MYSQL')";
 		return executeListReturningSql(sql);
 	}
