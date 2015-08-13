@@ -8,6 +8,7 @@ target
 deployments
 .dcp_data
 test.*
+unit-testing-jpa.*
 /ftest.sh
 
 # Ignore all output.txt files produced by init scripts.

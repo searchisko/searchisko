@@ -5,15 +5,22 @@
  */
 package org.searchisko.persistence.service;
 
-import org.h2.jdbcx.JdbcConnectionPool;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
+import java.util.logging.Logger;
+
+import javax.sql.DataSource;
+
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
-
-import java.util.HashMap;
-import java.util.Map;
-import java.util.logging.Logger;
+import org.mockito.Mockito;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 
 /**
  * @author Lukas Vlcek
@@ -32,12 +39,29 @@ public class PersistenceServiceTest extends JpaTestBase {
 		tested.jdbcContentPersistenceService.store("id1", "type1", data1);
 		Map<String, Object> result = tested.getTableCounts();
 
-		Assert.assertEquals(1, result.keySet().size());
-		String tableName = (String) result.keySet().toArray()[0];
+		// Include default tables
+		Assert.assertEquals(1 + 6, result.keySet().size());
+
+		String tableName = "data_type1";
 		Assert.assertEquals(1, result.get(tableName));
+
+		clearDatabase();
 	}
 
 	protected PersistenceService getTested() {
+		try {
+			DataSource ds = Mockito.mock(DataSource.class);
+			Mockito.when(ds.getConnection()).then(new Answer<Connection>() {
+				@Override
+				public Connection answer(InvocationOnMock invocation) throws Throwable {
+					return getConnectionProvider().getConnection();
+				}
+			});
+			tested.jdbcContentPersistenceService.searchiskoDs = ds;
+		} catch (Exception e) {
+			e.printStackTrace();
+			Assert.fail(e.getMessage());
+		}
 		return tested;
 	}
 
@@ -45,15 +69,31 @@ public class PersistenceServiceTest extends JpaTestBase {
 	public static void beforeClass() {
 		JdbcContentPersistenceService jdbcContentPersistenceService = new JdbcContentPersistenceService();
 		jdbcContentPersistenceService.log = Logger.getLogger("test logger");
-		jdbcContentPersistenceService.searchiskoDs = JdbcConnectionPool.create("jdbc:h2:mem:unit-testing-jpa-persistence-service-test", "sa", "");
 
 		tested = new PersistenceService();
 		tested.jdbcContentPersistenceService = jdbcContentPersistenceService;
 	}
 
+
+	/**
+	 * Drop all tables found in JdbcContentPersistenceService.TABLES_EXISTS
+	 * map after each test and also clear this map itself.
+	 */
+	public void clearDatabase() {
+		try {
+			final Connection conn = this.getTested().jdbcContentPersistenceService.searchiskoDs.getConnection();
+			Set<String> tables = JdbcContentPersistenceService.TABLES_EXISTS.keySet();
+			for (String table : tables) {
+				conn.prepareStatement("drop table " + table).execute();
+			}
+			JdbcContentPersistenceService.TABLES_EXISTS.clear();
+		} catch (SQLException e) {
+			Assert.fail(e.getMessage());
+		}
+	}
+
 	@AfterClass
 	public static void afterClass() {
-		((JdbcConnectionPool) tested.jdbcContentPersistenceService.searchiskoDs).dispose();
 		tested.jdbcContentPersistenceService = null;
 		tested = null;
 	}
