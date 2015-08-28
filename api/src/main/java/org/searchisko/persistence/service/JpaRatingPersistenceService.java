@@ -80,10 +80,14 @@ public class JpaRatingPersistenceService implements RatingPersistenceService {
 	public void mergeRatingsForContributors(String contributorIdFrom, String contributorIdTo) {
 		if (contributorIdFrom == null || contributorIdTo == null)
 			return;
-
+		
+		List<String> contentIds = em.createQuery("select r.contentId from Rating r where r.contributorId = ?1",String.class)
+			.setParameter(1, contributorIdTo)
+			.setLockMode(LockModeType.PESSIMISTIC_WRITE)
+			.getResultList();
 		em.createQuery(
-				"update Rating r set r.contributorId = ?1 where r.contributorId = ?2 and r.contentId not in (select r.contentId from Rating r where r.contributorId = ?3)")
-				.setParameter(1, contributorIdTo).setParameter(2, contributorIdFrom).setParameter(3, contributorIdTo)
+				"update Rating r set r.contributorId = ?1 where r.contributorId = ?2 and r.contentId not in (?3)")
+				.setParameter(1, contributorIdTo).setParameter(2, contributorIdFrom).setParameter(3, contentIds)
 				.executeUpdate();
 		em.createQuery("delete from Rating r where r.contributorId = ?1").setParameter(1, contributorIdFrom)
 				.executeUpdate();

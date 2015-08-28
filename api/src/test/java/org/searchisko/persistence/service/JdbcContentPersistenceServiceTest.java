@@ -155,21 +155,21 @@ public class JdbcContentPersistenceServiceTest extends JpaTestBase {
 		TestUtils.assertJsonContent("{\"testkey\" : \"testvalue\"}", tested.get("aaa-2", sysContentType));
 
 		// case - store into existing table, existing id so update, sys_updated is Date instance
-		content.put(ContentObjectFields.SYS_UPDATED, new Date(65463749865l));
+		content.put(ContentObjectFields.SYS_UPDATED, new Date(65463750000l));
 		tested.store("aaa-1", sysContentType, content);
 		assertRowCount(tested, sysContentType, 2);
-		TestUtils.assertJsonContent("{\"testkey\" : \"testvalue\", \"sys_updated\":\"1972-01-28T16:22:29.865Z\"}",
+		TestUtils.assertJsonContent("{\"testkey\" : \"testvalue\", \"sys_updated\":\"1972-01-28T16:22:30.000Z\"}",
 				tested.get("aaa-1", sysContentType));
 		assertTableContent(tested, sysContentType, "aaa-1",
-				SearchUtils.getISODateFormat().parse("1972-01-28T16:22:29.865+0000"));
+				SearchUtils.getISODateFormat().parse("1972-01-28T16:22:30.000+0000"));
 		// case - store into existing table, existing id so update, sys_updated is ISO String instance
-		content.put(ContentObjectFields.SYS_UPDATED, "1973-01-28T17:22:29.865+0100");
+		content.put(ContentObjectFields.SYS_UPDATED, "1973-01-28T17:22:30.000+0100");
 		tested.store("aaa-2", sysContentType, content);
 		assertRowCount(tested, sysContentType, 2);
-		TestUtils.assertJsonContent("{\"testkey\" : \"testvalue\", \"sys_updated\":\"1973-01-28T17:22:29.865+0100\"}",
+		TestUtils.assertJsonContent("{\"testkey\" : \"testvalue\", \"sys_updated\":\"1973-01-28T17:22:30.000+0100\"}",
 				tested.get("aaa-2", sysContentType));
 		assertTableContent(tested, sysContentType, "aaa-2",
-				SearchUtils.getISODateFormat().parse("1973-01-28T17:22:29.865+0100"));
+				SearchUtils.getISODateFormat().parse("1973-01-28T17:22:30.000+0100"));
 
 		// case - store into existing table, existing id so update, sys_updated is invalid String instance but no
 		// exception and table is correctly filled
