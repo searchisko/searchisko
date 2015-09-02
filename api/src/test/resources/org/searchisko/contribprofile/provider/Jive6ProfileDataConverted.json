@@ -22,6 +22,9 @@
 	"sys_created": "2009-01-13T05:00:00.000+0000",
 
 	"updated": "2013-12-03T13:06:37.972+0000",
+	
+	"country": "CZ",
+	"company": "Red Hat",
 
 	"profileUrl": "https://community.jboss.org/people/lkrzyzanek",
 	"sys_url_view": "https://community.jboss.org/people/lkrzyzanek",

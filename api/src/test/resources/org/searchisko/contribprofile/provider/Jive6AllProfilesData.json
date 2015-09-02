@@ -24,7 +24,28 @@ throw 'allowIllegalResourceCall is false.';
       }, {
         "value" : "No",
         "jive_label" : "Click here to opt-out of ALL communication"
-      } ],
+      }, {
+ 	     "jive_label" : "Company name",
+    	  "value" : "Red Hat"
+       }, {
+         "jive_label" : "Department",
+         "value" : "jboss.org Development Team"
+       }, {
+         "jive_label" : "Role",
+         "value" : "Developer"
+       }, {
+         "jive_label" : "Type of Company",
+         "value" : ""
+       }, {
+         "jive_label" : "Company size",
+         "value" : ""
+       }, {
+         "jive_label" : "Company Annual Revenue",
+         "value" : "Over US$250 Million"
+       }, {
+         "jive_label" : "Industry",
+         "value" : "Technology"
+       } ],
       "external" : false,
       "visible" : true,
       "enabled" : true,

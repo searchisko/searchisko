@@ -9,11 +9,13 @@ import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.TimeZone;
 import java.util.logging.Level;
@@ -68,14 +70,23 @@ public class Jive6ContributorProfileProvider implements ContributorProfileProvid
 	protected static final String HIRE_DATE_KEY = "Hire Date";
 	protected static final String LEAVE_DATE_KEY = "Leaving Date";
 	protected static final String DATE_PATTERN = "MM/dd/yyyy";
-
-
+	
+	private static final Map<String,String> countryNameToCode;
+	
+	static {
+		Map<String,String> tempCountryNameToCode = new HashMap<String, String>();
+		for( String isoCountry : Locale.getISOCountries() ) {
+			tempCountryNameToCode.put(new Locale("",isoCountry).getDisplayCountry(Locale.US), isoCountry);
+		}
+		countryNameToCode = Collections.unmodifiableMap(tempCountryNameToCode);
+	}
+	
 	@Inject
 	protected Logger log;
 
 	public static final String JIVE_PROFILE_REST_API = "/api/core/v3/people/username/";
 
-	public static final String JIVE_ALL_PROFILES_REST_API = "/api/core/v3/people/?fields=jive,username,name,emails,displayName,tags,updated,resources,thumbnailUrl,published";
+	public static final String JIVE_ALL_PROFILES_REST_API = "/api/core/v3/people/?fields=jive,username,name,emails,displayName,tags,updated,resources,thumbnailUrl,published,addresses";
 
 	@Inject
 	protected AppConfiguration appConfiguration;
@@ -299,6 +310,32 @@ public class Jive6ContributorProfileProvider implements ContributorProfileProvid
 
 		profileData.put("updated", map.get("updated"));
 		profileData.put(ContentObjectFields.SYS_UPDATED, new Date());
+		
+		if( map.get("addresses")!=null) {
+			
+			List<Map<String,Object>> addressesList = (List<Map<String, Object>>) map.get("addresses");
+			String country = null;
+			for ( Map<String,Object> address : addressesList ) {
+				
+				Map<String,Object> addressFields = (Map<String,Object>)address.get(JIVE_PROFILE_VALUE_KEY);
+				
+				if( addressFields==null ) continue;
+				
+				if( addressFields.containsKey("country") && addressFields.get("country").toString().trim().length()>0 ) {
+					
+					country = addressFields.get("country").toString();
+					
+					// We prefer home address over other so if we found country in it we can finish searching.
+					if( address.get(JIVE_PROFILE_NAME_KEY).toString().compareTo("Home Address")!=0 ) {
+						break;
+					}
+				}
+			}
+			
+			if( country!=null && countryNameToCode.containsKey(country) ) {
+				profileData.put( "country" , countryNameToCode.get(country) );
+			}
+		}
 
 		Map<String, Object> resourcesObject = (Map<String, Object>) map.get("resources");
 		String profileUrl = null;
@@ -352,6 +389,9 @@ public class Jive6ContributorProfileProvider implements ContributorProfileProvid
 				case "Google Profile":
 					storeAccountInfo(accounts, DOMAIN_GOOGLE_COM, DCP_PROFILE_ACCOUNT_LINK, p.get(JIVE_PROFILE_VALUE_KEY));
 					break;
+				case "Company name":
+				    profileData.put("company", p.get(JIVE_PROFILE_VALUE_KEY).toString() );
+				    break;
 				case HIRE_DATE_KEY:
 				case LEAVE_DATE_KEY:
 					String rawValue = (String) p.get(JIVE_PROFILE_VALUE_KEY);
