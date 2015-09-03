@@ -2,6 +2,10 @@
 
 This document contains high-level release notes. More details can be found in [milestones](https://github.com/searchisko/searchisko/milestones) on GitHub.
 
+## 2.1.2-SNAPSHOT
+
+- WIP
+
 ## 2.1.1
 
 - Minor bugfix release, see [v2.1.1 milestone](https://github.com/searchisko/searchisko/issues?q=milestone%3A2.1.1+is%3Aclosed)
