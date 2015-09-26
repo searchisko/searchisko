@@ -85,6 +85,10 @@ public class JpaRatingPersistenceService implements RatingPersistenceService {
 			.setParameter(1, contributorIdTo)
 			.setLockMode(LockModeType.PESSIMISTIC_WRITE)
 			.getResultList();
+		
+		if(contentIds==null || contentIds.size()==0)
+			return;
+		
 		em.createQuery(
 				"update Rating r set r.contributorId = ?1 where r.contributorId = ?2 and r.contentId not in (?3)")
 				.setParameter(1, contributorIdTo).setParameter(2, contributorIdFrom).setParameter(3, contentIds)

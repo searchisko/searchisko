@@ -25,6 +25,8 @@ public class JpaRatingPersistenceServiceTest extends JpaTestBase {
 	private static final String CONTRIB_ID_2 = "contribId2";
 	private static final String CONTRIB_ID_1 = "contribId1";
 	private static final String CONTRIB_ID_3 = "contribId3";
+	private static final String CONTRIB_ID_4 = "contribId4";
+	private static final String CONTRIB_ID_5 = "contribId5";
 
 	{
 		logger = Logger.getLogger(JpaRatingPersistenceServiceTest.class.getName());
@@ -131,12 +133,28 @@ public class JpaRatingPersistenceServiceTest extends JpaTestBase {
 		tested.rate(CONTRIB_ID_3, CONTENT_ID_1, 2);
 		tested.rate(CONTRIB_ID_3, CONTENT_ID_2, 2);
 		em.getTransaction().commit();
-
+		
+		try {
+			// testing merging of contributors that didn't have any ratings
+			// this was initially causing SQLException, so in case the bug repeats 
+			// we expect it and close the transaction in finally block, 
+			// otherwise the test hangs indefinitely
+			em.getTransaction().begin();
+			tested.mergeRatingsForContributors(CONTRIB_ID_4, CONTRIB_ID_5);
+		} finally {
+			em.getTransaction().commit();
+		}
+		
 		em.getTransaction().begin();
 		tested.mergeRatingsForContributors(CONTRIB_ID_1, CONTRIB_ID_2);
 		em.getTransaction().commit();
 
 		em.getTransaction().begin();
+		
+		// assert that contributors without ratings still don't have them
+		Assert.assertEquals(0,tested.getRatings(CONTRIB_ID_4, CONTENT_ID_1, CONTENT_ID_2, CONTENT_ID_3).size());
+		Assert.assertEquals(0,tested.getRatings(CONTRIB_ID_5, CONTENT_ID_1, CONTENT_ID_2, CONTENT_ID_3).size());
+		
 		// assert removed from first
 		Assert.assertEquals(0, tested.getRatings(CONTRIB_ID_1, CONTENT_ID_1, CONTENT_ID_2, CONTENT_ID_3).size());
 
