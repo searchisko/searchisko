@@ -61,8 +61,9 @@ public class JpaRatingPersistenceService implements RatingPersistenceService {
 		}
 		jpaEntity.setRating(rating);
 		jpaEntity.setRatedAt(new Timestamp(System.currentTimeMillis()));
-		if (newEntity)
+		if (newEntity) {
 			em.persist(jpaEntity);
+		}
 
 	}
 
@@ -71,23 +72,27 @@ public class JpaRatingPersistenceService implements RatingPersistenceService {
 	@Override
 	public RatingStats countRatingStats(String contentId) {
 		Object[] ret = (Object[]) em.createQuery(STAT_QUERY).setParameter(1, contentId).getSingleResult();
-		if (ret != null && ret.length > 0 && ret[0] != null)
+		if (ret != null && ret.length > 0 && ret[0] != null) {
 			return new RatingStats(contentId, (Double) ret[0], (Long) ret[1]);
+		}
 		return null;
 	}
 
 	@Override
 	public void mergeRatingsForContributors(String contributorIdFrom, String contributorIdTo) {
-		if (contributorIdFrom == null || contributorIdTo == null)
+		
+		if (contributorIdFrom == null || contributorIdTo == null) {
 			return;
+		}
 		
 		List<String> contentIds = em.createQuery("select r.contentId from Rating r where r.contributorId = ?1",String.class)
 			.setParameter(1, contributorIdTo)
 			.setLockMode(LockModeType.PESSIMISTIC_WRITE)
 			.getResultList();
 		
-		if(contentIds==null || contentIds.size()==0)
+		if(contentIds==null || contentIds.size()==0) {
 			return;
+		}
 		
 		em.createQuery(
 				"update Rating r set r.contributorId = ?1 where r.contributorId = ?2 and r.contentId not in (?3)")
@@ -99,15 +104,17 @@ public class JpaRatingPersistenceService implements RatingPersistenceService {
 
 	@Override
 	public void deleteRatingsForContributor(String contributorId) {
-		if (contributorId != null)
+		if (contributorId != null) {
 			em.createQuery("delete from Rating r where r.contributorId = ?1").setParameter(1, contributorId).executeUpdate();
+		}
 	}
 
 	@Override
 	public void deleteRatingsForContent(String... contentId) {
-		if (contentId != null && contentId.length > 0)
+		if (contentId != null && contentId.length > 0) {
 			em.createQuery("delete from Rating r where r.contentId in ?1").setParameter(1, Arrays.asList(contentId))
 					.executeUpdate();
+		}
 	}
 
 }
