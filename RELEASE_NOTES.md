@@ -10,7 +10,7 @@ This document contains high-level release notes. More details can be found in [m
 
 Bug fixes:
 
-- Ratings issue while merging contributors [#272]((https://github.com/searchisko/searchisko/issues/272))
+- Ratings issue while merging contributors [#272](https://github.com/searchisko/searchisko/issues/272)
 
 ## 2.1.1
 
