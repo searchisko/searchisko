@@ -2,9 +2,11 @@
 
 This document contains high-level release notes. More details can be found in [milestones](https://github.com/searchisko/searchisko/milestones) on GitHub.
 
-## 2.1.2-SNAPSHOT
+## 2.1.2
 
-- WIP
+Bug fixes:
+
+- Ratings issue while merging contributors [#272]((https://github.com/searchisko/searchisko/issues/272))
 
 ## 2.1.1
 
