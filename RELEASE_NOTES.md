@@ -2,9 +2,10 @@
 
 This document contains high-level release notes. More details can be found in [milestones](https://github.com/searchisko/searchisko/milestones) on GitHub.
 
-## 2.1.3-SNAPSHOT
+## 2.1.3
 
-- WIP
+- updated elasticsearch-remote-river dependency to v1.6.6
+- added registered queries guide
 
 ## 2.1.2
 
