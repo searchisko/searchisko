@@ -28,12 +28,13 @@ as an inspiration. You will have your own content.
   etc...) about project bugs, feature requests etc.
 + [forumthread](content/forumthread.md) the data from project's discussion forum
 + [article](content/article.md) articles from project's wiki
-+ [webpage](content/webpage.md) web page
-+ [video](content/video.md) metadata about video available for project
++ [webpage](content/webpage.md) info about web page relate to the project
++ [video](content/video.md) metadata about video available for the project
 + [mailing_list_message](content/mailing_list_message.md) mbox message from project's mailing list
 + [addon](content/addon.md) description of some Addon or Plugin for the project
 + [solution](content/solution.md) description of some problem solution from knowledgebase
-+ [download](content/download.md) downloads data based on Apache access logs entries 
++ [documentation](content/documentation.md) info about documentation page related to the project 
++ [download](content/download.md) downloads data based on Apache access logs entries
 
 Additional `sys_type`s can be found in
 [jboss-developer](https://github.com/jboss-developer/www.jboss.org/blob/master/_dcp/data/provider/jboss-developer.json)
@@ -41,7 +42,6 @@ provider configuration.
 
 Other data types considered in the future:
 
-+ documentation page
 + source code repository commit
 + IRC/IM conversation
 + maven repository artifact

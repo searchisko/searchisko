@@ -14,6 +14,7 @@ This data type contains info about web page.
   <th width="63%">Description</th>
 </thead>
 <tbody>
+<tr><td>sys_type</td><td>Always `webpage`</td></tr>
 <tr><td>sys_title</td><td>Title of web page</td></tr>
 <tr><td>sys_url_view</td><td>URL of web page</td></tr>
 <tr><td>sys_description</td><td>Short text description of web page</td></tr>
