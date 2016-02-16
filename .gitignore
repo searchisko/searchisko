@@ -10,6 +10,6 @@ deployments
 test.*
 unit-testing-jpa.*
 /ftest.sh
-
+*.md.html
 # Ignore all output.txt files produced by init scripts.
 output.txt
