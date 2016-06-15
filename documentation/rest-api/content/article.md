@@ -22,7 +22,9 @@ other wiki systems used by distinct projects.
 <tr><td>sys_url_view</td><td>https://developer.jboss.org/wiki/GettingStartedWithMobileRichFaces</td><td>URL of Article view</td></tr>
 <tr><td>sys_description</td><td></td><td>Shortened description created from begin of article, contains only clear text</td></tr>
 <tr><td>sys_content</td><td></td><td>Full rendered article. May contain HTML tags or some wiki syntax as defined by `sys_content_content-type`.</td></tr>
-<tr><td>sys_created</td><td>2013-01-02T06:18:52.000-0500</td><td>Timestamp when article was created</td></tr>
+<tr><td>sys_created</td><td>2013-01-02T06:18:52.000-0500</td><td>Timestamp when article was created, if available</td></tr>
+<tr><td>sys_activity_dates</td><td>Dates of activity on this solution, typically dates of creation and last modification.</td></tr>
+<tr><td>sys_last_activity_date</td><td>Date of last activity, typically date of last modification if available.</td></tr>
 <tr><td>sys_comments</td><td></td><td>Article related comments using 'Comment data structure'</td></tr>
 </tbody>
 </table>
@@ -36,6 +38,7 @@ other wiki systems used by distinct projects.
   <th width="63%">Description</th>
 </thead>
 <tbody>
+<tr><td>modified</td><td>Last modification date, if available.</td></tr>
 <tr><td>tags</td><td>["richfaces", "html5", "mobile"]</td><td>Array of tags for article</td></tr>
 <tr><td>authors</td><td></td><td>Array of 'Contributor data structure' objects with information about article authors</td></tr>
 </tbody>
