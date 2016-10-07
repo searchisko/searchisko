@@ -2,6 +2,8 @@
 
 This document contains high-level release notes. More details can be found in [milestones](https://github.com/searchisko/searchisko/milestones) on GitHub.
 
+## 2.1.6
+
 ## 2.1.5
 - updated elasticsearch-river-remote dependency to v1.6.8
 
