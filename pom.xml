@@ -5,7 +5,7 @@
 		<groupId>org.searchisko</groupId>
 		<artifactId>parent</artifactId>
 		<packaging>pom</packaging>
-		<version>2.1.6</version>
+		<version>2.1.7-SNAPSHOT</version>
 		<name>Searchisko</name>
 		<description>Searchisko - Index, search, retrieve and aggregate content from heterogeneous resources.
     </description>
@@ -25,7 +25,7 @@
 			<connection>scm:git:git@github.com:searchisko/searchisko.git</connection>
 			<developerConnection>scm:git:git@github.com:searchisko/searchisko.git</developerConnection>
 			<url>https://github.com/searchisko/searchisko</url>
-		  <tag>v2.1.6</tag>
+		  <tag>HEAD</tag>
   </scm>
 
 		<ciManagement>
