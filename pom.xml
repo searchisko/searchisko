@@ -75,8 +75,8 @@
 
 		<properties>
 				<filter.name>localhost</filter.name>
-				<maven.compiler.source>1.7</maven.compiler.source>
-				<maven.compiler.target>1.7</maven.compiler.target>
+				<maven.compiler.source>1.8</maven.compiler.source>
+				<maven.compiler.target>1.8</maven.compiler.target>
 				<org.elasticsearch.version>1.4.1</org.elasticsearch.version>
 				<org.elasticsearch.javascript.plugin.version>2.4.1</org.elasticsearch.javascript.plugin.version>
 				<maven.build.timestamp.format>yyyyMMddHHmm</maven.build.timestamp.format>

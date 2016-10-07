@@ -14,7 +14,7 @@
 	<packaging>war</packaging>
 
 	<properties>
-		<compileSource>1.7</compileSource>
+		<compileSource>1.8</compileSource>
 		<buildTimestamp>${maven.build.timestamp}</buildTimestamp>
 		<maven.build.timestamp.format>yyyy-MM-dd'T'HH:mm:ss.SSSZ</maven.build.timestamp.format>
 	</properties>
