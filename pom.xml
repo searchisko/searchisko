@@ -23,9 +23,9 @@
 		</licenses>
 
 		<scm>
-				<connection>scm:git:git://github.com/searchisko/searchisko</connection>
-				<developerConnection>scm:git:ssh://github.com/searchisko/searchisko</developerConnection>
-				<url>https://github.com/searchisko/searchisko</url>
+			<connection>scm:git:git@github.com:searchisko/searchisko.git</connection>
+			<developerConnection>scm:git:git@github.com:searchisko/searchisko.git</developerConnection>
+			<url>https://github.com/searchisko/searchisko</url>
 		</scm>
 
 		<ciManagement>
