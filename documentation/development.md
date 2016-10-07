@@ -284,3 +284,14 @@ To generate list of these commands from current configuration run
 		rhc app-deploy master --app searchisko2
 
 Note: app-deploy is needed because deployment replaces various variables by current Openshift values like `OPENSHIFT_MYSQL_DB_HOST` etc.
+
+## New Version Release Steps
+
+To release new version of Searchisko follow these steps:
+
+1. Check if [RELEASE_NOTES](../RELEASE_NOTES.md) has info about new version.
+2. Check if [searchisko-api.spec.tmpl](api/spec/searchisko-api.spec.tmpl) has correct new version and changelog
+3. Run `mvn release:prepare` and hit enter on all questions (version, tag)
+4. Run `mvn release:clean`
+5. Increase version in spec file(api/spec/searchisko-api.spec.tmpl) and add new entry in changelog
+6. Add new version in [RELEASE_NOTES](../RELEASE_NOTES.md) 
