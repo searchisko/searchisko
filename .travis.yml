@@ -6,7 +6,6 @@ cache:
 
 script:
   - mvn test
-  - mvn clean test -Ptest-jpa-mysql
 
 before_script:
   - mysql -e 'create database searchisko_test;'
