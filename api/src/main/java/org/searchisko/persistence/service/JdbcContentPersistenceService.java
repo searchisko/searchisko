@@ -13,6 +13,7 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.annotation.PostConstruct;
@@ -108,16 +109,33 @@ public class JdbcContentPersistenceService implements ContentPersistenceService 
 		}
 
 		try (final Connection conn = searchiskoDs.getConnection()) {
-			try {
-				executeNonReturningSql(conn,
-						String.format("insert into %s (id, json_data, sys_content_type, updated) values (?, ?, ?, ?)", tableName),
-						id, jsonString, sysContentType, updated);
-			} catch (SQLException e) {
-				// insert failed, so record is in DB already, so we try to upgrade it
-				executeNonReturningSql(conn,
-						String.format("update %s set json_data=?, sys_content_type=?, updated=? where id=?", tableName),
-						jsonString, sysContentType, updated, id);
+			if (log.isLoggable(Level.FINEST)) {
+				log.log(Level.FINEST, "Start Store. "
+						+ " Auto commit: " + conn.getAutoCommit()
+						+ " isolation: " + conn.getTransactionIsolation()
+						+ " Db name: " + conn.getMetaData().getDatabaseProductName());
 			}
+			if (SearchUtils.isMysqlDialect(conn.getMetaData().getDatabaseProductName())) {
+				log.log(Level.FINE, "Store data via insert on duplicate key update technique");
+				executeNonReturningSql(conn,
+						String.format("insert into %s (id, json_data, sys_content_type, updated) values (?, ?, ?, ?) ON DUPLICATE KEY UPDATE json_data=?", tableName),
+						id, jsonString, sysContentType, updated, jsonString);
+			} else {
+				try {
+					log.log(Level.FINE, "Try insert data");
+					executeNonReturningSql(conn,
+							String.format("insert into %s (id, json_data, sys_content_type, updated) values (?, ?, ?, ?)", tableName),
+							id, jsonString, sysContentType, updated);
+				} catch (SQLException e) {
+					// insert failed, so record is in DB already, so we try to upgrade it
+					log.log(Level.FINE, "Insert failed. Try update row");
+					executeNonReturningSql(conn,
+							String.format("update %s set json_data=?, sys_content_type=?, updated=? where id=?", tableName),
+							jsonString, sysContentType, updated, id);
+				}
+			}
+
+			log.log(Level.FINEST, "Store completed");
 		} catch (SQLException e) {
 			log.severe(String.format("Error while storing content of type '" + sysContentType + "' with id '" + id
 					+ "' in the DB -- %s", e.getMessage()));

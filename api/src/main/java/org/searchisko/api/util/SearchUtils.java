@@ -358,4 +358,14 @@ public class SearchUtils {
 		return output;
 	}
 
+	/**
+	 * Determine if database product name is mysql
+	 * @param databaseProductName
+	 * @return true if database i mysql
+	 * @see java.sql.Connection#getMetaData()#getDatabaseProductName()
+	 */
+	public static boolean isMysqlDialect(String databaseProductName) {
+		return StringUtils.containsIgnoreCase(databaseProductName, "mysql");
+	}
+
 }

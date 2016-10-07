@@ -366,7 +366,7 @@ public class JdbcContentPersistenceServiceTest extends JpaTestBase {
 			final Connection conn = this.getTested().searchiskoDs.getConnection();
 			Set<String> tables = JdbcContentPersistenceService.TABLES_EXISTS.keySet();
 			for (String table : tables) {
-				conn.prepareStatement("drop table " + table).execute();
+				conn.prepareStatement("drop table if exists " + table).execute();
 			}
 //			conn.commit();
 			JdbcContentPersistenceService.TABLES_EXISTS.clear();
