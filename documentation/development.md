@@ -294,4 +294,7 @@ To release new version of Searchisko follow these steps:
 3. Run `mvn release:prepare -Pintegration-tests` and hit enter on all questions (version, tag)
 4. Run `mvn release:clean -Pintegration-tests`
 5. Increase version in spec file(../api/spec/searchisko-api.spec.tmpl) and add new entry in changelog
-6. Add new version in [RELEASE_NOTES](../RELEASE_NOTES.md) 
+6. Add new version in [RELEASE_NOTES](../RELEASE_NOTES.md)
+7. Tag the current version branch in [searchisko/configuration](https://github.com/searchisko/configuration) repository.
+8. Create a new branch in [searchisko/configuration](https://github.com/searchisko/configuration) repository for the upcoming release version.
+9. Close the branch of the previous version in [searchisko/configuration](https://github.com/searchisko/configuration) repository.
