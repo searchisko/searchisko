@@ -295,7 +295,21 @@
 				</profile>
 				<profile>
 						<id>openshift</id>
-						<!-- Disabled - still doesn't work <modules> <module>ftest</module> </modules> -->
+					<build>
+						<plugins>
+							<plugin>
+								<groupId>org.apache.maven.plugins</groupId>
+								<artifactId>maven-compiler-plugin</artifactId>
+								<version>3.1</version>
+								<configuration>
+									<verbose>true</verbose>
+									<fork>true</fork>
+									<executable>/etc/alternatives/java_sdk_1.8.0/bin/javac</executable>
+								</configuration>
+							</plugin>
+						</plugins>
+					</build>
+
 				</profile>
 		</profiles>
 
