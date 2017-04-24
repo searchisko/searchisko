@@ -3,7 +3,7 @@
 This document contains high-level release notes. More details can be found in [milestones](https://github.com/searchisko/searchisko/milestones) on GitHub.
 
 ## 2.1.7
-
+- [ORG-3643] - Fixed login modules injections so that the app can be compatible with the newest 6.4.14 EAP release.
 
 ## 2.1.6
 - Deadlock while adding RHT user profile in concurrent push [#271](https://github.com/searchisko/searchisko/issues/271)

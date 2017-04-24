@@ -42,8 +42,7 @@ import org.searchisko.api.util.CdiHelper;
  */
 public class ContributorCasLoginModule extends CasLoginModule {
 
-	@Inject
-	protected Logger log;
+	protected Logger log = Logger.getLogger(getClass().getName());;
 
 	@Inject
 	protected ProviderService providerService;
@@ -63,6 +62,18 @@ public class ContributorCasLoginModule extends CasLoginModule {
 	public void initialize(Subject subject, CallbackHandler handler, Map<String, ?> state, Map<String, ?> options) {
 		try {
 			CdiHelper.programmaticInjection(ContributorCasLoginModule.class, this);
+			
+			//	Since login modules are not managed beans it's not possible to use annotations like @Inject or @Resource by default.
+			//	Therefore the above approach handles this in a creative way. Just in case it stops working in the future
+			//	those lines below can replicate its functionality in a traditional, JNDI lookup-based way.
+			//	InitialContext initialContext = new InitialContext();
+			//	Object lookup = initialContext.lookup("java:module/ProviderService");
+			//	this.providerService = (ProviderService) lookup;
+			//	lookup = initialContext.lookup("java:module/AppConfigurationService");
+			//	this.appConfigurationService = (AppConfigurationService) lookup;
+			//	lookup = initialContext.lookup("java:module/ContributorService");
+			//	this.contributorService = (ContributorService) lookup;
+			
 		} catch (NamingException e) {
 			throw new RuntimeException("Cannot initialize Login module", e);
 		}
