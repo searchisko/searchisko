@@ -9,6 +9,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.inject.Inject;
+import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.security.auth.Subject;
 import javax.security.auth.callback.CallbackHandler;
@@ -19,7 +20,6 @@ import org.jboss.security.SimpleGroup;
 import org.jboss.security.auth.spi.UsernamePasswordLoginModule;
 import org.searchisko.api.security.Role;
 import org.searchisko.api.service.ProviderService;
-import org.searchisko.api.util.CdiHelper;
 
 /**
  * Provider login module. Extension of Picketbox's UsernamePasswordLoginModule.
@@ -41,14 +41,10 @@ public class ProviderLoginModule extends UsernamePasswordLoginModule {
 	@Override
 	public void initialize(Subject subject, CallbackHandler callbackHandler, Map<String, ?> sharedState, Map<String, ?> options) {
 		try {
-			CdiHelper.programmaticInjection(ProviderLoginModule.class, this);
 			
-			//	Since login modules are not managed beans it's not possible to use annotations like @Inject or @Resource by default.
-			//	Therefore the above approach handles this in a creative way. Just in case it stops working in the future
-			//	those lines below can replicate its functionality in a traditional, JNDI lookup-based way.
-			//	InitialContext initialContext = new InitialContext();
-			//	Object lookup = initialContext.lookup("java:module/ProviderService");
-			//	this.providerService = (ProviderService) lookup;
+			InitialContext initialContext = new InitialContext();
+			Object lookup = initialContext.lookup("java:module/ProviderService");
+			this.providerService = (ProviderService) lookup;
 			
 		} catch (NamingException e) {
 			throw new RuntimeException("Cannot initialize Login module", e);

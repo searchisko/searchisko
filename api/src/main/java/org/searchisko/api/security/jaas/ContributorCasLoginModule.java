@@ -9,6 +9,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.inject.Inject;
+import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.security.auth.Subject;
 import javax.security.auth.callback.Callback;
@@ -27,7 +28,6 @@ import org.searchisko.api.service.AppConfigurationService;
 import org.searchisko.api.service.ContributorProfileService;
 import org.searchisko.api.service.ContributorService;
 import org.searchisko.api.service.ProviderService;
-import org.searchisko.api.util.CdiHelper;
 
 /**
  * CAS JAAS Login Module
@@ -61,18 +61,14 @@ public class ContributorCasLoginModule extends CasLoginModule {
 	@Override
 	public void initialize(Subject subject, CallbackHandler handler, Map<String, ?> state, Map<String, ?> options) {
 		try {
-			CdiHelper.programmaticInjection(ContributorCasLoginModule.class, this);
 			
-			//	Since login modules are not managed beans it's not possible to use annotations like @Inject or @Resource by default.
-			//	Therefore the above approach handles this in a creative way. Just in case it stops working in the future
-			//	those lines below can replicate its functionality in a traditional, JNDI lookup-based way.
-			//	InitialContext initialContext = new InitialContext();
-			//	Object lookup = initialContext.lookup("java:module/ProviderService");
-			//	this.providerService = (ProviderService) lookup;
-			//	lookup = initialContext.lookup("java:module/AppConfigurationService");
-			//	this.appConfigurationService = (AppConfigurationService) lookup;
-			//	lookup = initialContext.lookup("java:module/ContributorService");
-			//	this.contributorService = (ContributorService) lookup;
+			InitialContext initialContext = new InitialContext();
+			Object lookup = initialContext.lookup("java:module/ProviderService");
+			this.providerService = (ProviderService) lookup;
+			lookup = initialContext.lookup("java:module/AppConfigurationService");
+			this.appConfigurationService = (AppConfigurationService) lookup;
+			lookup = initialContext.lookup("java:module/ContributorService");
+			this.contributorService = (ContributorService) lookup;
 			
 		} catch (NamingException e) {
 			throw new RuntimeException("Cannot initialize Login module", e);
