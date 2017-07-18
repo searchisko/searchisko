@@ -24,7 +24,7 @@ public class StatsConfiguationTest {
 
 		tested.init();
 
-		Assert.assertTrue(tested.enabled());
+		Assert.assertFalse(tested.enabled());
 		Assert.assertTrue(tested.isUseSearchCluster());
 	}
 
