@@ -73,7 +73,8 @@ Just copy this security domain definition into `<subsystem xmlns="urn:jboss:doma
 				<module-option name="cacheAssertions" value="true" />
 				<module-option name="cacheTimeout" value="480" />
 			</login-module>
-		</authentication>
+	Due to issue in CAS plugin classes you can observe warning messages in your EAP logs starting with "Cannot get property...". In order to lower their level from WARN to DEBUG you can add the following line inside `<console-handler name="CONSOLE">` `standalone.xml` element:
+        <filter-spec value="not(all(match(&quot;Cannot\\sfind\\sproperty.*&quot;),levelChange(DEBUG)))"/>	</authentication>
 	</security-domain>
 
 See how is Openshift configured in [Configuration](/.openshift/config/standalone.xml) for instance.
@@ -146,6 +147,9 @@ Point `org.searchisko.api.audit.handler.AuditHandlerLogging` implementation to t
 	</logger>
 
 See how is Openshift configured in [Configuration](/.openshift/conf/standalone.xml) for instance.
+
+Due to issue in CAS plugin classes you can observe warning messages in your EAP logs starting with "Cannot get property...". In order to lower their level from WARN to DEBUG you can add the following line inside `<console-handler name="CONSOLE">` `standalone.xml` element:
+        <filter-spec value="not(all(match(&quot;Cannot\\sfind\\sproperty.*&quot;),levelChange(DEBUG)))"/>
 
 #### localhost development
 
