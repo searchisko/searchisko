@@ -3,8 +3,10 @@
 This document contains high-level release notes. More details can be found in [milestones](https://github.com/searchisko/searchisko/milestones) on GitHub.
 
 ## 2.1.7
-- [ORG-3643] - Fixed login modules injections so that the app can be compatible with the newest 6.4.14 EAP release.
+- [ORG-3643] #290 - Fixed login modules injections so that the app can be compatible with the newest 6.4.14 EAP release.
 - [ORG-3677] #291 - structured-content-tools update to 1.3.10 (also jira and remote rivers updated due this) to bring REST call preprocessor 
+- [ORG-3694] #296 - Documented logging settings to mute 'Cannot get property...' warnings
+- [ORG-3679] #293 - Turned off stats collecting for all environments.
 
 ## 2.1.6
 - Deadlock while adding RHT user profile in concurrent push [#271](https://github.com/searchisko/searchisko/issues/271)
