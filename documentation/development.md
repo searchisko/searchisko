@@ -149,7 +149,8 @@ Point `org.searchisko.api.audit.handler.AuditHandlerLogging` implementation to t
 See how is Openshift configured in [Configuration](/.openshift/conf/standalone.xml) for instance.
 
 Due to issue in CAS plugin classes you can observe warning messages in your EAP logs starting with "Cannot get property...". In order to lower their level from WARN to DEBUG you can add the following line inside `<console-handler name="CONSOLE">` `standalone.xml` element:
-        <filter-spec value="not(all(match(&quot;Cannot\\sfind\\sproperty.*&quot;),levelChange(DEBUG)))"/>
+
+	<filter-spec value="not(all(match(&quot;Cannot\\sfind\\sproperty.*&quot;),levelChange(DEBUG)))"/>
 
 #### localhost development
 
