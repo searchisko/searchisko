@@ -3,6 +3,7 @@
 This document contains high-level release notes. More details can be found in [milestones](https://github.com/searchisko/searchisko/milestones) on GitHub.
 
 ## 2.1.8
+- [ORG-3839] Updated structured-content-tools to version 1.3.11 after implementing request retry mechanism in DCP RESTCallPreprocessor in it
 
 ## 2.1.7
 - [ORG-3643] #290 - Fixed login modules injections so that the app can be compatible with the newest 6.4.14 EAP release.

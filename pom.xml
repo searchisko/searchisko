@@ -5,7 +5,7 @@
 		<groupId>org.searchisko</groupId>
 		<artifactId>parent</artifactId>
 		<packaging>pom</packaging>
-		<version>2.1.8-SNAPSHOT</version>
+		<version>2.1.8</version>
 		<name>Searchisko</name>
 		<description>Searchisko - Index, search, retrieve and aggregate content from heterogeneous resources.
     </description>
