@@ -12,7 +12,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 
-import javax.annotation.security.PermitAll;
 import javax.annotation.security.RolesAllowed;
 import javax.enterprise.context.RequestScoped;
 import javax.enterprise.event.Event;
@@ -109,14 +108,13 @@ public class ContentRestService extends RestServiceBase {
 	@GET
 	@Path("/")
 	@Produces(MediaType.APPLICATION_JSON)
-	@PermitAll
 	public Object getAllContent(@PathParam("type") String type, @QueryParam("from") Integer from,
 			@QueryParam("size") Integer size, @QueryParam("sort") String sort) {
 		if (type == null || SearchUtils.isBlank(type)) {
 			throw new RequiredFieldException("type");
 		}
 		try {
-			ProviderContentTypeInfo typeInfo = providerService.findContentType(type);
+		    ProviderContentTypeInfo typeInfo = getTypeInfoWithManagePermissionCheck(type);
 			if (typeInfo == null) {
 				throw new BadFieldException("type", "type not found");
 			}
@@ -155,7 +153,6 @@ public class ContentRestService extends RestServiceBase {
 	@GET
 	@Path("/{contentId}")
 	@Produces(MediaType.APPLICATION_JSON)
-	@PermitAll
 	public Object getContent(@PathParam("type") String type, @PathParam("contentId") String contentId) {
 
 		// validation
@@ -166,7 +163,7 @@ public class ContentRestService extends RestServiceBase {
 			throw new RequiredFieldException("type");
 		}
 		try {
-			ProviderContentTypeInfo typeInfo = providerService.findContentType(type);
+		    ProviderContentTypeInfo typeInfo = getTypeInfoWithManagePermissionCheck(type);
 			if (typeInfo == null) {
 				throw new BadFieldException("type");
 			}

@@ -1133,6 +1133,14 @@ public class ContentRestServiceTest extends ESRealClientTestBase {
 		// case - type configuration is invalid (do not contains index name and type)
 		getTested(false).getAllContent(TYPE_INVALID, null, null, null);
 	}
+	
+	@Test(expected = NotAuthorizedException.class)
+    public void getAllContent_noPermission() throws Exception {
+        ContentRestService tested = getTested(false);
+        Mockito.doThrow(new NotAuthorizedException("no perm")).when(tested.authenticationUtilService)
+                .checkProviderManagementPermission(ProviderServiceTest.TEST_PROVIDER_NAME);
+        tested.getAllContent(TYPE_KNOWN, 0, 1, "DESC");
+    }
 
 	@Test
 	public void getAllContent() throws IOException, InterruptedException, JSONException {
@@ -1227,6 +1235,15 @@ public class ContentRestServiceTest extends ESRealClientTestBase {
 		// case - type configuration is invalid (do not contains index name and type)
 		getTested(true).getContent(TYPE_INVALID, "12");
 	}
+	
+	@Test(expected = NotAuthorizedException.class)
+    public void getContent_noPermission() throws Exception {
+        ContentRestService tested = getTested(false);
+        Mockito.doThrow(new NotAuthorizedException("no perm")).when(tested.authenticationUtilService)
+                .checkProviderManagementPermission(ProviderServiceTest.TEST_PROVIDER_NAME);
+        tested.getContent(TYPE_KNOWN, "1");
+    }
+
 
 	@Test
 	public void getContent() {
